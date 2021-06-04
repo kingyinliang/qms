@@ -3,7 +3,7 @@ VueNewCI {
     //Jenkins Slave Node
     jenkins_node = 'ecs-agent-sza'
     //Project Name
-    project = 'mss-web'
+    project = 'qms-front'
     //UAT ALB ARN
     dev_listener_arn = 'arn:aws-cn:elasticloadbalancing:cn-north-1:541699087960:listener/app/ALB04-Shinho-UAT/65a95eca243173f3/db2536c922dfab1f'
     //TEST ALB ARN
