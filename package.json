@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "@shinho-fe/ssologin": "^1.0.5",
+    "@types/quill": "^2.0.8",
     "axios": "^0.21.1",
     "core-js": "^3.6.5",
     "element-plus": "^1.0.2-beta.36",
