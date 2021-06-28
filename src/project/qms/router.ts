@@ -51,7 +51,7 @@ router.beforeEach((to, from, next) => {
     SSOLogin.getUserInfo().then(({ data }) => {
       store.commit('common/updateUserInfo', data.data)
       GET_NAV_API({
-        factory: 'mss_fake_factory',
+        factory: 'qms_fake_factory',
         tenant: 'qms'
       }).then(({ data }) => {
         fnAddDynamicMenuRoutes(globalMenu.concat(data.data.menuList || []), [], router, mainRouter)

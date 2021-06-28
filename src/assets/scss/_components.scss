@@ -56,7 +56,7 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  height: 500px;
+  height: calc(100vh - 168px);
   overflow: hidden;
   border: 1px solid rgba(232, 232, 232, 1);
   border-radius: 4px;
@@ -81,5 +81,22 @@
   .detail-main {
     padding: 16px 10px 0 10px;
     overflow-y: scroll;
+  }
+}
+.context--menu{
+  position: fixed;
+  z-index: 99;
+  margin: 0;
+  padding: 10px;
+  background: white;
+  border-radius: 5px;
+  box-shadow: 2px 2px 25px 5px rgba(213, 221, 238, 0.45);
+  cursor: pointer;
+
+  ul{
+    list-style: none;
+  }
+  li {
+    line-height: 28px;
   }
 }
