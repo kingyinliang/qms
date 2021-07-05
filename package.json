@@ -15,10 +15,12 @@
   },
   "dependencies": {
     "@shinho-fe/ssologin": "^1.0.5",
+    "@types/mockjs": "^1.0.3",
     "@types/quill": "^2.0.8",
     "axios": "^0.21.1",
     "core-js": "^3.6.5",
     "element-plus": "^1.0.2-beta.36",
+    "mockjs": "^1.1.0",
     "quill": "^2.0.0-dev.3",
     "socket.io-client": "^4.1.2",
     "vue": "^3.0.0",
