@@ -2,7 +2,7 @@ import { AxiosResponse } from 'axios'
 import Http from '../http/axios'
 
 export function TEST_API (params = {}):Promise<AxiosResponse> {
-  return Http.post('/test/api', params)
+  return Http.post('/mock/test', params, { baseURL: '' })
 }
 export function GET_NAV_API (params = {}):Promise<AxiosResponse> {
   return Http.get('/sysUser/userRole/menuQuery', params, { baseURL: (process.env.VUE_APP_SYSTEM_API as string) + (process.env.VUE_APP_API_V as string) })
