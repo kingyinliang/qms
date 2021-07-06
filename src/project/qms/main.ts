@@ -12,6 +12,10 @@ import '@/assets/scss/index.scss'
 import '@/assets/icon/iconfont.css'
 import 'element-plus/lib/theme-chalk/index.css'
 
+if (process.env.NODE_ENV === 'local') {
+  require('../../../mock')
+}
+
 const app = createApp(AppVue)
 
 app
