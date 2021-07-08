@@ -58,7 +58,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, onMounted } from "vue";
+import { defineComponent, ref, onMounted,ComponentInternalInstance,getCurrentInstance} from "vue";
 import MdsCard from "@/components/package/mds-card/src/mds-card.vue";
 interface TargetInfoList {
   id?: string; //主键
@@ -74,6 +74,9 @@ export default defineComponent({
   },
 
   setup() {
+          const ctx = getCurrentInstance() as ComponentInternalInstance
+
+    const proxy = ctx.proxy as any;
     //变量
     const plantList = ref({
       material: "",
@@ -204,11 +207,28 @@ export default defineComponent({
     };
     //新增检验方法 -保存
     const addMethodSave = (obj: TargetInfoList) => {
-      console.log(obj);
+       proxy.$confirm('确认保存？', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+      })
+      .catch(() => {
+          //
+        })
     };
     //批量删除
     const selectDelete = () => {
       console.log(multipleSelection); //选中的列表数据
+      proxy.$confirm('确认删除选中的数据？', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+      })
+      .catch(() => {
+          //
+        })
     };
     onMounted(() => {
       getList();

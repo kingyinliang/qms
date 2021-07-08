@@ -25,19 +25,16 @@
             </el-col>
             <el-col :span="12">
               <el-form-item label="关联组织：">
-                <!-- <el-input :disabled="isRedact" v-model="detailInfo.relation"></el-input> -->
                 <el-cascader :show-all-levels="false" :options="options" :disabled="isRedact" :props="props" v-model="detailInfo.relation" clearable></el-cascader>
               </el-form-item>
             </el-col>
             <el-col :span="12">
               <el-form-item label="取样单位：">
-                <!-- <el-input :disabled="isRedact" v-model="detailInfo.cooperate"></el-input> -->
                 <el-cascader :show-all-levels="false" :options="options" :disabled="isRedact" :props="props" v-model="detailInfo.cooperate" clearable></el-cascader>
               </el-form-item>
             </el-col>
             <el-col :span="12">
               <el-form-item label="配合取样：">
-                <!-- <el-input :disabled="isRedact" v-model="detailInfo.sample"></el-input> -->
                 <el-cascader :options="options" :disabled="isRedact" :props="props" v-model="detailInfo.sample" clearable></el-cascader>
               </el-form-item>
             </el-col>
@@ -109,7 +106,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, onMounted } from "vue";
+import { defineComponent, ref, onMounted,ComponentInternalInstance,getCurrentInstance } from "vue";
 import { treeDataTranslate } from "@/utils/index";
 
 interface AddLevelInfo {
@@ -132,6 +129,9 @@ interface TreeData {
 export default defineComponent({
   name: "InspectionCategory",
   setup() {
+    const ctx = getCurrentInstance() as ComponentInternalInstance
+
+    const proxy = ctx.proxy as any;
     const treeData = ref([
       {
         id: 1,
@@ -259,22 +259,38 @@ export default defineComponent({
       新增弹窗关闭
     */
     const handleClose = () => {
-      // this.$confirm('确认关闭？')
-      //   .then(_ => {
-      //   })
-      //   .catch(_ => {});
-      addLevelBtn.value = false;
+      proxy.$confirm('确认关闭新增弹窗', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+                addLevelBtn.value = false;
+      })
+      .catch(() => {
+          //
+        })
     };
     /*
       新增弹窗保存
     */
-    const addLevelSave = () => {};
+    const addLevelSave = () => {
+      proxy.$confirm('确认保存？', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+      })
+      .catch(() => {
+          //
+        })
+    };
     const resetForm = () => {
       // this.$refs[formName].resetFields();
     };
     //编辑保存
     const editSave = () => {
       isRedact.value = true;
+      
     };
 
     onMounted(() => {
