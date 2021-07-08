@@ -14,16 +14,7 @@
             </el-input>
           </div>
           <div class="tree-main SelfScrollbar">
-            <el-tree
-              ref="treeRef"
-              :data="treeData"
-              node-key="id"
-              :props="treeProps"
-              highlight-current
-              :filter-node-method="filterNode"
-              @node-click="treeNodeClick"
-              @node-contextmenu="treeNodeContextMenu"
-            />
+            <el-tree ref="treeRef" :data="treeData" node-key="id" :props="treeProps" highlight-current :filter-node-method="filterNode" @node-click="treeNodeClick" @node-contextmenu="treeNodeContextMenu" />
           </div>
         </div>
       </el-col>
@@ -45,80 +36,81 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, watch } from 'vue'
-import MdsCard from '../../mds-card'
+import { defineComponent, ref, watch } from "vue";
+import MdsCard from "../../mds-card";
 
 export default defineComponent({
-  name: 'TreePage',
+  name: "TreePage",
   components: {
-    MdsCard
+    MdsCard,
   },
-  emits: ['treeNodeClick', 'treeNodeContextMenu'],
+  emits: ["treeNodeClick", "treeNodeContextMenu"],
   props: {
     title: {
       type: String,
       default: function () {
-        return '标题'
-      }
+        return "标题";
+      },
     },
     leftTitle: {
       type: String,
       default: function () {
-        return '左标题'
-      }
+        return "左标题";
+      },
     },
     rightTitle: {
       type: String,
       default: function () {
-        return '右标题'
-      }
+        return "右标题";
+      },
     },
     treeData: {
       type: Array,
       required: true,
       default: function () {
-        return []
-      }
+        return [];
+      },
     },
     treeProps: {
       type: Object,
       default: function () {
-        return { label: 'deptName' }
-      }
-    }
+        return { label: "deptName" };
+      },
+    },
   },
-  setup (props, { emit }) {
-    const filterText = ref('')
-    const treeRef = ref()
-    const menuVisible = ref(false)
+  setup(props, { emit }) {
+    const filterText = ref("");
+    const treeRef = ref();
+    const menuVisible = ref(false);
 
     watch(filterText, (val) => {
-      treeRef.value.filter(val)
-    })
+      treeRef.value.filter(val);
+    });
 
     // 搜索
     // eslint-disable-next-line
-    const filterNode = (value:string, data: any) => {
-      if (!value) return true
+    const filterNode = (value: string, data: any) => {
+      if (!value) return true;
       // eslint-disable-next-line
-      return data[(props as any).treeProps.label].indexOf(value) !== -1
-    }
+      return data[(props as any).treeProps.label].indexOf(value) !== -1;
+    };
 
     // 树点击
     // eslint-disable-next-line
     const treeNodeClick = (row: any) => {
-      emit('treeNodeClick', row, true)
-    }
+      menuVisible.value = false;
+      emit("treeNodeClick", row, true);
+    };
 
     // 组织架构右击
     // eslint-disable-next-line
     const treeNodeContextMenu = (event: MouseEvent, object: any) => {
-      menuVisible.value = true
-      const menu = document.querySelector('#context--menu') as HTMLDivElement
-      menu.style.left = event.clientX + 'px'
-      menu.style.top = event.clientY + 'px'
-      emit('treeNodeContextMenu', object)
-    }
+      menuVisible.value = true;
+      const menu = document.querySelector("#context--menu") as HTMLDivElement;
+      menu.style.left = event.clientX + "px";
+      menu.style.top = event.clientY + "px";
+      emit("treeNodeContextMenu", object);
+    };
 
     return {
       treeRef,
@@ -126,12 +118,11 @@ export default defineComponent({
       menuVisible,
       filterNode,
       treeNodeClick,
-      treeNodeContextMenu
-    }
-  }
-})
+      treeNodeContextMenu,
+    };
+  },
+});
 </script>
 
 <style lang="scss" scoped>
-
 </style>
