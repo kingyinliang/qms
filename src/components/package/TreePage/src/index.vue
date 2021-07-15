@@ -14,16 +14,7 @@
             </el-input>
           </div>
           <div class="tree-main SelfScrollbar">
-            <el-tree
-              ref="treeRef"
-              :data="treeData"
-              node-key="id"
-              :props="treeProps"
-              highlight-current
-              :filter-node-method="filterNode"
-              @node-click="treeNodeClick"
-              @node-contextmenu="treeNodeContextMenu"
-            />
+            <el-tree ref="treeRef" :data="treeData" node-key="id" :props="treeProps" highlight-current :filter-node-method="filterNode" @node-click="treeNodeClick" @node-contextmenu="treeNodeContextMenu" />
           </div>
         </div>
       </el-col>
@@ -98,15 +89,16 @@ export default defineComponent({
 
     // 搜索
     // eslint-disable-next-line
-    const filterNode = (value:string, data: any) => {
+    const filterNode = (value: string, data: any) => {
       if (!value) return true
       // eslint-disable-next-line
-      return data[(props as any).treeProps.label].indexOf(value) !== -1
+      return data[(props as any).treeProps.label].indexOf(value) !== -1;
     }
 
     // 树点击
     // eslint-disable-next-line
     const treeNodeClick = (row: any) => {
+      menuVisible.value = false
       emit('treeNodeClick', row, true)
     }
 
@@ -133,5 +125,4 @@ export default defineComponent({
 </script>
 
 <style lang="scss" scoped>
-
 </style>

@@ -11,7 +11,7 @@ export interface MenuList {
 // eslint-disable-next-line
 const importTarget = process.env.NODE_ENV !== 'local' ? (file: string) => () => import('@/project/' + file + '.vue') : (file: string) => require('@/project/' + file + '.vue').default
 
-export function fnAddDynamicMenuRoutes (menuList: MenuList[] = [], routes: RouteRecordRaw[] = [], router:Router, mainRouter: RouteRecordRaw): void {
+export function fnAddDynamicMenuRoutes (menuList: MenuList[] = [], routes: RouteRecordRaw[] = [], router: Router, mainRouter: RouteRecordRaw): void {
   let temp: MenuList[] = []
   for (let i = 0; i < menuList.length; i++) {
     if (menuList[i].list && menuList[i].list.length >= 1) {
@@ -54,7 +54,7 @@ export function fnAddDynamicMenuRoutes (menuList: MenuList[] = [], routes: Route
   }
 }
 
-export function isAuth (key:string): boolean {
+export function isAuth (key: string): boolean {
   let authReturn = true
   if (key === '') {
     authReturn = true
@@ -84,39 +84,32 @@ export interface MenuBbj {
   remark: string;
   children: MenuBbj[]
 }
-interface Temp {
-  [key:string]: MenuBbj
-}
+// interface Temp {
+//   [key: string]: MenuBbj
+// }
 
-export function treeDataTranslate (data: MenuBbj[]):MenuBbj[] {
-  const res: MenuBbj[] = []
-  const temp:Temp = {}
+export function treeDataTranslate (data: any[], id: string, pid: string): any[] {
+  const res: any[] = []
+  const temp: any = {}
   for (let i = 0; i < data.length; i++) {
-    temp[data[i].id] = data[i]
+    temp[data[i][id]] = data[i]
   }
   for (let k = 0; k < data.length; k++) {
-    if (temp[data[k].parentId] && data[k].id !== data[k].parentId) {
-      if (!temp[data[k].parentId].children) {
-        temp[data[k].parentId].children = []
+    if (temp[data[k][pid]] && data[k][id] !== data[k][pid]) {
+      if (!temp[data[k][pid]].children) {
+        temp[data[k][pid]].children = []
       }
-      if (!temp[data[k].parentId]._level) {
-        temp[data[k].parentId]._level = 1
+      if (!temp[data[k][pid]]._level) {
+        temp[data[k][pid]]._level = 1
       }
-      data[k]._level = temp[data[k].parentId]._level + 1
-      temp[data[k].parentId].children.push(data[k])
-      temp[data[k].parentId].children.sort((a:MenuBbj, b:MenuBbj) => {
-        return a.menuOrder - b.menuOrder
-      })
+      data[k]._level = temp[data[k][pid]]._level + 1
+      temp[data[k][pid]].children.push(data[k])
     } else {
       res.push(data[k])
-      res.sort((a, b) => {
-        return a.menuOrder - b.menuOrder
-      })
     }
   }
   return res
 }
-
 export interface TreeDataBbj {
   id: string;
   _level: number;
@@ -128,10 +121,10 @@ export interface TreeDataBbj {
   children: TreeDataBbj[]
 }
 
-export function treeDataTranslateOfNormal (data:TreeDataBbj[]) :TreeDataBbj[] {
+export function treeDataTranslateOfNormal (data: TreeDataBbj[]): TreeDataBbj[] {
   const res: TreeDataBbj[] = []
-  const temp:{
-    [key:string]: TreeDataBbj
+  const temp: {
+    [key: string]: TreeDataBbj
   } = {}
   for (let i = 0; i < data.length; i++) {
     temp[data[i].id] = data[i]
@@ -164,8 +157,8 @@ export function treeDataTranslateOfNormal (data:TreeDataBbj[]) :TreeDataBbj[] {
  * @param {date} date 时间对象
  * @param {string} fmt 时间格式
  */
-export function dateFormat (date:Date, fmt:string):string {
-  const o:{
+export function dateFormat (date: Date, fmt: string): string {
+  const o: {
     [propName: string]: number
   } = {
     'M+': date.getMonth() + 1,
