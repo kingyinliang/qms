@@ -20,6 +20,7 @@
               node-key="id"
               :props="treeProps"
               highlight-current
+              default-expand-all
               :filter-node-method="filterNode"
               @node-click="treeNodeClick"
               @node-contextmenu="treeNodeContextMenu"
@@ -45,7 +46,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, watch } from 'vue'
+import { defineComponent, ref, watch, onMounted } from 'vue'
 import MdsCard from '../../mds-card'
 
 export default defineComponent({
@@ -119,6 +120,13 @@ export default defineComponent({
       menu.style.top = event.clientY + 'px'
       emit('treeNodeContextMenu', object)
     }
+
+    onMounted(() => {
+      document.addEventListener('click', e => {
+        const target: HTMLDivElement = e.target as HTMLDivElement
+        if (target.className !== 'context--menu') menuVisible.value = false
+      })
+    })
 
     return {
       treeRef,
