@@ -8,10 +8,17 @@
         class="select_system_item"
         @click="goSystem(item)"
       >
-        <div class="select_system_item_img" :style='"background-image: url(" + item.backgroundImgUrl + ")"'>
-          <img :src="item.logoImgUrl" alt="">
+        <div class="select_system_item_main">
+          <p class="select_system_item_main_title">{{ item.deptShort }}</p>
+          <img v-if="item.deptCode === '9999-xn'" src="./img/factory7.png" alt="">
+          <img v-else-if="item.deptCode === '8888-xn'" src="./img/factory8.png" alt="">
+          <img v-else-if="item.deptCode === '6010'" src="./img/factory0.png" alt="">
+          <img v-else-if="item.deptCode === '7100'" src="./img/factory1.png" alt="">
+          <img v-else-if="item.deptCode === '7101'" src="./img/factory2.png" alt="">
+          <img v-else-if="item.deptCode === '8500'" src="./img/factory3.png" alt="">
+          <img v-else-if="item.deptCode === '8300'" src="./img/factory4.png" alt="">
+          <img v-else src="./img/factory4.png" alt="">
         </div>
-        <p>{{ item.systemName }}</p>
       </div>
     </div>
   </div>
@@ -40,13 +47,13 @@ export default defineComponent({
     const system = ref([])
 
     const goSystem = (system) => {
-      UPDATE_TENANT({
-        systemCode: system.systemCode
-      }).then(() => {
-        localStorage.setItem('vuex', '')
-        sessionStorage.setItem('systemName', system.systemCode)
-        window.location.href = '/SYSTEM'
-      })
+      // UPDATE_TENANT({
+      //   systemCode: system.systemCode
+      // }).then(() => {
+      localStorage.setItem('vuex', '')
+      sessionStorage.setItem('system', JSON.stringify(system || ''))
+      window.location.href = '/qms'
+      // })
     }
 
     const closeDialog = () => {
@@ -57,26 +64,15 @@ export default defineComponent({
       if (!val) {
         return
       }
-      const userInfo = sessionStorage.getItem('userInfo')
-      GET_TENANT_BY_USER_ID({
-        userId: userInfo.id
-      }).then((res) => {
-        system.value = res.data.data
-        const token = proxy.$cookies.get('token')
-        res.data.data.forEach((item) => {
-          createProxy(item.redirectUri, token)
-        })
-      })
+      const userInfo = JSON.parse(sessionStorage.getItem('userInfo') || '{}')
+      console.log(userInfo)
+      system.value = userInfo.userFactory
+      // GET_TENANT_BY_USER_ID({
+      //   userId: userInfo.id
+      // }).then((res) => {
+      //   system.value = res.data.data
+      // })
     })
-    const createProxy = (redirectUri, token) => {
-      const iframe = document.createElement('iframe')
-      iframe.src = redirectUri + `?token=${token}`
-      iframe.style = 'position: fixed; bottom: 0;left: 0; display: none'
-      document.getElementsByTagName('body')[0].appendChild(iframe)
-      iframe.onload = function () {
-        document.body.removeChild(iframe)
-      }
-    }
 
     return {
       system,
@@ -113,33 +109,32 @@ export default defineComponent({
     width: 80%;
     display: flex;
     justify-content: center;
-    text-align: center;
     flex-wrap: wrap;
   }
   &_item {
     flex: 1;
     padding: 10px 30px;
-    width: 220px;
-    cursor: pointer;
-    &_img{
-      display: flex;
-      align-items: center;
-      width: 160px;
-      height: 160px;
-      border-radius: 50%;
+    width: 310px;
+    &_main{
+      padding: 16px;
+      width: 250px;
+      border-radius: 8px;
+      box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.09);
       overflow: hidden;
       margin: auto;
       background: white;
-      img{
-        width: 100%;
+      &_title{
+        margin: 0 0 30px 0;
+        font-weight: bold;
+        font-size: 16px;
       }
-    }
-    p{
-      margin-top: 15px;
-      color: white;
-      font-size: 24px;
-      line-height: 32px;
-      text-align: center;
+      img{
+        cursor: pointer;
+        display: block;
+        width: 150px;
+        height: 103px;
+        margin: auto;
+      }
     }
   }
 }

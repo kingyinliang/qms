@@ -49,6 +49,7 @@ router.beforeEach((to, from, next) => {
     return next()
   } else {
     SSOLogin.getUserInfo().then(({ data }) => {
+      sessionStorage.setItem('userInfo', JSON.stringify(data.data || {}))
       store.commit('common/updateUserInfo', data.data)
       GET_NAV_API({
         factory: 'qms_fake_factory',
