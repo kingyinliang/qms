@@ -58,7 +58,7 @@ export default defineComponent({
     const { router, sidebarFold, quit, systemVisible } = layoutTs()
     const systemName = ref('')
     onMounted(() => {
-      systemName.value = sessionStorage.getItem('systemName')
+      systemName.value = JSON.parse(sessionStorage.getItem('system') || '{}').deptShort || ''
     })
 
     return {
