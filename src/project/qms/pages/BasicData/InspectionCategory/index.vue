@@ -81,10 +81,10 @@
           <el-input v-model="addLevelInfo.inspectTypeName" class="inputWidth" placeholder="请输入" autocomplete="off"></el-input>
         </el-form-item>
         <el-form-item label="上级类别：" prop="name" :label-width="formLabelWidth">
-          <el-input v-model="addLevelInfo.name" class="inputWidth" :disabled="true" placeholder="来料检验" autocomplete="off"></el-input>
+          <el-input v-model="addLevelInfo.parentId" class="inputWidth" :disabled="true" placeholder="来料检验" autocomplete="off"></el-input>
         </el-form-item>
         <el-form-item label="关联组织：" :label-width="formLabelWidth">
-          <el-cascader :show-all-levels="false" :options="options" class="inputWidth" :props="props" collapse-tags clearable></el-cascader>
+          <el-cascader v-model="addLevelInfo.relation" :show-all-levels="false" :options="options" class="inputWidth" :props="props" collapse-tags clearable @change="setCascader"></el-cascader>
         </el-form-item>
         <el-form-item label="取样单位：" :label-width="formLabelWidth">
           <el-cascader :show-all-levels="false" :options="options" class="inputWidth" :props="props" collapse-tags clearable></el-cascader>
@@ -93,9 +93,9 @@
           <el-cascader :show-all-levels="false" :options="options" class="inputWidth" :props="props" collapse-tags clearable></el-cascader>
         </el-form-item>
         <el-form-item label="留样数量：" :label-width="formLabelWidth">
-          <el-input v-model="addLevelInfo.name" class="inputWidth" autocomplete="off"></el-input>
+          <el-input v-model="addLevelInfo.sampleAmount" class="inputWidth" autocomplete="off"></el-input>
         </el-form-item>
-        <el-form-item label="手动执行：" prop="name" :label-width="formLabelWidth">
+        <el-form-item label="手动执行：" prop="manualFlag" :label-width="formLabelWidth">
           <el-radio-group v-model="addLevelInfo.manualFlag">
             <el-radio label="允许"></el-radio>
             <el-radio label="不允许"></el-radio>
@@ -112,20 +112,20 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, onMounted, ComponentInternalInstance, getCurrentInstance } from 'vue'
+import { defineComponent, ref, reactive, nextTick, onMounted, ComponentInternalInstance, getCurrentInstance } from 'vue'
 import { treeDataTranslate } from '@/utils/index'
-import { INSPECT_TYPE_LIST_API, INSPECT_TYPE_DETAIL_API, INSPECT_TYPE_ADD_API } from '@/api/api'
+import { INSPECT_TYPE_LIST_API, INSPECT_TYPE_DETAIL_API, INSPECT_TYPE_ADD_API, ORG_TREE_API } from '@/api/api'
 
 interface AddLevelInfo {
-  id?: string; // 主键
-  parentId: string; // "上级类别":
-  inspectTypeName: string; // 类别名称
-  inspectTypeCode: string; // 类别编码
-  sampleAmount: string; // 留样数量
-  manualFlag: string; // 手动执行
-  relation: any[]; // 关联组织列表;
-  sample: any[]; // 配合取样;
-  cooperate: any[]; // 取样单位
+  id: string; // 主键
+  parentId?: string; // "上级类别":
+  inspectTypeName?: string; // 类别名称
+  inspectTypeCode?: string; // 类别编码
+  sampleAmount?: string; // 留样数量
+  manualFlag?: string; // 手动执行
+  relation?: any[]; // 关联组织列表;
+  sample?: any[]; // 配合取样;
+  cooperate?: any[]; // 取样单位
 }
 interface TreeData {
   id: string; // 主键
@@ -141,7 +141,7 @@ export default defineComponent({
     const proxy = ctx.proxy as any
     const treeData = ref<TreeData[]>([])
     const addLevelBtn = ref(false)
-    const addLevelInfo = ref<AddLevelInfo[]>([])
+    const addLevelInfo = reactive<AddLevelInfo>({ id: '', relation: [] })
     const formLabelWidth = '120px'
     const rules = {
       parentId: [
@@ -157,64 +157,8 @@ export default defineComponent({
         { required: true, message: '请选择是否手动执行', trigger: 'change' }
       ]
     }
-    const props = { multiple: true }
-    const options = [
-      {
-        value: 1,
-        label: '东南',
-        children: [
-          {
-            value: 2,
-            label: '上海',
-            children: [
-              { value: 3, label: '普陀' },
-              { value: 4, label: '黄埔' },
-              { value: 5, label: '徐汇' }
-            ]
-          },
-          {
-            value: 7,
-            label: '江苏',
-            children: [
-              { value: 8, label: '南京' },
-              { value: 9, label: '苏州' },
-              { value: 10, label: '无锡' }
-            ]
-          },
-          {
-            value: 12,
-            label: '浙江',
-            children: [
-              { value: 13, label: '杭州' },
-              { value: 14, label: '宁波' },
-              { value: 15, label: '嘉兴' }
-            ]
-          }
-        ]
-      },
-      {
-        value: 17,
-        label: '西北',
-        children: [
-          {
-            value: 18,
-            label: '陕西',
-            children: [
-              { value: 19, label: '西安' },
-              { value: 20, label: '延安' }
-            ]
-          },
-          {
-            value: 21,
-            label: '新疆维吾尔族自治区',
-            children: [
-              { value: 22, label: '乌鲁木齐' },
-              { value: 23, label: '克拉玛依' }
-            ]
-          }
-        ]
-      }
-    ]
+    const props = ref({ multiple: true, value: 'id', label: 'deptName', children: 'children' })
+    const options = ref([])
     const detailInfo = ref<AddLevelInfo>({
       id: '1', // 主键
       parentId: '来料检验', // "上级类别":
@@ -287,7 +231,8 @@ export default defineComponent({
         cancelButtonText: '取消',
         type: 'warning'
       }).then(async () => {
-        await INSPECT_TYPE_ADD_API(addLevelInfo.value)
+        console.log(addLevelInfo.relation)
+        // await INSPECT_TYPE_ADD_API(addLevelInfo.value)
       })
     }
     const resetForm = () => {
@@ -298,8 +243,25 @@ export default defineComponent({
       isRedact.value = true
     }
 
-    onMounted(() => {
+    const setCascader = (e: any) => {
+      console.log(e)
+    }
+
+    const cascaderTranslate = (data: any) => {
+      data.forEach((item: any) => {
+        if (item.children.length) {
+          cascaderTranslate(item.children)
+        } else {
+          delete item.children
+        }
+      })
+    }
+
+    onMounted(async () => {
       setTreeData()
+      const res = await ORG_TREE_API({ factory: JSON.parse(sessionStorage.getItem('system') || '{}').id || '' })
+      cascaderTranslate(res.data.data)
+      options.value = res.data.data
     })
     return {
       treeData,
@@ -311,6 +273,7 @@ export default defineComponent({
       options,
       detailInfo,
       isRedact,
+      setCascader,
       getDetail,
       addSameLevel,
       addSubordinate,
