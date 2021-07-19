@@ -50,9 +50,10 @@ router.beforeEach((to, from, next) => {
   } else {
     SSOLogin.getUserInfo().then(({ data }) => {
       sessionStorage.setItem('userInfo', JSON.stringify(data.data || {}))
+      const factory = JSON.parse(sessionStorage.getItem('system') || '{}').id || ''
       store.commit('common/updateUserInfo', data.data)
       GET_NAV_API({
-        factory: 'qms_fake_factory',
+        factory,
         tenant: 'qms'
       }).then(({ data }) => {
         fnAddDynamicMenuRoutes(globalMenu.concat(data.data.menuList || []), [], router, mainRouter)
