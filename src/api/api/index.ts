@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-07-08 09:53:20
  * @LastEditors: Telliex
- * @LastEditTime: 2021-07-16 11:23:12
+ * @LastEditTime: 2021-07-21 10:54:32
  */
 import { AxiosResponse } from 'axios'
 import Http from '../http/axios'
@@ -41,4 +41,19 @@ export function INSPECT_TYPE_ADD_API (params = {}):Promise<AxiosResponse> {
 // 基础数据-物料分类 - 查询
 export function INSPECT_MATERIAL_QUERY_SYS_MATERIAL_ITEM_API (params = {}):Promise<AxiosResponse> {
   return Http.get('/inspectMaterial/querySysMaterialItem', params, { baseURL: (process.env.VUE_APP_QMS_API as string) + (process.env.VUE_APP_API_V as string) })
+}
+
+// 基础数据-物料明细 - 查询
+export function INSPECT_MATERIAL_QUERY_SYS_MATERIAL_API (params = {}):Promise<AxiosResponse> {
+  return Http.post('/inspectMaterial/querySysMaterial', params, { baseURL: (process.env.VUE_APP_QMS_API as string) + (process.env.VUE_APP_API_V as string) })
+}
+
+// 基础数据-检验类别查询
+export function INSPECT_TYPE_QUERY_API (params = {}):Promise<AxiosResponse> {
+  return Http.get('/inspectType/queryInspectType', params, { baseURL: (process.env.VUE_APP_QMS_API as string) + (process.env.VUE_APP_API_V as string) })
+}
+
+// 基础数据-物料明细 - 分配
+export function INSPECT_MATERIAL_DISTRIBUTION_INSPECT_MATERIAL_API (params = {}):Promise<AxiosResponse> {
+  return Http.post('/inspectMaterial/distributionInspectMaterial', params, { baseURL: (process.env.VUE_APP_QMS_API as string) + (process.env.VUE_APP_API_V as string) })
 }

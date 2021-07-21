@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-07-08 11:25:52
  * @LastEditors: Telliex
- * @LastEditTime: 2021-07-14 14:23:29
+ * @LastEditTime: 2021-07-21 16:59:31
 -->
 <template>
   <el-dialog :title="title" v-model="isDialogShow" width="30%" @close="onClose">
@@ -31,6 +31,7 @@ interface State {
 }
 export default defineComponent({
   name: 'SHDialog',
+  emits: ['on-close', 'on-confirm'],
   props: {
     title: {
       type: String,

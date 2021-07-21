@@ -30,13 +30,16 @@
       </el-col>
     </el-row>
   </mds-card>
-  <div id="context--menu" class="context--menu" v-show="menuVisible">
-    <slot name="context--menu" />
-  </div>
+  <template v-if="floatMenu">
+    <div id="context--menu" class="context--menu" v-show="menuVisible">
+      <slot name="context--menu" />
+    </div>
+  </template>
+
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, watch } from 'vue'
+import { defineComponent, ref, watch, onMounted } from 'vue'
 import MdsCard from '../../mds-card'
 
 export default defineComponent({
@@ -76,6 +79,10 @@ export default defineComponent({
       default: function () {
         return { label: 'deptName' }
       }
+    },
+    floatMenu: { // 开启 float menu
+      type: Boolean,
+      default: true
     }
   },
   setup (props, { emit }) {
@@ -105,12 +112,21 @@ export default defineComponent({
     // 组织架构右击
     // eslint-disable-next-line
     const treeNodeContextMenu = (event: MouseEvent, object: any) => {
-      menuVisible.value = true
-      const menu = document.querySelector('#context--menu') as HTMLDivElement
-      menu.style.left = event.clientX + 'px'
-      menu.style.top = event.clientY + 'px'
-      emit('treeNodeContextMenu', object)
+      if (object.notShowContextMenuOnThisNode !== true) {
+        menuVisible.value = true
+        const menu = document.querySelector('#context--menu') as HTMLDivElement
+        menu.style.left = event.clientX + 'px'
+        menu.style.top = event.clientY + 'px'
+        emit('treeNodeContextMenu', object)
+      }
     }
+
+    onMounted(() => {
+      document.addEventListener('click', e => {
+        const target: HTMLDivElement = e.target as HTMLDivElement
+        if (target.className !== 'context--menu') menuVisible.value = false
+      })
+    })
 
     return {
       treeRef,

@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-07-08 11:25:52
  * @LastEditors: Telliex
- * @LastEditTime: 2021-07-15 17:51:14
+ * @LastEditTime: 2021-07-23 14:37:19
 -->
 <template>
     <dialogDevice :dialogVisible="dialogVisible" :title="title" @on-confirm="onConfirm" @on-close="onClose">
@@ -24,13 +24,13 @@
             <el-tree
                 ref="materialInspectionTree"
                 :data="treeData"
-                :props="defaultProps"
+                :props="{ label: 'inspectTypeName',children:'children' }"
                 node-key="id"
                 highlight-current
                 default-expand-all
                 :filter-node-method="filterNode"
                 show-checkbox
-                @check-change="handleCheckChange"
+                @check-change="handleCheckedChoose"
             />
         </div>
       </template>
@@ -39,14 +39,22 @@
 
 <script lang="ts">
 import { defineComponent, ref, onMounted, watch, reactive, toRefs } from 'vue'
-import dialogDevice from './SHDialog.vue'
+import dialogDevice from '../../components/SHDialog.vue'
+
+interface MaterialTreeData {
+  id: string; // 主键
+  parentId: string; // "上级类别":
+  inspectTypeName: string; // 类别名称
+}
 
 interface Props {
     title: string
     dialogVisible: boolean
+    treeData: MaterialTreeData[]
 }
 interface State {
     isDialogShow: boolean
+    inspectCategoryList:string[]
     // filterText: string
 }
 
@@ -55,6 +63,7 @@ export default defineComponent({
   components: {
     dialogDevice
   },
+  emits: ['reset', 'inspectCategoryList', 'update:dialogVisible'],
   props: {
     title: {
       type: String,
@@ -63,134 +72,47 @@ export default defineComponent({
     dialogVisible: {
       type: Boolean,
       default: false
+    },
+    treeData: {
+      type: Array,
+      default: () => {
+        return []
+      }
     }
+
   },
   setup (props, context) {
     const state = reactive<State>({
-      isDialogShow: false
+      isDialogShow: false,
+      inspectCategoryList: []
       // filterText: ''
     })
     const parent = { ...context }
     const { dialogVisible } = toRefs(props as Props)
     const materialInspectionTree = ref()
     const filterText = ref('')
-    const treeData = ref([{
-      id: 1,
-      label: '一级 1',
-      children: [{
-        id: 4,
-        label: '二级 1-1',
-        children: [{
-          id: 9,
-          label: '三级 1-1-1'
-        }, {
-          id: 10,
-          label: '三级 1-1-2'
-        }]
-      }]
-    }, {
-      id: 2,
-      label: '一级 2',
-      children: [{
-        id: 5,
-        label: '二级 2-1'
-      }, {
-        id: 6,
-        label: '二级 2-2'
-      }]
-    }, {
-      id: 3,
-      label: '一级 3',
-      children: [{
-        id: 7,
-        label: '二级 3-1'
-      }, {
-        id: 8,
-        label: '二级 3-2'
-      }]
-    }])
-    const defaultProps = ref({
-      children: 'children',
-      label: 'label'
-    })
-
-    const treeDataTemp = ref([{
-      id: '2',
-      parentId: '0',
-      inspectTypeName: '外购'
-    },
-    {
-      id: '3',
-      parentId: '0',
-      inspectTypeName: '制曲'
-    },
-    {
-      id: '4',
-      parentId: '0',
-      inspectTypeName: '发酵'
-    },
-    {
-      id: '5',
-      parentId: '0',
-      inspectTypeName: '杀菌'
-    },
-    {
-      id: '1',
-      parentId: '2',
-      inspectTypeName: '大豆'
-    },
-    {
-      id: '6',
-      parentId: '2',
-      inspectTypeName: '小麦'
-    },
-    {
-      id: '7',
-      parentId: '3',
-      inspectTypeName: '煮豆1'
-    },
-    {
-      id: '8',
-      parentId: '3',
-      inspectTypeName: '煮豆2'
-    },
-    {
-      id: '9',
-      parentId: '3',
-      inspectTypeName: '煮豆3'
-    },
-    {
-      id: '10',
-      parentId: '4',
-      inspectTypeName: '发酵汁1'
-    },
-    {
-      id: '11',
-      parentId: '4',
-      inspectTypeName: '发酵汁2'
-    }
-    ])
 
     const onConfirm = () => {
-      console.log('父组件打印:')
-      // console.log('父组件打印:', value)
+      parent.emit('update:dialogVisible', false)
+      parent.emit('inspectCategoryList', state.inspectCategoryList)
     }
 
     const onClose = () => {
+      filterText.value = ''
+      state.inspectCategoryList = []
       parent.emit('update:dialogVisible', false)
+      parent.emit('reset')
     }
 
     // 搜索
     // eslint-disable-next-line
     const filterNode = (value:string, data: any) => {
-      console.log(data)
       if (!value) return true
-      return data.label.indexOf(value) !== -1
+      return data.inspectTypeName.indexOf(value) !== -1
     }
 
-    const handleCheckChange = () => {
-      // console.log(data, checked, indeterminate)
-      console.log(materialInspectionTree.value.getCheckedKeys())
+    const handleCheckedChoose = () => {
+      state.inspectCategoryList = materialInspectionTree.value.getCheckedKeys(true)
     }
 
     onMounted(() => {
@@ -198,7 +120,6 @@ export default defineComponent({
     })
 
     watch(filterText, (val) => {
-      console.log(val)
       materialInspectionTree.value.filter(val)
     })
 
@@ -213,14 +134,11 @@ export default defineComponent({
     return {
       ...toRefs(state),
       materialInspectionTree,
-      treeDataTemp,
-      treeData,
       filterText,
       filterNode,
-      handleCheckChange,
+      handleCheckedChoose,
       onConfirm,
-      onClose,
-      defaultProps
+      onClose
     }
   }
 })
