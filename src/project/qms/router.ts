@@ -1,3 +1,10 @@
+/*
+ * @Description:
+ * @Anthor: Telliex
+ * @Date: 2021-07-16 11:16:04
+ * @LastEditors: Telliex
+ * @LastEditTime: 2021-07-23 15:05:30
+ */
 import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router'
 import { GET_NAV_API } from '@/api/api/index'
 import { fnAddDynamicMenuRoutes, MenuList } from '@/utils/index'
