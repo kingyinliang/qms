@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-07-08 09:53:20
  * @LastEditors: Telliex
- * @LastEditTime: 2021-07-21 10:54:32
+ * @LastEditTime: 2021-07-22 18:14:36
  */
 import { AxiosResponse } from 'axios'
 import Http from '../http/axios'
@@ -56,4 +56,24 @@ export function INSPECT_TYPE_QUERY_API (params = {}):Promise<AxiosResponse> {
 // 基础数据-物料明细 - 分配
 export function INSPECT_MATERIAL_DISTRIBUTION_INSPECT_MATERIAL_API (params = {}):Promise<AxiosResponse> {
   return Http.post('/inspectMaterial/distributionInspectMaterial', params, { baseURL: (process.env.VUE_APP_QMS_API as string) + (process.env.VUE_APP_API_V as string) })
+}
+
+// 基础数据-类别组织查询
+export function INSPECT_MATERIAL_INSPECT_TYPE_MATERIAL_API (params = {}):Promise<AxiosResponse> {
+  return Http.get('/inspectType/queryInspectTypeMaterial', params, { baseURL: (process.env.VUE_APP_QMS_API as string) + (process.env.VUE_APP_API_V as string) })
+}
+
+// 基础数据-已分配物料明细查询
+export function INSPECT_MATERIAL_INSPECT_MATERIAL_QUERY_API (params = {}):Promise<AxiosResponse> {
+  return Http.post('/inspectMaterial/queryInspectMaterial', params, { baseURL: (process.env.VUE_APP_QMS_API as string) + (process.env.VUE_APP_API_V as string) })
+}
+
+// 基础数据-已分配分配检验类别 - 查询
+export function INSPECT_MATERIAL_CHECKED_INSPECT_TYPE_QUERY_API (params = {}):Promise<AxiosResponse> {
+  return Http.get('/inspectType/queryCheckedInspectType', params, { baseURL: (process.env.VUE_APP_QMS_API as string) + (process.env.VUE_APP_API_V as string) })
+}
+
+// 基础数据-物料明细 - 重新分配
+export function INSPECT_MATERIAL_CHECKED_INSPECT_TYPE_UPDATE_API (params = {}):Promise<AxiosResponse> {
+  return Http.post('/inspectMaterial/updateCheckedInspectMaterial', params, { baseURL: (process.env.VUE_APP_QMS_API as string) + (process.env.VUE_APP_API_V as string) })
 }

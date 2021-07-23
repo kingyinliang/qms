@@ -1,3 +1,10 @@
+/*
+ * @Description:
+ * @Anthor: Telliex
+ * @Date: 2021-07-16 11:16:04
+ * @LastEditors: Telliex
+ * @LastEditTime: 2021-07-20 14:12:57
+ */
 import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router'
 import { GET_NAV_API } from '@/api/api/index'
 import { fnAddDynamicMenuRoutes, MenuList } from '@/utils/index'
@@ -52,8 +59,10 @@ router.beforeEach((to, from, next) => {
       sessionStorage.setItem('userInfo', JSON.stringify(data.data || {}))
       store.commit('common/updateUserInfo', data.data)
       GET_NAV_API({
-        factory: 'qms_fake_factory',
-        tenant: 'qms'
+        // factory: 'qms_fake_factory',
+        // tenant: 'qms'
+        factory: '622729196073943040',
+        tenant: 'QMS'
       }).then(({ data }) => {
         fnAddDynamicMenuRoutes(globalMenu.concat(data.data.menuList || []), [], router, mainRouter)
         store.commit('common/updateMenuList', globalMenu.concat(data.data.menuList || []))
