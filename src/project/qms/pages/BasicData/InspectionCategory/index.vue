@@ -10,8 +10,8 @@
       @treeNodeContextMenu="contextmenu"
     >
       <template #context--menu>
-        <li class="addLevel" @click="addSameLevel">新增同级</li>
-        <li class="addLevel" @click="addSubordinate">新增下级</li>
+        <li class="contextMenu" @click="addSameLevel">新增同级</li>
+        <li class="contextMenu" @click="addSubordinate">新增下级</li>
       </template>
       <template #view>
         <el-form :model="detailInfo" :rules="rules" ref="ruleForm" label-width="100px" class="demo-ruleForm">
@@ -28,7 +28,7 @@
             </el-col>
             <el-col :span="12">
               <el-form-item label="上级类别：" prop="parentId">
-                <el-input :disabled="true" v-model="detailInfo.parentId"></el-input>
+                <el-input :disabled="true" v-model="detailInfo.parentName"></el-input>
               </el-form-item>
             </el-col>
             <el-col :span="12">
@@ -83,7 +83,7 @@
           <el-input v-model="addLevelInfo.inspectTypeName" class="inputWidth" placeholder="请输入" autocomplete="off"></el-input>
         </el-form-item>
         <el-form-item label="上级类别：" prop="name" :label-width="formLabelWidth">
-          <el-input v-model="addLevelInfo.parentId" class="inputWidth" :disabled="true" autocomplete="off"></el-input>
+          <el-input v-model="addLevelInfo.parentName" class="inputWidth" :disabled="true" autocomplete="off"></el-input>
         </el-form-item>
         <el-form-item label="关联组织：" :label-width="formLabelWidth">
           <el-cascader ref="relationRef" v-model="addLevelInfo.relation" :show-all-levels="false" :options="options" class="inputWidth" :props="props" collapse-tags clearable></el-cascader>
@@ -116,11 +116,19 @@
 <script lang="ts">
 import { defineComponent, ref, reactive, onMounted, ComponentInternalInstance, getCurrentInstance } from 'vue'
 import { treeDataTranslate } from '@/utils/index'
-import { INSPECT_TYPE_LIST_API, INSPECT_TYPE_DETAIL_API, INSPECT_TYPE_ADD_API, INSPECT_TYPE_UPDATE_API, ORG_TREE_API } from '@/api/api'
+import {
+  INSPECT_TYPE_LIST_API,
+  INSPECT_TYPE_DETAIL_API,
+  INSPECT_TYPE_ADD_API,
+  INSPECT_TYPE_UPDATE_API,
+  ORG_TREE_API,
+  INSPECT_TYPE_DEL_API
+} from '@/api/api'
 
 interface AddLevelInfo {
   id: string; // 主键
   parentId?: string; // "上级类别":
+  parentName?: string; // "上级类别":
   inspectTypeName?: string; // 类别名称
   inspectTypeCode?: string; // 类别编码
   sampleAmount?: string; // 留样数量
@@ -132,6 +140,7 @@ interface AddLevelInfo {
 interface TreeData {
   id: string; // 主键
   parentId: string; // "上级类别":
+  parentName: string; // "上级类别":
   inspectTypeName: string; // 类别名称
   inspectTypeCode: string; // 类别名称
 }
@@ -154,6 +163,7 @@ export default defineComponent({
     const props = ref({ emitPath: false, multiple: true, value: 'id', label: 'deptName', children: 'children' })
 
     const treeData = ref<TreeData[]>([])
+    let treeDataOrg:TreeData[] = []
     const options = ref([])
     const dayin = () => {
       window.print()
@@ -161,17 +171,19 @@ export default defineComponent({
 
     const addLevelInfo = reactive<AddLevelInfo>({ id: '', relation: [] })
     const detailInfo = ref<AddLevelInfo>({
-      id: '1', // 主键
-      parentId: '0', // "上级类别":
-      inspectTypeName: '豆渣', // 类别名称
-      inspectTypeCode: '1021202', // 类别编码
-      sampleAmount: '11', // 留样数量
-      manualFlag: '允许', // 手动执行
-      relation: [], // 关联组织列表;
-      sample: [], // 配合取样;
-      cooperate: [] // 取样单位
+      id: '',
+      parentId: '',
+      parentName: '',
+      inspectTypeName: '',
+      inspectTypeCode: '',
+      sampleAmount: '',
+      manualFlag: '',
+      relation: [],
+      sample: [],
+      cooperate: []
     })
     let temp:TreeData
+    let detail:TreeData
     const formLabelWidth = '120px'
     const rules = {
       parentId: [
@@ -192,8 +204,10 @@ export default defineComponent({
     // 列表变树结构
     const setTreeData = async () => {
       const res = await INSPECT_TYPE_LIST_API()
+      treeDataOrg = res.data.data
       treeData.value = treeDataTranslate(res.data.data, 'id', 'parentId')
     }
+    // 下拉框数据变换
     const setOrGetData = (data: any, type = 'get') => {
       if (type === 'get') {
         return data.getCheckedNodes(true).map((it: any) => { return { deptName: it.data.deptName, deptId: it.data.id } })
@@ -201,31 +215,61 @@ export default defineComponent({
         return data.map((it: any) => it.deptId)
       }
     }
+    // 树点击获取详情
     const getDetail = async (row:TreeData) => {
-      temp = row
+      detail = row
       const res = await INSPECT_TYPE_DETAIL_API({ id: row.id })
       detailInfo.value = res.data.data
       detailInfo.value.relation = setOrGetData(detailInfo.value.relation, 'set')
       detailInfo.value.sample = setOrGetData(detailInfo.value.sample, 'set')
       detailInfo.value.cooperate = setOrGetData(detailInfo.value.cooperate, 'set')
     }
+    // 树右击
     const contextmenu = (row: TreeData) => {
       temp = row
     }
-    const generateCode = () => {
-      const a = temp.inspectTypeCode.slice(temp.inspectTypeCode.length - 2, temp.inspectTypeCode.length)
-      console.log(a)
-      addLevelInfo.inspectTypeCode = temp.inspectTypeCode.slice(0, temp.inspectTypeCode.length - 2) + Number()
-      addLevelInfo.parentId = temp.parentId
+    // 生成编码
+    const generateCode = (startCode: string) => {
+      let code = ''
+      let endCode = 0
+      const reg = new RegExp(`^(${startCode})(\\d{2})`)
+      treeDataOrg.forEach((it: TreeData) => {
+        if (reg.test(it.inspectTypeCode)) {
+          if (endCode < Number(RegExp.$2)) {
+            endCode = Number(RegExp.$2)
+          }
+        }
+      })
+      if (endCode < 10) {
+        code = `${startCode}0${endCode + 1}`
+      } else {
+        code = `${startCode}${endCode + 1}`
+      }
+      addLevelInfo.inspectTypeCode = code
     }
     // 新增同级
     const addSameLevel = () => {
       addLevelBtn.value = true
-      generateCode()
+      clearForm()
+      generateCode(temp.inspectTypeCode.slice(0, temp.inspectTypeCode.length - 2))
+      addLevelInfo.parentId = temp.parentId
+      addLevelInfo.parentName = temp.parentName
+    }
+    const clearForm = () => {
+      addLevelInfo.relation = []
+      addLevelInfo.sample = []
+      addLevelInfo.cooperate = []
+      addLevelInfo.manualFlag = 'Y'
+      addLevelInfo.sampleAmount = ''
+      addLevelInfo.inspectTypeName = ''
     }
     // 新增下级
     const addSubordinate = () => {
       addLevelBtn.value = true
+      clearForm()
+      generateCode(temp.inspectTypeCode)
+      addLevelInfo.parentId = temp.id
+      addLevelInfo.parentName = temp.inspectTypeName
     }
     // 新增弹窗保存
     const addLevelSave = () => {
@@ -244,9 +288,21 @@ export default defineComponent({
       })
     }
     // 删除
-    const resetForm = () => {
-      // this.$refs[formName].resetFields();
+    const resetForm = async () => {
+      await INSPECT_TYPE_DEL_API({ id: detail.id })
       proxy.$successToast('操作成功')
+      detailInfo.value = {
+        id: '',
+        parentId: '',
+        parentName: '',
+        inspectTypeName: '',
+        inspectTypeCode: '',
+        sampleAmount: '',
+        manualFlag: '',
+        relation: [],
+        sample: [],
+        cooperate: []
+      }
       setTreeData()
     }
     // 编辑保存
@@ -257,7 +313,7 @@ export default defineComponent({
       await INSPECT_TYPE_UPDATE_API(detailInfo.value)
       proxy.$successToast('操作成功')
       isRedact.value = true
-      getDetail(temp)
+      getDetail(detail)
     }
     // 去掉children
     const cascaderTranslate = (data: any) => {
@@ -275,7 +331,6 @@ export default defineComponent({
       cascaderTranslate(res.data.data)
       options.value = res.data.data
     }
-
     onMounted(() => {
       setTreeData()
       getOrg()
@@ -310,7 +365,7 @@ export default defineComponent({
 </script>
 
 <style lang="scss" scoped>
-.addLevel {
+.contextMenu {
   font-size: 12px;
   font-family: PingFangSC-Regular, PingFang SC;
   font-weight: 400;
