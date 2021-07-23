@@ -36,7 +36,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, watch } from 'vue'
+import { defineComponent, ref, watch, onMounted } from 'vue'
 import MdsCard from '../../mds-card'
 
 export default defineComponent({
@@ -83,6 +83,14 @@ export default defineComponent({
     const treeRef = ref()
     const menuVisible = ref(false)
 
+    onMounted(() => {
+      document.addEventListener('click', (e) => {
+        console.log(e)
+        menuVisible.value = false
+        // const className = (e.target as Element).className as string
+        // if (className !== 'contextMenu') menuVisible.value = false
+      })
+    })
     watch(filterText, (val) => {
       treeRef.value.filter(val)
     })
