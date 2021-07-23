@@ -1,5 +1,6 @@
 <template>
   <tree-page
+    ref="treeModule"
     :title="pageMainTitle"
     :leftTitle="pageLeftColumnTitle"
     :rightTitle="pageLightColumnTitle"
@@ -58,7 +59,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, toRefs, reactive, onMounted } from 'vue'
+import { defineComponent, ref, toRefs, reactive, onMounted, getCurrentInstance, ComponentInternalInstance } from 'vue'
 import { INSPECT_MATERIAL_INSPECT_TYPE_MATERIAL_API, INSPECT_MATERIAL_INSPECT_MATERIAL_QUERY_API, INSPECT_MATERIAL_CHECKED_INSPECT_TYPE_QUERY_API, INSPECT_MATERIAL_CHECKED_INSPECT_TYPE_UPDATE_API } from '@/api/api'
 import MaterialInspectionEdit from './MaterialInspectionEdit.vue'
 
@@ -72,6 +73,7 @@ interface TreeItemData { // 物料分类 API
 }
 
 interface TreeData { // 物料分类 API
+  id: string
   inspectTypeCode: string
   inspectTypeName: string
   children:TreeData[]
@@ -108,6 +110,7 @@ interface State {
     isShowSearchBar: boolean
     globleSearchString: string
     inspectTypeIds:string[]
+    initFocusNode: string
 }
 
 export default defineComponent({
@@ -118,6 +121,8 @@ export default defineComponent({
   props: {
   },
   setup () {
+    const ctx = getCurrentInstance() as ComponentInternalInstance
+    const proxy = ctx.proxy as any
     const state = reactive<State>({
       isDialogShow: false,
       pageMainTitle: '检验类别',
@@ -140,9 +145,11 @@ export default defineComponent({
       },
       globleSearchString: '', // 点击过 search bar , keep resulte  or 点最末节点
       isShowSearchBar: true,
-      inspectTypeIds: []
+      inspectTypeIds: [],
+      initFocusNode: ''
     })
     const functionManage = ref()
+    const treeModule = ref()
 
     // single action to go
     const handleSingleEdit = (row:TableData) => {
@@ -236,6 +243,14 @@ export default defineComponent({
         state.treeData = treeDataTranslater('category', JSON.parse(JSON.stringify(res.data.data)), 'id', 'parentId')
         console.log('state.treeData')
         console.log(state.treeData)
+        // 一进页面默认跑第一笔
+        if (state.currentCategoryId === '') {
+          state.currentCategoryId = state.treeData[0].id
+          state.initFocusNode = state.treeData[0].id
+          // '619922389037592576'
+          treeModule.value.focusCurrentNodeNumber = state.treeData[0].id
+          apiMaterialDetail(state.currentCategoryId, '', state.currentPage, state.pageSize)
+        }
       })
     }
 
@@ -247,6 +262,7 @@ export default defineComponent({
         inspectMaterialDetails: dataTemp,
         inspectTypeIdList: val // 检验类id数组
       }).then(() => {
+        proxy.$successToast('编辑成功')
         // reload page
         apiMaterialDetail(state.currentCategoryId, state.materialDetailText, state.currentPage, state.pageSize)
       })
@@ -299,7 +315,8 @@ export default defineComponent({
       getMaterialDetail,
       apiMaterialDetail,
       updateInspectCategoryList,
-      reset
+      reset,
+      treeModule
     }
   }
 })

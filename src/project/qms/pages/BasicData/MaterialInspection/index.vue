@@ -1,5 +1,6 @@
 <template>
   <tree-page
+    ref="treeModule"
     :title="pageMainTitle"
     :leftTitle="pageLeftColumnTitle"
     :rightTitle="pageLightColumnTitle"
@@ -25,7 +26,7 @@
               <em class="el-input__icon el-icon-search" />
         </template>
       </el-input>
-      <el-button type="primary" size="mini" style="height:32px; margin-left:5px" @click="apiMaterialDetail(currentMaterialString,currentMaterialGroupString,materialDetailText)">查询</el-button>
+      <el-button type="primary" size="mini" style="height:32px; margin-left:5px" @click="apiMaterialDetail(currentMaterialString,currentMaterialGroupString,materialDetailText,'searchBar')">查询</el-button>
       </div>
      <el-table :data="tableData"
         style="width: 100%"
@@ -60,7 +61,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, toRefs, reactive, onMounted } from 'vue'
+import { defineComponent, ref, toRefs, reactive, onMounted, getCurrentInstance, ComponentInternalInstance } from 'vue'
 import { treeDataTranslate } from '@/utils/index'
 import { INSPECT_MATERIAL_QUERY_SYS_MATERIAL_ITEM_API, INSPECT_MATERIAL_QUERY_SYS_MATERIAL_API, INSPECT_TYPE_QUERY_API, INSPECT_MATERIAL_DISTRIBUTION_INSPECT_MATERIAL_API } from '@/api/api'
 import MaterialInspectionAsign from './MaterialInspectionAsign.vue'
@@ -72,6 +73,7 @@ interface TreeItemData { // 物料分类 API
 }
 
 interface TreeData { // 物料分类 API
+  id: string
   inspectGroups: TreeItemData[]
   inspectMaterialType: string
   notShowContextMenuOnThisNode?:boolean
@@ -108,7 +110,8 @@ interface State {
     currentMaterialGroupString: string
     globleItem:TableData
     globleItemGroup: TableData[]
-    whoAsign:string
+    globleSearchString: string
+    whoAsign: string
 }
 
 export default defineComponent({
@@ -119,6 +122,8 @@ export default defineComponent({
   props: {
   },
   setup () {
+    const ctx = getCurrentInstance() as ComponentInternalInstance
+    const proxy = ctx.proxy as any
     const state = reactive<State>({
       isDialogShow: false,
       pageMainTitle: '物料分类',
@@ -141,10 +146,12 @@ export default defineComponent({
         inspectMaterialCode: '',
         inspectMaterialName: ''
       },
+      globleSearchString: '',
       globleItemGroup: [],
       whoAsign: ''
     })
     const functionManage = ref()
+    const treeModule = ref()
 
     // single action to go
     const handleSingleAsign = (row:TableData) => {
@@ -183,8 +190,6 @@ export default defineComponent({
 
     // TODO
     const treeNodeContextMenuHandle = (val:TreeItemData) => {
-      console.log(val.inspectMaterialType)
-
       INSPECT_MATERIAL_QUERY_SYS_MATERIAL_API({
         // inspectMaterialType: '欣和无估价的物料 ZUNB',
         inspectMaterialType: val.inspectMaterialType,
@@ -196,8 +201,12 @@ export default defineComponent({
     }
 
     const getMaterialDetail = (val:TreeItemData) => {
-      console.log('22222222')
-      console.log(val)
+      state.materialDetailText = ''
+      state.globleSearchString = ''
+      state.currentPage = 1
+      state.pageSize = 10
+      state.totalItems = 0
+
       if (val.inspectGroups.length === 0) {
         console.log('我是子结点')
         state.currentMaterialGroupString = val.inspectMaterialType
@@ -208,22 +217,26 @@ export default defineComponent({
         state.currentMaterialString = val.inspectMaterialType
       }
 
-      apiMaterialDetail(state.currentMaterialString, state.currentMaterialGroupString)
+      apiMaterialDetail(state.currentMaterialString, state.currentMaterialGroupString, '')
     }
 
     // TODO
-    const apiMaterialDetail = (currentMaterialString:string, currentMaterialGroupString:string, searchString = '') => {
+    const apiMaterialDetail = (currentMaterialString:string, currentMaterialGroupString:string, searchString = '', where = '') => {
+      state.globleSearchString = searchString
       INSPECT_MATERIAL_QUERY_SYS_MATERIAL_API({
-        // inspectMaterialType: '欣和无估价的物料 ZUNB',
         inspectMaterialType: currentMaterialString,
         inspectGroup: currentMaterialGroupString,
         inspectMaterialNameOrCode: searchString
       }).then((res) => {
         console.log('物料明细')
         console.log(res.data.data)
+
         state.totalItems = res.data.data.length
         state.tableDataW = JSON.parse(JSON.stringify(res.data.data))
         currentChangePage(state.tableDataW, 1)
+        if (where === 'searchBar' && res.data.data.length === 0) {
+          proxy.$infoToast('暂无数据')
+        }
       })
     }
 
@@ -257,12 +270,19 @@ export default defineComponent({
 
     // get material detail data
     const getMaterialCatagoryData = () => {
+      state.materialDetailText = ''
+      state.globleSearchString = ''
+      state.currentPage = 1
+      state.pageSize = 10
+      state.totalItems = 0
+
       INSPECT_MATERIAL_QUERY_SYS_MATERIAL_ITEM_API({
       }).then((res) => {
         console.log('tree-data')
         console.log(res.data.data)
         res.data.data.forEach((item:TreeData) => {
           item.notShowContextMenuOnThisNode = true
+          item.id = item.inspectMaterialType
           item.inspectGroups.forEach((subItem:TreeItemData) => {
             subItem.inspectGroup = item.inspectMaterialType
           })
@@ -270,6 +290,12 @@ export default defineComponent({
         state.treeData = res.data.data
         console.log('state.treeData')
         console.log(state.treeData)
+        // 一进页面默认跑第一笔
+        if (state.currentMaterialString === '') {
+          state.currentMaterialString = state.treeData[0].inspectMaterialType
+          treeModule.value.focusCurrentNodeNumber = state.treeData[0].inspectMaterialType
+          apiMaterialDetail(state.currentMaterialString, '', '')
+        }
       })
     }
 
@@ -284,11 +310,11 @@ export default defineComponent({
       INSPECT_MATERIAL_DISTRIBUTION_INSPECT_MATERIAL_API({
         inspectMaterialDetails: dataTemp,
         inspectTypeIdList: val // 检验类id数组
-      }).then((res) => {
-        console.log(res)
+      }).then(() => {
+        proxy.$successToast('分配成功')
         // reload page
         if (state.whoAsign === 'single') {
-          apiMaterialDetail(state.currentMaterialString, state.currentMaterialGroupString, state.materialDetailText) // 1todo
+          apiMaterialDetail(state.currentMaterialString, state.currentMaterialGroupString, state.globleSearchString)
         } else if (state.whoAsign === 'multi') {
           getMaterialCatagoryData()
         }
@@ -312,7 +338,8 @@ export default defineComponent({
       apiAsignMaterial,
       inspectCategoryList,
       reset,
-      handleMultiAsign
+      handleMultiAsign,
+      treeModule
     }
   }
 })

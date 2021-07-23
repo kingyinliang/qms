@@ -14,7 +14,7 @@
             </el-input>
           </div>
           <div class="tree-main SelfScrollbar">
-            <el-tree ref="treeRef" :data="treeData" node-key="id" :props="treeProps" highlight-current :filter-node-method="filterNode" @node-click="treeNodeClick" @node-contextmenu="treeNodeContextMenu" />
+            <el-tree ref="treeRef" :data="treeData" node-key="id" :current-node-key="focusCurrentNodeNumber" :props="treeProps" highlight-current :filter-node-method="filterNode" @node-click="treeNodeClick" @node-contextmenu="treeNodeContextMenu" />
           </div>
         </div>
       </el-col>
@@ -39,7 +39,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, watch, onMounted } from 'vue'
+import { defineComponent, ref, watch, onMounted, nextTick } from 'vue'
 import MdsCard from '../../mds-card'
 
 export default defineComponent({
@@ -89,9 +89,22 @@ export default defineComponent({
     const filterText = ref('')
     const treeRef = ref()
     const menuVisible = ref(false)
+    const focusCurrentNodeNumber = ref('')
 
     watch(filterText, (val) => {
       treeRef.value.filter(val)
+    })
+
+    watch(focusCurrentNodeNumber, async (val) => {
+      console.log('0000000')
+      console.log(val)
+      if (val.toString()) {
+        await nextTick()
+        treeRef.value.setCurrentKey(val)
+      } else {
+        await nextTick()
+        treeRef.value.setCurrentKey(null)
+      }
     })
 
     // 搜索
@@ -134,7 +147,8 @@ export default defineComponent({
       menuVisible,
       filterNode,
       treeNodeClick,
-      treeNodeContextMenu
+      treeNodeContextMenu,
+      focusCurrentNodeNumber
     }
   }
 })
