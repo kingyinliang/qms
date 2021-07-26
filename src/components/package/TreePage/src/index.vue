@@ -84,8 +84,8 @@ export default defineComponent({
     const menuVisible = ref(false)
 
     onMounted(() => {
-      document.addEventListener('click', (e) => {
-        console.log(e)
+      document.addEventListener('click', () => {
+        // console.log(e)
         menuVisible.value = false
         // const className = (e.target as Element).className as string
         // if (className !== 'contextMenu') menuVisible.value = false

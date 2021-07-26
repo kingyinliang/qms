@@ -33,17 +33,17 @@
             </el-col>
             <el-col :span="12">
               <el-form-item label="关联组织：">
-                <el-cascader ref="detailRelationRef" :show-all-levels="false" :options="options" :disabled="isRedact" :props="props" v-model="detailInfo.relation" clearable></el-cascader>
+                <el-cascader ref="detailRelationRef" class="inputWidth" :show-all-levels="false" :options="options" :disabled="isRedact" :props="props" v-model="detailInfo.relation" clearable></el-cascader>
               </el-form-item>
             </el-col>
             <el-col :span="12">
               <el-form-item label="取样单位：">
-                <el-cascader ref="detailCooperateRef" :show-all-levels="false" :options="options" :disabled="isRedact" :props="props" v-model="detailInfo.cooperate" clearable></el-cascader>
+                <el-cascader ref="detailCooperateRef" class="inputWidth" :show-all-levels="false" :options="options" :disabled="isRedact" :props="props" v-model="detailInfo.cooperate" clearable></el-cascader>
               </el-form-item>
             </el-col>
             <el-col :span="12">
               <el-form-item label="配合取样：">
-                <el-cascader ref="detailSampleRef" :options="options" :disabled="isRedact" :props="props" v-model="detailInfo.sample" clearable></el-cascader>
+                <el-cascader ref="detailSampleRef" class="inputWidth" :show-all-levels="false" :options="options" :disabled="isRedact" :props="props" v-model="detailInfo.sample" clearable></el-cascader>
               </el-form-item>
             </el-col>
             <el-col :span="12">

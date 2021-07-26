@@ -1,42 +1,46 @@
 <template>
-  <div class="header_main">
-    <mds-card title="检验方法" :pack-up="false" style="margin-bottom: 0; background: #fff;">
-      <template #titleBtn>
-        <div style="float: right;display: flex;">
-          <el-form ref="pstngDate" :model="plantList" size="small" :inline="true" label-position="right" label-width="82px" class="topforms" style=" float: left;">
-            <el-form-item label="" prop="pstngDate">
-              <el-input suffix-icon="el-icon-search" v-model="plantList.material" placeholder="物料" style="width: 160px;" />
-            </el-form-item>
-          </el-form>
-          <div style="float: right;">
-            <el-button icon="el-icon-search" size="small" @click="getList">查询</el-button>
-            <el-button icon="el-icon-circle-check" type="primary" @click="addMethodBtn = true" size="small">新增</el-button>
-            <el-button icon="el-icon-delete" type="danger" size="small" @click="selectDelete">批量删除</el-button>
-          </div>
+  <mds-card class="test_method" title="检验方法" :pack-up="false" style="margin-bottom: 0; background: #fff;">
+    <template #titleBtn>
+      <div style="float: right;display: flex;">
+        <el-form ref="pstngDate" :model="plantList" size="small" :inline="true" label-position="right" label-width="82px" class="topforms" style=" float: left;">
+          <el-form-item label="" prop="pstngDate">
+            <el-input suffix-icon="el-icon-search" v-model="plantList.inspectMethodCodeOrName" placeholder="物料" style="width: 160px;" />
+          </el-form-item>
+        </el-form>
+        <div style="float: right;">
+          <el-button icon="el-icon-search" size="small" @click="getList">查询</el-button>
+          <el-button icon="el-icon-circle-check" type="primary" @click="addData" size="small">新增</el-button>
+          <el-button icon="el-icon-delete" type="danger" size="small" @click="selectDelete">批量删除</el-button>
         </div>
-      </template>
-      <el-table ref="multipleTable" :cell-style="{'text-align':'center'}" :data="materialData" tooltip-effect="dark" style="width: 100%" @selection-change="handleSelectionChange">
-        <el-table-column type="selection" width="55">
-        </el-table-column>
-        <el-table-column type="index" label="序号" width="50">
-        </el-table-column>
-        <el-table-column label="编码">
-          <template #default="scope">{{ scope.row.inspectMethodCode }}</template>
-        </el-table-column>
-        <el-table-column prop="inspectMethodName" label="检验方法">
-        </el-table-column>
-        <el-table-column prop="inspectProperty" label="检验类">
-        </el-table-column>
-        <el-table-column label="操作" width="120" fixed="right">
-          <template #default="scope">
-            <el-button type="text" icon="el-icon-edit" class="role__btn" @click="editItem(scope.row)">
-              编辑
-            </el-button>
-          </template>
-        </el-table-column>
-      </el-table>
-    </mds-card>
-    <el-dialog v-model="addMethodBtn" title="检验类别-新增" width="30%">
+      </div>
+    </template>
+    <el-table ref="multipleTable" :cell-style="{'text-align':'center'}" :data="materialData.slice((currPage - 1) * pageSize, currPage * pageSize)" tooltip-effect="dark" style="width: 100%" @selection-change="handleSelectionChange">
+      <el-table-column type="selection" width="55" />
+      <el-table-column type="index" label="序号" :index="(index) => index + 1 + (currPage - 1) * pageSize" width="50" />
+      <el-table-column label="编码" prop="inspectMethodCode" />
+      <el-table-column label="检验方法" prop="inspectMethodName" />
+      <el-table-column label="检验类" prop="inspectProperty" />
+      <el-table-column label="操作" width="120" fixed="right">
+        <template #default="scope">
+          <el-button type="text" icon="el-icon-edit" class="role__btn" @click="editItem(scope.row)">
+            编辑
+          </el-button>
+        </template>
+      </el-table-column>
+    </el-table>
+    <el-row style="float: right">
+      <el-pagination
+        :page-size="pageSize"
+        :current-page="currPage"
+        :total="totalCount"
+        :page-sizes="[10, 20, 50]"
+        layout="total, sizes, prev, pager, next, jumper"
+        @size-change="val => pageSize = val"
+        @current-change="val => currPage = val"
+      />
+    </el-row>
+  </mds-card>
+  <el-dialog v-model="addMethodBtn" title="检验类别-新增" width="30%">
       <el-form :model="addMethodInfo" :rules="dataRule">
         <el-form-item label="编码：" prop="inspectMethodCode" :label-width="formLabelWidth">
           <el-input v-model="addMethodInfo.inspectMethodCode" class="inputWidth" :disabled="true" autocomplete="off"></el-input>
@@ -53,15 +57,20 @@
         <el-button size="small" icon="el-icon-circle-check" type="primary" @click="addMethodSave">确 定</el-button>
       </span>
     </el-dialog>
-  </div>
-
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, onMounted, ComponentInternalInstance, getCurrentInstance } from 'vue'
+import { defineComponent, ref, reactive, onMounted, ComponentInternalInstance, getCurrentInstance } from 'vue'
 import MdsCard from '@/components/package/mds-card/src/mds-card.vue'
-interface TargetInfoList {
-  id?: string; // 主键
+import {
+  TEST_METHOD_LIST_API,
+  TEST_METHOD_ADD_API,
+  TEST_METHOD_DEL_API,
+  TEST_METHOD_UPDATE_API
+} from '@/api/api'
+
+interface TargetInfo {
+  id: string; // 主键
   inspectMethodCode: string; // "编码":
   inspectMethodName: string; // 检验方法
   inspectProperty: string; // 检验组
@@ -78,32 +87,16 @@ export default defineComponent({
 
     const proxy = ctx.proxy as any
     // 变量
-    const plantList = ref({
-      material: ''
+    const currPage = ref(1)
+    const pageSize = ref(10)
+    const totalCount = ref(1)
+    const plantList = reactive({
+      inspectMethodCodeOrName: ''
     })
-    const multipleSelection = ref([])
+    const multipleSelection = ref<string[]>([])
     const formLabelWidth = ref('100px')
     const addMethodBtn = ref(false)
-    const materialData = ref<TargetInfoList[]>([
-      {
-        id: '1', // 主键
-        inspectMethodCode: '231131231', // "编码":
-        inspectMethodName: '物管法', // 检验方法
-        inspectProperty: '理化类' // 检验组
-      },
-      {
-        id: '2', // 主键
-        inspectMethodCode: '231131231444', // "编码":
-        inspectMethodName: '物管法2', // 检验方法
-        inspectProperty: '理化类2' // 检验组
-      },
-      {
-        id: '3', // 主键
-        inspectMethodCode: '2311312313423', // "编码":
-        inspectMethodName: '物管法4', // 检验方法
-        inspectProperty: '理化类4' // 检验组
-      }
-    ])
+    const materialData = ref<TargetInfo[]>([])
     const dataRule = {
       inspectMethodCode: [
         {
@@ -185,61 +178,88 @@ export default defineComponent({
         ]
       }
     ]
-    const addMethodInfo = ref<TargetInfoList>({
-      inspectMethodCode: '000111', // "编码":
-      inspectMethodName: '滴定法', // 检验方法
-      inspectProperty: '理化类' // 检验组
+    const addMethodInfo = ref<TargetInfo>({
+      id: '',
+      inspectMethodCode: '', // "编码":
+      inspectMethodName: '', // 检验方法
+      inspectProperty: '' // 检验组
     })
 
     // 函数
 
     // 获取检验方法列表数据
-    const getList = () => {
-      console.log(plantList.value.material)
+    const getList = async () => {
+      const res = await TEST_METHOD_LIST_API(plantList)
+      materialData.value = res.data.data
+      totalCount.value = res.data.data.length
     }
     // [BTN:编辑] 编辑数据集 item
-    const editItem = (obj: TargetInfoList) => {
-      console.log(obj)
+    const editItem = (row: TargetInfo) => {
       addMethodBtn.value = true
+      addMethodInfo.value = row
     }
-    const handleSelectionChange = (val: any) => {
-      multipleSelection.value = val
-    }
-    // 新增检验方法 -保存
-    const addMethodSave = (obj: TargetInfoList) => {
-      proxy.$confirm('确认保存？', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }).then(() => {
-      //  1
-      })
-        .catch(() => {
-          //
-        })
+    // 复选选择
+    const handleSelectionChange = (val: TargetInfo[]) => {
+      multipleSelection.value = val.map((item: TargetInfo) => item.id)
     }
     // 批量删除
     const selectDelete = () => {
-      console.log(multipleSelection) // 选中的列表数据
       proxy.$confirm('确认删除选中的数据？', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
-      }).then(() => {
-        //  1
+      }).then(async () => {
+        await TEST_METHOD_DEL_API(multipleSelection.value)
+        proxy.$successToast('操作成功')
+        await getList()
       })
-        .catch(() => {
-          //
-        })
     }
+    // 新增弹窗
+    const addData = () => {
+      addMethodBtn.value = true
+      let code = materialData.value.reduce((previousValue: number, currentValue: TargetInfo) => {
+        const currentCode = Number(currentValue.inspectMethodCode.replace(/M/g, ''))
+        return previousValue < currentCode ? currentCode : previousValue
+      }, 0)
+      code++
+      addMethodInfo.value = {
+        id: '',
+        inspectMethodCode: `M${code < 10 ? '0' + code : code}`,
+        inspectMethodName: '',
+        inspectProperty: ''
+      }
+    }
+    // 新增检验方法 -保存
+    const addMethodSave = () => {
+      proxy.$confirm('确认保存？', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(async () => {
+        //  1
+        if (addMethodInfo.value.id) {
+          await TEST_METHOD_UPDATE_API(addMethodInfo.value)
+        } else {
+          await TEST_METHOD_ADD_API(addMethodInfo.value)
+        }
+        proxy.$successToast('操作成功')
+        addMethodBtn.value = false
+        await getList()
+      })
+    }
+
     onMounted(() => {
       getList()
     })
 
     return {
+      currPage,
+      pageSize,
+      totalCount,
       plantList,
       materialData,
       editItem,
+      addData,
       handleSelectionChange,
       multipleSelection,
       addMethodBtn,
@@ -257,6 +277,9 @@ export default defineComponent({
 </script>
 
 <style lang="scss" scoped>
+.test_method{
+  height: calc(100vh - 117px);
+}
 .topforms {
   display: flex;
   .el-date-editor.el-input {

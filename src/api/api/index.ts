@@ -28,3 +28,15 @@ export function INSPECT_TYPE_UPDATE_API (params = {}):Promise<AxiosResponse> {
 export function INSPECT_TYPE_DEL_API (params = {}):Promise<AxiosResponse> {
   return Http.get('/inspectType/removeInspectType', params, { baseURL: (process.env.VUE_APP_QMS_API as string) + (process.env.VUE_APP_API_V as string) })
 }
+export function TEST_METHOD_LIST_API (params = {}):Promise<AxiosResponse> {
+  return Http.get('/inspectMethod/queryInspectMethod', params, { baseURL: (process.env.VUE_APP_QMS_API as string) + (process.env.VUE_APP_API_V as string) })
+}
+export function TEST_METHOD_ADD_API (params = {}):Promise<AxiosResponse> {
+  return Http.post('/inspectMethod/insertInspectMethod', params, { baseURL: (process.env.VUE_APP_QMS_API as string) + (process.env.VUE_APP_API_V as string) })
+}
+export function TEST_METHOD_DEL_API (params = {}):Promise<AxiosResponse> {
+  return Http.post('/inspectMethod/removeInspectMethod', params, { baseURL: (process.env.VUE_APP_QMS_API as string) + (process.env.VUE_APP_API_V as string) })
+}
+export function TEST_METHOD_UPDATE_API (params = {}):Promise<AxiosResponse> {
+  return Http.post('/inspectMethod/updateInspectMethod', params, { baseURL: (process.env.VUE_APP_QMS_API as string) + (process.env.VUE_APP_API_V as string) })
+}
