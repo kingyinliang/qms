@@ -92,8 +92,8 @@ export default defineComponent({
     const focusCurrentNodeNumber = ref('')
 
     onMounted(() => {
-      document.addEventListener('click', (e) => {
-        console.log(e)
+      document.addEventListener('click', () => {
+        // console.log(e)
         menuVisible.value = false
         // const className = (e.target as Element).className as string
         // if (className !== 'contextMenu') menuVisible.value = false
