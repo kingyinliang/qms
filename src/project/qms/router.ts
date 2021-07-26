@@ -11,7 +11,16 @@ import { fnAddDynamicMenuRoutes, MenuList } from '@/utils/index'
 import store from './store'
 import SSOLogin from '@/utils/SSOLogin'
 
-const globalMenu: Array<MenuList> = []
+const globalMenu: Array<MenuList> = [
+  {
+    id: '10000',
+    menuType: 'C',
+    menuIcon: 'factory-luru',
+    menuName: '打印',
+    menuUrl: 'qms/pages/common/print',
+    list: []
+  }
+]
 const globalRoutes: Array<RouteRecordRaw> = []
 
 const mainRouter: RouteRecordRaw = {

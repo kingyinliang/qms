@@ -2,7 +2,7 @@ import { RouteMeta, Router, RouteRecordRaw } from 'vue-router'
 
 export interface MenuList {
   menuUrl: string;
-  type: string;
+  menuType: string;
   id: string;
   menuIcon?: string;
   menuName: string;
