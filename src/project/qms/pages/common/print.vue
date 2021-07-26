@@ -9,7 +9,7 @@
   <el-button type="primary" @click="print">打印</el-button>
 </template>
 
-<script lang="ts">
+<script>
 import { defineComponent, ref } from 'vue'
 // import printJS from 'print-js'
 import printjs from '@/utils/print.js'
