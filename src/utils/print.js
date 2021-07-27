@@ -1,6 +1,6 @@
 // 打印类属性、方法定义
 /* eslint-disable */
-const Print =function(dom, options) {
+const Print = function (dom, options) {
   if (!(this instanceof Print)) return new Print(dom, options);
 
   this.options = this.extend({
@@ -10,7 +10,8 @@ const Print =function(dom, options) {
   if ((typeof dom) === "string") {
     this.dom = document.querySelector(dom);
   } else {
-    this.dom = dom;
+    this.isDOM(dom)
+    this.dom = this.isDOM(dom) ? dom : dom.$el;
   }
 
   this.init();
@@ -34,6 +35,7 @@ Print.prototype = {
       str += styles[i].outerHTML;
     }
     str += "<style>" + (this.options.noPrint ? this.options.noPrint : '.no-print') + "{display:none;}</style>";
+    str += "<style>html,body,div{height: auto!important;font-size:12px}</style>";
 
     return str;
   },
@@ -43,7 +45,7 @@ Print.prototype = {
     var textareas = document.querySelectorAll('textarea');
     var selects = document.querySelectorAll('select');
 
-    for (var k in inputs) {
+    for (var k = 0; k < inputs.length; k++) {
       if (inputs[k].type == "checkbox" || inputs[k].type == "radio") {
         if (inputs[k].checked == true) {
           inputs[k].setAttribute('checked', "checked")
@@ -52,16 +54,18 @@ Print.prototype = {
         }
       } else if (inputs[k].type == "text") {
         inputs[k].setAttribute('value', inputs[k].value)
+      } else {
+        inputs[k].setAttribute('value', inputs[k].value)
       }
     }
 
-    for (var k2 in textareas) {
+    for (var k2 = 0; k2 < textareas.length; k2++) {
       if (textareas[k2].type == 'textarea') {
         textareas[k2].innerHTML = textareas[k2].value
       }
     }
 
-    for (var k3 in selects) {
+    for (var k3 = 0; k3 < selects.length; k3++) {
       if (selects[k3].type == 'select-one') {
         var child = selects[k3].children;
         for (var i in child) {
@@ -83,18 +87,20 @@ Print.prototype = {
     var w, doc, iframe = document.createElement('iframe'),
       f = document.body.appendChild(iframe);
     iframe.id = "myIframe";
-    iframe.style = "position:absolute;width:0;height:0;top:-10px;left:-10px;";
-
+    //iframe.style = "position:absolute;width:0;height:0;top:-10px;left:-10px;";
+    iframe.setAttribute('style', 'position:absolute;width:0;height:0;top:-10px;left:-10px;');
     w = f.contentWindow || f.contentDocument;
     doc = f.contentDocument || f.contentWindow.document;
     doc.open();
     doc.write(content);
     doc.close();
-    this.toPrint(w);
-
-    setTimeout(function () {
-      document.body.removeChild(iframe)
-    }, 100)
+    var _this = this
+    iframe.onload = function(){
+      _this.toPrint(w);
+      setTimeout(function () {
+        document.body.removeChild(iframe)
+      }, 100)
+    }
   },
 
   toPrint: function (frameWindow) {
@@ -113,6 +119,13 @@ Print.prototype = {
     } catch (err) {
       console.log('err', err);
     }
-  }
+  },
+  isDOM: (typeof HTMLElement === 'object') ?
+    function (obj) {
+      return obj instanceof HTMLElement;
+    } :
+    function (obj) {
+      return obj && typeof obj === 'object' && obj.nodeType === 1 && typeof obj.nodeName === 'string';
+    }
 };
 export default Print

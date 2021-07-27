@@ -1,11 +1,9 @@
 <template>
-  <el-row ref="printEle" :gutter="10" id="print_ele">
-    <el-col v-for="(item, index) in 6" :key="item" :span="6 ">
-      <div class="print_demo" style="page-break-after:always">
-        <span>编码{{ index }}</span>
-      </div>
-    </el-col>
-  </el-row>
+  <div id="print_ele" class="clearfix">
+    <div class="print_demo" v-for="(item, index) in 6" :key="item">
+      <span>编码{{ index }}</span>
+    </div>
+  </div>
   <el-button type="primary" @click="print">打印</el-button>
 </template>
 
@@ -20,7 +18,8 @@ export default defineComponent({
     const printEle = ref()
     const print = () => {
       console.log(1)
-      printjs(document.querySelector('#print_ele'))
+      // window.print()
+      printjs('#print_ele')
       // printJS({
       //   printable: 'print_ele',
       //   type: 'html',
@@ -42,12 +41,32 @@ export default defineComponent({
 })
 </script>
 
-<style scoped>
-.print_demo{
-  border: 1px solid #000000;
-  min-height: 200px;
-  line-height: 200px;
-  text-align: center;
-  margin-bottom: 10px;
-}
+<style>
+  #print_ele{
+  }
+  .print_demo{
+    float: left;
+    margin-right: 10px;
+    page-break-after:always;
+    width: 20%;
+    border: 1px solid #000000;
+    min-height: 200px;
+    line-height: 200px;
+    text-align: center;
+    margin-bottom: 10px;
+  }
+</style>
+<style media="print">
+  @media print {
+    .print_demo{
+      page-break-after:always;
+      page-break-before: always;
+      float: none;
+      border: 1px solid #000000;
+      min-height: 200px;
+      line-height: 200px;
+      text-align: center;
+      margin-bottom: 10px;
+    }
+  }
 </style>
