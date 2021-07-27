@@ -70,7 +70,7 @@ router.beforeEach((to, from, next) => {
       store.commit('common/updateUserInfo', data.data)
       GET_NAV_API({
         factory,
-        tenant: 'qms'
+        tenant: 'QMS'
       }).then(({ data }) => {
         fnAddDynamicMenuRoutes(globalMenu.concat(data.data.menuList || []), [], router, mainRouter)
         store.commit('common/updateMenuList', globalMenu.concat(data.data.menuList || []))
