@@ -14,16 +14,7 @@
             </el-input>
           </div>
           <div class="tree-main SelfScrollbar">
-            <el-tree
-              ref="treeRef"
-              :data="treeData"
-              node-key="id"
-              :props="treeProps"
-              highlight-current
-              :filter-node-method="filterNode"
-              @node-click="treeNodeClick"
-              @node-contextmenu="treeNodeContextMenu"
-            />
+            <el-tree ref="treeRef" :data="treeData" node-key="id" :current-node-key="focusCurrentNodeNumber" :props="treeProps" highlight-current :filter-node-method="filterNode" @node-click="treeNodeClick" @node-contextmenu="treeNodeContextMenu" />
           </div>
         </div>
       </el-col>
@@ -39,13 +30,16 @@
       </el-col>
     </el-row>
   </mds-card>
-  <div id="context--menu" class="context--menu" v-show="menuVisible">
-    <slot name="context--menu" />
-  </div>
+  <template v-if="floatMenu">
+    <div id="context--menu" class="context--menu" v-show="menuVisible">
+      <slot name="context--menu" />
+    </div>
+  </template>
+
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, watch } from 'vue'
+import { defineComponent, ref, watch, onMounted, nextTick } from 'vue'
 import MdsCard from '../../mds-card'
 
 export default defineComponent({
@@ -85,40 +79,75 @@ export default defineComponent({
       default: function () {
         return { label: 'deptName' }
       }
+    },
+    floatMenu: { // 开启 float menu
+      type: Boolean,
+      default: true
     }
   },
   setup (props, { emit }) {
     const filterText = ref('')
     const treeRef = ref()
     const menuVisible = ref(false)
+    const focusCurrentNodeNumber = ref('')
 
+    onMounted(() => {
+      document.addEventListener('click', () => {
+        // console.log(e)
+        menuVisible.value = false
+        // const className = (e.target as Element).className as string
+        // if (className !== 'contextMenu') menuVisible.value = false
+      })
+    })
     watch(filterText, (val) => {
       treeRef.value.filter(val)
     })
 
+    watch(focusCurrentNodeNumber, async (val) => {
+      console.log('0000000')
+      console.log(val)
+      if (val.toString()) {
+        await nextTick()
+        treeRef.value.setCurrentKey(val)
+      } else {
+        await nextTick()
+        treeRef.value.setCurrentKey(null)
+      }
+    })
+
     // 搜索
     // eslint-disable-next-line
-    const filterNode = (value:string, data: any) => {
+    const filterNode = (value: string, data: any) => {
       if (!value) return true
       // eslint-disable-next-line
-      return data[(props as any).treeProps.label].indexOf(value) !== -1
+      return data[(props as any).treeProps.label].indexOf(value) !== -1;
     }
 
     // 树点击
     // eslint-disable-next-line
     const treeNodeClick = (row: any) => {
+      menuVisible.value = false
       emit('treeNodeClick', row, true)
     }
 
     // 组织架构右击
     // eslint-disable-next-line
     const treeNodeContextMenu = (event: MouseEvent, object: any) => {
-      menuVisible.value = true
-      const menu = document.querySelector('#context--menu') as HTMLDivElement
-      menu.style.left = event.clientX + 'px'
-      menu.style.top = event.clientY + 'px'
-      emit('treeNodeContextMenu', object)
+      if (object.notShowContextMenuOnThisNode !== true) {
+        menuVisible.value = true
+        const menu = document.querySelector('#context--menu') as HTMLDivElement
+        menu.style.left = event.clientX + 'px'
+        menu.style.top = event.clientY + 'px'
+        emit('treeNodeContextMenu', object)
+      }
     }
+
+    onMounted(() => {
+      document.addEventListener('click', e => {
+        const target: HTMLDivElement = e.target as HTMLDivElement
+        if (target.className !== 'context--menu') menuVisible.value = false
+      })
+    })
 
     return {
       treeRef,
@@ -126,12 +155,12 @@ export default defineComponent({
       menuVisible,
       filterNode,
       treeNodeClick,
-      treeNodeContextMenu
+      treeNodeContextMenu,
+      focusCurrentNodeNumber
     }
   }
 })
 </script>
 
 <style lang="scss" scoped>
-
 </style>

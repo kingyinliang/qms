@@ -1,0 +1,298 @@
+<template>
+  <mds-card class="test_method" title="检验方法" :pack-up="false" style="margin-bottom: 0; background: #fff;">
+    <template #titleBtn>
+      <div style="float: right;display: flex;">
+        <el-form ref="pstngDate" :model="plantList" size="small" :inline="true" label-position="right" label-width="82px" class="topforms" style=" float: left;">
+          <el-form-item label="" prop="pstngDate">
+            <el-input suffix-icon="el-icon-search" v-model="plantList.inspectMethodCodeOrName" placeholder="物料" style="width: 160px;" />
+          </el-form-item>
+        </el-form>
+        <div style="float: right;">
+          <el-button icon="el-icon-search" size="small" @click="getList">查询</el-button>
+          <el-button icon="el-icon-circle-check" type="primary" @click="addData" size="small">新增</el-button>
+          <el-button icon="el-icon-delete" type="danger" size="small" @click="selectDelete">批量删除</el-button>
+        </div>
+      </div>
+    </template>
+    <el-table ref="multipleTable" :cell-style="{'text-align':'center'}" :data="materialData.slice((currPage - 1) * pageSize, currPage * pageSize)" tooltip-effect="dark" style="width: 100%" @selection-change="handleSelectionChange">
+      <el-table-column type="selection" width="55" />
+      <el-table-column type="index" label="序号" :index="(index) => index + 1 + (currPage - 1) * pageSize" width="50" />
+      <el-table-column label="编码" prop="inspectMethodCode" />
+      <el-table-column label="检验方法" prop="inspectMethodName" />
+      <el-table-column label="检验类" prop="inspectProperty" />
+      <el-table-column label="操作" width="120" fixed="right">
+        <template #default="scope">
+          <el-button type="text" icon="el-icon-edit" class="role__btn" @click="editItem(scope.row)">
+            编辑
+          </el-button>
+        </template>
+      </el-table-column>
+    </el-table>
+    <el-row style="float: right">
+      <el-pagination
+        :page-size="pageSize"
+        :current-page="currPage"
+        :total="totalCount"
+        :page-sizes="[10, 20, 50]"
+        layout="total, sizes, prev, pager, next, jumper"
+        @size-change="val => pageSize = val"
+        @current-change="val => currPage = val"
+      />
+    </el-row>
+  </mds-card>
+  <el-dialog v-model="addMethodBtn" title="检验类别-新增" width="30%">
+      <el-form :model="addMethodInfo" :rules="dataRule">
+        <el-form-item label="编码：" prop="inspectMethodCode" :label-width="formLabelWidth">
+          <el-input v-model="addMethodInfo.inspectMethodCode" class="inputWidth" :disabled="true" autocomplete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="检验方法：" prop="inspectMethodName" :label-width="formLabelWidth">
+          <el-input v-model="addMethodInfo.inspectMethodName" class="inputWidth" placeholder="请输入" autocomplete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="校验组：" prop="inspectProperty" :label-width="formLabelWidth">
+          <el-input v-model="addMethodInfo.inspectProperty" class="inputWidth" placeholder="来料检验" autocomplete="off"></el-input>
+        </el-form-item>
+      </el-form>
+      <span class="dialog-footer">
+        <el-button size="small" icon="el-icon-circle-close" @click="addMethodBtn = false">取 消</el-button>
+        <el-button size="small" icon="el-icon-circle-check" type="primary" @click="addMethodSave">确 定</el-button>
+      </span>
+    </el-dialog>
+</template>
+
+<script lang="ts">
+import { defineComponent, ref, reactive, onMounted, ComponentInternalInstance, getCurrentInstance } from 'vue'
+import MdsCard from '@/components/package/mds-card/src/mds-card.vue'
+import {
+  TEST_METHOD_LIST_API,
+  TEST_METHOD_ADD_API,
+  TEST_METHOD_DEL_API,
+  TEST_METHOD_UPDATE_API
+} from '@/api/api'
+
+interface TargetInfo {
+  id: string; // 主键
+  inspectMethodCode: string; // "编码":
+  inspectMethodName: string; // 检验方法
+  inspectProperty: string; // 检验组
+}
+
+export default defineComponent({
+  name: 'testMethod',
+  components: {
+    MdsCard
+  },
+
+  setup () {
+    const ctx = getCurrentInstance() as ComponentInternalInstance
+
+    const proxy = ctx.proxy as any
+    // 变量
+    const currPage = ref(1)
+    const pageSize = ref(10)
+    const totalCount = ref(1)
+    const plantList = reactive({
+      inspectMethodCodeOrName: ''
+    })
+    const multipleSelection = ref<string[]>([])
+    const formLabelWidth = ref('100px')
+    const addMethodBtn = ref(false)
+    const materialData = ref<TargetInfo[]>([])
+    const dataRule = {
+      inspectMethodCode: [
+        {
+          required: true,
+          message: '编码自动带出',
+          trigger: 'blur'
+        }
+      ],
+      inspectMethodName: [
+        {
+          required: true,
+          message: '请输入检验方法',
+          trigger: 'blur'
+        }
+      ],
+      inspectProperty: [
+        {
+          required: true,
+          message: '请输入检验组',
+          trigger: 'blur'
+        }
+      ]
+    }
+    const props = { multiple: true }
+    const options = [
+      {
+        value: 1,
+        label: '东南',
+        children: [
+          {
+            value: 2,
+            label: '上海',
+            children: [
+              { value: 3, label: '普陀' },
+              { value: 4, label: '黄埔' },
+              { value: 5, label: '徐汇' }
+            ]
+          },
+          {
+            value: 7,
+            label: '江苏',
+            children: [
+              { value: 8, label: '南京' },
+              { value: 9, label: '苏州' },
+              { value: 10, label: '无锡' }
+            ]
+          },
+          {
+            value: 12,
+            label: '浙江',
+            children: [
+              { value: 13, label: '杭州' },
+              { value: 14, label: '宁波' },
+              { value: 15, label: '嘉兴' }
+            ]
+          }
+        ]
+      },
+      {
+        value: 17,
+        label: '西北',
+        children: [
+          {
+            value: 18,
+            label: '陕西',
+            children: [
+              { value: 19, label: '西安' },
+              { value: 20, label: '延安' }
+            ]
+          },
+          {
+            value: 21,
+            label: '新疆维吾尔族自治区',
+            children: [
+              { value: 22, label: '乌鲁木齐' },
+              { value: 23, label: '克拉玛依' }
+            ]
+          }
+        ]
+      }
+    ]
+    const addMethodInfo = ref<TargetInfo>({
+      id: '',
+      inspectMethodCode: '', // "编码":
+      inspectMethodName: '', // 检验方法
+      inspectProperty: '' // 检验组
+    })
+
+    // 函数
+
+    // 获取检验方法列表数据
+    const getList = async () => {
+      const res = await TEST_METHOD_LIST_API(plantList)
+      materialData.value = res.data.data
+      totalCount.value = res.data.data.length
+    }
+    // [BTN:编辑] 编辑数据集 item
+    const editItem = (row: TargetInfo) => {
+      addMethodBtn.value = true
+      addMethodInfo.value = row
+    }
+    // 复选选择
+    const handleSelectionChange = (val: TargetInfo[]) => {
+      multipleSelection.value = val.map((item: TargetInfo) => item.id)
+    }
+    // 批量删除
+    const selectDelete = () => {
+      proxy.$confirm('确认删除选中的数据？', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(async () => {
+        await TEST_METHOD_DEL_API(multipleSelection.value)
+        proxy.$successToast('操作成功')
+        await getList()
+      })
+    }
+    // 新增弹窗
+    const addData = () => {
+      addMethodBtn.value = true
+      let code = materialData.value.reduce((previousValue: number, currentValue: TargetInfo) => {
+        const currentCode = Number(currentValue.inspectMethodCode.replace(/M/g, ''))
+        return previousValue < currentCode ? currentCode : previousValue
+      }, 0)
+      code++
+      addMethodInfo.value = {
+        id: '',
+        inspectMethodCode: `M${code < 10 ? '0' + code : code}`,
+        inspectMethodName: '',
+        inspectProperty: ''
+      }
+    }
+    // 新增检验方法 -保存
+    const addMethodSave = () => {
+      proxy.$confirm('确认保存？', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(async () => {
+        //  1
+        if (addMethodInfo.value.id) {
+          await TEST_METHOD_UPDATE_API(addMethodInfo.value)
+        } else {
+          await TEST_METHOD_ADD_API(addMethodInfo.value)
+        }
+        proxy.$successToast('操作成功')
+        addMethodBtn.value = false
+        await getList()
+      })
+    }
+
+    onMounted(() => {
+      getList()
+    })
+
+    return {
+      currPage,
+      pageSize,
+      totalCount,
+      plantList,
+      materialData,
+      editItem,
+      addData,
+      handleSelectionChange,
+      multipleSelection,
+      addMethodBtn,
+      addMethodInfo,
+      dataRule,
+      formLabelWidth,
+      addMethodSave,
+      options,
+      props,
+      selectDelete,
+      getList
+    }
+  }
+})
+</script>
+
+<style lang="scss" scoped>
+.test_method{
+  height: calc(100vh - 117px);
+}
+.topforms {
+  display: flex;
+  .el-date-editor.el-input {
+    width: auto;
+  }
+  .formtextarea {
+    .el-form-item__content {
+      width: 500px;
+    }
+  }
+}
+.dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+}
+</style>

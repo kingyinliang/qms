@@ -3,6 +3,7 @@ import { useStore } from 'vuex'
 import { useRouter, useRoute, Router, RouteLocationNormalizedLoaded, RouteLocationNormalized } from 'vue-router'
 import { WritableComputedRef } from '@vue/reactivity'
 import { USER_QUIT_API } from '@/api/api'
+import VueCookies from '@/components/cookie/vue-cookies'
 
 // eslint-disable-next-line
 type Fn<T> = (ctx?: any) => T
@@ -178,10 +179,15 @@ export default function (): LayoutTs<any> {
   }
 
   // 菜单点击
-  const gotoRouteHandle = (menu: { id:'' }) => {
-    const route = dynamicMenuRoutes.value.filter(item => item && item.meta.menuId === menu.id)
-    if (route.length >= 1) {
-      router.push(route[0].path)
+  const gotoRouteHandle = (menu: { id: '', menuUrl: '' }) => {
+    if (/^http[s]?:\/\/.*/.test(menu.menuUrl)) {
+      window.location.href = menu.menuUrl + '&token=' + VueCookies.get('token') + '&tenant=qms'
+    } else {
+      const route = dynamicMenuRoutes.value.filter(item => item && item.meta.menuId === menu.id)
+      console.log(route)
+      if (route.length >= 1) {
+        router.push(route[0].path)
+      }
     }
   }
 
