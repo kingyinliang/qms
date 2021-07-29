@@ -49,7 +49,7 @@
           <el-input v-model="addMethodInfo.inspectMethodName" class="inputWidth" placeholder="请输入" autocomplete="off"></el-input>
         </el-form-item>
         <el-form-item label="属性：" prop="inspectProperty" :label-width="formLabelWidth">
-          <el-select v-model="addMethodInfo.inspectProperty" class="inputWidth" placeholder="请输入" @change="val => addMethodInfo.inspectPropertyName = inspectProperty.find(it => it.dictCode === val).dictValue">
+          <el-select v-model="addMethodInfo.inspectProperty" class="inputWidth" placeholder="请选择" @change="val => addMethodInfo.inspectPropertyName = inspectProperty.find(it => it.dictCode === val).dictValue">
             <el-option v-for="item in inspectProperty" :key="item.dictCode" :label="item.dictValue" :value="item.dictCode" />
           </el-select>
         </el-form-item>
@@ -246,5 +246,8 @@ export default defineComponent({
 .dialog-footer {
   display: flex;
   justify-content: flex-end;
+}
+.el-form /deep/.inputWidth {
+  width: 100%;
 }
 </style>
