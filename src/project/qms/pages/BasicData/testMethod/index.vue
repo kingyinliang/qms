@@ -19,7 +19,7 @@
       <el-table-column type="index" label="序号" :index="(index) => index + 1 + (currPage - 1) * pageSize" width="50" />
       <el-table-column label="编码" prop="inspectMethodCode" />
       <el-table-column label="检验方法" prop="inspectMethodName" />
-      <el-table-column label="检验类" prop="inspectProperty" />
+      <el-table-column label="属性" prop="inspectPropertyName" />
       <el-table-column label="操作" width="120" fixed="right">
         <template #default="scope">
           <el-button type="text" icon="el-icon-edit" class="role__btn" @click="editItem(scope.row)">
@@ -48,8 +48,10 @@
         <el-form-item label="检验方法：" prop="inspectMethodName" :label-width="formLabelWidth">
           <el-input v-model="addMethodInfo.inspectMethodName" class="inputWidth" placeholder="请输入" autocomplete="off"></el-input>
         </el-form-item>
-        <el-form-item label="校验组：" prop="inspectProperty" :label-width="formLabelWidth">
-          <el-input v-model="addMethodInfo.inspectProperty" class="inputWidth" placeholder="来料检验" autocomplete="off"></el-input>
+        <el-form-item label="属性：" prop="inspectProperty" :label-width="formLabelWidth">
+          <el-select v-model="addMethodInfo.inspectProperty" class="inputWidth" placeholder="请选择" @change="val => addMethodInfo.inspectPropertyName = inspectProperty.find(it => it.dictCode === val).dictValue">
+            <el-option v-for="item in inspectProperty" :key="item.dictCode" :label="item.dictValue" :value="item.dictCode" />
+          </el-select>
         </el-form-item>
       </el-form>
       <span class="dialog-footer">
@@ -66,7 +68,9 @@ import {
   TEST_METHOD_LIST_API,
   TEST_METHOD_ADD_API,
   TEST_METHOD_DEL_API,
-  TEST_METHOD_UPDATE_API
+  TEST_METHOD_UPDATE_API,
+  DICT_DROPDOWN,
+  Dict
 } from '@/api/api'
 
 interface TargetInfo {
@@ -74,6 +78,7 @@ interface TargetInfo {
   inspectMethodCode: string; // "编码":
   inspectMethodName: string; // 检验方法
   inspectProperty: string; // 检验组
+  inspectPropertyName: string; // 检验组
 }
 
 export default defineComponent({
@@ -98,6 +103,7 @@ export default defineComponent({
     const formLabelWidth = ref('100px')
     const addMethodBtn = ref(false)
     const materialData = ref<TargetInfo[]>([])
+    const inspectProperty = ref<Dict[]>([])
     const dataRule = {
       inspectMethodCode: [
         {
@@ -126,7 +132,8 @@ export default defineComponent({
       id: '',
       inspectMethodCode: '', // "编码":
       inspectMethodName: '', // 检验方法
-      inspectProperty: '' // 检验组
+      inspectProperty: '', // 检验组
+      inspectPropertyName: '' // 检验组
     })
 
     // 函数
@@ -140,7 +147,7 @@ export default defineComponent({
     // [BTN:编辑] 编辑数据集 item
     const editItem = (row: TargetInfo) => {
       addMethodBtn.value = true
-      addMethodInfo.value = row
+      addMethodInfo.value = { ...row }
     }
     // 复选选择
     const handleSelectionChange = (val: TargetInfo[]) => {
@@ -170,6 +177,7 @@ export default defineComponent({
         id: '',
         inspectMethodCode: `M${code < 10 ? '0' + code : code}`,
         inspectMethodName: '',
+        inspectPropertyName: '',
         inspectProperty: ''
       }
     }
@@ -189,11 +197,14 @@ export default defineComponent({
       })
     }
 
-    onMounted(() => {
+    onMounted(async () => {
       getList()
+      const res = await DICT_DROPDOWN({ dictType: 'inspect_property' })
+      inspectProperty.value = res.data.data
     })
 
     return {
+      inspectProperty,
       addRef,
       currPage,
       pageSize,
@@ -235,5 +246,8 @@ export default defineComponent({
 .dialog-footer {
   display: flex;
   justify-content: flex-end;
+}
+.el-form /deep/.inputWidth {
+  width: 100%;
 }
 </style>
