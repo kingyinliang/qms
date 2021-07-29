@@ -9,8 +9,7 @@
         </el-form>
         <div style="float: right;">
           <el-button icon="el-icon-search" size="small" @click="getList">查询</el-button>
-          <el-button icon="el-icon-circle-check" type="primary" @click="addData" size="small">新增</el-button>
-          <el-button icon="el-icon-delete" type="danger" size="small" @click="selectDelete">批量删除</el-button>
+          <el-button icon="el-icon-circle-check" type="primary" @click="addData" size="small">编辑</el-button>
         </div>
       </div>
     </template>
@@ -41,7 +40,7 @@
     </el-row>
   </mds-card>
   <el-dialog v-model="addMethodBtn" title="检验类别-新增" width="30%">
-      <el-form ref="addRef" :model="addMethodInfo" :rules="dataRule">
+      <el-form :model="addMethodInfo" :rules="dataRule">
         <el-form-item label="编码：" prop="inspectMethodCode" :label-width="formLabelWidth">
           <el-input v-model="addMethodInfo.inspectMethodCode" class="inputWidth" :disabled="true" autocomplete="off"></el-input>
         </el-form-item>
@@ -77,7 +76,7 @@ interface TargetInfo {
 }
 
 export default defineComponent({
-  name: 'testMethod',
+  name: 'TestIndexIndex',
   components: {
     MdsCard
   },
@@ -87,7 +86,6 @@ export default defineComponent({
 
     const proxy = ctx.proxy as any
     // 变量
-    const addRef = ref()
     const currPage = ref(1)
     const pageSize = ref(10)
     const totalCount = ref(1)
@@ -122,6 +120,63 @@ export default defineComponent({
       ]
     }
     const props = { multiple: true }
+    const options = [
+      {
+        value: 1,
+        label: '东南',
+        children: [
+          {
+            value: 2,
+            label: '上海',
+            children: [
+              { value: 3, label: '普陀' },
+              { value: 4, label: '黄埔' },
+              { value: 5, label: '徐汇' }
+            ]
+          },
+          {
+            value: 7,
+            label: '江苏',
+            children: [
+              { value: 8, label: '南京' },
+              { value: 9, label: '苏州' },
+              { value: 10, label: '无锡' }
+            ]
+          },
+          {
+            value: 12,
+            label: '浙江',
+            children: [
+              { value: 13, label: '杭州' },
+              { value: 14, label: '宁波' },
+              { value: 15, label: '嘉兴' }
+            ]
+          }
+        ]
+      },
+      {
+        value: 17,
+        label: '西北',
+        children: [
+          {
+            value: 18,
+            label: '陕西',
+            children: [
+              { value: 19, label: '西安' },
+              { value: 20, label: '延安' }
+            ]
+          },
+          {
+            value: 21,
+            label: '新疆维吾尔族自治区',
+            children: [
+              { value: 22, label: '乌鲁木齐' },
+              { value: 23, label: '克拉玛依' }
+            ]
+          }
+        ]
+      }
+    ]
     const addMethodInfo = ref<TargetInfo>({
       id: '',
       inspectMethodCode: '', // "编码":
@@ -175,17 +230,20 @@ export default defineComponent({
     }
     // 新增检验方法 -保存
     const addMethodSave = () => {
-      addRef.value.validate(async (valid: boolean) => {
-        if (valid) {
-          if (addMethodInfo.value.id) {
-            await TEST_METHOD_UPDATE_API(addMethodInfo.value)
-          } else {
-            await TEST_METHOD_ADD_API(addMethodInfo.value)
-          }
-          proxy.$successToast('操作成功')
-          addMethodBtn.value = false
-          await getList()
+      proxy.$confirm('确认保存？', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(async () => {
+        //  1
+        if (addMethodInfo.value.id) {
+          await TEST_METHOD_UPDATE_API(addMethodInfo.value)
+        } else {
+          await TEST_METHOD_ADD_API(addMethodInfo.value)
         }
+        proxy.$successToast('操作成功')
+        addMethodBtn.value = false
+        await getList()
       })
     }
 
@@ -194,7 +252,6 @@ export default defineComponent({
     })
 
     return {
-      addRef,
       currPage,
       pageSize,
       totalCount,
@@ -209,6 +266,7 @@ export default defineComponent({
       dataRule,
       formLabelWidth,
       addMethodSave,
+      options,
       props,
       selectDelete,
       getList

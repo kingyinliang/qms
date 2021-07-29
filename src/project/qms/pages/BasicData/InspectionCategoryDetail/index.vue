@@ -25,7 +25,7 @@
           <el-button type="primary" size="mini" style="height:32px; margin-left:5px" @click="apiMaterialDetail(currentCategoryId,materialDetailText,1,10)">查询</el-button>
         </template>
       </div>
-     <el-table :data="tableData"
+     <el-table :data="topicMainData"
         style="width: 100%"
         max-height="500"
         border tooltip-effect="dark">
@@ -36,7 +36,7 @@
         <el-table-column label="品项" prop="itemName" :show-overflow-tooltip="true" min-width="100" />
         <el-table-column fixed="right" label="操作" header-align="left" align="left" width="100">
             <template #default="scope">
-                <el-button size="mini" @click="handleSingleEdit(scope.row)">
+                <el-button  type="text" icon="el-icon-edit" @click="handleSingleEdit(scope.row)" class="role__btn">
                     编辑
                 </el-button>
             </template>
@@ -44,7 +44,7 @@
       </el-table>
 
       <el-pagination
-      v-if="tableData.length!==0"
+      v-if="topicMainData.length!==0"
       @size-change="handleSizeChange"
       @current-change="handleCurrentChange"
       :current-page="currentPage"
@@ -55,7 +55,7 @@
     </el-pagination>
     </template>
   </tree-page>
-  <material-inspection-edit v-model:dialogVisible="isDialogShow" ref="functionManage" :title="'分配检验类别'"  :treeData="materialTreeData" @inspectCategoryList="updateInspectCategoryList" @reset="reset" :treeCheckedKeysGroup="inspectTypeIds" />
+  <material-inspection-edit v-model:dialogVisible="isDialogShow" ref="refFunctionDialog" :title="'分配检验类别'"  :treeData="materialTreeData" @inspectCategoryList="updateInspectCategoryList" @reset="reset" :treeCheckedKeysGroup="inspectTypeIds" />
 </template>
 
 <script lang="ts">
@@ -79,7 +79,7 @@ interface TreeData { // 物料分类 API
   children:TreeData[]
 }
 
-interface TableData { // 物料明细 API
+interface TopicMainData { // 物料明细 API
   inspectGroupCode: string
   inspectGroupName: string
   inspectMaterialType: string
@@ -102,14 +102,14 @@ interface State {
     totalItems: number
     currentPage: number
     pageSize: number
-    tableData: Array<TableData>
-    treeData: Array<TreeData>
-    materialTreeData: Array<MaterialTreeData>
+    topicMainData: TopicMainData[]
+    treeData: TreeData[]
+    materialTreeData: MaterialTreeData[]
     currentCategoryId: string
-    globleItem:TableData
+    globleItem: TopicMainData
     isShowSearchBar: boolean
     globleSearchString: string
-    inspectTypeIds:string[]
+    inspectTypeIds: string[]
     initFocusNode: string
 }
 
@@ -132,7 +132,7 @@ export default defineComponent({
       totalItems: 0,
       currentPage: 1,
       pageSize: 10,
-      tableData: [],
+      topicMainData: [],
       treeData: [],
       materialTreeData: [],
       currentCategoryId: '',
@@ -148,11 +148,11 @@ export default defineComponent({
       inspectTypeIds: [],
       initFocusNode: ''
     })
-    const functionManage = ref()
+    const refFunctionDialog = ref()
     const treeModule = ref()
 
     // single action to go
-    const handleSingleEdit = (row:TableData) => {
+    const handleSingleEdit = (row:TopicMainData) => {
       console.log('the row info that want to edit')
       console.log(row)
       state.globleItem = {
@@ -217,7 +217,7 @@ export default defineComponent({
       }).then((res) => {
         console.log('物料明细')
         console.log(res.data.data)
-        state.tableData = res.data.data.records
+        state.topicMainData = res.data.data.records
         state.currentPage = res.data.data.current
         state.pageSize = res.data.data.size
         state.totalItems = res.data.data.total
@@ -255,14 +255,14 @@ export default defineComponent({
     }
 
     const updateInspectCategoryList = (val:string[]) => {
-      const dataTemp:TableData[] = []
+      const dataTemp:TopicMainData[] = []
       dataTemp.push(state.globleItem)
 
       INSPECT_MATERIAL_CHECKED_INSPECT_TYPE_UPDATE_API({
         inspectMaterialDetails: dataTemp,
         inspectTypeIdList: val // 检验类id数组
       }).then(() => {
-        proxy.$successToast('编辑成功')
+        proxy.$successToast('操作成功')
         // reload page
         apiMaterialDetail(state.currentCategoryId, state.materialDetailText, state.currentPage, state.pageSize)
       })
@@ -308,7 +308,7 @@ export default defineComponent({
 
     return {
       ...toRefs(state),
-      functionManage,
+      refFunctionDialog,
       handleSingleEdit,
       handleSizeChange,
       handleCurrentChange,
