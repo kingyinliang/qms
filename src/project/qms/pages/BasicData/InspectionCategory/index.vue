@@ -14,7 +14,7 @@
         <li class="contextMenu" @click="addSubordinate">新增下级</li>
       </template>
       <template #view>
-        <el-form :model="detailInfo" :rules="rules" ref="ruleForm" label-width="100px" class="demo-ruleForm">
+        <el-form ref="detailRef" :model="detailInfo" :rules="rules" label-width="100px" class="demo-ruleForm">
           <el-row>
             <el-col :span="12">
               <el-form-item label="类别编码：" prop="inspectTypeCode">
@@ -64,7 +64,6 @@
                 <el-button v-if="isRedact" size="small" type="primary" icon="el-icon-edit" @click="isRedact= false">编辑</el-button>
                 <!-- <div v-else> -->
                 <el-button v-if="!isRedact" size="small" icon="el-icon-circle-close" @click="isRedact= true">取消</el-button>
-                <el-button v-if="!isRedact" size="small" icon="el-icon-circle-close" @click="dayin">打印</el-button>
                 <el-button v-if="!isRedact" size="small" type="danger" icon="el-icon-delete" @click="resetForm('ruleForm')">删除</el-button>
                 <el-button v-if="!isRedact" size="small" type="primary" icon="el-icon-document-checked" @click="editSave">保存</el-button>
                 <!-- </div> -->
@@ -75,14 +74,14 @@
       </template>
     </tree-page>
     <el-dialog v-model="addLevelBtn" title="检验类别-新增" width="50%">
-      <el-form :model="addLevelInfo" :rules="rules">
-        <el-form-item label="类别编码：" prop="name" :label-width="formLabelWidth">
+      <el-form ref="addRef" :model="addLevelInfo" :rules="rules">
+        <el-form-item label="类别编码：" prop="inspectTypeCode" :label-width="formLabelWidth">
           <el-input v-model="addLevelInfo.inspectTypeCode" class="inputWidth" :disabled="true" autocomplete="off"></el-input>
         </el-form-item>
-        <el-form-item label="类别名称：" prop="name" :label-width="formLabelWidth">
+        <el-form-item label="类别名称：" prop="inspectTypeName" :label-width="formLabelWidth">
           <el-input v-model="addLevelInfo.inspectTypeName" class="inputWidth" placeholder="请输入" autocomplete="off"></el-input>
         </el-form-item>
-        <el-form-item label="上级类别：" prop="name" :label-width="formLabelWidth">
+        <el-form-item label="上级类别：" prop="parentId" :label-width="formLabelWidth">
           <el-input v-model="addLevelInfo.parentName" class="inputWidth" :disabled="true" autocomplete="off"></el-input>
         </el-form-item>
         <el-form-item label="关联组织：" :label-width="formLabelWidth">
@@ -152,6 +151,8 @@ export default defineComponent({
 
     const proxy = ctx.proxy as any
 
+    const addRef = ref()
+    const detailRef = ref()
     const relationRef = ref()
     const sampleRef = ref()
     const cooperateRef = ref()
@@ -165,9 +166,6 @@ export default defineComponent({
     const treeData = ref<TreeData[]>([])
     let treeDataOrg:TreeData[] = []
     const options = ref([])
-    const dayin = () => {
-      window.print()
-    }
 
     const addLevelInfo = reactive<AddLevelInfo>({ id: '', relation: [] })
     const detailInfo = ref<AddLevelInfo>({
@@ -273,47 +271,55 @@ export default defineComponent({
     }
     // 新增弹窗保存
     const addLevelSave = () => {
-      proxy.$confirm('确认保存？', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }).then(async () => {
-        addLevelInfo.relation = setOrGetData(relationRef.value)
-        addLevelInfo.sample = setOrGetData(sampleRef.value)
-        addLevelInfo.cooperate = setOrGetData(cooperateRef.value)
-        await INSPECT_TYPE_ADD_API(addLevelInfo)
-        proxy.$successToast('操作成功')
-        addLevelBtn.value = false
-        setTreeData()
+      addRef.value.validate(async (valid: boolean) => {
+        if (valid) {
+          addLevelInfo.relation = setOrGetData(relationRef.value)
+          addLevelInfo.sample = setOrGetData(sampleRef.value)
+          addLevelInfo.cooperate = setOrGetData(cooperateRef.value)
+          await INSPECT_TYPE_ADD_API(addLevelInfo)
+          proxy.$successToast('操作成功')
+          addLevelBtn.value = false
+          setTreeData()
+        }
       })
     }
     // 删除
     const resetForm = async () => {
-      await INSPECT_TYPE_DEL_API({ id: detail.id })
-      proxy.$successToast('操作成功')
-      detailInfo.value = {
-        id: '',
-        parentId: '',
-        parentName: '',
-        inspectTypeName: '',
-        inspectTypeCode: '',
-        sampleAmount: '',
-        manualFlag: '',
-        relation: [],
-        sample: [],
-        cooperate: []
-      }
-      setTreeData()
+      proxy.$confirm('确认删除？', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(async () => {
+        await INSPECT_TYPE_DEL_API({ id: detail.id })
+        proxy.$successToast('操作成功')
+        detailInfo.value = {
+          id: '',
+          parentId: '',
+          parentName: '',
+          inspectTypeName: '',
+          inspectTypeCode: '',
+          sampleAmount: '',
+          manualFlag: '',
+          relation: [],
+          sample: [],
+          cooperate: []
+        }
+        setTreeData()
+      })
     }
     // 编辑保存
-    const editSave = async () => {
-      detailInfo.value.relation = setOrGetData(detailRelationRef.value)
-      detailInfo.value.sample = setOrGetData(detailSampleRef.value)
-      detailInfo.value.cooperate = setOrGetData(detailCooperateRef.value)
-      await INSPECT_TYPE_UPDATE_API(detailInfo.value)
-      proxy.$successToast('操作成功')
-      isRedact.value = true
-      getDetail(detail)
+    const editSave = () => {
+      detailRef.value.validate(async (valid: boolean) => {
+        if (valid) {
+          detailInfo.value.relation = setOrGetData(detailRelationRef.value)
+          detailInfo.value.sample = setOrGetData(detailSampleRef.value)
+          detailInfo.value.cooperate = setOrGetData(detailCooperateRef.value)
+          await INSPECT_TYPE_UPDATE_API(detailInfo.value)
+          proxy.$successToast('操作成功')
+          isRedact.value = true
+          await getDetail(detail)
+        }
+      })
     }
     // 去掉children
     const cascaderTranslate = (data: any) => {
@@ -336,7 +342,8 @@ export default defineComponent({
       getOrg()
     })
     return {
-      dayin,
+      addRef,
+      detailRef,
       relationRef,
       sampleRef,
       cooperateRef,
