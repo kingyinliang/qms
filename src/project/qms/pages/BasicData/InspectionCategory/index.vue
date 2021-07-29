@@ -10,7 +10,7 @@
       @treeNodeContextMenu="contextmenu"
     >
       <template #context--menu>
-        <li class="contextMenu" @click="addSameLevel">新增同级</li>
+        <li class="contextMenu" v-if="level" @click="addSameLevel">新增同级</li>
         <li class="contextMenu" @click="addSubordinate">新增下级</li>
       </template>
       <template #view>
@@ -126,6 +126,7 @@ import {
 
 interface AddLevelInfo {
   id: string; // 主键
+  assistFlag?: string; // "上级类别":
   parentId?: string; // "上级类别":
   parentName?: string; // "上级类别":
   inspectTypeName?: string; // 类别名称
@@ -138,6 +139,7 @@ interface AddLevelInfo {
 }
 interface TreeData {
   id: string; // 主键
+  assistFlag: string; // "上级类别":
   parentId: string; // "上级类别":
   parentName: string; // "上级类别":
   inspectTypeName: string; // 类别名称
@@ -159,6 +161,7 @@ export default defineComponent({
     const detailRelationRef = ref()
     const detailSampleRef = ref()
     const detailCooperateRef = ref()
+    const level = ref(false)
     const addLevelBtn = ref(false)
     const isRedact = ref(true)
     const props = ref({ emitPath: false, multiple: true, value: 'id', label: 'deptName', children: 'children' })
@@ -225,6 +228,7 @@ export default defineComponent({
     // 树右击
     const contextmenu = (row: TreeData) => {
       temp = row
+      row.parentId === '0' ? level.value = false : level.value = true
     }
     // 生成编码
     const generateCode = (startCode: string) => {
@@ -250,6 +254,7 @@ export default defineComponent({
       addLevelBtn.value = true
       clearForm()
       generateCode(temp.inspectTypeCode.slice(0, temp.inspectTypeCode.length - 2))
+      addLevelInfo.assistFlag = temp.assistFlag
       addLevelInfo.parentId = temp.parentId
       addLevelInfo.parentName = temp.parentName
     }
@@ -266,6 +271,7 @@ export default defineComponent({
       addLevelBtn.value = true
       clearForm()
       generateCode(temp.inspectTypeCode)
+      addLevelInfo.assistFlag = temp.assistFlag
       addLevelInfo.parentId = temp.id
       addLevelInfo.parentName = temp.inspectTypeName
     }
@@ -342,6 +348,7 @@ export default defineComponent({
       getOrg()
     })
     return {
+      level,
       addRef,
       detailRef,
       relationRef,
