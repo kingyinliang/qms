@@ -28,7 +28,7 @@
       </el-input>
       <el-button type="primary" size="mini" style="height:32px; margin-left:5px" @click="apiMaterialDetail(currentMaterialString,currentMaterialGroupString,materialDetailText,'searchBar')">查询</el-button>
       </div>
-     <el-table :data="tableData"
+     <el-table :data="topicMainData"
         style="width: 100%"
         max-height="500"
         border tooltip-effect="dark">
@@ -38,7 +38,7 @@
         <el-table-column label="所属物料组" prop="inspectGroupName" :show-overflow-tooltip="true" min-width="100" />
         <el-table-column fixed="right" label="操作" header-align="left" align="left" width="100">
             <template #default="scope">
-                <el-button size="mini" @click="handleSingleAsign(scope.row)">
+                <el-button type="text" @click="handleSingleAsign(scope.row)" icon="el-icon-tickets">
                     分配
                 </el-button>
             </template>
@@ -46,7 +46,7 @@
       </el-table>
 
       <el-pagination
-      v-if="tableData.length!==0"
+      v-if="topicMainData.length!==0"
       @size-change="handleSizeChange"
       @current-change="handleCurrentChange"
       :current-page="currentPage"
@@ -57,7 +57,7 @@
     </el-pagination>
     </template>
   </tree-page>
-  <material-inspection-asign v-model:dialogVisible="isDialogShow" ref="functionManage" :title="'分配检验类别'"  :treeData="materialTreeData" @inspectCategoryList="inspectCategoryList" @reset="reset"  />
+  <material-inspection-asign v-model:dialogVisible="isDialogShow" ref="refFunctionDialog" :title="'分配检验类别'"  :treeData="materialTreeData" @inspectCategoryList="inspectCategoryList" @reset="reset"  />
 </template>
 
 <script lang="ts">
@@ -79,7 +79,7 @@ interface TreeData { // 物料分类 API
   notShowContextMenuOnThisNode?:boolean
 }
 
-interface TableData { // 物料明细 API
+interface TopicMainData { // 物料明细 API
   inspectGroupCode: string
   inspectGroupName: string
   inspectMaterialType: string
@@ -102,14 +102,14 @@ interface State {
     totalItems: number
     currentPage: number
     pageSize: number
-    tableDataW: Array<TableData>
-    tableData: Array<TableData>
-    treeData: Array<TreeData>
-    materialTreeData: Array<MaterialTreeData>
+    tableDataW: TopicMainData[]
+    topicMainData: TopicMainData[]
+    treeData: TreeData[]
+    materialTreeData: MaterialTreeData[]
     currentMaterialString: string
     currentMaterialGroupString: string
-    globleItem:TableData
-    globleItemGroup: TableData[]
+    globleItem:TopicMainData
+    globleItemGroup: TopicMainData[]
     globleSearchString: string
     whoAsign: string
 }
@@ -134,7 +134,7 @@ export default defineComponent({
       currentPage: 1,
       pageSize: 10,
       tableDataW: [],
-      tableData: [],
+      topicMainData: [],
       treeData: [],
       materialTreeData: [],
       currentMaterialString: '',
@@ -150,11 +150,11 @@ export default defineComponent({
       globleItemGroup: [],
       whoAsign: ''
     })
-    const functionManage = ref()
+    const refFunctionDialog = ref()
     const treeModule = ref()
 
-    // single action to go
-    const handleSingleAsign = (row:TableData) => {
+    // [BTN:分配] single action to go
+    const handleSingleAsign = (row:TopicMainData) => {
       state.whoAsign = 'single'
       state.globleItem = {
         inspectGroupCode: row.inspectGroupCode,
@@ -188,7 +188,6 @@ export default defineComponent({
       }
     }
 
-    // TODO
     const treeNodeContextMenuHandle = (val:TreeItemData) => {
       INSPECT_MATERIAL_QUERY_SYS_MATERIAL_API({
         // inspectMaterialType: '欣和无估价的物料 ZUNB',
@@ -220,7 +219,6 @@ export default defineComponent({
       apiMaterialDetail(state.currentMaterialString, state.currentMaterialGroupString, '')
     }
 
-    // TODO
     const apiMaterialDetail = (currentMaterialString:string, currentMaterialGroupString:string, searchString = '', where = '') => {
       state.globleSearchString = searchString
       INSPECT_MATERIAL_QUERY_SYS_MATERIAL_API({
@@ -257,13 +255,13 @@ export default defineComponent({
     }
 
     // 分页方法（重点）
-    const currentChangePage = (list:TableData[], currentPage: number) => {
+    const currentChangePage = (list:TopicMainData[], currentPage: number) => {
       let from = (currentPage - 1) * state.pageSize
       const to = currentPage * state.pageSize
-      state.tableData = []
+      state.topicMainData = []
       for (; from < to; from++) {
         if (list[from]) {
-          state.tableData.push(list[from])
+          state.topicMainData.push(list[from])
         }
       }
     }
@@ -300,7 +298,7 @@ export default defineComponent({
     }
 
     const inspectCategoryList = (val:string[]) => {
-      let dataTemp:TableData[] = []
+      let dataTemp:TopicMainData[] = []
       if (state.whoAsign === 'single') {
         dataTemp.push(state.globleItem)
       } else if (state.whoAsign === 'multi') {
@@ -311,7 +309,7 @@ export default defineComponent({
         inspectMaterialDetails: dataTemp,
         inspectTypeIdList: val // 检验类id数组
       }).then(() => {
-        proxy.$successToast('分配成功')
+        proxy.$successToast('操作成功')
         // reload page
         if (state.whoAsign === 'single') {
           apiMaterialDetail(state.currentMaterialString, state.currentMaterialGroupString, state.globleSearchString)
@@ -328,7 +326,7 @@ export default defineComponent({
 
     return {
       ...toRefs(state),
-      functionManage,
+      refFunctionDialog,
       handleSingleAsign,
       treeNodeContextMenuHandle,
       handleSizeChange,
