@@ -30,6 +30,11 @@ export function DICT_DROPDOWN (params = {}):Promise<AxiosResponse> {
   return Http.get('/sysDictItem/dropDown', params, { baseURL: (process.env.VUE_APP_SYSTEM_API as string) + (process.env.VUE_APP_API_V as string) })
 }
 
+// 数据字典根据类型获取详情
+export function DICTIONARY_QUERY_API (params = {}):Promise<AxiosResponse> {
+  return Http.get('/sysDictItem/dropDown', params, { baseURL: (process.env.VUE_APP_SYSTEM_API as string) + (process.env.VUE_APP_API_V as string) })
+}
+
 export function INSPECT_TYPE_LIST_API (params = {}):Promise<AxiosResponse> {
   return Http.get('/inspectType/queryInspectType', params, { baseURL: (process.env.VUE_APP_QMS_API as string) + (process.env.VUE_APP_API_V as string) })
 }
@@ -95,4 +100,24 @@ export function INSPECT_MATERIAL_CHECKED_INSPECT_TYPE_QUERY_API (params = {}):Pr
 // 基础数据-物料明细 - 重新分配
 export function INSPECT_MATERIAL_CHECKED_INSPECT_TYPE_UPDATE_API (params = {}):Promise<AxiosResponse> {
   return Http.post('/inspectMaterial/updateCheckedInspectMaterial', params, { baseURL: (process.env.VUE_APP_QMS_API as string) + (process.env.VUE_APP_API_V as string) })
+}
+
+// 基础数据-检验指标库-查询
+export function INSPECT_INDEX_LIBRARY_QUERY_API (params = {}):Promise<AxiosResponse> {
+  return Http.get('/inspectIndex/queryInspectIndex', params, { baseURL: (process.env.VUE_APP_QMS_API as string) + (process.env.VUE_APP_API_V as string) })
+}
+
+// 基础数据-检验指标编辑-查询
+export function INSPECT_INDEX_LIBRARY_ITEM_QUERY_API (params = {}):Promise<AxiosResponse> {
+  return Http.get('/inspectIndex/queryInspectIndexMethodTree', params, { baseURL: (process.env.VUE_APP_QMS_API as string) + (process.env.VUE_APP_API_V as string) })
+}
+
+// 基础数据-通过id查询检验指标数据
+export function INSPECT_INDEX_LIBRARY_ITEM_BY_ID_QUERY_API (params = {}):Promise<AxiosResponse> {
+  return Http.get('/inspectIndex/queryInspectIndexById', params, { baseURL: (process.env.VUE_APP_QMS_API as string) + (process.env.VUE_APP_API_V as string) })
+}
+
+// 基础数据-检验指标编辑-更新
+export function INSPECT_INDEX_LIBRARY_ITEM_UPDATE_API (params = {}):Promise<AxiosResponse> {
+  return Http.post('/inspectIndex/updateInspectIndex', params, { baseURL: (process.env.VUE_APP_QMS_API as string) + (process.env.VUE_APP_API_V as string) })
 }
