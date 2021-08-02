@@ -14,7 +14,7 @@
             </el-input>
           </div>
           <div class="tree-main SelfScrollbar">
-            <el-tree ref="treeRef" :data="treeData" node-key="id" :current-node-key="focusCurrentNodeNumber" :props="treeProps" highlight-current :filter-node-method="filterNode" @node-click="treeNodeClick" @node-contextmenu="treeNodeContextMenu" />
+            <el-tree ref="treeRef" :data="treeData" node-key="id" :default-expanded-keys="expandedKeys" :current-node-key="focusCurrentNodeNumber" :props="treeProps" highlight-current :filter-node-method="filterNode" @node-click="treeNodeClick" @node-contextmenu="treeNodeContextMenu" />
           </div>
         </div>
       </el-col>
@@ -77,7 +77,7 @@ export default defineComponent({
     treeProps: {
       type: Object,
       default: function () {
-        return { label: 'deptName' }
+        return { label: 'deptName', children: 'children' }
       }
     },
     floatMenu: { // 开启 float menu
@@ -88,19 +88,27 @@ export default defineComponent({
   setup (props, { emit }) {
     const filterText = ref('')
     const treeRef = ref()
+    const expandedKeys = ref<string[]>([])
     const menuVisible = ref(false)
     const focusCurrentNodeNumber = ref('')
 
     onMounted(() => {
       document.addEventListener('click', () => {
-        // console.log(e)
         menuVisible.value = false
-        // const className = (e.target as Element).className as string
-        // if (className !== 'contextMenu') menuVisible.value = false
       })
     })
     watch(filterText, (val) => {
       treeRef.value.filter(val)
+    })
+
+    watch(props, async (val: any) => {
+      await nextTick()
+      for (const item of val.treeData) {
+        if (item[(props as any).treeProps.children] && item[(props as any).treeProps.children].length) {
+          expandedKeys.value = [item.id]
+          return false
+        }
+      }
     })
 
     watch(focusCurrentNodeNumber, async (val) => {
@@ -142,17 +150,11 @@ export default defineComponent({
       }
     }
 
-    onMounted(() => {
-      document.addEventListener('click', e => {
-        const target: HTMLDivElement = e.target as HTMLDivElement
-        if (target.className !== 'context--menu') menuVisible.value = false
-      })
-    })
-
     return {
       treeRef,
       filterText,
       menuVisible,
+      expandedKeys,
       filterNode,
       treeNodeClick,
       treeNodeContextMenu,
