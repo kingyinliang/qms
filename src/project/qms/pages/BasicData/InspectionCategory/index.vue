@@ -1,11 +1,12 @@
 <template>
   <div>
     <tree-page
+      ref="treePage"
       :treeData="treeData"
       title="检验类别"
       leftTitle="检验类别"
       rightTitle="类别详情"
-      :treeProps="{ label: 'inspectTypeName' }"
+      :treeProps="{ label: 'inspectTypeName', children: 'children' }"
       @treeNodeClick="getDetail"
       @treeNodeContextMenu="contextmenu"
     >
@@ -153,6 +154,7 @@ export default defineComponent({
 
     const proxy = ctx.proxy as any
 
+    const treePage = ref()
     const addRef = ref()
     const detailRef = ref()
     const relationRef = ref()
@@ -207,6 +209,8 @@ export default defineComponent({
       const res = await INSPECT_TYPE_LIST_API()
       treeDataOrg = res.data.data
       treeData.value = treeDataTranslate(res.data.data, 'id', 'parentId')
+      treePage.value.focusCurrentNodeNumber = treeData.value[0].id
+      getDetail(treeData.value[0])
     }
     // 下拉框数据变换
     const setOrGetData = (data: any, type = 'get') => {
@@ -348,6 +352,7 @@ export default defineComponent({
       getOrg()
     })
     return {
+      treePage,
       level,
       addRef,
       detailRef,

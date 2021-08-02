@@ -155,6 +155,10 @@ export default defineComponent({
     }
     // 批量删除
     const selectDelete = () => {
+      if (!multipleSelection.value.length) {
+        proxy.$warningToast('请选择数据')
+        return
+      }
       proxy.$confirm('确认删除选中的数据？', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
