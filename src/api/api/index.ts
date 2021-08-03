@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-07-08 09:53:20
  * @LastEditors: Telliex
- * @LastEditTime: 2021-07-28 15:39:24
+ * @LastEditTime: 2021-08-04 18:32:07
  */
 import { AxiosResponse } from 'axios'
 import Http from '../http/axios'
@@ -119,4 +119,74 @@ export function INSPECT_INDEX_LIBRARY_ITEM_BY_ID_QUERY_API (params = {}):Promise
 // 基础数据-检验指标编辑-更新
 export function INSPECT_INDEX_LIBRARY_ITEM_UPDATE_API (params = {}):Promise<AxiosResponse> {
   return Http.post('/inspectIndex/updateInspectIndex', params, { baseURL: (process.env.VUE_APP_QMS_API as string) + (process.env.VUE_APP_API_V as string) })
+}
+
+// 基础数据-[检验指标标准]-类别组织数据 - 查询
+export function INSPECT_INDEX_STANDARD_QUERY_API (params = {}):Promise<AxiosResponse> {
+  return Http.get('/inspectIndexMaterial/queryInspectIndexMaterial', params, { baseURL: (process.env.VUE_APP_QMS_API as string) + (process.env.VUE_APP_API_V as string) })
+}
+
+// 基础数据-[检验指标标准]-物料指标数据 - 删除
+export function INSPECT_INDEX_STANDARD_BATCH_DELETE_API (params = {}):Promise<AxiosResponse> {
+  return Http.post('/inspectIndexMaterial/deleteInspectIndexMaterial', params, { baseURL: (process.env.VUE_APP_QMS_API as string) + (process.env.VUE_APP_API_V as string) })
+}
+
+// 基础数据-[检验指标标准]-检验类及物料下拉数据查询
+export function INSPECT_INDEX_MATERIAL_ASSIST_TYPE_DROPDOWN_API (params = {}):Promise<AxiosResponse> {
+  return Http.get('/inspectType/queryInspectMaterialAndAssistType', params, { baseURL: (process.env.VUE_APP_QMS_API as string) + (process.env.VUE_APP_API_V as string) })
+}
+
+// 基础数据-[检验指标标准]- 物料指标数据 - 新增
+export function INSPECT_INDEX_MATERIAL_ITEM_ADD_API (params = {}):Promise<AxiosResponse> {
+  return Http.post('/inspectIndexMaterial/insertInspectIndexMaterial', params, { baseURL: (process.env.VUE_APP_QMS_API as string) + (process.env.VUE_APP_API_V as string) })
+}
+
+// 基础数据-[检验指标标准]- 物料指标数据 - 编辑
+export function INSPECT_INDEX_MATERIAL_ITEM_UPDATE_API (params = {}):Promise<AxiosResponse> {
+  return Http.post('/inspectIndexMaterial/updateInspectIndexMaterial', params, { baseURL: (process.env.VUE_APP_QMS_API as string) + (process.env.VUE_APP_API_V as string) })
+}
+
+// 基础数据-[检验指标标准]- 指标库按属性 - 查询
+export function INSPECT_INDEX_MATERIAL_BY_CATEGORY_QUERY_API (params = {}):Promise<AxiosResponse> {
+  return Http.get('/inspectIndex/queryInspectIndexTree', params, { baseURL: (process.env.VUE_APP_QMS_API as string) + (process.env.VUE_APP_API_V as string) })
+}
+
+// 基础数据-[检验指标标准]- 指标下拉查询
+export function INSPECT_INDEX_DROPDOWN_API (params = {}):Promise<AxiosResponse> {
+  return Http.get('/inspectIndex/queryInspectIndexDropDown', params, { baseURL: (process.env.VUE_APP_QMS_API as string) + (process.env.VUE_APP_API_V as string) })
+}
+
+// 基础数据-[指标版本管理]- 查询
+export function INSPECT_INDEX_VERSION_QUERY_API (params = {}):Promise<AxiosResponse> {
+  return Http.get('/inspectIndexVersion/queryInspectIndexVersion', params, { baseURL: (process.env.VUE_APP_QMS_API as string) + (process.env.VUE_APP_API_V as string) })
+}
+
+// 基础数据-[指标版本管理]- 新增
+export function INSPECT_INDEX_VERSION_ADD_API (params = {}):Promise<AxiosResponse> {
+  return Http.post('/inspectIndexVersion/insertInspectIndexVersion', params, { baseURL: (process.env.VUE_APP_QMS_API as string) + (process.env.VUE_APP_API_V as string) })
+}
+
+// 基础数据-[指标版本管理]- 删除
+export function INSPECT_INDEX_VERSION_DELETE_API (params = {}):Promise<AxiosResponse> {
+  return Http.post('/inspectIndexVersion/deleteInspectIndexVersion', params, { baseURL: (process.env.VUE_APP_QMS_API as string) + (process.env.VUE_APP_API_V as string) })
+}
+
+// 基础数据-[指标版本管理][标准值明细]- 查询
+export function INSPECT_INDEX_VERSION_VALUE_QUERY_API (params = {}):Promise<AxiosResponse> {
+  return Http.get('/inspectIndexStandard/queryInspectIndexStandard', params, { baseURL: (process.env.VUE_APP_QMS_API as string) + (process.env.VUE_APP_API_V as string) })
+}
+
+// 基础数据-[指标版本管理][标准值明细]- 新增
+export function INSPECT_INDEX_VERSION_VALUE_ADD_API (params = {}):Promise<AxiosResponse> {
+  return Http.post('/inspectIndexStandard/insertInspectIndexStandard', params, { baseURL: (process.env.VUE_APP_QMS_API as string) + (process.env.VUE_APP_API_V as string) })
+}
+
+// 基础数据-[指标版本管理][标准值明细]- 删除
+export function INSPECT_INDEX_VERSION_VALUE_DELETE_API (params = {}):Promise<AxiosResponse> {
+  return Http.get('/inspectIndexStandard/deleteInspectIndexStandard', params, { baseURL: (process.env.VUE_APP_QMS_API as string) + (process.env.VUE_APP_API_V as string) })
+}
+
+// 基础数据-[指标版本管理][标准值明细]- 编辑
+export function INSPECT_INDEX_VERSION_VALUE_EDIT_API (params = {}):Promise<AxiosResponse> {
+  return Http.post('/inspectIndexStandard/updateInspectIndexStandard', params, { baseURL: (process.env.VUE_APP_QMS_API as string) + (process.env.VUE_APP_API_V as string) })
 }
