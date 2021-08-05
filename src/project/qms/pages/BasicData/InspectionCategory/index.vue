@@ -114,7 +114,9 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, reactive, onMounted, ComponentInternalInstance, getCurrentInstance } from 'vue'
+import {
+  defineComponent, ref, reactive, onMounted, ComponentInternalInstance, getCurrentInstance, nextTick
+} from 'vue'
 import { treeDataTranslate } from '@/utils/index'
 import {
   INSPECT_TYPE_LIST_API,
@@ -254,8 +256,10 @@ export default defineComponent({
       addLevelInfo.inspectTypeCode = code
     }
     // 新增同级
-    const addSameLevel = () => {
+    const addSameLevel = async () => {
       addLevelBtn.value = true
+      await nextTick()
+      addRef.value.resetFields()
       clearForm()
       generateCode(temp.inspectTypeCode.slice(0, temp.inspectTypeCode.length - 2))
       addLevelInfo.assistFlag = temp.assistFlag
@@ -271,8 +275,10 @@ export default defineComponent({
       addLevelInfo.inspectTypeName = ''
     }
     // 新增下级
-    const addSubordinate = () => {
+    const addSubordinate = async () => {
       addLevelBtn.value = true
+      await nextTick()
+      addRef.value.resetFields()
       clearForm()
       generateCode(temp.inspectTypeCode)
       addLevelInfo.assistFlag = temp.assistFlag
@@ -295,7 +301,7 @@ export default defineComponent({
     }
     // 删除
     const resetForm = async () => {
-      proxy.$confirm('确认删除？', '提示', {
+      proxy.$confirm('是否删除此检验类，请确认', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'

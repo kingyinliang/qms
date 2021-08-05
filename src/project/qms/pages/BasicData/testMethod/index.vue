@@ -62,7 +62,9 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, reactive, onMounted, ComponentInternalInstance, getCurrentInstance } from 'vue'
+import {
+  defineComponent, ref, reactive, onMounted, ComponentInternalInstance, getCurrentInstance, nextTick
+} from 'vue'
 import MdsCard from '@/components/package/mds-card/src/mds-card.vue'
 import {
   TEST_METHOD_LIST_API,
@@ -145,8 +147,10 @@ export default defineComponent({
       totalCount.value = res.data.data.length
     }
     // [BTN:编辑] 编辑数据集 item
-    const editItem = (row: TargetInfo) => {
+    const editItem = async (row: TargetInfo) => {
       addMethodBtn.value = true
+      await nextTick()
+      addRef.value.resetFields()
       addMethodInfo.value = { ...row }
     }
     // 复选选择
@@ -159,7 +163,7 @@ export default defineComponent({
         proxy.$warningToast('请选择数据')
         return
       }
-      proxy.$confirm('确认删除选中的数据？', '提示', {
+      proxy.$confirm('是否删除此检验方法，请确认', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
@@ -170,8 +174,10 @@ export default defineComponent({
       })
     }
     // 新增弹窗
-    const addData = () => {
+    const addData = async () => {
       addMethodBtn.value = true
+      await nextTick()
+      addRef.value.resetFields()
       let code = materialData.value.reduce((previousValue: number, currentValue: TargetInfo) => {
         const currentCode = Number(currentValue.inspectMethodCode.replace(/M/g, ''))
         return previousValue < currentCode ? currentCode : previousValue
