@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-07-30 11:24:46
  * @LastEditors: Telliex
- * @LastEditTime: 2021-08-06 08:47:10
+ * @LastEditTime: 2021-08-06 11:08:57
 -->
 <template>
   <mds-card class="test_method" title="版本明细" :pack-up="false" style="margin-bottom: 0; background: #fff;">
@@ -105,10 +105,11 @@
 <script lang="ts">
 //  ComponentInternalInstance, getCurrentInstance
 import { useRouter } from 'vue-router'
-import { defineComponent, ref, reactive, onMounted, toRefs, ComponentInternalInstance, getCurrentInstance } from 'vue'
+import { defineComponent, ref, reactive, onMounted, toRefs, ComponentInternalInstance, getCurrentInstance, watch } from 'vue'
 import MdsCard from '@/components/package/mds-card/src/mds-card.vue'
 import IndexValueDetail from './TestIndexValueDetail.vue'
 import axios from 'axios'
+import { useStore } from 'vuex'
 import {
   INSPECT_INDEX_VERSION_QUERY_API, // 基础数据-[指标版本管理]- 查询
   INSPECT_INDEX_VERSION_ADD_API, // 基础数据-[指标版本管理]- 新增
@@ -181,6 +182,7 @@ export default defineComponent({
     const refIndexValueDetail = ref()
     const upload = ref()
     const router = useRouter()
+    const store = useStore()
     const dataRule = ref({
       indexVersion: [
         {
@@ -419,7 +421,10 @@ export default defineComponent({
     // }, [router])
 
     onMounted(async () => {
-      state.inspectIndexMaterialId = router.currentRoute.value.query.versionID ? router.currentRoute.value.query.versionID as string : '624547859339390976'
+      if (store.state.common.inspectIndexMaterialId === '') {
+        store.commit('common/updateInspectIndexMaterialId', router.currentRoute.value.query.versionID as string)
+      }
+      state.inspectIndexMaterialId = router.currentRoute.value.query.versionID ? router.currentRoute.value.query.versionID as string : store.state.common.inspectIndexMaterialId
       btnGetMainData()
     })
 

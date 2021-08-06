@@ -193,6 +193,7 @@ export default function (): LayoutTs<any> {
 
   // 点击跳转
   const gotoPage = (obj:any) => {
+    removeTabHandle(obj.path.replace(/\//g, '-'))
     router.push(obj)
   }
 

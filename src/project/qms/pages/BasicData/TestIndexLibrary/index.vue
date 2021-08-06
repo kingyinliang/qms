@@ -164,12 +164,10 @@ export default defineComponent({
 
     // [BTN:编辑] 编辑数据集 item
     const btnEditItem = async (row: TopicMainData) => {
-      console.log(row)
       // state.isDialogShow = true
       const res = await INSPECT_INDEX_LIBRARY_ITEM_BY_ID_QUERY_API({
         id: row.id
       })
-      console.log(res.data.data)
       state.dialogMainDataImport = res.data.data
       state.isDialogShow = true
     }

@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-07-30 11:24:46
  * @LastEditors: Telliex
- * @LastEditTime: 2021-08-06 08:17:32
+ * @LastEditTime: 2021-08-06 11:55:29
 -->
 <template>
   <mds-card class="test_method" title="检验指标标准" :pack-up="false" style="margin-bottom: 0; background: #fff;">
@@ -56,24 +56,27 @@
     </el-row>
   </mds-card>
   <!--指标弹窗-->
-  <el-dialog :title="singleItemform.title" v-model="isDialogVisibleForItemControl" width="40%">
+  <el-dialog :title="singleItemform.title" v-model="isDialogVisibleForItemControl" width="40%" >
     <el-form :model="singleItemform">
-      <el-form-item label="检验类别\物料" :label-width="'120px'">
-        <el-select v-model="singleItemform.inspectMaterialId" placeholder="请选择检验类别\物料" style="width:100%" filterable @change="selectInspectMaterialChange" clearable>
+      <el-form-item label="检验类别\物料" :label-width="'120px'" class="star">
+        <el-select v-model="singleItemform.inspectMaterialId" placeholder="请选择" style="width:100%" filterable @change="selectInspectMaterialChange" clearable>
           <el-option v-for="(opt, optIndex) in inspectMaterialOptions" :key="optIndex" :label="opt.inspectMaterialTypeName" :value="opt.id" />
         </el-select>
       </el-form-item>
-      <el-form-item label="指标代码" :label-width="'120px'">
+      <el-form-item label="指标代码" :label-width="'120px'" class="star">
         <template v-if="singleItemform.title==='新增指标'">
           <!-- {{singleItemform.inspectIndexName}} -->
           <div v-if="singleItemform.title='新增指标'" class="item-imput" @click="actAddIndexId">
             <p>
+              <span style="color:#bbb" v-if="tempMultiSelected.length===0">请选择</span>
               <el-tag
                 :key="tag.id"
                 v-for="tag in tempMultiSelected"
                 :disable-transitions="false"
+                closable
                 :hit="false"
                 color="#fefefe"
+                 @close="tagHandleClose(tag)"
               >{{tag.name}}
               </el-tag>
               <span> </span>
@@ -81,7 +84,7 @@
           </div>
         </template>
         <template v-if="singleItemform.title==='编辑指标'">
-          <el-select v-if="singleItemform.title='编辑指标'" v-model="singleItemform.inspectIndexId" placeholder="请选择指标代码" style="width:100%" @change="selectInspectIndexChange" filterable clearable>
+          <el-select v-if="singleItemform.title='编辑指标'" v-model="singleItemform.inspectIndexId" placeholder="请选择" style="width:100%" @change="selectInspectIndexChange" filterable clearable>
             <el-option v-for="(opt, optIndex) in inspectIndexOptions" :key="optIndex" :label="opt.indexName" :value="opt.id" />
           </el-select>
         </template>
@@ -338,7 +341,7 @@ export default defineComponent({
       if (state.selectedListOfTopicMainData.length === 0) {
         return
       }
-      proxy.$confirm('确认删除选中的数据？', '提示', {
+      proxy.$confirm('是否删除选中检验指标？', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
@@ -475,6 +478,10 @@ export default defineComponent({
       })
     }
 
+    const tagHandleClose = (tag:SelectedItem) => {
+      state.tempMultiSelected.splice(state.tempMultiSelected.indexOf(tag), 1)
+    }
+
     onMounted(async () => {
       // 数据字典查找
       const resPropertyObject = await DICTIONARY_QUERY_API({ dictType: 'INSPECT_PROPERTY' })
@@ -507,7 +514,8 @@ export default defineComponent({
       actAddIndexId,
       apiGetInspectMaterialOptions,
       selectInspectMaterialChange,
-      selectInspectIndexChange
+      selectInspectIndexChange,
+      tagHandleClose
     }
   }
 })
@@ -550,5 +558,13 @@ export default defineComponent({
         margin-right: 5px;
       }
     }
+}
+
+</style>
+<style scoped >
+  .star >>> .el-form-item__label:before {
+    content: "*";
+    color: var(--el-color-danger);
+    margin-right: 4px;
 }
 </style>

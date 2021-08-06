@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-07-30 11:24:46
  * @LastEditors: Telliex
- * @LastEditTime: 2021-08-05 15:45:36
+ * @LastEditTime: 2021-08-06 10:59:52
 -->
 <template>
   <mds-card class="test_method" title="标准值明细" :pack-up="false" style="margin-bottom: 0; background: #fff;">
