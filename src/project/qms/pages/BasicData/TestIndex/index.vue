@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-07-30 11:24:46
  * @LastEditors: Telliex
- * @LastEditTime: 2021-08-04 10:51:34
+ * @LastEditTime: 2021-08-06 08:17:32
 -->
 <template>
   <mds-card class="test_method" title="检验指标标准" :pack-up="false" style="margin-bottom: 0; background: #fff;">
@@ -103,6 +103,7 @@
 import { defineComponent, ref, reactive, onMounted, toRefs, ComponentInternalInstance, getCurrentInstance } from 'vue'
 import MdsCard from '@/components/package/mds-card/src/mds-card.vue'
 import CategoryOrganizationTree from './CategoryOrganizationTree.vue'
+import layoutTs from '@/components/layout/layoutTs'
 import {
   INSPECT_INDEX_STANDARD_QUERY_API,
   INSPECT_INDEX_STANDARD_BATCH_DELETE_API,
@@ -224,6 +225,7 @@ export default defineComponent({
   props: {
   },
   setup () {
+    const { gotoPage } = layoutTs()
     const ctx = getCurrentInstance() as ComponentInternalInstance
     const proxy = ctx.proxy as any
     const refCategoryOrganizationTree = ref()
@@ -306,7 +308,15 @@ export default defineComponent({
     }
 
     // [BTN:版本管理]
-    const btnVersionController = async () => {
+    const btnVersionController = async (row:TopicMainData) => {
+      console.log('row')
+      console.log(row)
+      gotoPage({
+        path: 'qms-pages-BasicData-TestIndexVersion-index',
+        query: {
+          versionID: row.id
+        }
+      })
       // if (ctx.state.common.mainTabs.find(tabItem => tabItem.name === 'qms-pages-BasicData-TestIndexVersion-index')) {
       //   this.$store.commit('common/updateMsgTabAlive', true)
       // } else {

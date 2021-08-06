@@ -14,6 +14,16 @@ export function UPDATE_TENANT (params = {}):Promise<AxiosResponse> {
   return Http.post('/mock/test', params, { baseURL: '' })
 }
 
+export function UPLOAD_FILE_API (params = {}):Promise<AxiosResponse> {
+  return Http.get('/sysFile/upload', params, { baseURL: (process.env.VUE_APP_SYSTEM_API as string) + (process.env.VUE_APP_API_V as string) })
+}
+
+// 系统管理-文件上传
+
+export function INSPECT_INDEX_UPLOAD_FILE_API (params = {}):Promise<AxiosResponse> {
+  return Http.get('/inspectIndexVersion/upload', params, { baseURL: (process.env.VUE_APP_QMS_API as string) + (process.env.VUE_APP_API_V as string) })
+}
+
 export function TEST_API (params = {}):Promise<AxiosResponse> {
   return Http.post('/mock/test', params, { baseURL: '' })
 }
@@ -190,4 +200,9 @@ export function INSPECT_INDEX_VERSION_VALUE_DELETE_API (params = {}):Promise<Axi
 // 基础数据-[指标版本管理][标准值明细]- 编辑
 export function INSPECT_INDEX_VERSION_VALUE_EDIT_API (params = {}):Promise<AxiosResponse> {
   return Http.post('/inspectIndexStandard/updateInspectIndexStandard', params, { baseURL: (process.env.VUE_APP_QMS_API as string) + (process.env.VUE_APP_API_V as string) })
+}
+
+// 基础数据-[指标版本管理][标准值明细]- 编辑+新增
+export function INSPECT_INDEX_VERSION_VALUE_MODIFY_API (params = {}):Promise<AxiosResponse> {
+  return Http.post('/inspectIndexStandard/modifyInspectIndexStandard', params, { baseURL: (process.env.VUE_APP_QMS_API as string) + (process.env.VUE_APP_API_V as string) })
 }

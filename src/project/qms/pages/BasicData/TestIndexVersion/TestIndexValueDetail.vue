@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-07-30 11:24:46
  * @LastEditors: Telliex
- * @LastEditTime: 2021-08-04 18:37:50
+ * @LastEditTime: 2021-08-05 15:45:36
 -->
 <template>
   <mds-card class="test_method" title="标准值明细" :pack-up="false" style="margin-bottom: 0; background: #fff;">
@@ -16,8 +16,8 @@
         </div>
     </template>
     <!-- :row-class-name="rowDelFlagOfTable" -->
-    <el-table ref="multipleTable"  :cell-style="{'text-align':'center'}" :data="topicMainData.slice((currentPage - 1) * pageSize, currentPage * pageSize)"  tooltip-effect="dark" style="width: 100%">
-      <el-table-column type="index" label="序号" :index="(index) => index + 1 + (currentPage - 1) * pageSize" width="50" />
+    <el-table ref="multipleTable"  :cell-style="{'text-align':'center'}" :data="topicMainData"  tooltip-effect="dark" style="width: 100%">
+      <el-table-column type="index" label="序号" width="50" />
       <el-table-column label="标定标准值" min-width="200" show-overflow-tooltip>
         <template #default="scope">
           <!-- <el-tooltip effect="dark" :disabled="scope.row.indexStandard===''" :content="scope.row.indexStandard" placement="top-start"> -->
@@ -144,24 +144,12 @@
       </el-table-column>
       <el-table-column label="操作" width="200" fixed="right">
         <template #default="scope" >
-          <el-button type="text" icon="el-icon-remove-outline" class="role__btn" @click="btnDeleteItemData(scope.$index,scope.row)">
+          <el-button type="text" icon="el-icon-remove-outline" class="role__btn" @click="btnDeleteItemData(scope.$index,scope.row)" :disabled="!isRedact">
            删除
           </el-button>
         </template>
       </el-table-column>
     </el-table>
-    <el-row style="float: right">
-      <el-pagination
-        v-if="topicMainData.length!==0"
-        :page-size="pageSize"
-        :current-page="currentPage"
-        :total="totalItems"
-        :page-sizes="[10, 20, 50]"
-        layout="total, sizes, prev, pager, next, jumper"
-        @size-change="val => pageSize = val"
-        @current-change="val => currentPage = val"
-      />
-    </el-row>
   </mds-card>
 </template>
 
@@ -171,9 +159,8 @@ import { defineComponent, reactive, onMounted, toRefs, ComponentInternalInstance
 import MdsCard from '@/components/package/mds-card/src/mds-card.vue'
 import {
   INSPECT_INDEX_VERSION_VALUE_QUERY_API, // 基础数据-[指标版本管理][标准值明细]- 查询
-  INSPECT_INDEX_VERSION_VALUE_ADD_API, // 基础数据-[指标版本管理][标准值明细]- 新增
   INSPECT_INDEX_VERSION_VALUE_DELETE_API, // 基础数据-[指标版本管理][标准值明细]- 删除
-  INSPECT_INDEX_VERSION_VALUE_EDIT_API // 基础数据-[指标版本管理][标准值明细]- 编辑
+  INSPECT_INDEX_VERSION_VALUE_MODIFY_API
 
 } from '@/api/api'
 
@@ -204,9 +191,6 @@ interface State {
   isDialogShow: boolean
   controlBtnCanDo: boolean
   topicMainData: TopicMainData[]
-  currentPage: number
-  pageSize: number
-  totalItems: number
   targetId: string
   isRedact: boolean
 }
@@ -231,9 +215,6 @@ export default defineComponent({
       isDialogShow: false,
       controlBtnCanDo: false,
       topicMainData: [],
-      currentPage: 1,
-      pageSize: 10,
-      totalItems: 0,
       targetId: '',
       isRedact: false
     })
@@ -243,13 +224,11 @@ export default defineComponent({
     // [ACTION:load] 获取标准值明细数据
     const btnGetMainData = async () => {
       const res = await INSPECT_INDEX_VERSION_VALUE_QUERY_API({
-        inspectVersionId: state.targetId,
-        current: state.currentPage,
-        size: state.pageSize
+        inspectVersionId: state.targetId
       })
       console.log('获取标准值明细数据')
       console.log(res.data.data)
-      res.data.data.records.forEach((item:TopicMainData) => {
+      res.data.data.forEach((item:TopicMainData) => {
         if (item.standardMonth !== '') {
           item.standardMonthList = item.standardMonth.split(',')
         } else {
@@ -258,10 +237,7 @@ export default defineComponent({
         // item.isRedact = false
       })
 
-      state.topicMainData = res.data.data.records
-      state.totalItems = res.data.data.total
-      state.currentPage = res.data.data.current
-      state.pageSize = res.data.data.size
+      state.topicMainData = res.data.data
     }
 
     // [BTN:删除] 删除 item
@@ -276,11 +252,8 @@ export default defineComponent({
           state.topicMainData.splice(index, 1)
           proxy.$successToast('操作成功')
         } else {
-          const res = await INSPECT_INDEX_VERSION_VALUE_DELETE_API(val.id)
+          const res = await INSPECT_INDEX_VERSION_VALUE_DELETE_API({ id: val.id })
           if (res.data.code === 200) {
-            state.currentPage = 1
-            state.pageSize = 10
-            state.totalItems = 0
             proxy.$successToast('操作成功')
             await btnGetMainData()
           }
@@ -326,12 +299,13 @@ export default defineComponent({
       console.log(tempAdd)
       console.log('tempEdit')
       console.log(tempEdit)
-      if (tempAdd.length >= 1) {
-        await INSPECT_INDEX_VERSION_VALUE_ADD_API(tempAdd)
-      }
-      if (tempEdit.length >= 1) {
-        await INSPECT_INDEX_VERSION_VALUE_EDIT_API(tempEdit)
-      }
+
+      await INSPECT_INDEX_VERSION_VALUE_MODIFY_API(
+        {
+          insertList: tempAdd,
+          updateList: tempEdit
+        }
+      )
       state.controlBtnCanDo = false
       state.isRedact = false
       btnGetMainData()
@@ -340,6 +314,7 @@ export default defineComponent({
     // [BTN:取消]
     const btnLeaveItemData = () => {
       state.controlBtnCanDo = false
+      state.isRedact = false
       btnGetMainData()
     }
 
@@ -361,8 +336,6 @@ export default defineComponent({
       newValue => {
         if (newValue !== '') {
           state.targetId = newValue
-          state.currentPage = 1
-          state.pageSize = 10
           btnGetMainData()
         }
       },

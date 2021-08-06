@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-07-30 11:24:46
  * @LastEditors: Telliex
- * @LastEditTime: 2021-08-04 14:28:54
+ * @LastEditTime: 2021-08-06 08:47:10
 -->
 <template>
   <mds-card class="test_method" title="版本明细" :pack-up="false" style="margin-bottom: 0; background: #fff;">
@@ -62,7 +62,24 @@
           <el-input v-model="addFormInfo.indexVersion" class="140px" autocomplete="off"></el-input>
         </el-form-item>
         <el-form-item label="版本执行方法：" prop="indexVersionMethod" :label-width="'140px'">
-          <el-input v-model="addFormInfo.indexVersionMethod" class="140px" placeholder="请选择" autocomplete="off"></el-input>
+            <el-upload
+              ref="upload"
+              :action="apiFileURL"
+              :on-remove="removeFile"
+              :on-success="addfile"
+              :http-request="httpRequest"
+              :on-error="errorFile"
+              :limit="1"
+              :file-list="fileList"
+              style="width:100%"
+            >
+              <!-- <el-button size="small" type="primary">点击上传</el-button> -->
+              <el-input v-model="addFormInfo.indexVersionMethod" placeholder="请上传文件" autocomplete="off" :disabled="!canUploadFile" style="width:100%"></el-input>
+            </el-upload>
+          <!-- <el-input v-model="addFormInfo.indexVersionMethod" class="140px" placeholder="请选择" autocomplete="off"></el-input>
+          <el-upload ref="upload" class="org-img-upload" list-type="picture-card" :action="FILE_API" :limit="1" :http-request="httpRequest" :file-list="fileList" :on-success="addfile" :on-remove="removeFile" :on-preview="handlePictureCardPreview">
+              <el-button size="small" type="primary">点击上传</el-button>
+          </el-upload> -->
         </el-form-item>
         <el-form-item label="执行开始日：" prop="beginDate" :label-width="'140px'">
            <el-date-picker
@@ -87,14 +104,17 @@
 
 <script lang="ts">
 //  ComponentInternalInstance, getCurrentInstance
+import { useRouter } from 'vue-router'
 import { defineComponent, ref, reactive, onMounted, toRefs, ComponentInternalInstance, getCurrentInstance } from 'vue'
 import MdsCard from '@/components/package/mds-card/src/mds-card.vue'
 import IndexValueDetail from './TestIndexValueDetail.vue'
+import axios from 'axios'
 import {
   INSPECT_INDEX_VERSION_QUERY_API, // 基础数据-[指标版本管理]- 查询
   INSPECT_INDEX_VERSION_ADD_API, // 基础数据-[指标版本管理]- 新增
-  INSPECT_INDEX_VERSION_DELETE_API // 基础数据-[指标版本管理]- 删除
-
+  INSPECT_INDEX_VERSION_DELETE_API, // 基础数据-[指标版本管理]- 删除
+  INSPECT_INDEX_UPLOAD_FILE_API // 文件上传
+  // UPLOAD_FILE_API
 } from '@/api/api'
 
 interface AddFormInfo {
@@ -122,6 +142,11 @@ interface ControlForm{
   filterText: string;
 }
 
+interface FileList{
+  name: string
+  url: string
+}
+
 interface State {
   isDialogShow: boolean
   isDialogVisibleForItemControl: boolean
@@ -134,6 +159,11 @@ interface State {
   totalItems: number
   selectedListOfTopicMainData: TopicMainData[]
   versionId: string
+  apiFileURL: string
+  fileURL: string
+  fileList: FileList[]
+  dialogImageUrl: string
+  canUploadFile: boolean
 }
 
 export default defineComponent({
@@ -149,8 +179,8 @@ export default defineComponent({
     const ctx = getCurrentInstance() as ComponentInternalInstance
     const proxy = ctx.proxy as any
     const refIndexValueDetail = ref()
-    const refIndexAsing = ref()
-
+    const upload = ref()
+    const router = useRouter()
     const dataRule = ref({
       indexVersion: [
         {
@@ -170,7 +200,7 @@ export default defineComponent({
     const state = reactive<State>({
       isDialogShow: false,
       isDialogVisibleForItemControl: false,
-      inspectIndexMaterialId: '624547859339390976',
+      inspectIndexMaterialId: '', // '624547859339390976'
       addFormInfo: {
         beginDate: '',
         indexVersion: '',
@@ -184,7 +214,12 @@ export default defineComponent({
       pageSize: 10,
       totalItems: 0,
       selectedListOfTopicMainData: [],
-      versionId: ''
+      versionId: '',
+      apiFileURL: '',
+      fileURL: '',
+      fileList: [],
+      dialogImageUrl: '',
+      canUploadFile: true
     })
 
     // 函数
@@ -254,17 +289,34 @@ export default defineComponent({
     const btnItemFloatConfirm = async () => {
       console.log('state.addFormInfo')
       console.log(state.addFormInfo)
+      if (state.addFormInfo.indexVersion === '') {
+        proxy.$errorToast('请输入版本')
+        return
+      }
+
+      if (state.addFormInfo.beginDate === '') {
+        proxy.$errorToast('请输入执行开始日')
+        return
+      }
+
+      if (new Date(state.addFormInfo.beginDate).getTime() - new Date(formatDate()).getTime() <= 0) {
+        proxy.$errorToast('必须选择今天以后的日期')
+        return
+      }
+
       await INSPECT_INDEX_VERSION_ADD_API({
         inspectIndexMaterialId: state.inspectIndexMaterialId,
         ...state.addFormInfo
       })
       proxy.$successToast('操作成功')
+      removeFile()
       btnGetMainData() // reload
       state.isDialogVisibleForItemControl = false
     }
 
     // [BTN:取消][float]
     const btnItemFloatClear = () => {
+      removeFile()
       state.addFormInfo = {
         beginDate: '',
         indexVersion: '',
@@ -284,14 +336,102 @@ export default defineComponent({
       //
     }
 
+    const errorFile = () => {
+      state.canUploadFile = true
+      state.addFormInfo.indexVersionMethod = ''
+    }
+
+    // 上传图片前
+    const httpRequest = (options:any) => {
+      state.canUploadFile = false
+      INSPECT_INDEX_UPLOAD_FILE_API({
+        name: options.file.name
+      }).then(({ data }) => {
+        if (data.code === 200) {
+          console.log('data.data')
+          console.log(data.data)
+
+          state.apiFileURL = data.data.url
+          axios.put(data.data.url, options.file).then(res => {
+            if (res.status === 200) {
+              console.log('77777777')
+              console.log(data.data)
+              console.log(options)
+              options.onSuccess(data.data.key, options)
+            }
+          })
+        }
+      })
+
+      // UPLOAD_FILE_API({
+      //   name: options.file.name
+      // }).then(({ data }) => {
+      //   if (data.code === 200) {
+      //     console.log('data.data.url')
+      //     console.log(data.data.url)
+      //     console.log('state.fileList2')
+      //     console.log(state.fileList)
+      //     state.apiFileURL = data.data.url
+      //     axios.put(data.data.url, options.file).then(res => {
+      //       if (res.status === 200) {
+      //         console.log('77777777')
+      //         console.log(data.data)
+      //         console.log(options)
+      //         options.onSuccess(data.data.key, options)
+      //       }
+      //     })
+      //   }
+      // })
+    }
+
+    // 上传图片后
+    const addfile = (key:string) => {
+      console.log('成功！')
+      console.log(key)
+      state.fileURL = key
+      state.addFormInfo.indexVersionMethod = key
+      console.log(state.fileList)
+    }
+
+    // 移出图片
+    const removeFile = () => {
+      console.log('removeFile')
+      state.canUploadFile = true
+      state.addFormInfo.indexVersionMethod = ''
+      state.fileList = []
+    }
+
+    const formatDate = () => {
+      var d = new Date()
+      var month = '' + (d.getMonth() + 1)
+      var day = '' + d.getDate()
+      var year = d.getFullYear()
+
+      if (month.length < 2) { month = '0' + month }
+      if (day.length < 2) { day = '0' + day }
+      return [year, month, day].join('-')
+    }
+
+    // const useEffect = (() => {
+    //   if (router.asPath !== router.route) {
+    //     // router.query.lang is defined
+    //   }
+    // }, [router])
+
     onMounted(async () => {
+      state.inspectIndexMaterialId = router.currentRoute.value.query.versionID ? router.currentRoute.value.query.versionID as string : '624547859339390976'
       btnGetMainData()
     })
 
     return {
       ...toRefs(state),
+      formatDate,
+      httpRequest,
+      addfile,
+      removeFile,
+      errorFile,
       refIndexValueDetail,
-      refIndexAsing,
+      upload,
       btnGetMainData,
       handleSelectionChange,
       actBatchDelete,
@@ -343,5 +483,11 @@ export default defineComponent({
         margin-right: 5px;
       }
     }
+}
+
+</style>
+<style scoped>
+.el-form-item__content >>> .el-upload--text{
+  width: 100%;
 }
 </style>
