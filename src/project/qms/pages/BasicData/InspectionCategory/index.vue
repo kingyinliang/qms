@@ -34,17 +34,35 @@
             </el-col>
             <el-col :span="12">
               <el-form-item label="关联组织：">
-                <el-cascader ref="detailRelationRef" class="inputWidth" :show-all-levels="false" :options="options" :disabled="isRedact" :props="props" v-model="detailInfo.relation" clearable></el-cascader>
+                <tree-dialog
+                  ref="detailRelationRef"
+                  v-model="detailInfo.relation"
+                  :tree-data="options"
+                  :disabled="isRedact"
+                  :tree-props="{ label: 'deptName', children: 'children' }"
+                />
               </el-form-item>
             </el-col>
             <el-col :span="12">
               <el-form-item label="取样单位：">
-                <el-cascader ref="detailCooperateRef" class="inputWidth" :show-all-levels="false" :options="options" :disabled="isRedact" :props="props" v-model="detailInfo.cooperate" clearable></el-cascader>
+                <tree-dialog
+                  ref="detailCooperateRef"
+                  v-model="detailInfo.cooperate"
+                  :tree-data="options"
+                  :disabled="isRedact"
+                  :tree-props="{ label: 'deptName', children: 'children' }"
+                />
               </el-form-item>
             </el-col>
             <el-col :span="12">
               <el-form-item label="配合取样：">
-                <el-cascader ref="detailSampleRef" class="inputWidth" :show-all-levels="false" :options="options" :disabled="isRedact" :props="props" v-model="detailInfo.sample" clearable></el-cascader>
+                <tree-dialog
+                  ref="detailSampleRef"
+                  v-model="detailInfo.sample"
+                  :tree-data="options"
+                  :disabled="isRedact"
+                  :tree-props="{ label: 'deptName', children: 'children' }"
+                />
               </el-form-item>
             </el-col>
             <el-col :span="12">
@@ -86,13 +104,28 @@
           <el-input v-model="addLevelInfo.parentName" class="inputWidth" :disabled="true" autocomplete="off"></el-input>
         </el-form-item>
         <el-form-item label="关联组织：" :label-width="formLabelWidth">
-          <el-cascader ref="relationRef" v-model="addLevelInfo.relation" :show-all-levels="false" :options="options" class="inputWidth" :props="props" collapse-tags clearable></el-cascader>
+          <tree-dialog
+            ref="relationRef"
+            v-model="addLevelInfo.relation"
+            :tree-data="options"
+            :tree-props="{ label: 'deptName', children: 'children' }"
+          />
         </el-form-item>
         <el-form-item label="取样单位：" :label-width="formLabelWidth">
-          <el-cascader ref="sampleRef" v-model="addLevelInfo.sample" :show-all-levels="false" :options="options" class="inputWidth" :props="props" collapse-tags clearable></el-cascader>
+          <tree-dialog
+            ref="cooperateRef"
+            v-model="addLevelInfo.cooperate"
+            :tree-data="options"
+            :tree-props="{ label: 'deptName', children: 'children' }"
+          />
         </el-form-item>
         <el-form-item label="配合取样：" :label-width="formLabelWidth">
-          <el-cascader ref="cooperateRef" v-model="addLevelInfo.cooperate" :show-all-levels="false" :options="options" class="inputWidth" :props="props" collapse-tags clearable></el-cascader>
+          <tree-dialog
+            ref="sampleRef"
+            v-model="addLevelInfo.sample"
+            :tree-data="options"
+            :tree-props="{ label: 'deptName', children: 'children' }"
+          />
         </el-form-item>
         <el-form-item label="留样数量：" :label-width="formLabelWidth">
           <el-input v-model="addLevelInfo.sampleAmount" class="inputWidth" autocomplete="off"></el-input>
@@ -217,7 +250,7 @@ export default defineComponent({
     // 下拉框数据变换
     const setOrGetData = (data: any, type = 'get') => {
       if (type === 'get') {
-        return data.getCheckedNodes(true).map((it: any) => { return { deptName: it.data.deptName, deptId: it.data.id } })
+        return data.getCheckedNodes(true).map((it: any) => { return { deptName: it.deptName, deptId: it.id } })
       } else {
         return data.map((it: any) => it.deptId)
       }

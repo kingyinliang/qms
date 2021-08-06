@@ -1,15 +1,218 @@
 <template>
-  <div></div>
+  <mds-card class="inspectionPoint" title="检验点维护" :pack-up="false" style="margin-bottom: 0; background: #fff;">
+    <template #titleBtn>
+      <div style="float: right;">
+        <el-form :model="queryForm" class="queryForm" size="small" :inline="true" label-position="right" label-width="82px" style=" float: left;">
+          <el-form-item label="">
+            <el-input suffix-icon="el-icon-search" v-model="queryForm.inspectMethodCodeOrName" placeholder="生产车间" style="width: 160px;" />
+          </el-form-item>
+        </el-form>
+        <div style="float: right;">
+          <el-button icon="el-icon-search" size="small" @click="query">查询</el-button>
+          <el-button icon="el-icon-circle-check" type="primary" @click="addData" size="small">新增</el-button>
+          <el-button icon="el-icon-delete" type="danger" size="small" @click="selectDelete">批量删除</el-button>
+        </div>
+      </div>
+    </template>
+    <el-table ref="multipleTable" :cell-style="{'text-align':'center'}" :data="tableData" tooltip-effect="dark" style="width: 100%" @selection-change="handleSelectionChange">
+      <el-table-column type="selection" width="55" />
+      <el-table-column type="index" label="序号" width="50" />
+      <el-table-column label="生产车间" prop="deptName" />
+      <el-table-column label="检验点" prop="inspectMethodName" />
+      <el-table-column label="检验点" prop="inspectPropertyName" />
+      <el-table-column label="操作人员" prop="inspectPropertyName" />
+      <el-table-column label="操作时间" prop="inspectPropertyName" />
+      <el-table-column label="操作" width="120" fixed="right">
+        <template #default="scope">
+          <el-button type="text" icon="el-icon-edit" class="role__btn" @click="editItem(scope.row)">
+            编辑
+          </el-button>
+        </template>
+      </el-table-column>
+    </el-table>
+  </mds-card>
+  <el-dialog v-model="addOrUpdateDialog" title="检验点维护" width="30%">
+    <el-form ref="addOrUpdateRef" :model="addOrUpdateForm" :rules="addOrUpdateFormRule" label-width="120px">
+      <el-form-item label="生产车间：" prop="deptId">
+        <el-cascader
+          ref="deptRef"
+          v-model="addOrUpdateForm.deptId"
+          :show-all-levels="false"
+          :options="org"
+          class="inputWidth"
+          :props="{ emitPath: false, checkStrictly: true, value: 'id', label: 'deptName', children: 'children' }"
+          collapse-tags
+          clearable
+        />
+      </el-form-item>
+      <el-form-item label="检验点：" prop="siteName">
+        <el-input v-model="addOrUpdateForm.siteName" autocomplete="off"></el-input>
+      </el-form-item>
+    </el-form>
+    <div class="dialog-footer">
+      <el-button size="small" icon="el-icon-circle-close" @click="addOrUpdateDialog = false">取 消</el-button>
+      <el-button size="small" icon="el-icon-circle-check" type="primary" @click="addOrUpdateFormSubmit">确 定</el-button>
+    </div>
+  </el-dialog>
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue'
+import {
+  defineComponent,
+  ref,
+  reactive,
+  nextTick,
+  onMounted,
+  getCurrentInstance,
+  ComponentInternalInstance
+} from 'vue'
+import {
+  ORG_TREE_API
+} from '@/api/api'
+
+interface PointData {
+  id: string;
+  deptId: string;
+  deptName: string;
+  siteName: string;
+}
+const addOrUpdateFormRule = {
+  deptId: [
+    {
+      required: true,
+      message: '请选择生产车间',
+      trigger: 'blur'
+    }
+  ],
+  siteName: [
+    {
+      required: true,
+      message: '请输入检验点',
+      trigger: 'blur'
+    }
+  ]
+}
 
 export default defineComponent({
-  name: 'index'
+  name: 'index',
+  setup () {
+    const ctx = getCurrentInstance() as ComponentInternalInstance
+    const proxy = ctx.proxy as any
+
+    const addOrUpdateRef = ref() // 新增修改表单节点
+    const deptRef = ref() // 组织架构节点
+    const queryForm = reactive({}) // 查询表单数据
+    const tableData = ref<PointData[]>([]) // 表格数据
+    const multipleSelection = ref<string[]>([]) // 复选数据
+    const addOrUpdateDialog = ref(false) // 新增修改弹窗
+    const addOrUpdateForm = ref<PointData>({
+      id: '',
+      deptId: '',
+      deptName: '',
+      siteName: ''
+    }) // 新增修改表单数据
+    const org = ref([])
+
+    const query = () => {
+      //  a
+    }
+    // 表格复选
+    const handleSelectionChange = (val:PointData[]) => {
+      multipleSelection.value = val.map((item: PointData) => item.id)
+    }
+    // 删除确认
+    const selectDelete = () => {
+      if (!multipleSelection.value.length) {
+        proxy.$warningToast('请选择数据')
+        return
+      }
+      proxy.$confirm('确认删除选中的数据？', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(async () => {
+        //  a
+      })
+    }
+    // 新增
+    const addData = async () => {
+      addOrUpdateForm.value = {
+        id: '',
+        deptId: '',
+        deptName: '',
+        siteName: ''
+      }
+      addOrUpdateDialog.value = true
+      await nextTick()
+      addOrUpdateRef.value.resetFields()
+    }
+    // 修改
+    const editItem = async (row: PointData) => {
+      addOrUpdateForm.value = { ...row }
+      addOrUpdateDialog.value = true
+      await nextTick()
+      addOrUpdateRef.value.clearValidate()
+    }
+    // 新增修改确认
+    const addOrUpdateFormSubmit = () => {
+      addOrUpdateRef.value.validate(async (valid: boolean) => {
+        if (valid) {
+          addOrUpdateForm.value.deptName = deptRef.value.getCheckedNodes()[0].data.deptName
+          console.log(addOrUpdateForm.value)
+        }
+      })
+    }
+    // 去掉children
+    const cascaderTranslate = (data: any) => {
+      data.forEach((item: any) => {
+        if (item.children.length) {
+          cascaderTranslate(item.children)
+        } else {
+          delete item.children
+        }
+      })
+    }
+
+    onMounted(async () => {
+      query()
+      const res = await ORG_TREE_API({ factory: JSON.parse(sessionStorage.getItem('system') || '{}').id || '' })
+      cascaderTranslate(res.data.data)
+      org.value = res.data.data
+    })
+
+    return {
+      deptRef,
+      addOrUpdateRef,
+      queryForm,
+      tableData,
+      addOrUpdateDialog,
+      addOrUpdateForm,
+      addOrUpdateFormRule,
+      org,
+      query,
+      addData,
+      selectDelete,
+      handleSelectionChange,
+      editItem,
+      addOrUpdateFormSubmit
+    }
+  }
 })
 </script>
 
 <style lang="scss" scoped>
-
+  .inspectionPoint{
+    height: calc(100vh - 117px);
+  }
+  .el-form /deep/.inputWidth {
+    width: 100%;
+  }
+  .dialog-footer {
+    display: flex;
+    justify-content: flex-end;
+  }
+  .flex{
+    display: flex;
+    margin-bottom: 4px;
+  }
 </style>
