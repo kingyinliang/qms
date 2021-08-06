@@ -62,7 +62,7 @@
 
 <script lang="ts">
 import { defineComponent, ref, toRefs, reactive, onMounted, getCurrentInstance, ComponentInternalInstance } from 'vue'
-import { treeDataTranslate } from '@/utils/index'
+// import { treeDataTranslate } from '@/utils/index'
 import { INSPECT_MATERIAL_QUERY_SYS_MATERIAL_ITEM_API, INSPECT_MATERIAL_QUERY_SYS_MATERIAL_API, INSPECT_TYPE_QUERY_API, INSPECT_MATERIAL_DISTRIBUTION_INSPECT_MATERIAL_API } from '@/api/api'
 import MaterialInspectionAsign from './MaterialInspectionAsign.vue'
 
@@ -207,11 +207,9 @@ export default defineComponent({
       state.totalItems = 0
 
       if (val.inspectGroups.length === 0) {
-        console.log('我是子结点')
         state.currentMaterialGroupString = val.inspectMaterialType
         state.currentMaterialString = val.inspectGroup
       } else {
-        console.log('我是结点')
         state.currentMaterialGroupString = ''
         state.currentMaterialString = val.inspectMaterialType
       }
@@ -228,7 +226,6 @@ export default defineComponent({
       }).then((res) => {
         console.log('物料明细')
         console.log(res.data.data)
-
         state.totalItems = res.data.data.length
         state.tableDataW = JSON.parse(JSON.stringify(res.data.data))
         currentChangePage(state.tableDataW, 1)
@@ -286,8 +283,6 @@ export default defineComponent({
           })
         })
         state.treeData = res.data.data
-        console.log('state.treeData')
-        console.log(state.treeData)
         // 一进页面默认跑第一笔
         if (state.currentMaterialString === '') {
           state.currentMaterialString = state.treeData[0].inspectMaterialType
@@ -319,6 +314,35 @@ export default defineComponent({
       })
     }
 
+    const treeDataTranslate = (data: any[], id: string, pid: string): any[] => {
+      const res: any[] = []
+      const temp: any = {}
+      for (let i = 0; i < data.length; i++) {
+        temp[data[i][id]] = data[i]
+      }
+      for (let k = 0; k < data.length; k++) {
+        if (temp[data[k][pid]] && data[k][id] !== data[k][pid]) {
+          if (!temp[data[k][pid]].children) {
+            temp[data[k][pid]].children = []
+          }
+          if (!temp[data[k][pid]]._level) {
+            temp[data[k][pid]]._level = 1
+          }
+          data[k]._level = temp[data[k][pid]]._level + 1
+          temp[data[k][pid]].children.push(data[k])
+          if (data[k].assistFlag === 'Y') {
+            data[k].disabled = true
+          }
+        } else {
+          if (data[k].assistFlag === 'Y') {
+            data[k].disabled = true
+          }
+          res.push(data[k])
+        }
+      }
+      return res
+    }
+
     onMounted(() => {
       // 获取
       getMaterialCatagoryData()
@@ -337,7 +361,8 @@ export default defineComponent({
       inspectCategoryList,
       reset,
       handleMultiAsign,
-      treeModule
+      treeModule,
+      treeDataTranslate
     }
   }
 })
