@@ -32,6 +32,7 @@ interface LayoutTs<T> {
   tabsCloseAllHandle: Fn<T>
   tabsRefreshCurrentHandle: Fn<T>
   closeMenu: Fn<T>
+  gotoPage: Fn<T>
 }
 interface Meta {
   menuId: string
@@ -184,11 +185,16 @@ export default function (): LayoutTs<any> {
       window.location.href = menu.menuUrl + '&token=' + VueCookies.get('token') + '&tenant=qms'
     } else {
       const route = dynamicMenuRoutes.value.filter(item => item && item.meta.menuId === menu.id)
-      console.log(route)
       if (route.length >= 1) {
         router.push(route[0].path)
       }
     }
+  }
+
+  // 点击跳转
+  const gotoPage = (obj:any) => {
+    removeTabHandle(obj.path.replace(/\//g, '-'))
+    router.push(obj)
   }
 
   // 监听路由添加tabs
@@ -252,6 +258,7 @@ export default function (): LayoutTs<any> {
     gotoRouteHandle,
     goHome,
     showMenu,
-    closeMenu
+    closeMenu,
+    gotoPage
   }
 }

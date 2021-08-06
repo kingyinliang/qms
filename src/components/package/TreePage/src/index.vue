@@ -103,10 +103,10 @@ export default defineComponent({
 
     watch(props, async (val: any) => {
       await nextTick()
+      expandedKeys.value = []
       for (const item of val.treeData) {
         if (item[(props as any).treeProps.children] && item[(props as any).treeProps.children].length) {
-          expandedKeys.value = [item.id]
-          return false
+          expandedKeys.value.push(item.id)
         }
       }
     })

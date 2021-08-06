@@ -7,7 +7,9 @@ const state = {
   userInfo: {},
   menuList: [],
   dynamicMenuRoutes: [],
-  mainTabs: []
+  mainTabs: [],
+  inspectIndexMaterialId: '' // 版本管理页面跳转用 versionID
+
 }
 // eslint-disable-next-line
 const mutations: MutationTree<any> = {
@@ -31,6 +33,9 @@ const mutations: MutationTree<any> = {
   },
   updateMainTabs (state, mainTabs):void {
     state.mainTabs = mainTabs
+  },
+  updateInspectIndexMaterialId (state, id):void {
+    state.inspectIndexMaterialId = id
   }
 }
 

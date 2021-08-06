@@ -12,17 +12,17 @@
         </div>
       </div>
     </template>
-    <el-table ref="multipleTable" :cell-style="{'text-align':'center'}" :data="topicMainData.slice((currentPage - 1) * pageSize, currentPage * pageSize)" tooltip-effect="dark" style="width: 100%">
+    <el-table ref="multipleTable" :cell-style="{'text-align':'center'}" :data="topicMainData.slice((currentPage - 1) * pageSize, currentPage * pageSize)" tooltip-effect="dark" style="width: 100%" >
       <el-table-column type="index" label="序号" :index="(index) => index + 1 + (currentPage - 1) * pageSize" width="50" />
-      <el-table-column label="指标类" prop="indexType" />
-      <el-table-column label="指标类描述" prop="indexTypeName" />
-      <el-table-column label="指标代码" prop="indexCode" />
-      <el-table-column label="指标名称" prop="indexName" />
-      <el-table-column label="单位" prop="indexUnit" />
-      <el-table-column label="方法" prop="indexMethod" />
-      <el-table-column label="属性" prop="inspectProperty" />
-      <el-table-column label="应用场景" prop="inspectScene" />
-      <el-table-column label="同步时间" prop="syncDate" />
+      <el-table-column label="指标类"  min-width="160" prop="indexType" show-overflow-tooltip />
+      <el-table-column label="指标类描述" width="100" prop="indexTypeName" show-overflow-tooltip />
+      <el-table-column label="指标代码" width="100" prop="indexCode" show-overflow-tooltip />
+      <el-table-column label="指标名称" width="100" prop="indexName" show-overflow-tooltip />
+      <el-table-column label="单位" width="100" prop="indexUnit" show-overflow-tooltip />
+      <el-table-column label="方法" width="160" prop="indexMethod" show-overflow-tooltip />
+      <el-table-column label="属性" width="160" prop="inspectPropertyName" show-overflow-tooltip />
+      <el-table-column label="应用场景" width="160" prop="inspectSceneName" show-overflow-tooltip />
+      <el-table-column label="同步时间" width="200" prop="syncDate" show-overflow-tooltip />
       <el-table-column label="操作" width="120" fixed="right">
         <template #default="scope">
           <el-button type="text" icon="el-icon-edit" class="role__btn" @click="btnEditItem(scope.row)">
@@ -119,7 +119,7 @@ interface State {
 }
 
 export default defineComponent({
-  name: 'TestIndexLibIndex',
+  name: 'TestIndexLibraryIndex',
   components: {
     MdsCard,
     TestIndexItemEdit
@@ -164,33 +164,19 @@ export default defineComponent({
 
     // [BTN:编辑] 编辑数据集 item
     const btnEditItem = async (row: TopicMainData) => {
-      console.log(row)
       // state.isDialogShow = true
       const res = await INSPECT_INDEX_LIBRARY_ITEM_BY_ID_QUERY_API({
         id: row.id
       })
-      console.log(res.data.data)
       state.dialogMainDataImport = res.data.data
       state.isDialogShow = true
     }
 
     const actReset = () => {
-      // if (state.whoAsign === 'single') {
-      //   state.globleItem = {
-      //     inspectGroupCode: '',
-      //     inspectGroupName: '',
-      //     inspectMaterialType: '',
-      //     inspectMaterialCode: '',
-      //     inspectMaterialName: ''
-      //   }
-      // } else if (state.whoAsign === 'multi') {
-      //   state.globleItemGroup = []
-      // }
+      //
     }
 
     const actConfirm = async (data:DialogMainDataReturn) => {
-      console.log('444444')
-      console.log(data)
       await INSPECT_INDEX_LIBRARY_ITEM_UPDATE_API({
         id: data.id,
         indexCode: data.indexCode,
@@ -201,27 +187,10 @@ export default defineComponent({
         inspectScene: data.inspectScene
       })
       proxy.$successToast('操作成功')
-      // console.log(res.data.data)
-
-      // let dataTemp:TableData[] = []
-      // if (state.whoAsign === 'single') {
-      //   dataTemp.push(state.globleItem)
-      // } else if (state.whoAsign === 'multi') {
-      //   dataTemp = state.globleItemGroup
-      // }
-
-      // INSPECT_MATERIAL_DISTRIBUTION_INSPECT_MATERIAL_API({
-      //   inspectMaterialDetails: dataTemp,
-      //   inspectTypeIdList: val // 检验类id数组
-      // }).then(() => {
-      //   proxy.$successToast('分配成功')
-      //   // reload page
-      //   if (state.whoAsign === 'single') {
-      //     apiMaterialDetail(state.currentMaterialString, state.currentMaterialGroupString, state.globleSearchString)
-      //   } else if (state.whoAsign === 'multi') {
-      //     getMaterialCatagoryData()
-      //   }
-      // })
+      state.currentPage = 1
+      state.pageSize = 10
+      state.totalItems = 0
+      getMainData()
     }
 
     onMounted(() => {

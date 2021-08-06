@@ -109,3 +109,18 @@ body{
   border-radius: 3px;
   background: rgba(255, 255, 255, 1);
 }
+// 新增全局样式
+// 查询表单，
+.queryForm{
+  .el-form-item{
+    margin-bottom: 8px!important;
+    display: inline-block;
+    &::before{
+      display: inline-block;
+    }
+  }
+}
+/* table's row hide temporarily */
+.rowDel {
+    display: none;
+}

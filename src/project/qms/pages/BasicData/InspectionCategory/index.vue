@@ -34,17 +34,35 @@
             </el-col>
             <el-col :span="12">
               <el-form-item label="关联组织：">
-                <el-cascader ref="detailRelationRef" class="inputWidth" :show-all-levels="false" :options="options" :disabled="isRedact" :props="props" v-model="detailInfo.relation" clearable></el-cascader>
+                <tree-dialog
+                  ref="detailRelationRef"
+                  v-model="detailInfo.relation"
+                  :tree-data="options"
+                  :disabled="isRedact"
+                  :tree-props="{ label: 'deptName', children: 'children' }"
+                />
               </el-form-item>
             </el-col>
             <el-col :span="12">
               <el-form-item label="取样单位：">
-                <el-cascader ref="detailCooperateRef" class="inputWidth" :show-all-levels="false" :options="options" :disabled="isRedact" :props="props" v-model="detailInfo.cooperate" clearable></el-cascader>
+                <tree-dialog
+                  ref="detailCooperateRef"
+                  v-model="detailInfo.cooperate"
+                  :tree-data="options"
+                  :disabled="isRedact"
+                  :tree-props="{ label: 'deptName', children: 'children' }"
+                />
               </el-form-item>
             </el-col>
             <el-col :span="12">
               <el-form-item label="配合取样：">
-                <el-cascader ref="detailSampleRef" class="inputWidth" :show-all-levels="false" :options="options" :disabled="isRedact" :props="props" v-model="detailInfo.sample" clearable></el-cascader>
+                <tree-dialog
+                  ref="detailSampleRef"
+                  v-model="detailInfo.sample"
+                  :tree-data="options"
+                  :disabled="isRedact"
+                  :tree-props="{ label: 'deptName', children: 'children' }"
+                />
               </el-form-item>
             </el-col>
             <el-col :span="12">
@@ -86,13 +104,28 @@
           <el-input v-model="addLevelInfo.parentName" class="inputWidth" :disabled="true" autocomplete="off"></el-input>
         </el-form-item>
         <el-form-item label="关联组织：" :label-width="formLabelWidth">
-          <el-cascader ref="relationRef" v-model="addLevelInfo.relation" :show-all-levels="false" :options="options" class="inputWidth" :props="props" collapse-tags clearable></el-cascader>
+          <tree-dialog
+            ref="relationRef"
+            v-model="addLevelInfo.relation"
+            :tree-data="options"
+            :tree-props="{ label: 'deptName', children: 'children' }"
+          />
         </el-form-item>
         <el-form-item label="取样单位：" :label-width="formLabelWidth">
-          <el-cascader ref="sampleRef" v-model="addLevelInfo.sample" :show-all-levels="false" :options="options" class="inputWidth" :props="props" collapse-tags clearable></el-cascader>
+          <tree-dialog
+            ref="cooperateRef"
+            v-model="addLevelInfo.cooperate"
+            :tree-data="options"
+            :tree-props="{ label: 'deptName', children: 'children' }"
+          />
         </el-form-item>
         <el-form-item label="配合取样：" :label-width="formLabelWidth">
-          <el-cascader ref="cooperateRef" v-model="addLevelInfo.cooperate" :show-all-levels="false" :options="options" class="inputWidth" :props="props" collapse-tags clearable></el-cascader>
+          <tree-dialog
+            ref="sampleRef"
+            v-model="addLevelInfo.sample"
+            :tree-data="options"
+            :tree-props="{ label: 'deptName', children: 'children' }"
+          />
         </el-form-item>
         <el-form-item label="留样数量：" :label-width="formLabelWidth">
           <el-input v-model="addLevelInfo.sampleAmount" class="inputWidth" autocomplete="off"></el-input>
@@ -114,7 +147,9 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, reactive, onMounted, ComponentInternalInstance, getCurrentInstance } from 'vue'
+import {
+  defineComponent, ref, reactive, onMounted, ComponentInternalInstance, getCurrentInstance, nextTick
+} from 'vue'
 import { treeDataTranslate } from '@/utils/index'
 import {
   INSPECT_TYPE_LIST_API,
@@ -215,7 +250,7 @@ export default defineComponent({
     // 下拉框数据变换
     const setOrGetData = (data: any, type = 'get') => {
       if (type === 'get') {
-        return data.getCheckedNodes(true).map((it: any) => { return { deptName: it.data.deptName, deptId: it.data.id } })
+        return data.getCheckedNodes(true).map((it: any) => { return { deptName: it.deptName, deptId: it.id } })
       } else {
         return data.map((it: any) => it.deptId)
       }
@@ -254,8 +289,10 @@ export default defineComponent({
       addLevelInfo.inspectTypeCode = code
     }
     // 新增同级
-    const addSameLevel = () => {
+    const addSameLevel = async () => {
       addLevelBtn.value = true
+      await nextTick()
+      addRef.value.resetFields()
       clearForm()
       generateCode(temp.inspectTypeCode.slice(0, temp.inspectTypeCode.length - 2))
       addLevelInfo.assistFlag = temp.assistFlag
@@ -271,8 +308,10 @@ export default defineComponent({
       addLevelInfo.inspectTypeName = ''
     }
     // 新增下级
-    const addSubordinate = () => {
+    const addSubordinate = async () => {
       addLevelBtn.value = true
+      await nextTick()
+      addRef.value.resetFields()
       clearForm()
       generateCode(temp.inspectTypeCode)
       addLevelInfo.assistFlag = temp.assistFlag
@@ -295,7 +334,7 @@ export default defineComponent({
     }
     // 删除
     const resetForm = async () => {
-      proxy.$confirm('确认删除？', '提示', {
+      proxy.$confirm('是否删除此检验类，请确认', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'

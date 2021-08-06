@@ -22,7 +22,7 @@
                   <em class="el-input__icon el-icon-search" />
             </template>
           </el-input>
-          <el-button type="primary" size="mini" style="height:32px; margin-left:5px" @click="apiMaterialDetail(currentCategoryId,materialDetailText,1,10)">查询</el-button>
+          <el-button icon="el-icon-search" size="mini" style="height:32px; margin-left:5px" @click="apiMaterialDetail(currentCategoryId,materialDetailText,1,10)">查询</el-button>
         </template>
       </div>
      <el-table :data="topicMainData"
@@ -80,6 +80,7 @@ interface TreeData { // 物料分类 API
 }
 
 interface TopicMainData { // 物料明细 API
+  id:string
   inspectGroupCode: string
   inspectGroupName: string
   inspectMaterialType: string
@@ -137,6 +138,7 @@ export default defineComponent({
       materialTreeData: [],
       currentCategoryId: '',
       globleItem: {
+        id: '',
         inspectGroupCode: '',
         inspectGroupName: '',
         inspectMaterialType: '',
@@ -153,9 +155,8 @@ export default defineComponent({
 
     // single action to go
     const handleSingleEdit = (row:TopicMainData) => {
-      console.log('the row info that want to edit')
-      console.log(row)
       state.globleItem = {
+        id: row.id,
         inspectGroupCode: row.inspectGroupCode,
         inspectGroupName: row.inspectGroupName,
         inspectMaterialType: row.inspectMaterialType,
@@ -166,8 +167,6 @@ export default defineComponent({
       INSPECT_MATERIAL_CHECKED_INSPECT_TYPE_QUERY_API({
         inspectMaterialCode: row.inspectMaterialCode
       }).then((res) => {
-        console.log('res.data.data')
-        console.log(res.data.data)
         state.inspectTypeIds = res.data.data.inspectTypeIds
         state.materialTreeData = treeDataTranslater('default', res.data.data.inspectTypes, 'id', 'parentId')
       })
@@ -177,6 +176,7 @@ export default defineComponent({
       state.inspectTypeIds = []
       state.materialTreeData = []
       state.globleItem = {
+        id: '',
         inspectGroupCode: '',
         inspectGroupName: '',
         inspectMaterialType: '',
@@ -186,8 +186,6 @@ export default defineComponent({
     }
 
     const getMaterialDetail = (val:TreeItemData) => {
-      console.log('val')
-      console.log(val)
       state.globleSearchString = ''
       state.materialDetailText = ''
       state.currentPage = 1
@@ -205,8 +203,6 @@ export default defineComponent({
       }
       // }
     }
-
-    // TODO
     const apiMaterialDetail = (currentCategoryId:string, searchString = '', currentPage:number, pageSize:number) => {
       state.globleSearchString = searchString
       INSPECT_MATERIAL_INSPECT_MATERIAL_QUERY_API({
@@ -221,7 +217,6 @@ export default defineComponent({
         state.currentPage = res.data.data.current
         state.pageSize = res.data.data.size
         state.totalItems = res.data.data.total
-        // state.totalItems = res.data.data.length
       })
     }
 
@@ -238,15 +233,13 @@ export default defineComponent({
     const getMaterialCatagoryData = () => {
       INSPECT_MATERIAL_INSPECT_TYPE_MATERIAL_API({
       }).then((res) => {
-        console.log('res.data.data')
-        console.log(res.data.data)
+        state.materialDetailText = ''
         state.treeData = treeDataTranslater('category', JSON.parse(JSON.stringify(res.data.data)), 'id', 'parentId')
-        console.log('state.treeData')
-        console.log(state.treeData)
         // 一进页面默认跑第一笔
         if (state.currentCategoryId === '') {
           state.currentCategoryId = state.treeData[0].id
           state.initFocusNode = state.treeData[0].id
+
           // '619922389037592576'
           treeModule.value.focusCurrentNodeNumber = state.treeData[0].id
           apiMaterialDetail(state.currentCategoryId, '', state.currentPage, state.pageSize)
@@ -261,10 +254,11 @@ export default defineComponent({
       INSPECT_MATERIAL_CHECKED_INSPECT_TYPE_UPDATE_API({
         inspectMaterialDetails: dataTemp,
         inspectTypeIdList: val // 检验类id数组
-      }).then(() => {
+      }).then(async () => {
         proxy.$successToast('操作成功')
         // reload page
-        apiMaterialDetail(state.currentCategoryId, state.materialDetailText, state.currentPage, state.pageSize)
+        await getMaterialCatagoryData()
+        state.topicMainData = []
       })
     }
 
@@ -273,7 +267,7 @@ export default defineComponent({
       const temp: any = {}
       for (let i = 0; i < data.length; i++) {
         if (who === 'category') {
-          if (data[i].inspectMaterials.length !== 0) {
+          if (data[i].inspectMaterials.length !== 0 && data[i].assistFlag !== 'Y') {
             data[i].children = []
             data[i].inspectMaterials.forEach((item: string) => {
               data[i].children.push({ inspectTypeName: item, isFinalNode: true, markParentId: data[i].id, itemId: item.slice(item.lastIndexOf(' ') + 1) })
@@ -294,7 +288,13 @@ export default defineComponent({
           }
           data[k]._level = temp[data[k][pid]]._level + 1
           temp[data[k][pid]].children.push(data[k])
+          if (data[k].assistFlag === 'Y') {
+            data[k].disabled = true
+          }
         } else {
+          if (data[k].assistFlag === 'Y') {
+            data[k].disabled = true
+          }
           res.push(data[k])
         }
       }
