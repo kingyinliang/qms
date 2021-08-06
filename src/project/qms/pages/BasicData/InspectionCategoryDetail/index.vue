@@ -225,7 +225,6 @@ export default defineComponent({
         state.currentPage = res.data.data.current
         state.pageSize = res.data.data.size
         state.totalItems = res.data.data.total
-        // state.totalItems = res.data.data.length
       })
     }
 
@@ -274,6 +273,7 @@ export default defineComponent({
         // reload page
         // apiMaterialDetail(state.currentCategoryId, state.materialDetailText, state.currentPage, state.pageSize)
         getMaterialCatagoryData()
+        state.topicMainData = []
       })
     }
 

@@ -3,17 +3,17 @@
  * @Anthor: Telliex
  * @Date: 2021-07-08 11:25:52
  * @LastEditors: Telliex
- * @LastEditTime: 2021-08-03 10:47:51
+ * @LastEditTime: 2021-08-06 11:41:39
 -->
 <template>
     <dialogDevice :dialogVisible="dialogVisible" :title="title" @on-confirm="onConfirm" @on-close="onClose" width="70%">
       <template #default>
         <div style="display:flex;">
           <div style="width: 250px;margin-right:15px">
-            <el-card style="height: 303px; overflow-y: scroll;">
-                <el-row style=" margin-bottom: 10px; color: black; font-size: 16px;">
+            <el-card style="height: 303px; overflow-y: scroll;" class="property" shadow="never">
+                <div class="property-title">
                     属性
-                </el-row>
+                </div>
                 <ul class="category">
                   <li v-for="item in materialTreeData" v-bind:key="item"><el-button type="text" @click="clickGategoryToChangeData(item.inspectProperty)">{{item.inspectPropertyName}}</el-button></li>
                 </ul>
@@ -214,8 +214,37 @@ export default defineComponent({
 <style lang="scss" scoped>
 .category{
   list-style: none;
+  padding: 10px 20px;
   li{
     margin-bottom: 5px;
   }
+}
+
+.property-title{
+  height: var(--el-transfer-panel-header-height);
+  line-height: var(--el-transfer-panel-header-height);
+  background: var(--el-transfer-panel-header-background-color);
+  margin: 0;
+  padding-left: 15px;
+  border-bottom: 1px solid var(--el-transfer-border-color);
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+  color: var(--el-color-black);
+  margin-bottom: 10px;
+  color: #303133;
+  font-size: 16px;
+}
+</style>
+<style scoped>
+.el-card.property >>> .el-card__body{
+  padding: 0;
+  font-size: 16px;
+}
+
+.el-button >>> span{
+  color:#606266;
+}
+.el-button >>> span:hover{
+  color:#487bff;
 }
 </style>
