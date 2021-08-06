@@ -62,7 +62,6 @@
 
 <script lang="ts">
 import { defineComponent, ref, toRefs, reactive, onMounted, getCurrentInstance, ComponentInternalInstance } from 'vue'
-// import { treeDataTranslate } from '@/utils/index'
 import { INSPECT_MATERIAL_QUERY_SYS_MATERIAL_ITEM_API, INSPECT_MATERIAL_QUERY_SYS_MATERIAL_API, INSPECT_TYPE_QUERY_API, INSPECT_MATERIAL_DISTRIBUTION_INSPECT_MATERIAL_API } from '@/api/api'
 import MaterialInspectionAsign from './MaterialInspectionAsign.vue'
 
@@ -238,7 +237,7 @@ export default defineComponent({
     const apiAsignMaterial = () => {
       INSPECT_TYPE_QUERY_API({
       }).then((res) => {
-        state.materialTreeData = treeDataTranslate(res.data.data, 'id', 'parentId')
+        state.materialTreeData = treeDataTranslater(res.data.data, 'id', 'parentId')
       })
     }
 
@@ -314,7 +313,7 @@ export default defineComponent({
       })
     }
 
-    const treeDataTranslate = (data: any[], id: string, pid: string): any[] => {
+    const treeDataTranslater = (data: any[], id: string, pid: string): any[] => {
       const res: any[] = []
       const temp: any = {}
       for (let i = 0; i < data.length; i++) {
@@ -362,7 +361,7 @@ export default defineComponent({
       reset,
       handleMultiAsign,
       treeModule,
-      treeDataTranslate
+      treeDataTranslater
     }
   }
 })

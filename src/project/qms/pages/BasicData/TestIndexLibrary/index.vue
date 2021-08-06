@@ -173,17 +173,7 @@ export default defineComponent({
     }
 
     const actReset = () => {
-      // if (state.whoAsign === 'single') {
-      //   state.globleItem = {
-      //     inspectGroupCode: '',
-      //     inspectGroupName: '',
-      //     inspectMaterialType: '',
-      //     inspectMaterialCode: '',
-      //     inspectMaterialName: ''
-      //   }
-      // } else if (state.whoAsign === 'multi') {
-      //   state.globleItemGroup = []
-      // }
+      //
     }
 
     const actConfirm = async (data:DialogMainDataReturn) => {
@@ -201,28 +191,6 @@ export default defineComponent({
       state.pageSize = 10
       state.totalItems = 0
       getMainData()
-
-      // console.log(res.data.data)
-
-      // let dataTemp:TableData[] = []
-      // if (state.whoAsign === 'single') {
-      //   dataTemp.push(state.globleItem)
-      // } else if (state.whoAsign === 'multi') {
-      //   dataTemp = state.globleItemGroup
-      // }
-
-      // INSPECT_MATERIAL_DISTRIBUTION_INSPECT_MATERIAL_API({
-      //   inspectMaterialDetails: dataTemp,
-      //   inspectTypeIdList: val // 检验类id数组
-      // }).then(() => {
-      //   proxy.$successToast('分配成功')
-      //   // reload page
-      //   if (state.whoAsign === 'single') {
-      //     apiMaterialDetail(state.currentMaterialString, state.currentMaterialGroupString, state.globleSearchString)
-      //   } else if (state.whoAsign === 'multi') {
-      //     getMaterialCatagoryData()
-      //   }
-      // })
     }
 
     onMounted(() => {

@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-07-30 11:24:46
  * @LastEditors: Telliex
- * @LastEditTime: 2021-08-06 14:43:42
+ * @LastEditTime: 2021-08-06 17:59:19
 -->
 <template>
   <mds-card class="test_method" title="检验指标标准" :pack-up="false" style="margin-bottom: 0; background: #fff;">
@@ -312,8 +312,6 @@ export default defineComponent({
 
     // [BTN:版本管理]
     const btnVersionController = async (row:TopicMainData) => {
-      console.log('row')
-      console.log(row)
       gotoPage({
         path: 'qms-pages-BasicData-TestIndexVersion-index',
         query: {
@@ -454,8 +452,6 @@ export default defineComponent({
     }
 
     const selectInspectMaterialChange = (val:string) => {
-      console.log('val')
-      console.log(val)
       state.inspectMaterialOptions.forEach((item:InspectMaterialOptions) => {
         if (item.inspectMaterialCode === val) {
           if (item.assistFlag === 'Y') {
@@ -465,12 +461,9 @@ export default defineComponent({
           }
         }
       })
-      console.log(state.singleItemform)
     }
 
     const selectInspectIndexChange = (val:string) => {
-      console.log('val')
-      console.log(val)
       state.inspectIndexOptions.forEach((item:InspectIndexOptions) => {
         if (item.id === val) {
           state.singleItemform.inspectIndexName = item.indexName
@@ -491,8 +484,6 @@ export default defineComponent({
       })
 
       const resIndexOptions = await INSPECT_INDEX_DROPDOWN_API()
-      console.log('resIndexOptions')
-      console.log(resIndexOptions.data.data)
       state.inspectIndexOptions = resIndexOptions.data.data
       btnGetMainData()
     })
