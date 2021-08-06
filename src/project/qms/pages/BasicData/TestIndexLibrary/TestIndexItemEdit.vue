@@ -3,12 +3,12 @@
  * @Anthor: Telliex
  * @Date: 2021-07-08 11:25:52
  * @LastEditors: Telliex
- * @LastEditTime: 2021-07-28 16:05:17
+ * @LastEditTime: 2021-08-06 10:19:40
 -->
 <template>
     <dialogDevice :dialogVisible="dialogVisible" :title="title" @on-confirm="onConfirm" @on-close="onClose">
       <template #default>
-         <el-form :model="formData" :rules="dataRule">
+         <el-form ref="ruleForm"  :model="formData" :rules="dataRule">
           <el-form-item label="指标代码：" prop="indexCode" :label-width="'120px'">
             <el-input v-model="formData.indexCode" class="inputWidth" :disabled="true" autocomplete="off"></el-input>
           </el-form-item>
@@ -37,7 +37,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, onMounted, watch, reactive, toRefs } from 'vue'
+import { defineComponent, ref, onMounted, watch, reactive, toRefs, getCurrentInstance, ComponentInternalInstance } from 'vue'
 import { DICTIONARY_QUERY_API } from '@/api/api'
 import dialogDevice from '../../components/SHDialog.vue'
 
@@ -101,6 +101,8 @@ export default defineComponent({
     }
   },
   setup (props, context) {
+    const ctx = getCurrentInstance() as ComponentInternalInstance
+    const proxy = ctx.proxy as any
     const state = reactive<State>({
       isDialogShow: false,
       formData: {
@@ -116,8 +118,7 @@ export default defineComponent({
     })
     const parent = { ...context }
     const { dialogVisible, dialogData } = toRefs(props as Props)
-    const materialInspectionTree = ref()
-
+    const ruleForm = ref()
     const dataRule = {
       indexCode: [
         {
@@ -164,13 +165,21 @@ export default defineComponent({
     }
 
     const onConfirm = () => {
-      parent.emit('update:dialogVisible', false)
-      parent.emit('actConfirm', state.formData)
+      ruleForm.value.validate((valid: boolean) => {
+        if (valid) {
+          parent.emit('actConfirm', state.formData)
+          parent.emit('update:dialogVisible', false)
+        } else {
+          proxy.$errorToast('请填写必填栏位')
+          return false
+        }
+      })
     }
 
     const onClose = () => {
       parent.emit('update:dialogVisible', false)
       parent.emit('actReset')
+      ruleForm.value.resetFields()
     }
 
     onMounted(async () => {
@@ -198,7 +207,7 @@ export default defineComponent({
 
     return {
       ...toRefs(state),
-      materialInspectionTree,
+      ruleForm,
       onConfirm,
       onClose,
       dataRule
