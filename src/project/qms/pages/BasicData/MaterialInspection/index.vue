@@ -26,7 +26,7 @@
               <em class="el-input__icon el-icon-search" />
         </template>
       </el-input>
-      <el-button type="primary" size="mini" style="height:32px; margin-left:5px" @click="apiMaterialDetail(currentMaterialString,currentMaterialGroupString,materialDetailText,'searchBar')">查询</el-button>
+      <el-button icon="el-icon-search" size="mini" style="height:32px; margin-left:5px" @click="apiMaterialDetail(currentMaterialString,currentMaterialGroupString,materialDetailText,'searchBar')">查询</el-button>
       </div>
      <el-table :data="topicMainData"
         style="width: 100%"

@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-07-30 11:24:46
  * @LastEditors: Telliex
- * @LastEditTime: 2021-08-06 10:59:52
+ * @LastEditTime: 2021-08-06 16:27:30
 -->
 <template>
   <mds-card class="test_method" title="标准值明细" :pack-up="false" style="margin-bottom: 0; background: #fff;">
@@ -154,7 +154,6 @@
 </template>
 
 <script lang="ts">
-//  ComponentInternalInstance, getCurrentInstance
 import { defineComponent, reactive, onMounted, toRefs, ComponentInternalInstance, getCurrentInstance, watch } from 'vue'
 import MdsCard from '@/components/package/mds-card/src/mds-card.vue'
 import {
@@ -200,17 +199,18 @@ export default defineComponent({
   components: {
     MdsCard
   },
-
+  emits: ['update:dialogVisible'],
   props: {
     target: {
       type: String,
       default: ''
     }
   },
-  setup (props) {
+  setup (props, context) {
     const ctx = getCurrentInstance() as ComponentInternalInstance
-    const { target } = toRefs(props as Props)
     const proxy = ctx.proxy as any
+    const parent = { ...context }
+    const { target } = toRefs(props as Props)
     const state = reactive<State>({
       isDialogShow: false,
       controlBtnCanDo: false,
@@ -309,6 +309,7 @@ export default defineComponent({
       state.controlBtnCanDo = false
       state.isRedact = false
       btnGetMainData()
+      parent.emit('update:dialogVisible', false)
     }
 
     // [BTN:取消]

@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-07-30 11:24:46
  * @LastEditors: Telliex
- * @LastEditTime: 2021-08-06 11:08:57
+ * @LastEditTime: 2021-08-06 16:28:37
 -->
 <template>
   <mds-card class="test_method" title="版本明细" :pack-up="false" style="margin-bottom: 0; background: #fff;">
@@ -15,9 +15,9 @@
           </el-form-item>
         </el-form>
         <div style="float: right;">
-          <el-button icon="el-icon-search" type="primary" size="small" @click="btnGetMainData">查询</el-button>
+          <el-button icon="el-icon-search"  size="small" @click="btnGetMainData">查询</el-button>
           <el-button icon="el-icon-circle-plus-outline" type="primary" size="small" @click="btnAddItemData">新增</el-button>
-          <el-button icon="el-icon-delete" type="primary" size="small" @click="actBatchDelete">批次删除</el-button>
+          <el-button icon="el-icon-delete" type="danger" size="small" @click="actBatchDelete">批量删除</el-button>
         </div>
       </div>
     </template>
@@ -36,7 +36,7 @@
         <el-button
           size="mini"
           type="text"
-          @click="seeVersion(scope.$index, scope.row)">{{scope.row.indexVersionMethod}}</el-button>
+          @click="seeVersion(scope.row)">{{scope.row.indexVersionMethod}}</el-button>
          </template>
       </el-table-column>
       <el-table-column label="变更说明" width="160" prop="changeInfo" show-overflow-tooltip />
@@ -99,13 +99,13 @@
     </template>
   </el-dialog>
   <!--标准值明细-->
-  <index-value-detail v-if="isDialogShow" ref="refIndexValueDetail" :target="versionId" />
+  <index-value-detail v-model:dialogVisible="isDialogShow" v-if="isDialogShow" ref="refIndexValueDetail" :target="versionId" />
 </template>
 
 <script lang="ts">
 //  ComponentInternalInstance, getCurrentInstance
 import { useRouter } from 'vue-router'
-import { defineComponent, ref, reactive, onMounted, toRefs, ComponentInternalInstance, getCurrentInstance, watch } from 'vue'
+import { defineComponent, ref, reactive, onMounted, toRefs, ComponentInternalInstance, getCurrentInstance } from 'vue'
 import MdsCard from '@/components/package/mds-card/src/mds-card.vue'
 import IndexValueDetail from './TestIndexValueDetail.vue'
 import axios from 'axios'
@@ -114,7 +114,8 @@ import {
   INSPECT_INDEX_VERSION_QUERY_API, // 基础数据-[指标版本管理]- 查询
   INSPECT_INDEX_VERSION_ADD_API, // 基础数据-[指标版本管理]- 新增
   INSPECT_INDEX_VERSION_DELETE_API, // 基础数据-[指标版本管理]- 删除
-  INSPECT_INDEX_UPLOAD_FILE_API // 文件上传
+  UPLOAD_FILE_API, // 文件上传
+  DOWNLOAD_FILE_API // 文件下载
   // UPLOAD_FILE_API
 } from '@/api/api'
 
@@ -334,8 +335,12 @@ export default defineComponent({
       state.isDialogShow = true
     }
 
-    const seeVersion = () => {
-      //
+    const seeVersion = (row:TopicMainData) => {
+      DOWNLOAD_FILE_API({ key: row.indexMethod }).then(res => {
+        console.log('下载 obj')
+        console.log(res.data.data)
+        window.open(res.data.data.url, '_blank')
+      })
     }
 
     const errorFile = () => {
@@ -346,7 +351,7 @@ export default defineComponent({
     // 上传图片前
     const httpRequest = (options:any) => {
       state.canUploadFile = false
-      INSPECT_INDEX_UPLOAD_FILE_API({
+      UPLOAD_FILE_API({
         name: options.file.name
       }).then(({ data }) => {
         if (data.code === 200) {
@@ -356,9 +361,6 @@ export default defineComponent({
           state.apiFileURL = data.data.url
           axios.put(data.data.url, options.file).then(res => {
             if (res.status === 200) {
-              console.log('77777777')
-              console.log(data.data)
-              console.log(options)
               options.onSuccess(data.data.key, options)
             }
           })
