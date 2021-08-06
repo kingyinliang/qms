@@ -56,7 +56,8 @@ import {
 
 interface Props{
   modelValue: undefined|string|any[];
-  treeProps: any;
+  treeProps?: any;
+  disabled?: boolean;
   treeData: any[];
 }
 
@@ -64,7 +65,10 @@ export default defineComponent({
   name: 'TreeDialog',
   emits: ['update:modelValue'],
   props: {
-    modelValue: [String, Array],
+    modelValue: {
+      type: [String, Array],
+      required: true
+    },
     disabled: {
       type: Boolean,
       default: false
