@@ -22,7 +22,7 @@
                   <em class="el-input__icon el-icon-search" />
             </template>
           </el-input>
-          <el-button type="primary" size="mini" style="height:32px; margin-left:5px" @click="apiMaterialDetail(currentCategoryId,materialDetailText,1,10)">查询</el-button>
+          <el-button icon="el-icon-search" size="mini" style="height:32px; margin-left:5px" @click="apiMaterialDetail(currentCategoryId,materialDetailText,1,10)">查询</el-button>
         </template>
       </div>
      <el-table :data="topicMainData"
@@ -241,15 +241,13 @@ export default defineComponent({
     const getMaterialCatagoryData = () => {
       INSPECT_MATERIAL_INSPECT_TYPE_MATERIAL_API({
       }).then((res) => {
-        console.log('res.data.data')
-        console.log(res.data.data)
+        state.materialDetailText = ''
         state.treeData = treeDataTranslater('category', JSON.parse(JSON.stringify(res.data.data)), 'id', 'parentId')
-        console.log('state.treeData')
-        console.log(state.treeData)
         // 一进页面默认跑第一笔
         if (state.currentCategoryId === '') {
           state.currentCategoryId = state.treeData[0].id
           state.initFocusNode = state.treeData[0].id
+
           // '619922389037592576'
           treeModule.value.focusCurrentNodeNumber = state.treeData[0].id
           apiMaterialDetail(state.currentCategoryId, '', state.currentPage, state.pageSize)
@@ -268,11 +266,10 @@ export default defineComponent({
       INSPECT_MATERIAL_CHECKED_INSPECT_TYPE_UPDATE_API({
         inspectMaterialDetails: dataTemp,
         inspectTypeIdList: val // 检验类id数组
-      }).then(() => {
+      }).then(async () => {
         proxy.$successToast('操作成功')
         // reload page
-        // apiMaterialDetail(state.currentCategoryId, state.materialDetailText, state.currentPage, state.pageSize)
-        getMaterialCatagoryData()
+        await getMaterialCatagoryData()
         state.topicMainData = []
       })
     }

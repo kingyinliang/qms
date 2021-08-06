@@ -14,14 +14,14 @@ export function UPDATE_TENANT (params = {}):Promise<AxiosResponse> {
   return Http.post('/mock/test', params, { baseURL: '' })
 }
 
+// 系统管理-文件上传
 export function UPLOAD_FILE_API (params = {}):Promise<AxiosResponse> {
   return Http.get('/sysFile/upload', params, { baseURL: (process.env.VUE_APP_SYSTEM_API as string) + (process.env.VUE_APP_API_V as string) })
 }
 
-// 系统管理-文件上传
-
-export function INSPECT_INDEX_UPLOAD_FILE_API (params = {}):Promise<AxiosResponse> {
-  return Http.get('/inspectIndexVersion/upload', params, { baseURL: (process.env.VUE_APP_QMS_API as string) + (process.env.VUE_APP_API_V as string) })
+// 系统管理-文件下载
+export function DOWNLOAD_FILE_API (params = {}):Promise<AxiosResponse> {
+  return Http.get('/sysFile/download', params, { baseURL: (process.env.VUE_APP_SYSTEM_API as string) + (process.env.VUE_APP_API_V as string) })
 }
 
 export function TEST_API (params = {}):Promise<AxiosResponse> {
