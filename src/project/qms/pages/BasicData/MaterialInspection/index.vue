@@ -188,23 +188,32 @@ export default defineComponent({
     }
 
     const treeNodeContextMenuHandle = (val:TreeItemData) => {
+      console.log('val')
+      console.log(val)
       INSPECT_MATERIAL_QUERY_SYS_MATERIAL_API({
         // inspectMaterialType: '欣和无估价的物料 ZUNB',
-        inspectMaterialType: val.inspectMaterialType,
-        inspectGroup: '',
+        inspectMaterialType: val.inspectGroup,
+        inspectGroup: val.inspectMaterialType,
+        // inspectMaterialType: val.inspectMaterialType,
+        // inspectGroup: val.inspectGroup,
         inspectMaterialNameOrCode: ''
       }).then((res) => {
+        console.log('state.globleItemGroup')
         state.globleItemGroup = JSON.parse(JSON.stringify(res.data.data))
+        console.log(state.globleItemGroup)
       })
     }
 
     const getMaterialDetail = (val:TreeItemData) => {
+      console.log('click-val')
+      console.log(val)
       state.materialDetailText = ''
       state.globleSearchString = ''
       state.currentPage = 1
       state.pageSize = 10
       state.totalItems = 0
 
+      // 此处命名有些问题, 需留意
       if (val.inspectGroups.length === 0) {
         state.currentMaterialGroupString = val.inspectMaterialType
         state.currentMaterialString = val.inspectGroup
@@ -295,8 +304,14 @@ export default defineComponent({
       let dataTemp:TopicMainData[] = []
       if (state.whoAsign === 'single') {
         dataTemp.push(state.globleItem)
+        console.log('11111')
+        console.log(state.globleItem)
+        console.log(dataTemp)
       } else if (state.whoAsign === 'multi') {
         dataTemp = state.globleItemGroup
+        console.log('222222')
+        console.log(state.globleItemGroup)
+        console.log(dataTemp)
       }
 
       INSPECT_MATERIAL_DISTRIBUTION_INSPECT_MATERIAL_API({
