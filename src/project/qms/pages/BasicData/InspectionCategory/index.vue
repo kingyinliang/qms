@@ -11,7 +11,7 @@
       @treeNodeContextMenu="contextmenu"
     >
       <template #context--menu>
-        <li class="contextMenu" v-if="level" @click="addSameLevel">新增同级</li>
+        <li class="contextMenu" @click="addSameLevel">新增同级</li>
         <li class="contextMenu" @click="addSubordinate">新增下级</li>
       </template>
       <template #view>
@@ -102,6 +102,12 @@
         </el-form-item>
         <el-form-item label="上级类别：" prop="parentId" :label-width="formLabelWidth">
           <el-input v-model="addLevelInfo.parentName" class="inputWidth" :disabled="true" autocomplete="off"></el-input>
+        </el-form-item>
+        <el-form-item v-if="!level" label="生产辅助：" prop="assistFlag" :label-width="formLabelWidth">
+          <el-radio-group v-model="addLevelInfo.assistFlag">
+            <el-radio label="Y">是</el-radio>
+            <el-radio label="N">否</el-radio>
+          </el-radio-group>
         </el-form-item>
         <el-form-item label="关联组织：" :label-width="formLabelWidth">
           <tree-dialog
@@ -295,7 +301,12 @@ export default defineComponent({
       addRef.value.resetFields()
       clearForm()
       generateCode(temp.inspectTypeCode.slice(0, temp.inspectTypeCode.length - 2))
-      addLevelInfo.assistFlag = temp.assistFlag
+      // addLevelInfo.assistFlag = temp.assistFlag
+      if (!level.value) {
+        addLevelInfo.assistFlag = 'N'
+      } else {
+        addLevelInfo.assistFlag = temp.assistFlag
+      }
       addLevelInfo.parentId = temp.parentId
       addLevelInfo.parentName = temp.parentName
     }
@@ -310,6 +321,7 @@ export default defineComponent({
     // 新增下级
     const addSubordinate = async () => {
       addLevelBtn.value = true
+      level.value = true
       await nextTick()
       addRef.value.resetFields()
       clearForm()

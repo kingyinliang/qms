@@ -40,14 +40,53 @@
         <el-input v-model="addOrUpdateForm.dateUnit" autocomplete="off"></el-input>
       </el-form-item>
       <el-form-item label="计算单位：" prop="calculateUnit">
-        <el-select v-model="addOrUpdateForm.calculateUnit" class="inputWidth" placeholder="请选择" @change="val => addOrUpdateForm.calculateUnit = addOrUpdateForm.find(it => it.dictCode === val).dictValue">
+        <el-select v-model="addOrUpdateForm.calculateUnit" class="inputWidth" placeholder="请选择" @change="val => addOrUpdateForm.calculateUnit = calculateUnit.find(it => it.dictCode === val).dictValue">
           <el-option v-for="item in calculateUnit" :key="item.dictCode" :label="item.dictValue" :value="item.dictCode" />
         </el-select>
       </el-form-item>
       <el-form-item label="开始时间：" prop="calculateStart">
         <div class="flex" v-for="(item, index) in addOrUpdateForm.calculateStart" :key="index">
-          <el-date-picker v-model="addOrUpdateForm.calculateStart[index]" class="inputWidth" type="datetime" value-format="YYYY-MM-DD HH:mm:ss" format="YYYY-MM-DD HH:mm:ss" />
-          <el-button v-if="index + 1 === addOrUpdateForm.calculateStart.length" size="small" @click="() => addOrUpdateForm.calculateStart.push('')">+</el-button>
+          <el-date-picker
+            v-if="addOrUpdateForm.calculateUnit==='月'"
+            v-model="addOrUpdateForm.calculateStart[index]"
+            class="inputWidth"
+            popper-class="noneHeader"
+            type="month"
+            value-format="MM"
+            format="MM"
+          />
+          <el-select
+            v-if="addOrUpdateForm.calculateUnit==='周'"
+            v-model="addOrUpdateForm.calculateStart[index]"
+            class="inputWidth"
+          >
+            <el-option label="周一" value="周一"/>
+            <el-option label="周二" value="周二"/>
+            <el-option label="周三" value="周三"/>
+            <el-option label="周四" value="周四"/>
+            <el-option label="周五" value="周五"/>
+            <el-option label="周六" value="周六"/>
+            <el-option label="周日" value="周日"/>
+          </el-select>
+          <el-date-picker
+            v-if="addOrUpdateForm.calculateUnit==='天'"
+            v-model="addOrUpdateForm.calculateStart[index]"
+            class="inputWidth"
+            popper-class="noneHeader"
+            type="date"
+            value-format="DD"
+            format="DD"
+          />
+          <el-time-select
+            v-if="addOrUpdateForm.calculateUnit==='小时'"
+            v-model="addOrUpdateForm.calculateStart[index]"
+            class="inputWidth"
+            start='00:00'
+            end='24:00'
+            step='01:00'
+          />
+          <el-button icon="el-icon-plus" v-if="index === 0" size="small" @click="() => addOrUpdateForm.calculateStart.push('')" />
+          <el-button type="danger" icon="el-icon-delete" v-if="index !== 0" size="small" @click="() => addOrUpdateForm.calculateStart.splice(index, 1)" />
         </div>
       </el-form-item>
       <el-form-item label="时间长度：" prop="dateDelay">
@@ -198,7 +237,7 @@ export default defineComponent({
 
     onMounted(async () => {
       query()
-      const res = await DICT_DROPDOWN({ dictType: 'inspect_property' })
+      const res = await DICT_DROPDOWN({ dictType: 'TIME_UNIT' })
       calculateUnit.value = res.data.data
     })
 
@@ -221,6 +260,11 @@ export default defineComponent({
 })
 </script>
 
+<style lang="scss">
+  .noneHeader .el-date-picker__header{
+    display: none;
+  }
+</style>
 <style lang="scss" scoped>
   .time_unit{
     height: calc(100vh - 117px);
