@@ -17,11 +17,9 @@
     <el-table ref="multipleTable" :cell-style="{'text-align':'center'}" :data="tableData" tooltip-effect="dark" style="width: 100%" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" />
       <el-table-column type="index" label="序号" width="50" />
-      <el-table-column label="编码" prop="inspectMethodCode" />
-      <el-table-column label="时间单位" prop="inspectMethodName" />
-      <el-table-column label="计算单位" prop="inspectPropertyName" />
-      <el-table-column label="计算开始" prop="inspectPropertyName" />
-      <el-table-column label="时间长度" prop="inspectPropertyName" />
+      <el-table-column label="品项编码" prop="inspectMethodCode" />
+      <el-table-column label="品项名称" prop="inspectMethodName" />
+      <el-table-column label="关联物料" prop="inspectPropertyName" />
       <el-table-column label="操作" width="120" fixed="right">
         <template #default="scope">
           <el-button type="text" icon="el-icon-edit" class="role__btn" @click="editItem(scope.row)">
@@ -33,25 +31,16 @@
   </mds-card>
   <el-dialog v-model="addOrUpdateDialog" title="时间单位" width="30%">
     <el-form ref="addOrUpdateRef" :model="addOrUpdateForm" :rules="addOrUpdateFormRule" label-width="120px">
-      <el-form-item label="编码：" prop="cycleCode">
+      <el-form-item label="品项编码：" prop="cycleCode">
         <el-input v-model="addOrUpdateForm.cycleCode" :disabled="true" autocomplete="off"></el-input>
       </el-form-item>
-      <el-form-item label="时间单位：" prop="dateUnit">
+      <el-form-item label="品项名称：" prop="dateUnit">
         <el-input v-model="addOrUpdateForm.dateUnit" autocomplete="off"></el-input>
       </el-form-item>
       <el-form-item label="计算单位：" prop="calculateUnit">
         <el-select v-model="addOrUpdateForm.calculateUnit" class="inputWidth" placeholder="请选择" @change="val => addOrUpdateForm.calculateUnit = addOrUpdateForm.find(it => it.dictCode === val).dictValue">
           <el-option v-for="item in calculateUnit" :key="item.dictCode" :label="item.dictValue" :value="item.dictCode" />
         </el-select>
-      </el-form-item>
-      <el-form-item label="开始时间：" prop="calculateStart">
-        <div class="flex" v-for="(item, index) in addOrUpdateForm.calculateStart" :key="index">
-          <el-date-picker v-model="addOrUpdateForm.calculateStart[index]" class="inputWidth" type="datetime" value-format="YYYY-MM-DD HH:mm:ss" format="YYYY-MM-DD HH:mm:ss" />
-          <el-button v-if="index + 1 === addOrUpdateForm.calculateStart.length" size="small" @click="() => addOrUpdateForm.calculateStart.push('')">+</el-button>
-        </div>
-      </el-form-item>
-      <el-form-item label="时间长度：" prop="dateDelay">
-        <el-input v-model="addOrUpdateForm.dateDelay" autocomplete="off"></el-input>
       </el-form-item>
     </el-form>
     <div class="dialog-footer">
@@ -95,7 +84,7 @@ const addOrUpdateFormRule = {
   dateUnit: [
     {
       required: true,
-      message: '请输入时间单位',
+      message: '请输入品项名称',
       trigger: 'blur'
     }
   ],
@@ -103,20 +92,6 @@ const addOrUpdateFormRule = {
     {
       required: true,
       message: '请输入计算单位',
-      trigger: 'blur'
-    }
-  ],
-  calculateStart: [
-    {
-      required: true,
-      message: '请输入开始时间',
-      trigger: 'blur'
-    }
-  ],
-  dateDelay: [
-    {
-      required: true,
-      message: '请输入时间长度',
       trigger: 'blur'
     }
   ]

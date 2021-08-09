@@ -10,43 +10,33 @@
     <div class="clearfix">
       <div style="line-height: 40px; float: right;margin-top: 10px">
         <el-radio-group v-model="module">
-          <el-radio label="1">模板一（30*30）</el-radio>
-          <el-radio label="2">模板二</el-radio>
-          <el-radio label="3">模板三</el-radio>
+          <el-radio label="1">模板一（A4）</el-radio>
+          <el-radio label="2">模板二（60*60）</el-radio>
+          <el-radio label="3">模板三（30*30）</el-radio>
         </el-radio-group>
         <el-button type="primary" style="margin-left: 20px" @click="print">打印</el-button>
       </div>
     </div>
   </mds-card>
-  <div id="print_ele__moduleOne" class="none_ele">
-    <div class="print_item" v-for="item in multipleSelection" :key="item.id">
-      <p>{{ item.deptName }}</p>
-      <p>{{ item.name }}</p>
-      <p>{{ item.code }}</p>
-    </div>
-  </div>
-  <div id="print_ele__moduleTwo" class="none_ele">
-    <div class="print_item" v-for="item in multipleSelection" :key="item.id">
-      <p>{{ item.deptName }}</p>
-      <p>{{ item.name }}</p>
-      <p>{{ item.code }}</p>
-    </div>
-  </div>
-  <div id="print_ele__moduleThree" class="none_ele">
-    <div class="print_item" v-for="item in multipleSelection" :key="item.id">
-      <p>{{ item.deptName }}</p>
-      <p>{{ item.name }}</p>
-      <p>{{ item.code }}</p>
-    </div>
-  </div>
+  <printModuleOne v-if="module === '1'" :multipleSelection="multipleSelection" />
+  <printModuleTwo v-if="module === '2'" :multipleSelection="multipleSelection" />
+  <printModuleThree v-if="module === '3'" :multipleSelection="multipleSelection" />
 </template>
 
 <script>
 import { defineComponent, ref } from 'vue'
 import printjs from '@/utils/print.js'
+import printModuleOne from './printModuleOne'
+import printModuleTwo from './printModuleTwo'
+import printModuleThree from './printModuleThree'
 
 export default defineComponent({
   name: 'print',
+  components: {
+    printModuleOne,
+    printModuleTwo,
+    printModuleThree
+  },
   setup () {
     const printEle = ref()
     const multipleSelection = ref([])
@@ -104,59 +94,3 @@ export default defineComponent({
   }
 })
 </script>
-
-<style lang="scss">
-  .none_ele{
-    display: none;
-  }
-  #print_ele__moduleOne{
-    .print_item{
-      width: 3cm;
-      height: 3cm;
-      p{
-        text-align: center;
-        line-height: 0.7cm;
-        font-size: 0.4cm;
-      }
-    }
-  }
-  #print_ele__moduleTwo{
-    .print_item{
-      width: 6cm;
-      height: 6cm;
-      p{
-        text-align: center;
-        line-height: 1.4cm;
-        font-size: 0.8cm;
-      }
-    }
-  }
-  #print_ele__moduleThree{
-    .print_item{
-      width: 3cm;
-      height: 3cm;
-      p{
-        text-align: center;
-        line-height: 0.7cm;
-        font-size: 0.4cm;
-      }
-    }
-  }
-</style>
-<style lang="scss" media="print">
-  @media print {
-    @page {
-      size: auto;
-      margin: 0;
-    }
-    .none_ele{
-      display: block;
-    }
-    #print_ele__moduleOne, #print_ele__moduleTwo{
-      .print_item{
-        page-break-after:always;
-        page-break-before: always;
-      }
-    }
-  }
-</style>
