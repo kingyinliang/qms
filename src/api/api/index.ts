@@ -51,6 +51,9 @@ export function INSPECT_TYPE_LIST_API (params = {}):Promise<AxiosResponse> {
 export function INSPECT_TYPE_DETAIL_API (params = {}):Promise<AxiosResponse> {
   return Http.get('/inspectType/getInspectTypeById', params, { baseURL: (process.env.VUE_APP_QMS_API as string) + (process.env.VUE_APP_API_V as string) })
 }
+export function INSPECT_TYPE_MATERIAL_API (params = {}):Promise<AxiosResponse> {
+  return Http.get('/inspectMaterial/queryInspectMaterialByInspectTypeId', params, { baseURL: (process.env.VUE_APP_QMS_API as string) + (process.env.VUE_APP_API_V as string) })
+}
 export function INSPECT_TYPE_ADD_API (params = {}):Promise<AxiosResponse> {
   return Http.post('/inspectType/insertInspectType', params, { baseURL: (process.env.VUE_APP_QMS_API as string) + (process.env.VUE_APP_API_V as string) })
 }
