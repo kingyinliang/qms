@@ -40,7 +40,7 @@
         <el-input v-model="addOrUpdateForm.dateUnit" autocomplete="off"></el-input>
       </el-form-item>
       <el-form-item label="计算单位：" prop="calculateUnit">
-        <el-select v-model="addOrUpdateForm.calculateUnit" class="inputWidth" placeholder="请选择" @change="val => addOrUpdateForm.calculateUnit = calculateUnit.find(it => it.dictCode === val).dictValue">
+        <el-select v-model="addOrUpdateForm.calculateUnit" class="inputWidth" placeholder="请选择" @change="calculateUnitChange">
           <el-option v-for="item in calculateUnit" :key="item.dictCode" :label="item.dictValue" :value="item.dictCode" />
         </el-select>
       </el-form-item>
@@ -234,6 +234,10 @@ export default defineComponent({
         }
       })
     }
+    const calculateUnitChange = (val: string) => {
+      (addOrUpdateForm.value as TimeData).calculateStart = [''];
+      (addOrUpdateForm.value as TimeData).calculateUnit = (calculateUnit.value.find(it => it.dictCode === val) as Dict).dictValue
+    }
 
     onMounted(async () => {
       query()
@@ -251,6 +255,7 @@ export default defineComponent({
       calculateUnit,
       query,
       addData,
+      calculateUnitChange,
       selectDelete,
       handleSelectionChange,
       editItem,

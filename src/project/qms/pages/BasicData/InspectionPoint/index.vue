@@ -34,16 +34,9 @@
   <el-dialog v-model="addOrUpdateDialog" title="检验点维护" width="30%">
     <el-form ref="addOrUpdateRef" :model="addOrUpdateForm" :rules="addOrUpdateFormRule" label-width="120px">
       <el-form-item label="生产车间：" prop="deptId">
-        <el-cascader
-          ref="deptRef"
-          v-model="addOrUpdateForm.deptId"
-          :show-all-levels="false"
-          :options="org"
-          class="inputWidth"
-          :props="{ emitPath: false, checkStrictly: true, value: 'id', label: 'deptName', children: 'children' }"
-          collapse-tags
-          clearable
-        />
+        <el-select v-model="addOrUpdateForm.deptId" class="inputWidth" placeholder="请选择" @change="val => addOrUpdateForm.deptName = org.find(it => it.id === val).deptName">
+          <el-option v-for="item in org" :key="item.id" :label="item.deptName" :value="item.id" />
+        </el-select>
       </el-form-item>
       <el-form-item label="检验点：" prop="siteName">
         <el-input v-model="addOrUpdateForm.siteName" autocomplete="off"></el-input>
@@ -67,7 +60,7 @@ import {
   ComponentInternalInstance
 } from 'vue'
 import {
-  ORG_TREE_API
+  DEPT_QUERY_API
 } from '@/api/api'
 
 interface PointData {
@@ -100,7 +93,6 @@ export default defineComponent({
     const proxy = ctx.proxy as any
 
     const addOrUpdateRef = ref() // 新增修改表单节点
-    const deptRef = ref() // 组织架构节点
     const queryForm = reactive({}) // 查询表单数据
     const tableData = ref<PointData[]>([]) // 表格数据
     const multipleSelection = ref<string[]>([]) // 复选数据
@@ -157,31 +149,18 @@ export default defineComponent({
     const addOrUpdateFormSubmit = () => {
       addOrUpdateRef.value.validate(async (valid: boolean) => {
         if (valid) {
-          addOrUpdateForm.value.deptName = deptRef.value.getCheckedNodes()[0].data.deptName
           console.log(addOrUpdateForm.value)
-        }
-      })
-    }
-    // 去掉children
-    const cascaderTranslate = (data: any) => {
-      data.forEach((item: any) => {
-        if (item.children.length) {
-          cascaderTranslate(item.children)
-        } else {
-          delete item.children
         }
       })
     }
 
     onMounted(async () => {
       query()
-      const res = await ORG_TREE_API({ factory: JSON.parse(sessionStorage.getItem('system') || '{}').id || '' })
-      cascaderTranslate(res.data.data)
+      const res = await DEPT_QUERY_API({ factory: JSON.parse(sessionStorage.getItem('system') || '{}').id || '', deptType: ['WORK_SHOP'] })
       org.value = res.data.data
     })
 
     return {
-      deptRef,
       addOrUpdateRef,
       queryForm,
       tableData,
