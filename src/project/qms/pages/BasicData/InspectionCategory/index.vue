@@ -82,7 +82,7 @@
               <div class="dialog-footer">
                 <el-button v-if="isRedact" size="small" type="primary" icon="el-icon-edit" @click="isRedact= false">编辑</el-button>
                 <!-- <div v-else> -->
-                <el-button v-if="!isRedact" size="small" icon="el-icon-circle-close" @click="isRedact= true">取消</el-button>
+                <el-button v-if="!isRedact" size="small" icon="el-icon-circle-close" @click="cancel">取消</el-button>
                 <el-button v-if="!isRedact" size="small" type="danger" icon="el-icon-delete" @click="resetForm('ruleForm')">删除</el-button>
                 <el-button v-if="!isRedact" size="small" type="primary" icon="el-icon-document-checked" @click="editSave">保存</el-button>
                 <!-- </div> -->
@@ -163,7 +163,8 @@ import {
   INSPECT_TYPE_ADD_API,
   INSPECT_TYPE_UPDATE_API,
   ORG_TREE_API,
-  INSPECT_TYPE_DEL_API
+  INSPECT_TYPE_DEL_API,
+  INSPECT_TYPE_MATERIAL_API
 } from '@/api/api'
 
 interface AddLevelInfo {
@@ -261,6 +262,10 @@ export default defineComponent({
         return data.map((it: any) => it.deptId)
       }
     }
+    const cancel = () => {
+      isRedact.value = true
+      getDetail(detail)
+    }
     // 树点击获取详情
     const getDetail = async (row:TreeData) => {
       detail = row
@@ -320,6 +325,13 @@ export default defineComponent({
     }
     // 新增下级
     const addSubordinate = async () => {
+      if (treeDataOrg.filter(it => it.parentId === temp.id).length === 0) {
+        const res = await INSPECT_TYPE_MATERIAL_API({ inspectTypeId: temp.id })
+        if (res.data.data !== 0) {
+          proxy.$warningToast('该检验类下存在物料')
+          return false
+        }
+      }
       addLevelBtn.value = true
       level.value = true
       await nextTick()
@@ -422,6 +434,7 @@ export default defineComponent({
       options,
       detailInfo,
       isRedact,
+      cancel,
       contextmenu,
       getDetail,
       addSameLevel,
