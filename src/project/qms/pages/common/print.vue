@@ -145,6 +145,10 @@ export default defineComponent({
 </style>
 <style lang="scss" media="print">
   @media print {
+    @page {
+      size: auto;
+      margin: 0;
+    }
     .none_ele{
       display: block;
     }
