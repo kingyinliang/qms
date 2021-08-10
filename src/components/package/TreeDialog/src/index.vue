@@ -151,6 +151,7 @@ export default defineComponent({
 <style lang="scss">
   .treeDialog{
     min-width: 250px!important;
+    width: auto!important;
   }
   .treeDialog__none{
     display: none;
