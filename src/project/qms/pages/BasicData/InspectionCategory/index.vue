@@ -134,7 +134,7 @@
           />
         </el-form-item>
         <el-form-item label="留样数量：" :label-width="formLabelWidth">
-          <el-input v-model="addLevelInfo.sampleAmount" class="inputWidth" autocomplete="off"></el-input>
+          <el-input v-model="addLevelInfo.sampleAmount" maxlength='2' @input="e => addLevelInfo.sampleAmount = e.replace(/[^0-9]/gi, '')" placeholder="请输入" class="inputWidth" autocomplete="off"></el-input>
         </el-form-item>
         <el-form-item label="手动执行：" prop="manualFlag" :label-width="formLabelWidth">
           <el-radio-group v-model="addLevelInfo.manualFlag">
@@ -182,10 +182,10 @@ interface AddLevelInfo {
 }
 interface TreeData {
   id: string; // 主键
-  assistFlag: string; // "上级类别":
-  parentId: string; // "上级类别":
-  parentName: string; // "上级类别":
-  inspectTypeName: string; // 类别名称
+  assistFlag?: string; // "上级类别":
+  parentId?: string; // "上级类别":
+  parentName?: string; // "上级类别":
+  inspectTypeName?: string; // 类别名称
   inspectTypeCode: string; // 类别名称
 }
 
@@ -247,12 +247,12 @@ export default defineComponent({
 
     // 逻辑函数
     // 列表变树结构
-    const setTreeData = async () => {
+    const setTreeData = async (id = '') => {
       const res = await INSPECT_TYPE_LIST_API()
       treeDataOrg = res.data.data
       treeData.value = treeDataTranslate(res.data.data, 'id', 'parentId')
       treePage.value.focusCurrentNodeNumber = treeData.value[0].id
-      getDetail(treeData.value[0])
+      id ? getDetail({ id, inspectTypeCode: '' }) : getDetail(treeData.value[0])
     }
     // 下拉框数据变换
     const setOrGetData = (data: any, type = 'get') => {
@@ -328,7 +328,7 @@ export default defineComponent({
       if (treeDataOrg.filter(it => it.parentId === temp.id).length === 0) {
         const res = await INSPECT_TYPE_MATERIAL_API({ inspectTypeId: temp.id })
         if (res.data.data !== 0) {
-          proxy.$warningToast('该检验类下存在物料')
+          proxy.$warningToast('已分配物料')
           return false
         }
       }
@@ -363,7 +363,7 @@ export default defineComponent({
         cancelButtonText: '取消',
         type: 'warning'
       }).then(async () => {
-        await INSPECT_TYPE_DEL_API({ id: detail.id })
+        await INSPECT_TYPE_DEL_API({ id: detailInfo.value.id })
         proxy.$successToast('操作成功')
         detailInfo.value = {
           id: '',
@@ -390,7 +390,7 @@ export default defineComponent({
           await INSPECT_TYPE_UPDATE_API(detailInfo.value)
           proxy.$successToast('操作成功')
           isRedact.value = true
-          await getDetail(detail)
+          await setTreeData(detail.id)
         }
       })
     }
