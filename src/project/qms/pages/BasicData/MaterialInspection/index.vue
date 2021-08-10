@@ -21,10 +21,8 @@
         v-model="materialDetailText"
         size="small"
         clearable
-        style="margin-bottom:10px; width:200px; height:35px;">
-        <template #suffix>
-              <em class="el-input__icon el-icon-search" />
-        </template>
+        style="margin-bottom:10px; width:200px; height:35px;"
+        @change="apiMaterialDetail(currentMaterialString,currentMaterialGroupString,materialDetailText,'searchBar')">
       </el-input>
       <el-button icon="el-icon-search" size="mini" style="height:32px; margin-left:5px" @click="apiMaterialDetail(currentMaterialString,currentMaterialGroupString,materialDetailText,'searchBar')">查询</el-button>
       </div>

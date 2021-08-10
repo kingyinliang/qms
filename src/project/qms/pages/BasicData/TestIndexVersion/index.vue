@@ -3,17 +3,13 @@
  * @Anthor: Telliex
  * @Date: 2021-07-30 11:24:46
  * @LastEditors: Telliex
- * @LastEditTime: 2021-08-06 16:28:37
+ * @LastEditTime: 2021-08-10 15:33:11
 -->
 <template>
   <mds-card class="test_method" title="版本明细" :pack-up="false" style="margin-bottom: 0; background: #fff;">
     <template #titleBtn>
       <div style="float: right;display: flex;">
-        <el-form ref="pstngDate" :model="controlForm" size="small" :inline="true" label-position="right" label-width="82px" class="topforms" style=" float: left;">
-          <el-form-item label="" prop="pstngDate">
-            <el-input suffix-icon="el-icon-search" v-model="controlForm.filterText" placeholder="版本号" clearable  style="width: 160px;" />
-          </el-form-item>
-        </el-form>
+        <el-input size="small" style="margin-bottom:10px; width:200px; height:35px;margin-right:10px" v-model="controlForm.filterText" placeholder="版本号" clearable @change="btnGetMainData"  />
         <div style="float: right;">
           <el-button icon="el-icon-search"  size="small" @click="btnGetMainData">查询</el-button>
           <el-button icon="el-icon-circle-plus-outline" type="primary" size="small" @click="btnAddItemData">新增</el-button>
