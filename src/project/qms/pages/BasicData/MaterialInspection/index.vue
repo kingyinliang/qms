@@ -312,26 +312,27 @@ export default defineComponent({
       }).then(() => {
         proxy.$successToast('操作成功')
         // reload page
-        if (state.whoAsign === 'single') {
-          // apiMaterialDetail(state.currentMaterialString, state.currentMaterialGroupString, state.globleSearchString)
-          INSPECT_MATERIAL_QUERY_SYS_MATERIAL_API({
-            inspectMaterialType: state.currentMaterialString,
-            inspectGroup: state.currentMaterialGroupString,
-            inspectMaterialNameOrCode: state.globleSearchString
-          }).then((res) => {
-            state.totalItems = res.data.data.length
-            if (res.data.data.length === 0) {
-              state.currentMaterialString = ''
-              getMaterialCatagoryData()
-            } else {
-              state.tableDataW = JSON.parse(JSON.stringify(res.data.data))
-              currentChangePage(state.tableDataW, 1)
-            }
-          })
-        } else if (state.whoAsign === 'multi') {
-          state.currentMaterialString = ''
-          getMaterialCatagoryData()
-        }
+        // if (state.whoAsign === 'single') {
+        //   INSPECT_MATERIAL_QUERY_SYS_MATERIAL_API({
+        //     inspectMaterialType: state.currentMaterialString,
+        //     inspectGroup: state.currentMaterialGroupString,
+        //     inspectMaterialNameOrCode: state.globleSearchString
+        //   }).then((res) => {
+        //     state.totalItems = res.data.data.length
+        //     if (res.data.data.length === 0) {
+        //       state.currentMaterialString = ''
+        //       getMaterialCatagoryData()
+        //     } else {
+        //       state.tableDataW = JSON.parse(JSON.stringify(res.data.data))
+        //       currentChangePage(state.tableDataW, 1)
+        //     }
+        //   })
+        // } else if (state.whoAsign === 'multi') {
+        //   state.currentMaterialString = ''
+        //   getMaterialCatagoryData()
+        // }
+        state.currentMaterialString = ''
+        getMaterialCatagoryData()
       })
     }
 

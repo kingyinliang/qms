@@ -234,6 +234,7 @@ export default defineComponent({
       INSPECT_MATERIAL_INSPECT_TYPE_MATERIAL_API({
       }).then((res) => {
         state.materialDetailText = ''
+        state.isShowSearchBar = true
         state.treeData = treeDataTranslater('category', JSON.parse(JSON.stringify(res.data.data)), 'id', 'parentId')
         // 一进页面默认跑第一笔
         if (state.currentCategoryId === '') {
