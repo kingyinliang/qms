@@ -66,8 +66,8 @@
               </el-form-item>
             </el-col>
             <el-col :span="12">
-              <el-form-item label="留样数据：">
-                <el-input :disabled="isRedact" v-model="detailInfo.sampleAmount"></el-input>
+              <el-form-item label="留样数量：">
+                <el-input :disabled="isRedact" v-model="detailInfo.sampleAmount" maxlength='2' @input="e => detailInfo.sampleAmount = e.replace(/[^0-9]/gi, '')" placeholder="请输入"></el-input>
               </el-form-item>
             </el-col>
             <el-col :span="12">
@@ -292,7 +292,8 @@ export default defineComponent({
           }
         }
       })
-      if (endCode < 10) {
+      console.log(endCode)
+      if (endCode + 1 < 10) {
         code = `${startCode}0${endCode + 1}`
       } else {
         code = `${startCode}${endCode + 1}`
@@ -349,10 +350,10 @@ export default defineComponent({
           addLevelInfo.relation = setOrGetData(relationRef.value)
           addLevelInfo.sample = setOrGetData(sampleRef.value)
           addLevelInfo.cooperate = setOrGetData(cooperateRef.value)
-          await INSPECT_TYPE_ADD_API(addLevelInfo)
+          const res = await INSPECT_TYPE_ADD_API(addLevelInfo)
           proxy.$successToast('操作成功')
           addLevelBtn.value = false
-          setTreeData()
+          setTreeData(res.data.msg)
         }
       })
     }
