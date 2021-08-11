@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-07-08 11:25:52
  * @LastEditors: Telliex
- * @LastEditTime: 2021-08-06 11:41:39
+ * @LastEditTime: 2021-08-06 17:58:25
 -->
 <template>
     <dialogDevice :dialogVisible="dialogVisible" :title="title" @on-confirm="onConfirm" @on-close="onClose" width="70%">
@@ -116,7 +116,6 @@ export default defineComponent({
     const materialInspectionTree = ref()
 
     const onConfirm = () => {
-      console.log('dialog confirm')
       if (state.treeValueSelected.length !== 0) {
         const selectedItems: SelectedItem[] = []
         state.materialTreeData.forEach(item => {
@@ -137,7 +136,6 @@ export default defineComponent({
     }
 
     const onClose = () => {
-      console.log('dialog close')
       parent.emit('actReset')
       parent.emit('update:dialogVisible', false)
     }

@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-07-30 11:24:46
  * @LastEditors: Telliex
- * @LastEditTime: 2021-08-06 16:27:30
+ * @LastEditTime: 2021-08-10 11:34:36
 -->
 <template>
   <mds-card class="test_method" title="标准值明细" :pack-up="false" style="margin-bottom: 0; background: #fff;">
@@ -15,14 +15,11 @@
           <el-button v-if="controlBtnCanDo" icon="el-icon-circle-close" type="primary" size="small" @click="btnLeaveItemData">取消</el-button>
         </div>
     </template>
-    <!-- :row-class-name="rowDelFlagOfTable" -->
     <el-table ref="multipleTable"  :cell-style="{'text-align':'center'}" :data="topicMainData"  tooltip-effect="dark" style="width: 100%">
       <el-table-column type="index" label="序号" width="50" />
       <el-table-column label="标定标准值" min-width="200" show-overflow-tooltip>
         <template #default="scope">
-          <!-- <el-tooltip effect="dark" :disabled="scope.row.indexStandard===''" :content="scope.row.indexStandard" placement="top-start"> -->
-              <el-input v-model.trim="scope.row.indexStandard" size="small" type="number" placeholder="请输入" :disabled="!isRedact" />
-          <!-- </el-tooltip> -->
+            <el-input v-model.number="scope.row.indexStandard" size="small" type="number" placeholder="请输入" :disabled="!isRedact" />
         </template>
       </el-table-column>
       <el-table-column label="标定上限">
@@ -32,8 +29,8 @@
         >
           <template #default="scope">
             <el-select v-model="scope.row.upSymbol" size="small" :disabled="!isRedact" clearable>
-                <el-option :label="'<'" :value="'<'" />
-                <el-option :label="'<='" :value="'<='" />
+              <el-option :label="'<'" :value="'<'" />
+              <el-option :label="'<='" :value="'<='" />
             </el-select>
           </template>
         </el-table-column>
@@ -42,9 +39,7 @@
           show-overflow-tooltip
         >
           <template #default="scope">
-            <!-- <el-tooltip effect="dark" :disabled="scope.row.indexUp===''" :content="scope.row.indexUp" placement="top-start"> -->
-                <el-input v-model.trim="scope.row.indexUp" size="small" type="number" placeholder="请输入" :disabled="!isRedact||scope.row.upSymbol===''" />
-            <!-- </el-tooltip> -->
+              <el-input v-model.number="scope.row.indexUp" size="small" type="number" placeholder="请输入" :disabled="!isRedact||scope.row.upSymbol===''" />
           </template>
         </el-table-column>
       </el-table-column>
@@ -55,8 +50,8 @@
         >
           <template #default="scope">
             <el-select v-model="scope.row.downSymbol" size="small" :disabled="!isRedact" clearable>
-                <el-option :label="'>'" :value="'>'" />
-                <el-option :label="'>='" :value="'>='" />
+              <el-option :label="'>'" :value="'>'" />
+              <el-option :label="'>='" :value="'>='" />
             </el-select>
           </template>
         </el-table-column>
@@ -65,17 +60,13 @@
           show-overflow-tooltip
         >
           <template #default="scope">
-            <!-- <el-tooltip effect="dark" :disabled="scope.row.indexDown===''" :content="scope.row.indexDown" placement="top-start"> -->
-                <el-input v-model.trim="scope.row.indexDown" size="small" placeholder="请输入" :disabled="!isRedact||scope.row.downSymbol===''" />
-            <!-- </el-tooltip> -->
+            <el-input v-model.number="scope.row.indexDown" size="small" placeholder="请输入" :disabled="!isRedact||scope.row.downSymbol===''" />
           </template>
          </el-table-column>
       </el-table-column>
       <el-table-column label="内控标準值" min-width="200" show-overflow-tooltip>
         <template #default="scope">
-          <!-- <el-tooltip effect="dark" :disabled="scope.row.indexInnerStandard===''" :content="scope.row.indexInnerStandard" placement="top-start"> -->
-              <el-input v-model.trim="scope.row.indexInnerStandard" type="number" size="small" placeholder="请输入" :disabled="!isRedact" />
-          <!-- </el-tooltip> -->
+          <el-input v-model.number="scope.row.indexInnerStandard" type="number" size="small" placeholder="请输入" :disabled="!isRedact" />
         </template>
       </el-table-column>
       <el-table-column label="内控上限">
@@ -95,9 +86,7 @@
           show-overflow-tooltip
         >
           <template #default="scope">
-            <!-- <el-tooltip effect="dark" :disabled="scope.row.indexInnerUp===''" :content="scope.row.indexInnerUp" placement="top-start"> -->
-                <el-input v-model.trim="scope.row.indexInnerUp" size="small" type="number" placeholder="请输入" :disabled="!isRedact||scope.row.innerUpSymbol===''" />
-            <!-- </el-tooltip> -->
+            <el-input v-model.number="scope.row.indexInnerUp" size="small" type="number" placeholder="请输入" :disabled="!isRedact||scope.row.innerUpSymbol===''" />
           </template>
          </el-table-column>
       </el-table-column>
@@ -119,7 +108,7 @@
         >
           <template #default="scope">
             <!-- <el-tooltip effect="dark" :disabled="scope.row.indexInnerDown===''" :content="scope.row.indexInnerDown" placement="top-start"> -->
-                <el-input v-model.trim="scope.row.indexInnerDown" size="small" type="number" placeholder="请输入" :disabled="!isRedact||scope.row.innerDownSymbol===''" />
+                <el-input v-model.number="scope.row.indexInnerDown" size="small" type="number" placeholder="请输入" :disabled="!isRedact||scope.row.innerDownSymbol===''" />
             <!-- </el-tooltip> -->
           </template>
         </el-table-column>
@@ -162,6 +151,7 @@ import {
   INSPECT_INDEX_VERSION_VALUE_MODIFY_API
 
 } from '@/api/api'
+import _ from 'lodash'
 
 interface TopicMainData {
   id: string
@@ -190,6 +180,7 @@ interface State {
   isDialogShow: boolean
   controlBtnCanDo: boolean
   topicMainData: TopicMainData[]
+  orgTopicMainData: TopicMainData[]
   targetId: string
   isRedact: boolean
 }
@@ -215,6 +206,7 @@ export default defineComponent({
       isDialogShow: false,
       controlBtnCanDo: false,
       topicMainData: [],
+      orgTopicMainData: [],
       targetId: '',
       isRedact: false
     })
@@ -238,10 +230,29 @@ export default defineComponent({
       })
 
       state.topicMainData = res.data.data
+      state.orgTopicMainData = JSON.parse(JSON.stringify(res.data.data))
     }
 
     // [BTN:删除] 删除 item
-    const btnDeleteItemData = (index: number, val:TopicMainData) => {
+    const btnDeleteItemData = (mainIndex: number, val:TopicMainData) => {
+      let canPass = false
+      state.topicMainData.forEach((item, index) => {
+        if (item.id !== '' && mainIndex !== index) {
+          if (!_.isEqual(state.orgTopicMainData[index], item)) {
+            proxy.$errorToast('删除前，请先对编辑数据进行保存')
+            canPass = false
+          } else {
+            canPass = true
+          }
+        } else {
+          canPass = true
+        }
+      })
+      // 有异动的数据，不进行删除动作
+      if (canPass === false) {
+        return
+      }
+
       proxy.$confirm('确认删除选中的数据？', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
@@ -249,7 +260,7 @@ export default defineComponent({
       }).then(async () => {
         if (val.id === '') {
           // val.delFlag = 1
-          state.topicMainData.splice(index, 1)
+          state.topicMainData.splice(mainIndex, 1)
           proxy.$successToast('操作成功')
         } else {
           const res = await INSPECT_INDEX_VERSION_VALUE_DELETE_API({ id: val.id })
@@ -287,36 +298,42 @@ export default defineComponent({
     const btnSaveItemData = async () => {
       const tempAdd:TopicMainData[] = []
       const tempEdit:TopicMainData[] = []
-      state.topicMainData.forEach(item => {
-        item.standardMonth = item.standardMonthList.join(',')
+      state.topicMainData.forEach((item, index) => {
         if (item.id === '') {
+          item.standardMonth = item.standardMonthList.join(',')
           tempAdd.push(item)
         } else {
-          tempEdit.push(item)
+          if (!_.isEqual(state.orgTopicMainData[index], item)) {
+            item.standardMonth = item.standardMonthList.join(',')
+            tempEdit.push(item)
+          }
         }
       })
-      console.log('tempAdd')
-      console.log(tempAdd)
-      console.log('tempEdit')
-      console.log(tempEdit)
 
-      await INSPECT_INDEX_VERSION_VALUE_MODIFY_API(
-        {
-          insertList: tempAdd,
-          updateList: tempEdit
-        }
-      )
-      state.controlBtnCanDo = false
-      state.isRedact = false
-      btnGetMainData()
-      parent.emit('update:dialogVisible', false)
+      if (ruleSubmit() && !(tempAdd.length === 0 && tempEdit.length === 0)) {
+        await INSPECT_INDEX_VERSION_VALUE_MODIFY_API(
+          {
+            insertList: tempAdd,
+            updateList: tempEdit
+          }
+        )
+        // reload
+        btnGetMainData()
+      }
+      // 关闭标准值明细 card
+      closeStandardValueInfoArea()
     }
 
     // [BTN:取消]
     const btnLeaveItemData = () => {
+      closeStandardValueInfoArea()
+    }
+
+    // 关闭标准值明细 card
+    const closeStandardValueInfoArea = () => {
       state.controlBtnCanDo = false
       state.isRedact = false
-      btnGetMainData()
+      parent.emit('update:dialogVisible', false)
     }
 
     // [BTN:编辑]
@@ -331,6 +348,17 @@ export default defineComponent({
     //   }
     //   return ''
     // }
+
+    // 验证标准值明细 data
+    const ruleSubmit = () => {
+      for (const item of state.topicMainData) {
+        if (item.indexStandard === '' || item.upSymbol === '' || item.downSymbol === '' || item.indexInnerStandard === '' || item.innerUpSymbol === '' || item.innerDownSymbol === '' || item.standardMonthList.length === 0 || item.indexInnerDown === '' || item.indexInnerUp === '' || item.indexUp === '' || item.indexDown === '') {
+          proxy.$warningToast('请完整录入栏位')
+          return false
+        }
+      }
+      return true
+    }
 
     watch(
       target,
@@ -355,7 +383,9 @@ export default defineComponent({
       btnSaveItemData,
       btnDeleteItemData,
       btnAddItemData,
-      btnEditItemData
+      btnEditItemData,
+      ruleSubmit,
+      closeStandardValueInfoArea
     }
   }
 })

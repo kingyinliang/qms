@@ -2,11 +2,11 @@
   <mds-card class="test_method" title="检验方法" :pack-up="false" style="margin-bottom: 0; background: #fff;">
     <template #titleBtn>
       <div style="float: right;display: flex;">
-        <el-form ref="pstngDate" :model="plantList" size="small" :inline="true" label-position="right" label-width="82px" class="topforms" style=" float: left;">
-          <el-form-item label="" prop="pstngDate">
-            <el-input suffix-icon="el-icon-search" v-model="plantList.inspectMethodCodeOrName" placeholder="物料" style="width: 160px;" />
-          </el-form-item>
-        </el-form>
+        <!-- <el-form ref="pstngDate" :model="plantList" size="small" :inline="true" label-position="right" label-width="82px" class="topforms" style=" float: left;">
+          <el-form-item label="" prop="pstngDate"> -->
+            <el-input size="small" style="margin-bottom:10px; width:200px; height:35px;margin-right:10px"  v-model="plantList.inspectMethodCodeOrName" placeholder="物料" @change="getList" />
+          <!-- </el-form-item>
+        </el-form> -->
         <div style="float: right;">
           <el-button icon="el-icon-search" size="small" @click="getList">查询</el-button>
           <el-button icon="el-icon-circle-check" type="primary" @click="addData" size="small">新增</el-button>

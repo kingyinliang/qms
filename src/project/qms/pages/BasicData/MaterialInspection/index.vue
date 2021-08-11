@@ -21,10 +21,8 @@
         v-model="materialDetailText"
         size="small"
         clearable
-        style="margin-bottom:10px; width:200px; height:35px;">
-        <template #suffix>
-              <em class="el-input__icon el-icon-search" />
-        </template>
+        style="margin-bottom:10px; width:200px; height:35px;"
+        @change="apiMaterialDetail(currentMaterialString,currentMaterialGroupString,materialDetailText,'searchBar')">
       </el-input>
       <el-button icon="el-icon-search" size="mini" style="height:32px; margin-left:5px" @click="apiMaterialDetail(currentMaterialString,currentMaterialGroupString,materialDetailText,'searchBar')">查询</el-button>
       </div>
@@ -57,12 +55,11 @@
     </el-pagination>
     </template>
   </tree-page>
-  <material-inspection-asign v-model:dialogVisible="isDialogShow" ref="refFunctionDialog" :title="'分配检验类别'"  :treeData="materialTreeData" @inspectCategoryList="inspectCategoryList" @reset="reset"  />
+  <material-inspection-asign v-model:dialogVisible="isDialogShow" ref="refFunctionDialog" :title="'分配检验类别'"  :treeData="materialTreeData" @inspectCategoryList="inspectCategoryListAsignToGo" @reset="reset"  />
 </template>
 
 <script lang="ts">
 import { defineComponent, ref, toRefs, reactive, onMounted, getCurrentInstance, ComponentInternalInstance } from 'vue'
-import { treeDataTranslate } from '@/utils/index'
 import { INSPECT_MATERIAL_QUERY_SYS_MATERIAL_ITEM_API, INSPECT_MATERIAL_QUERY_SYS_MATERIAL_API, INSPECT_TYPE_QUERY_API, INSPECT_MATERIAL_DISTRIBUTION_INSPECT_MATERIAL_API } from '@/api/api'
 import MaterialInspectionAsign from './MaterialInspectionAsign.vue'
 
@@ -189,12 +186,17 @@ export default defineComponent({
     }
 
     const treeNodeContextMenuHandle = (val:TreeItemData) => {
+      getMaterialDetail(val)
       INSPECT_MATERIAL_QUERY_SYS_MATERIAL_API({
         // inspectMaterialType: '欣和无估价的物料 ZUNB',
-        inspectMaterialType: val.inspectMaterialType,
-        inspectGroup: '',
+        inspectMaterialType: val.inspectGroup,
+        inspectGroup: val.inspectMaterialType,
+        // inspectMaterialType: val.inspectMaterialType,
+        // inspectGroup: val.inspectGroup,
         inspectMaterialNameOrCode: ''
       }).then((res) => {
+        console.log('state.globleItemGroup')
+        console.log(state.globleItemGroup)
         state.globleItemGroup = JSON.parse(JSON.stringify(res.data.data))
       })
     }
@@ -206,12 +208,11 @@ export default defineComponent({
       state.pageSize = 10
       state.totalItems = 0
 
+      // 此处命名有些问题, 需留意
       if (val.inspectGroups.length === 0) {
-        console.log('我是子结点')
         state.currentMaterialGroupString = val.inspectMaterialType
         state.currentMaterialString = val.inspectGroup
       } else {
-        console.log('我是结点')
         state.currentMaterialGroupString = ''
         state.currentMaterialString = val.inspectMaterialType
       }
@@ -228,7 +229,6 @@ export default defineComponent({
       }).then((res) => {
         console.log('物料明细')
         console.log(res.data.data)
-
         state.totalItems = res.data.data.length
         state.tableDataW = JSON.parse(JSON.stringify(res.data.data))
         currentChangePage(state.tableDataW, 1)
@@ -238,10 +238,11 @@ export default defineComponent({
       })
     }
 
+    // [tan]分配检验类别
     const apiAsignMaterial = () => {
       INSPECT_TYPE_QUERY_API({
       }).then((res) => {
-        state.materialTreeData = treeDataTranslate(res.data.data, 'id', 'parentId')
+        state.materialTreeData = treeDataTranslater(res.data.data, 'id', 'parentId')
       })
     }
 
@@ -286,8 +287,6 @@ export default defineComponent({
           })
         })
         state.treeData = res.data.data
-        console.log('state.treeData')
-        console.log(state.treeData)
         // 一进页面默认跑第一笔
         if (state.currentMaterialString === '') {
           state.currentMaterialString = state.treeData[0].inspectMaterialType
@@ -297,11 +296,11 @@ export default defineComponent({
       })
     }
 
-    const inspectCategoryList = (val:string[]) => {
+    const inspectCategoryListAsignToGo = (val:string[]) => {
       let dataTemp:TopicMainData[] = []
-      if (state.whoAsign === 'single') {
+      if (state.whoAsign === 'single') { // 右边 column 单条分配
         dataTemp.push(state.globleItem)
-      } else if (state.whoAsign === 'multi') {
+      } else if (state.whoAsign === 'multi') { // 左边 column 批量分配
         dataTemp = state.globleItemGroup
       }
 
@@ -311,12 +310,57 @@ export default defineComponent({
       }).then(() => {
         proxy.$successToast('操作成功')
         // reload page
-        if (state.whoAsign === 'single') {
-          apiMaterialDetail(state.currentMaterialString, state.currentMaterialGroupString, state.globleSearchString)
-        } else if (state.whoAsign === 'multi') {
-          getMaterialCatagoryData()
-        }
+        // if (state.whoAsign === 'single') {
+        //   INSPECT_MATERIAL_QUERY_SYS_MATERIAL_API({
+        //     inspectMaterialType: state.currentMaterialString,
+        //     inspectGroup: state.currentMaterialGroupString,
+        //     inspectMaterialNameOrCode: state.globleSearchString
+        //   }).then((res) => {
+        //     state.totalItems = res.data.data.length
+        //     if (res.data.data.length === 0) {
+        //       state.currentMaterialString = ''
+        //       getMaterialCatagoryData()
+        //     } else {
+        //       state.tableDataW = JSON.parse(JSON.stringify(res.data.data))
+        //       currentChangePage(state.tableDataW, 1)
+        //     }
+        //   })
+        // } else if (state.whoAsign === 'multi') {
+        //   state.currentMaterialString = ''
+        //   getMaterialCatagoryData()
+        // }
+        state.currentMaterialString = ''
+        getMaterialCatagoryData()
       })
+    }
+
+    const treeDataTranslater = (data: any[], id: string, pid: string): any[] => {
+      const res: any[] = []
+      const temp: any = {}
+      for (let i = 0; i < data.length; i++) {
+        temp[data[i][id]] = data[i]
+      }
+      for (let k = 0; k < data.length; k++) {
+        if (temp[data[k][pid]] && data[k][id] !== data[k][pid]) {
+          if (!temp[data[k][pid]].children) {
+            temp[data[k][pid]].children = []
+          }
+          if (!temp[data[k][pid]]._level) {
+            temp[data[k][pid]]._level = 1
+          }
+          data[k]._level = temp[data[k][pid]]._level + 1
+          temp[data[k][pid]].children.push(data[k])
+          if (data[k].assistFlag === 'Y') {
+            data[k].disabled = true
+          }
+        } else {
+          if (data[k].assistFlag === 'Y') {
+            data[k].disabled = true
+          }
+          res.push(data[k])
+        }
+      }
+      return res
     }
 
     onMounted(() => {
@@ -334,10 +378,11 @@ export default defineComponent({
       getMaterialDetail,
       apiMaterialDetail,
       apiAsignMaterial,
-      inspectCategoryList,
+      inspectCategoryListAsignToGo,
       reset,
       handleMultiAsign,
-      treeModule
+      treeModule,
+      treeDataTranslater
     }
   }
 })

@@ -17,12 +17,10 @@
             v-model="materialDetailText"
             size="small"
             clearable
-            style="margin-bottom:10px; width:200px; height:35px;">
-            <template #suffix>
-                  <em class="el-input__icon el-icon-search" />
-            </template>
+            style="margin-bottom:10px; width:200px; height:35px;"
+            @change="apiMaterialDetail(currentCategoryId,materialDetailText,1,10)">
           </el-input>
-          <el-button icon="el-icon-search" size="mini" style="height:32px; margin-left:5px" @click="apiMaterialDetail(currentCategoryId,materialDetailText,1,10)">查询</el-button>
+          <el-button icon="el-icon-search" size="mini" style="height:32px; margin-left:5px"  @click="apiMaterialDetail(currentCategoryId,materialDetailText,1,10)">查询</el-button>
         </template>
       </div>
      <el-table :data="topicMainData"
@@ -155,8 +153,6 @@ export default defineComponent({
 
     // single action to go
     const handleSingleEdit = (row:TopicMainData) => {
-      console.log('the row info that want to edit')
-      console.log(row)
       state.globleItem = {
         id: row.id,
         inspectGroupCode: row.inspectGroupCode,
@@ -169,8 +165,6 @@ export default defineComponent({
       INSPECT_MATERIAL_CHECKED_INSPECT_TYPE_QUERY_API({
         inspectMaterialCode: row.inspectMaterialCode
       }).then((res) => {
-        console.log('res.data.data')
-        console.log(res.data.data)
         state.inspectTypeIds = res.data.data.inspectTypeIds
         state.materialTreeData = treeDataTranslater('default', res.data.data.inspectTypes, 'id', 'parentId')
       })
@@ -190,8 +184,6 @@ export default defineComponent({
     }
 
     const getMaterialDetail = (val:TreeItemData) => {
-      console.log('val')
-      console.log(val)
       state.globleSearchString = ''
       state.materialDetailText = ''
       state.currentPage = 1
@@ -209,8 +201,6 @@ export default defineComponent({
       }
       // }
     }
-
-    // TODO
     const apiMaterialDetail = (currentCategoryId:string, searchString = '', currentPage:number, pageSize:number) => {
       state.globleSearchString = searchString
       INSPECT_MATERIAL_INSPECT_MATERIAL_QUERY_API({
@@ -242,6 +232,7 @@ export default defineComponent({
       INSPECT_MATERIAL_INSPECT_TYPE_MATERIAL_API({
       }).then((res) => {
         state.materialDetailText = ''
+        state.isShowSearchBar = true
         state.treeData = treeDataTranslater('category', JSON.parse(JSON.stringify(res.data.data)), 'id', 'parentId')
         // 一进页面默认跑第一笔
         if (state.currentCategoryId === '') {
@@ -258,10 +249,6 @@ export default defineComponent({
     const updateInspectCategoryList = (val:string[]) => {
       const dataTemp:TopicMainData[] = []
       dataTemp.push(state.globleItem)
-      console.log('state.globleItem')
-      console.log(state.globleItem)
-      console.log('val')
-      console.log(val)
 
       INSPECT_MATERIAL_CHECKED_INSPECT_TYPE_UPDATE_API({
         inspectMaterialDetails: dataTemp,
@@ -300,7 +287,13 @@ export default defineComponent({
           }
           data[k]._level = temp[data[k][pid]]._level + 1
           temp[data[k][pid]].children.push(data[k])
+          if (data[k].assistFlag === 'Y') {
+            data[k].disabled = true
+          }
         } else {
+          if (data[k].assistFlag === 'Y') {
+            data[k].disabled = true
+          }
           res.push(data[k])
         }
       }

@@ -2,11 +2,14 @@
   <mds-card class="test_method" title="检验指标库" :pack-up="false" style="margin-bottom: 0; background: #fff;">
     <template #titleBtn>
       <div style="float: right;display: flex;">
-        <el-form ref="pstngDate" :model="controlForm" size="small" :inline="true" label-position="right" label-width="82px" class="topforms" style=" float: left;">
-          <el-form-item label="" prop="pstngDate">
-            <el-input suffix-icon="el-icon-search" v-model="controlForm.filterText" placeholder="名称" clearable style="width: 160px;" />
-          </el-form-item>
-        </el-form>
+
+        <el-input
+            size="small"
+            style="margin-bottom:10px; width:200px; height:35px;margin-right:10px"
+            v-model="controlForm.filterText"
+            placeholder="名称"
+            clearable
+            @change="getMainData" />
         <div style="float: right;">
           <el-button icon="el-icon-search" size="small" @click="getMainData">查询</el-button>
         </div>
@@ -173,17 +176,7 @@ export default defineComponent({
     }
 
     const actReset = () => {
-      // if (state.whoAsign === 'single') {
-      //   state.globleItem = {
-      //     inspectGroupCode: '',
-      //     inspectGroupName: '',
-      //     inspectMaterialType: '',
-      //     inspectMaterialCode: '',
-      //     inspectMaterialName: ''
-      //   }
-      // } else if (state.whoAsign === 'multi') {
-      //   state.globleItemGroup = []
-      // }
+      //
     }
 
     const actConfirm = async (data:DialogMainDataReturn) => {
@@ -201,28 +194,6 @@ export default defineComponent({
       state.pageSize = 10
       state.totalItems = 0
       getMainData()
-
-      // console.log(res.data.data)
-
-      // let dataTemp:TableData[] = []
-      // if (state.whoAsign === 'single') {
-      //   dataTemp.push(state.globleItem)
-      // } else if (state.whoAsign === 'multi') {
-      //   dataTemp = state.globleItemGroup
-      // }
-
-      // INSPECT_MATERIAL_DISTRIBUTION_INSPECT_MATERIAL_API({
-      //   inspectMaterialDetails: dataTemp,
-      //   inspectTypeIdList: val // 检验类id数组
-      // }).then(() => {
-      //   proxy.$successToast('分配成功')
-      //   // reload page
-      //   if (state.whoAsign === 'single') {
-      //     apiMaterialDetail(state.currentMaterialString, state.currentMaterialGroupString, state.globleSearchString)
-      //   } else if (state.whoAsign === 'multi') {
-      //     getMaterialCatagoryData()
-      //   }
-      // })
     }
 
     onMounted(() => {
