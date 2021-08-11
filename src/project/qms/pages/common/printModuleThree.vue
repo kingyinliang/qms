@@ -1,15 +1,17 @@
 <template>
   <div id="print_ele__moduleThree" class="none_ele">
     <div class="print_item" v-for="item in multipleSelection" :key="item.id">
-      <p>{{ item.deptName }}</p>
-      <p>{{ item.name }}</p>
-      <p>{{ item.code }}</p>
+      <p class="print_item_title">{{ item.deptName }}</p>
+      <p class="print_item_title">{{ item.name }}</p>
+      <canvas :id="'code' + item.id" class="print_item_qrcode" />
+      <p class="print_item_number">{{ item.code }}</p>
     </div>
   </div>
 </template>
 
-<script>
-import { defineComponent } from 'vue'
+<script lang="ts">
+import { defineComponent, nextTick, watch, onMounted } from 'vue'
+import JsBarcode from 'jsbarcode'
 
 export default defineComponent({
   name: 'print_ele__moduleThree',
@@ -18,7 +20,24 @@ export default defineComponent({
       type: Array
     }
   },
-  setup () {
+  setup (props: any) {
+    const barCode = (id: string, code: string) => {
+      JsBarcode(id, code, {
+        displayValue: false
+      })
+    }
+    watch(props, async (val: any) => {
+      await nextTick()
+      val.multipleSelection.forEach((it: any) => {
+        barCode(`#code${it.id}`, it.code)
+      })
+    })
+    onMounted(async () => {
+      await nextTick()
+      props.multipleSelection.forEach((it: any) => {
+        barCode(`#code${it.id}`, it.code)
+      })
+    })
     return {
     }
   }
@@ -31,12 +50,27 @@ export default defineComponent({
   }
   #print_ele__moduleThree{
     .print_item{
+      background: white;
       width: 3cm;
       height: 3cm;
+      overflow: hidden;
+      padding-top: 0.28cm;
+      &_title{
+        line-height: 0.6cm;
+        font-size: 0.28cm;
+      }
+      &_qrcode{
+        display: block;
+        width: 2.5cm;
+        height: 0.8cm;
+        margin: auto;
+      }
+      &_number{
+        margin-top: 0.1cm;
+        font-size: 0.2cm;
+      }
       p{
         text-align: center;
-        line-height: 0.7cm;
-        font-size: 0.4cm;
       }
     }
   }
