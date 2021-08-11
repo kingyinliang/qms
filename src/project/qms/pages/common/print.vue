@@ -46,27 +46,27 @@ export default defineComponent({
         id: '1',
         code: '21040071',
         name: 'A-01曲房',
-        deptName: '制曲-煮豆理化实验室'
+        deptName: '制曲-煮豆理化实验'
       }, {
         id: '2',
         code: '21040072',
         name: 'A-02曲房',
-        deptName: '制曲-煮豆理化实验室'
+        deptName: '制曲-煮豆理化实验'
       }, {
         id: '3',
         code: '21040073',
         name: 'A-03曲房',
-        deptName: '制曲-煮豆理化实验室'
+        deptName: '制曲-煮豆理化实验'
       }, {
         id: '4',
         code: '21040074',
         name: 'A-04曲房',
-        deptName: '制曲-煮豆理化实验室'
+        deptName: '制曲-煮豆理化实验'
       }, {
         id: '5',
         code: '21040075',
         name: 'A-05曲房',
-        deptName: '制曲-煮豆理化实验室'
+        deptName: '制曲-煮豆理化实验'
       }
     ])
 
