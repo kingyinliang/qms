@@ -3,7 +3,7 @@
     <div class="print_item" v-for="item in multipleSelection" :key="item.id">
       <p class="print_item_title">{{ item.deptName }}</p>
       <p class="print_item_title">{{ item.name }}</p>
-      <canvas :id="'code' + item.id" class="print_item_qrcode" />
+      <img :id="'code' + item.id" class="print_item_qrcode" />
       <p class="print_item_number">{{ item.code }}</p>
     </div>
   </div>
