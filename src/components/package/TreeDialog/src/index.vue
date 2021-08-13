@@ -10,7 +10,7 @@
         popper-class="treeDialog__none"
         :automatic-dropdown="false"
         :readonly="true"
-        placeholder="请选择"
+        :placeholder="placeholder"
         @remove-tag="removeTag"
       >
         <el-option v-for="item in selectOption" :key="item.id" :label="item[treeProps.label]" :value="item" />
@@ -34,6 +34,7 @@
         :data="treeData"
         :props="treeProps"
         :default-checked-keys="defaultCheckedKeys"
+        :check-strictly="checkStrictly"
         node-key="id"
         show-checkbox
         highlight-current
@@ -58,6 +59,7 @@ interface Props{
   modelValue: undefined|string|any[];
   treeProps?: any;
   disabled?: boolean;
+  leafOnly?: boolean;
   treeData: any[];
 }
 
@@ -70,6 +72,18 @@ export default defineComponent({
       required: true
     },
     disabled: {
+      type: Boolean,
+      default: false
+    },
+    placeholder: {
+      type: String,
+      default: '请选择'
+    },
+    leafOnly: {
+      type: Boolean,
+      default: true
+    },
+    checkStrictly: {
       type: Boolean,
       default: false
     },
@@ -94,7 +108,7 @@ export default defineComponent({
     const filterText = ref('')
     const checkedValue = ref([])
     const selectOption = ref([])
-    const { modelValue, treeProps } = toRefs<Props>(props)
+    const { modelValue, treeProps, leafOnly } = toRefs<Props>(props)
 
     const defaultCheckedKeys = computed({
       get () {
@@ -110,14 +124,14 @@ export default defineComponent({
       return data[treeProps.value.label].indexOf(value) !== -1
     }
     const handleCheckedChange = () => {
-      const checkNodes = treeRef.value.getCheckedNodes(true)
+      const checkNodes = treeRef.value.getCheckedNodes(leafOnly?.value)
       const ids = checkNodes.map((it: any) => it.id)
       checkedValue.value = checkNodes
       selectOption.value = checkNodes
       emit('update:modelValue', ids)
     }
-    const getCheckedNodes = (leafOnly = false) => {
-      return treeRef.value.getCheckedNodes(leafOnly)
+    const getCheckedNodes = () => {
+      return treeRef.value.getCheckedNodes(leafOnly?.value)
     }
     const removeTag = (tag: any) => {
       treeRef.value.setChecked(tag.id, false)

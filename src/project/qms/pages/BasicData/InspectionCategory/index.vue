@@ -39,6 +39,9 @@
                   v-model="detailInfo.relation"
                   :tree-data="options"
                   :disabled="isRedact"
+                  :leafOnly="false"
+                  :checkStrictly="true"
+                  placeholder=""
                   :tree-props="{ label: 'deptName', children: 'children' }"
                 />
               </el-form-item>
@@ -50,6 +53,9 @@
                   v-model="detailInfo.cooperate"
                   :tree-data="options"
                   :disabled="isRedact"
+                  :leafOnly="false"
+                  :checkStrictly="true"
+                  placeholder=""
                   :tree-props="{ label: 'deptName', children: 'children' }"
                 />
               </el-form-item>
@@ -61,6 +67,9 @@
                   v-model="detailInfo.sample"
                   :tree-data="options"
                   :disabled="isRedact"
+                  :leafOnly="false"
+                  :checkStrictly="true"
+                  placeholder=""
                   :tree-props="{ label: 'deptName', children: 'children' }"
                 />
               </el-form-item>
@@ -114,6 +123,8 @@
             ref="relationRef"
             v-model="addLevelInfo.relation"
             :tree-data="options"
+            :leafOnly="false"
+            :checkStrictly="true"
             :tree-props="{ label: 'deptName', children: 'children' }"
           />
         </el-form-item>
@@ -122,6 +133,8 @@
             ref="cooperateRef"
             v-model="addLevelInfo.cooperate"
             :tree-data="options"
+            :leafOnly="false"
+            :checkStrictly="true"
             :tree-props="{ label: 'deptName', children: 'children' }"
           />
         </el-form-item>
@@ -130,6 +143,8 @@
             ref="sampleRef"
             v-model="addLevelInfo.sample"
             :tree-data="options"
+            :leafOnly="false"
+            :checkStrictly="true"
             :tree-props="{ label: 'deptName', children: 'children' }"
           />
         </el-form-item>
@@ -450,7 +465,8 @@ export default defineComponent({
 
 <style lang="scss" scoped>
 .contextMenu {
-  font-size: 12px;
+  list-style: none;
+  font-size: 14px;
   font-family: PingFangSC-Regular, PingFang SC;
   font-weight: 400;
   color: #333333;
