@@ -47,7 +47,7 @@
       <el-form-item label="开始时间：" prop="calculateStart">
         <div class="flex" v-for="(item, index) in addOrUpdateForm.calculateStart" :key="index">
           <el-date-picker
-            v-if="addOrUpdateForm.calculateUnit==='月'"
+            v-if="addOrUpdateForm.calculateUnitName==='月'"
             v-model="addOrUpdateForm.calculateStart[index]"
             class="inputWidth"
             popper-class="noneHeader"
@@ -56,7 +56,7 @@
             format="MM"
           />
           <el-select
-            v-if="addOrUpdateForm.calculateUnit==='周'"
+            v-if="addOrUpdateForm.calculateUnitName==='周'"
             v-model="addOrUpdateForm.calculateStart[index]"
             class="inputWidth"
           >
@@ -69,7 +69,7 @@
             <el-option label="周日" value="周日"/>
           </el-select>
           <el-date-picker
-            v-if="addOrUpdateForm.calculateUnit==='天'"
+            v-if="addOrUpdateForm.calculateUnitName==='天'"
             v-model="addOrUpdateForm.calculateStart[index]"
             class="inputWidth"
             popper-class="noneHeader"
@@ -78,7 +78,7 @@
             format="DD"
           />
           <el-time-select
-            v-if="addOrUpdateForm.calculateUnit==='小时'"
+            v-if="addOrUpdateForm.calculateUnitName==='小时'"
             v-model="addOrUpdateForm.calculateStart[index]"
             class="inputWidth"
             start='00:00'
@@ -120,6 +120,7 @@ interface TimeData {
   cycleCode: string;
   dateUnit: string;
   calculateUnit: string;
+  calculateUnitName: string;
   calculateStart: string[];
   dateDelay: string;
 }
@@ -211,6 +212,7 @@ export default defineComponent({
         cycleCode: `T${cycleCode < 10 ? '0' + cycleCode : cycleCode}`,
         dateUnit: '',
         calculateUnit: '',
+        calculateUnitName: '',
         calculateStart: [''],
         dateDelay: ''
       }
@@ -236,7 +238,7 @@ export default defineComponent({
     }
     const calculateUnitChange = (val: string) => {
       (addOrUpdateForm.value as TimeData).calculateStart = [''];
-      (addOrUpdateForm.value as TimeData).calculateUnit = (calculateUnit.value.find(it => it.dictCode === val) as Dict).dictValue
+      (addOrUpdateForm.value as TimeData).calculateUnitName = (calculateUnit.value.find(it => it.dictCode === val) as Dict).dictValue
     }
 
     onMounted(async () => {
