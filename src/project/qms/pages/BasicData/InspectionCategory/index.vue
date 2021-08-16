@@ -470,7 +470,7 @@ export default defineComponent({
   font-family: PingFangSC-Regular, PingFang SC;
   font-weight: 400;
   color: #333333;
-  line-height: 20px;
+  line-height: 28px;
 }
 .addLevel:hover {
   color: #487bff;
