@@ -10,7 +10,7 @@
         <div style="float: right;">
           <el-button icon="el-icon-search" size="small" @click="query">查询</el-button>
           <el-button icon="el-icon-circle-check" type="primary" @click="addData" size="small">新增</el-button>
-          <el-button icon="el-icon-delete" type="danger" size="small" @click="selectDelete">批量删除</el-button>
+<!--          <el-button icon="el-icon-delete" type="danger" size="small" @click="selectDelete">批量删除</el-button>-->
         </div>
       </div>
     </template>
@@ -19,34 +19,46 @@
       <el-table-column type="index" label="序号" width="50" />
       <el-table-column label="品项编码" prop="inspectMethodCode" />
       <el-table-column label="品项名称" prop="inspectMethodName" />
-      <el-table-column label="关联物料" prop="inspectPropertyName" />
-      <el-table-column label="操作" width="120" fixed="right">
+      <el-table-column label="创建人员" prop="inspectMethodName" />
+      <el-table-column label="创建时间" prop="inspectMethodName" />
+      <el-table-column label="修改人员" prop="inspectMethodName" />
+      <el-table-column label="修改时间" prop="inspectMethodName" />
+      <el-table-column label="操作" width="250" fixed="right">
         <template #default="scope">
+          <el-button type="text" icon="el-icon-edit" class="role__btn" @click="updateMaterial(scope.row)">
+            关联物料
+          </el-button>
           <el-button type="text" icon="el-icon-edit" class="role__btn" @click="editItem(scope.row)">
             编辑
+          </el-button>
+          <el-button type="text" icon="el-icon-edit" class="role__btn" @click="selectDelete(scope.row)">
+            删除
           </el-button>
         </template>
       </el-table-column>
     </el-table>
   </mds-card>
-  <el-dialog v-model="addOrUpdateDialog" title="时间单位" width="30%">
+  <el-dialog v-model="addOrUpdateDialog" title="品项主数据" width="30%">
     <el-form ref="addOrUpdateRef" :model="addOrUpdateForm" :rules="addOrUpdateFormRule" label-width="120px">
-      <el-form-item label="品项编码：" prop="cycleCode">
-        <el-input v-model="addOrUpdateForm.cycleCode" :disabled="true" autocomplete="off"></el-input>
+      <el-form-item label="品项编码：" prop="itemCode">
+        <el-input v-model="addOrUpdateForm.itemCode" :disabled="true" autocomplete="off"></el-input>
       </el-form-item>
-      <el-form-item label="品项名称：" prop="dateUnit">
-        <el-input v-model="addOrUpdateForm.dateUnit" autocomplete="off"></el-input>
-      </el-form-item>
-      <el-form-item label="计算单位：" prop="calculateUnit">
-        <el-select v-model="addOrUpdateForm.calculateUnit" class="inputWidth" placeholder="请选择" @change="val => addOrUpdateForm.calculateUnit = addOrUpdateForm.find(it => it.dictCode === val).dictValue">
-          <el-option v-for="item in calculateUnit" :key="item.dictCode" :label="item.dictValue" :value="item.dictCode" />
-        </el-select>
+      <el-form-item label="品项名称：" prop="itemName">
+        <el-input v-model="addOrUpdateForm.itemName" autocomplete="off"></el-input>
       </el-form-item>
     </el-form>
     <div class="dialog-footer">
       <el-button size="small" icon="el-icon-circle-close" @click="addOrUpdateDialog = false">取 消</el-button>
       <el-button size="small" icon="el-icon-circle-check" type="primary" @click="addOrUpdateFormSubmit">确 定</el-button>
     </div>
+  </el-dialog>
+  <el-dialog v-model="materialDialog" title="关联物料" width="536px">
+    <el-transfer
+      v-model="itemPhaseData"
+      :data="phaseData"
+      filterable
+      :titles="['未关联物料', '已关联物料']"
+    />
   </el-dialog>
 </template>
 
@@ -65,33 +77,23 @@ import {
   Dict
 } from '@/api/api'
 
-interface TimeData {
+interface PhaseData {
   id: string;
-  cycleCode: string;
-  dateUnit: string;
-  calculateUnit: string;
-  calculateStart: string[];
-  dateDelay: string;
+  itemCode: string;
+  itemName: string;
 }
 const addOrUpdateFormRule = {
-  cycleCode: [
+  itemCode: [
     {
       required: true,
       message: '编码自动带出',
       trigger: 'blur'
     }
   ],
-  dateUnit: [
+  itemName: [
     {
       required: true,
       message: '请输入品项名称',
-      trigger: 'blur'
-    }
-  ],
-  calculateUnit: [
-    {
-      required: true,
-      message: '请输入计算单位',
       trigger: 'blur'
     }
   ]
@@ -105,18 +107,21 @@ export default defineComponent({
 
     const addOrUpdateRef = ref() // 新增修改表单节点
     const queryForm = reactive({}) // 查询表单数据
-    const tableData = ref<TimeData[]>([]) // 表格数据
+    const tableData = ref<PhaseData[]>([{ id: '0', itemCode: '0002', itemName: 'aaa' }]) // 表格数据
     const multipleSelection = ref<string[]>([]) // 复选数据
     const addOrUpdateDialog = ref(false) // 新增修改弹窗
-    const addOrUpdateForm = ref<TimeData>() // 新增修改表单数据
+    const materialDialog = ref(false) // 关联物流弹窗
+    const addOrUpdateForm = ref<PhaseData>() // 新增修改表单数据
     const calculateUnit = ref<Dict[]>([]) // 下拉
+    const itemPhaseData = ref([]) // 下拉
+    const phaseData = ref([]) // 下拉
 
     const query = () => {
       //  a
     }
     // 表格复选
-    const handleSelectionChange = (val:TimeData[]) => {
-      multipleSelection.value = val.map((item: TimeData) => item.id)
+    const handleSelectionChange = (val:PhaseData[]) => {
+      multipleSelection.value = val.map((item: PhaseData) => item.id)
     }
     // 删除确认
     const selectDelete = () => {
@@ -136,19 +141,19 @@ export default defineComponent({
     const addData = async () => {
       let cycleCode = 0
       if (tableData.value.length) {
-        cycleCode = tableData.value.reduce((previousValue: number, currentValue: TimeData) => {
-          const currentCode = Number(currentValue.cycleCode.replace(/T/g, ''))
+        cycleCode = tableData.value.reduce((previousValue: number, currentValue: PhaseData) => {
+          const currentCode = Number(currentValue.itemCode)
           return previousValue < currentCode ? currentCode : previousValue
         }, 0)
       }
       cycleCode++
+      let itemCode = ''
+      if (String(cycleCode).length > 3) itemCode = String(cycleCode)
+      itemCode = ('0000' + cycleCode).slice(-4)
       addOrUpdateForm.value = {
         id: '',
-        cycleCode: `T${cycleCode < 10 ? '0' + cycleCode : cycleCode}`,
-        dateUnit: '',
-        calculateUnit: '',
-        calculateStart: [''],
-        dateDelay: ''
+        itemCode,
+        itemName: ''
       }
       addOrUpdateDialog.value = true
       await nextTick()
@@ -156,7 +161,7 @@ export default defineComponent({
       // addOrUpdateRef.value.clearValidate()
     }
     // 修改
-    const editItem = async (row: TimeData) => {
+    const editItem = async (row: PhaseData) => {
       addOrUpdateForm.value = { ...row }
       addOrUpdateDialog.value = true
       await nextTick()
@@ -170,6 +175,9 @@ export default defineComponent({
         }
       })
     }
+    const updateMaterial = (row: PhaseData) => {
+      materialDialog.value = true
+    }
 
     onMounted(async () => {
       query()
@@ -182,14 +190,18 @@ export default defineComponent({
       queryForm,
       tableData,
       addOrUpdateDialog,
+      materialDialog,
       addOrUpdateForm,
       addOrUpdateFormRule,
       calculateUnit,
+      itemPhaseData,
+      phaseData,
       query,
       addData,
       selectDelete,
       handleSelectionChange,
       editItem,
+      updateMaterial,
       addOrUpdateFormSubmit
     }
   }
