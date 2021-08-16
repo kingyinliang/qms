@@ -29,10 +29,9 @@ import {
   defineComponent,
   watch,
   toRefs,
-  ref,
-  getCurrentInstance
+  ref
 } from 'vue'
-import { GET_TENANT_BY_USER_ID, UPDATE_TENANT } from '@/api/api'
+// import { GET_TENANT_BY_USER_ID, UPDATE_TENANT } from '@/api/api'
 
 export default defineComponent({
   name: 'select-system',
@@ -40,8 +39,8 @@ export default defineComponent({
     modelValue: Boolean
   },
   setup (props, { emit }) {
-    const ctx = getCurrentInstance()
-    const proxy = ctx.proxy
+    // const ctx = getCurrentInstance()
+    // const proxy = ctx.proxy
 
     const { modelValue } = toRefs(props)
     const system = ref([])

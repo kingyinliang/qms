@@ -46,7 +46,7 @@
           <el-input v-model="addMethodInfo.inspectMethodCode" class="inputWidth" :disabled="true" autocomplete="off"></el-input>
         </el-form-item>
         <el-form-item label="检验方法：" prop="inspectMethodName" :label-width="formLabelWidth">
-          <el-input v-model="addMethodInfo.inspectMethodName" class="inputWidth" placeholder="请输入" autocomplete="off"></el-input>
+          <el-input v-model="addMethodInfo.inspectMethodName" maxlength="20" class="inputWidth" placeholder="请输入" autocomplete="off"></el-input>
         </el-form-item>
         <el-form-item label="属性：" prop="inspectProperty" :label-width="formLabelWidth">
           <el-select v-model="addMethodInfo.inspectProperty" class="inputWidth" placeholder="请选择" @change="val => addMethodInfo.inspectPropertyName = inspectProperty.find(it => it.dictCode === val).dictValue">

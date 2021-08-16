@@ -93,7 +93,9 @@ export function editingFn (props: any): EditingFn {
     return {
       background: rangeColor[index],
       height: bounds.height + 'px',
+      // eslint-disable-next-line
       left: bounds.left + document.getElementById('editor')!.offsetLeft + 'px',
+      // eslint-disable-next-line
       top: bounds.top + document.getElementById('editor')!.offsetTop + 'px'
     }
   }
