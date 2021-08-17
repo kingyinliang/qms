@@ -177,7 +177,7 @@
 
 <script lang="ts">
 import {
-  defineComponent, ref, reactive, onMounted, ComponentInternalInstance, getCurrentInstance, nextTick
+  defineComponent, ref, reactive, onMounted, ComponentInternalInstance, getCurrentInstance, nextTick, onDeactivated
 } from 'vue'
 import { treeDataTranslate } from '@/utils/index'
 import {
@@ -437,6 +437,11 @@ export default defineComponent({
     onMounted(() => {
       setTreeData()
       getOrg()
+    })
+    onDeactivated(() => {
+      if (!isRedact.value) {
+        proxy.$warningToast('请注意保存数据后跳转')
+      }
     })
     return {
       treePage,
