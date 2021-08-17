@@ -65,6 +65,9 @@ export default defineComponent({
     const systemName = ref('')
     onMounted(() => {
       systemName.value = JSON.parse(sessionStorage.getItem('system') || '{}').deptShort || ''
+      if (!JSON.parse(sessionStorage.getItem('system') || '{}').deptShort) {
+        systemVisible.value = true
+      }
     })
 
     return {
