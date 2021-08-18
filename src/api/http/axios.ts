@@ -5,7 +5,7 @@ import SSOLogin from '@/utils/SSOLogin'
 
 enum HttpCode {
   SUCCESS = 200,
-  WARNING = 110,
+  WARNING = 201,
   EXPIRED_TOKEN = 401,
   ERROR = 500,
 }

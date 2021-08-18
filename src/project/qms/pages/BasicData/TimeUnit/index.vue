@@ -4,11 +4,11 @@
       <div style="float: right;">
         <el-form :model="queryForm" class="queryForm" size="small" :inline="true" label-position="right" label-width="82px" style=" float: left;">
           <el-form-item label="">
-            <el-input suffix-icon="el-icon-search" v-model="queryForm.inspectMethodCodeOrName" placeholder="名称" style="width: 160px;" />
+            <el-input suffix-icon="el-icon-search" v-model="queryForm.cycleCodeOrName" placeholder="名称" style="width: 160px;" />
           </el-form-item>
         </el-form>
         <div style="float: right;">
-          <el-button icon="el-icon-search" size="small" @click="query">查询</el-button>
+          <el-button icon="el-icon-search" size="small" @click="() => {queryForm.current = 1; query()}">查询</el-button>
           <el-button icon="el-icon-circle-check" type="primary" @click="addData" size="small">新增</el-button>
           <el-button icon="el-icon-delete" type="danger" size="small" @click="selectDelete">批量删除</el-button>
         </div>
@@ -17,11 +17,15 @@
     <el-table ref="multipleTable" :cell-style="{'text-align':'center'}" :data="tableData" tooltip-effect="dark" style="width: 100%" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" />
       <el-table-column type="index" label="序号" width="50" />
-      <el-table-column label="编码" prop="inspectMethodCode" />
-      <el-table-column label="时间单位" prop="inspectMethodName" />
-      <el-table-column label="计算单位" prop="inspectPropertyName" />
-      <el-table-column label="计算开始" prop="inspectPropertyName" />
-      <el-table-column label="时间长度" prop="inspectPropertyName" />
+      <el-table-column label="编码" prop="cycleCode" />
+      <el-table-column label="时间单位" prop="dateUnit" />
+      <el-table-column label="计算单位" prop="calculateUnit" />
+      <el-table-column label="计算开始" prop="calculateStart">
+        <template #default="scope">
+          {{ scope.row.calculateStart.join(',') }}
+        </template>
+      </el-table-column>
+      <el-table-column label="时间长度" prop="dateDelay" />
       <el-table-column label="操作" width="120" fixed="right">
         <template #default="scope">
           <el-button type="text" icon="el-icon-edit" class="role__btn" @click="editItem(scope.row)">
@@ -30,6 +34,17 @@
         </template>
       </el-table-column>
     </el-table>
+    <el-row style="float: right">
+      <el-pagination
+        :page-size="queryForm.size"
+        :current-page="queryForm.current"
+        :total="queryForm.total"
+        :page-sizes="[10, 20, 50]"
+        layout="total, sizes, prev, pager, next, jumper"
+        @size-change="val => {queryForm.size = val;query}"
+        @current-change="val => {queryForm.current = val; query}"
+      />
+    </el-row>
   </mds-card>
   <el-dialog v-model="addOrUpdateDialog" title="时间单位" width="30%">
     <el-form ref="addOrUpdateRef" :model="addOrUpdateForm" :rules="addOrUpdateFormRule" label-width="120px">
@@ -40,8 +55,8 @@
         <el-input v-model="addOrUpdateForm.dateUnit" autocomplete="off"></el-input>
       </el-form-item>
       <el-form-item label="计算单位：" prop="calculateUnit">
-        <el-select v-model="addOrUpdateForm.calculateUnit" class="inputWidth" placeholder="请选择" @change="calculateUnitChange">
-          <el-option v-for="item in calculateUnit" :key="item.dictCode" :label="item.dictValue" :value="item.dictCode" />
+        <el-select v-model="addOrUpdateForm.calculateUnit" class="inputWidth" placeholder="请选择" @change="addOrUpdateForm.calculateStart = ['']">
+          <el-option v-for="item in calculateUnit" :key="item.dictCode" :label="item.dictValue" :value="item.dictValue" />
         </el-select>
       </el-form-item>
       <el-form-item label="开始时间：" prop="calculateStart">
@@ -56,7 +71,7 @@
             format="MM"
           />
           <el-select
-            v-if="addOrUpdateForm.calculateUnitName==='周'"
+            v-if="addOrUpdateForm.calculateUnit==='周'"
             v-model="addOrUpdateForm.calculateStart[index]"
             class="inputWidth"
           >
@@ -69,7 +84,7 @@
             <el-option label="周日" value="周日"/>
           </el-select>
           <el-date-picker
-            v-if="addOrUpdateForm.calculateUnitName==='天'"
+            v-if="addOrUpdateForm.calculateUnit==='天'"
             v-model="addOrUpdateForm.calculateStart[index]"
             class="inputWidth"
             popper-class="noneHeader"
@@ -78,7 +93,7 @@
             format="DD"
           />
           <el-time-select
-            v-if="addOrUpdateForm.calculateUnitName==='小时'"
+            v-if="addOrUpdateForm.calculateUnit==='小时'"
             v-model="addOrUpdateForm.calculateStart[index]"
             class="inputWidth"
             start='00:00'
@@ -111,6 +126,10 @@ import {
   ComponentInternalInstance
 } from 'vue'
 import {
+  TIME_QUERY,
+  TIME_ADD,
+  TIME_UPDATE,
+  TIME_DEL,
   DICT_DROPDOWN,
   Dict
 } from '@/api/api'
@@ -169,15 +188,24 @@ export default defineComponent({
     const proxy = ctx.proxy as any
 
     const addOrUpdateRef = ref() // 新增修改表单节点
-    const queryForm = reactive({}) // 查询表单数据
+    const queryForm = reactive({
+      cycleCodeOrName: '',
+      current: 1,
+      size: 10,
+      total: 0
+    }) // 查询表单数据
     const tableData = ref<TimeData[]>([]) // 表格数据
     const multipleSelection = ref<string[]>([]) // 复选数据
     const addOrUpdateDialog = ref(false) // 新增修改弹窗
     const addOrUpdateForm = ref<TimeData>() // 新增修改表单数据
     const calculateUnit = ref<Dict[]>([]) // 下拉
 
-    const query = () => {
-    //  a
+    const query = async () => {
+      const res = await TIME_QUERY(queryForm)
+      tableData.value = res.data.data.records
+      queryForm.size = res.data.data.size
+      queryForm.current = res.data.data.current
+      queryForm.total = res.data.data.total
     }
     // 表格复选
     const handleSelectionChange = (val:TimeData[]) => {
@@ -194,7 +222,9 @@ export default defineComponent({
         cancelButtonText: '取消',
         type: 'warning'
       }).then(async () => {
-      //  a
+        await TIME_DEL(multipleSelection.value)
+        proxy.$successToast('操作成功')
+        await query()
       })
     }
     // 新增
@@ -219,7 +249,6 @@ export default defineComponent({
       addOrUpdateDialog.value = true
       await nextTick()
       addOrUpdateRef.value.resetFields()
-      // addOrUpdateRef.value.clearValidate()
     }
     // 修改
     const editItem = async (row: TimeData) => {
@@ -232,7 +261,16 @@ export default defineComponent({
     const addOrUpdateFormSubmit = () => {
       addOrUpdateRef.value.validate(async (valid: boolean) => {
         if (valid) {
-        //  a
+          const form: any = { ...addOrUpdateForm.value }
+          // form.calculateStart = form.calculateStart.join(',')
+          if (form.id) {
+            await TIME_UPDATE(form)
+          } else {
+            await TIME_ADD(form)
+          }
+          proxy.$successToast('操作成功')
+          addOrUpdateDialog.value = false
+          await query()
         }
       })
     }
