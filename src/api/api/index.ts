@@ -1,6 +1,8 @@
 import { AxiosResponse } from 'axios'
 import Http from '../http/axios'
 
+export * from './basicData'
+
 export interface Dict {
   dictCode: string;
   dictValue: string;
