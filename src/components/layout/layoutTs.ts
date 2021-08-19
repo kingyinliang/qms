@@ -106,6 +106,7 @@ export default function (): LayoutTs<any> {
         return previousValue + ',' + currentValue.componentName
       }
     }, '')
+    console.log(num)
     return num
   })
 
