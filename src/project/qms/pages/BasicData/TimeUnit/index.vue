@@ -22,7 +22,7 @@
       <el-table-column label="计算单位" prop="calculateUnit" />
       <el-table-column label="计算开始" prop="calculateStart">
         <template #default="scope">
-          {{ scope.row.calculateStart.join(',') }}
+          {{ scope.row.calculateStart }}
         </template>
       </el-table-column>
       <el-table-column label="时间长度" prop="dateDelay" />
@@ -55,12 +55,12 @@
         <el-input v-model="addOrUpdateForm.dateUnit" autocomplete="off"></el-input>
       </el-form-item>
       <el-form-item label="计算单位：" prop="calculateUnit">
-        <el-select v-model="addOrUpdateForm.calculateUnit" class="inputWidth" placeholder="请选择" @change="addOrUpdateForm.calculateStart = ['']">
+        <el-select v-model="addOrUpdateForm.calculateUnit" class="inputWidth" placeholder="请选择" @change="addOrUpdateForm.calculateStarts = ['']">
           <el-option v-for="item in calculateUnit" :key="item.dictCode" :label="item.dictValue" :value="item.dictValue" />
         </el-select>
       </el-form-item>
-      <el-form-item label="开始时间：" prop="calculateStart">
-        <div class="flex" v-for="(item, index) in addOrUpdateForm.calculateStart" :key="index">
+      <el-form-item label="开始时间：" prop="calculateStarts">
+        <div class="flex" v-for="(item, index) in addOrUpdateForm.calculateStarts" :key="index">
           <el-date-picker
             v-if="addOrUpdateForm.calculateUnitName==='月'"
             v-model="addOrUpdateForm.calculateStart[index]"
@@ -72,7 +72,7 @@
           />
           <el-select
             v-if="addOrUpdateForm.calculateUnit==='周'"
-            v-model="addOrUpdateForm.calculateStart[index]"
+            v-model="addOrUpdateForm.calculateStarts[index]"
             class="inputWidth"
           >
             <el-option label="周一" value="周一"/>
@@ -85,7 +85,7 @@
           </el-select>
           <el-date-picker
             v-if="addOrUpdateForm.calculateUnit==='天'"
-            v-model="addOrUpdateForm.calculateStart[index]"
+            v-model="addOrUpdateForm.calculateStarts[index]"
             class="inputWidth"
             popper-class="noneHeader"
             type="date"
@@ -94,14 +94,14 @@
           />
           <el-time-select
             v-if="addOrUpdateForm.calculateUnit==='小时'"
-            v-model="addOrUpdateForm.calculateStart[index]"
+            v-model="addOrUpdateForm.calculateStarts[index]"
             class="inputWidth"
             start='00:00'
             end='24:00'
             step='01:00'
           />
-          <el-button icon="el-icon-plus" v-if="index === 0" size="small" @click="() => addOrUpdateForm.calculateStart.push('')" />
-          <el-button type="danger" icon="el-icon-delete" v-if="index !== 0" size="small" @click="() => addOrUpdateForm.calculateStart.splice(index, 1)" />
+          <el-button icon="el-icon-plus" v-if="index === 0" size="small" @click="() => addOrUpdateForm.calculateStarts.push('')" />
+          <el-button type="danger" icon="el-icon-delete" v-if="index !== 0" size="small" @click="() => addOrUpdateForm.calculateStarts.splice(index, 1)" />
         </div>
       </el-form-item>
       <el-form-item label="时间长度：" prop="dateDelay">
@@ -140,7 +140,7 @@ interface TimeData {
   dateUnit: string;
   calculateUnit: string;
   calculateUnitName: string;
-  calculateStart: string[];
+  calculateStarts: string[];
   dateDelay: string;
 }
 const addOrUpdateFormRule = {
@@ -165,7 +165,7 @@ const addOrUpdateFormRule = {
       trigger: 'blur'
     }
   ],
-  calculateStart: [
+  calculateStarts: [
     {
       required: true,
       message: '请输入开始时间',
@@ -243,7 +243,7 @@ export default defineComponent({
         dateUnit: '',
         calculateUnit: '',
         calculateUnitName: '',
-        calculateStart: [''],
+        calculateStarts: [''],
         dateDelay: ''
       }
       addOrUpdateDialog.value = true
@@ -275,7 +275,7 @@ export default defineComponent({
       })
     }
     const calculateUnitChange = (val: string) => {
-      (addOrUpdateForm.value as TimeData).calculateStart = [''];
+      (addOrUpdateForm.value as TimeData).calculateStarts = [''];
       (addOrUpdateForm.value as TimeData).calculateUnitName = (calculateUnit.value.find(it => it.dictCode === val) as Dict).dictValue
     }
 
