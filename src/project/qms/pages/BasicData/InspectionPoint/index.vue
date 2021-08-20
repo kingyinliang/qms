@@ -143,15 +143,15 @@ export default defineComponent({
     }
     // 新增
     const addData = async () => {
+      addOrUpdateDialog.value = true
+      await nextTick()
+      addOrUpdateRef.value.resetFields()
       addOrUpdateForm.value = {
         id: '',
         deptId: '',
         deptName: '',
         siteName: ''
       }
-      addOrUpdateDialog.value = true
-      await nextTick()
-      addOrUpdateRef.value.resetFields()
     }
     // 修改
     const editItem = async (row: PointData) => {
