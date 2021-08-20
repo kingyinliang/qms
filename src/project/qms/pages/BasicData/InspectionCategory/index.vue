@@ -84,7 +84,7 @@
             </el-col>
             <el-col :span="12">
               <el-form-item label="留样数量：">
-                <el-input :disabled="isRedact" v-model="detailInfo.sampleAmount" maxlength='2' @input="e => detailInfo.sampleAmount = e.replace(/[^0-9]/gi, '')" placeholder="请输入"></el-input>
+                <el-input :disabled="isRedact" v-model="detailInfo.sampleAmount" maxlength='2' @input="e => detailInfo.sampleAmount = e.replace(/[^0-9]/gi, '')" :placeholder="isRedact?' ': '请输入'"></el-input>
               </el-form-item>
             </el-col>
             <el-col :span="12">
