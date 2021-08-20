@@ -15,3 +15,30 @@ export function TIME_UPDATE (params = {}):Promise<AxiosResponse> {
 export function TIME_DEL (params = {}):Promise<AxiosResponse> {
   return Http.post('/inspectCycle/deleteInspectCycle', params, { baseURL })
 }
+export function PHASE_QUERY (params = {}):Promise<AxiosResponse> {
+  return Http.post('/inspectItem/queryInspectItem', params, { baseURL })
+}
+export function PHASE_ADD (params = {}):Promise<AxiosResponse> {
+  return Http.post('/inspectItem/insertInspectItem', params, { baseURL })
+}
+export function PHASE_UPDATE (params = {}):Promise<AxiosResponse> {
+  return Http.post('/inspectItem/updateInspectItem', params, { baseURL })
+}
+export function PHASE_DEL (params = {}):Promise<AxiosResponse> {
+  return Http.post('/inspectItem/deleteInspectItem', params, { baseURL })
+}
+export function MATERIAL_DROPDOWN (params = {}):Promise<AxiosResponse> {
+  return Http.get('/inspectMaterial/queryInspectMaterialDropDown', params, { baseURL })
+}
+export function POINT_QUERY (params = {}):Promise<AxiosResponse> {
+  return Http.post('/inspectSite/queryInspectSite', params, { baseURL })
+}
+export function POINT_ADD (params = {}):Promise<AxiosResponse> {
+  return Http.post('/inspectSite/insertInspectSite', params, { baseURL })
+}
+export function POINT_UPDATE (params = {}):Promise<AxiosResponse> {
+  return Http.post('/inspectSite/updateInspectSite', params, { baseURL })
+}
+export function POINT_DEL (params = {}):Promise<AxiosResponse> {
+  return Http.post('/inspectSite/deleteInspectSite', params, { baseURL })
+}

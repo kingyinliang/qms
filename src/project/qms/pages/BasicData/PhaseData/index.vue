@@ -4,25 +4,23 @@
       <div style="float: right;">
         <el-form :model="queryForm" class="queryForm" size="small" :inline="true" label-position="right" label-width="82px" style=" float: left;">
           <el-form-item label="">
-            <el-input suffix-icon="el-icon-search" v-model="queryForm.inspectMethodCodeOrName" placeholder="名称" style="width: 160px;" />
+            <el-input suffix-icon="el-icon-search" v-model="queryForm.itemCodeOrName" placeholder="名称" style="width: 160px;" />
           </el-form-item>
         </el-form>
         <div style="float: right;">
-          <el-button icon="el-icon-search" size="small" @click="query">查询</el-button>
+          <el-button icon="el-icon-search" size="small" @click="() => {queryForm.current = 1; query()}">查询</el-button>
           <el-button icon="el-icon-circle-check" type="primary" @click="addData" size="small">新增</el-button>
-<!--          <el-button icon="el-icon-delete" type="danger" size="small" @click="selectDelete">批量删除</el-button>-->
         </div>
       </div>
     </template>
-    <el-table ref="multipleTable" :cell-style="{'text-align':'center'}" :data="tableData" tooltip-effect="dark" style="width: 100%" @selection-change="handleSelectionChange">
-      <el-table-column type="selection" width="55" />
+    <el-table border :cell-style="{'text-align':'center'}" :data="tableData" tooltip-effect="dark" style="width: 100%">
       <el-table-column type="index" label="序号" width="50" />
-      <el-table-column label="品项编码" prop="inspectMethodCode" />
-      <el-table-column label="品项名称" prop="inspectMethodName" />
-      <el-table-column label="创建人员" prop="inspectMethodName" />
-      <el-table-column label="创建时间" prop="inspectMethodName" />
-      <el-table-column label="修改人员" prop="inspectMethodName" />
-      <el-table-column label="修改时间" prop="inspectMethodName" />
+      <el-table-column label="品项编码" prop="itemCode" />
+      <el-table-column label="品项名称" prop="itemName" />
+      <el-table-column label="创建人员" prop="creator" />
+      <el-table-column label="创建时间" prop="created" />
+      <el-table-column label="修改人员" prop="changer" />
+      <el-table-column label="修改时间" prop="changed" />
       <el-table-column label="操作" width="250" fixed="right">
         <template #default="scope">
           <el-button type="text" icon="el-icon-edit" class="role__btn" @click="updateMaterial(scope.row)">
@@ -37,6 +35,17 @@
         </template>
       </el-table-column>
     </el-table>
+    <el-row style="float: right">
+      <el-pagination
+        :page-size="queryForm.size"
+        :current-page="queryForm.current"
+        :total="queryForm.total"
+        :page-sizes="[10, 20, 50]"
+        layout="total, sizes, prev, pager, next, jumper"
+        @size-change="val => {queryForm.size = val;query}"
+        @current-change="val => {queryForm.current = val; query}"
+      />
+    </el-row>
   </mds-card>
   <el-dialog v-model="addOrUpdateDialog" title="品项主数据" width="30%">
     <el-form ref="addOrUpdateRef" :model="addOrUpdateForm" :rules="addOrUpdateFormRule" label-width="120px">
@@ -55,10 +64,14 @@
   <el-dialog v-model="materialDialog" title="关联物料" width="536px">
     <el-transfer
       v-model="itemPhaseData"
-      :data="phaseData"
+      :data="materialData"
       filterable
       :titles="['未关联物料', '已关联物料']"
     />
+    <div class="dialog-footer">
+      <el-button size="small" icon="el-icon-circle-close" @click="materialDialog = false">取 消</el-button>
+      <el-button size="small" icon="el-icon-circle-check" type="primary" @click="updateFormSubmit">确 定</el-button>
+    </div>
   </el-dialog>
 </template>
 
@@ -73,14 +86,18 @@ import {
   ComponentInternalInstance
 } from 'vue'
 import {
-  DICT_DROPDOWN,
-  Dict
+  PHASE_QUERY,
+  PHASE_ADD,
+  PHASE_UPDATE,
+  PHASE_DEL,
+  MATERIAL_DROPDOWN
 } from '@/api/api'
 
 interface PhaseData {
   id: string;
   itemCode: string;
   itemName: string;
+  inspectMaterialCodeLists: string[];
 }
 const addOrUpdateFormRule = {
   itemCode: [
@@ -106,35 +123,42 @@ export default defineComponent({
     const proxy = ctx.proxy as any
 
     const addOrUpdateRef = ref() // 新增修改表单节点
-    const queryForm = reactive({}) // 查询表单数据
-    const tableData = ref<PhaseData[]>([{ id: '0', itemCode: '0002', itemName: 'aaa' }]) // 表格数据
-    const multipleSelection = ref<string[]>([]) // 复选数据
+    const queryForm = reactive({
+      itemCodeOrName: '',
+      current: 1,
+      size: 10,
+      total: 0
+    }) // 查询表单数据
+    const tableData = ref<PhaseData[]>([]) // 表格数据
     const addOrUpdateDialog = ref(false) // 新增修改弹窗
     const materialDialog = ref(false) // 关联物流弹窗
-    const addOrUpdateForm = ref<PhaseData>() // 新增修改表单数据
-    const calculateUnit = ref<Dict[]>([]) // 下拉
-    const itemPhaseData = ref([]) // 下拉
-    const phaseData = ref([]) // 下拉
+    const addOrUpdateForm = ref<PhaseData>({
+      id: '',
+      itemCode: '',
+      itemName: '',
+      inspectMaterialCodeLists: []
+    }) // 新增修改表单数据
+    const materialData = ref([]) // 下拉
+    const itemPhaseData = ref<string[]>([]) // 下拉
+    let tmp:PhaseData = { id: '', itemCode: '', itemName: '', inspectMaterialCodeLists: [] }
 
-    const query = () => {
-      //  a
-    }
-    // 表格复选
-    const handleSelectionChange = (val:PhaseData[]) => {
-      multipleSelection.value = val.map((item: PhaseData) => item.id)
+    const query = async () => {
+      const res = await PHASE_QUERY(queryForm)
+      tableData.value = res.data.data.records
+      queryForm.size = res.data.data.size
+      queryForm.current = res.data.data.current
+      queryForm.total = res.data.data.total
     }
     // 删除确认
-    const selectDelete = () => {
-      if (!multipleSelection.value.length) {
-        proxy.$warningToast('请选择数据')
-        return
-      }
+    const selectDelete = (row: PhaseData) => {
       proxy.$confirm('确认删除选中的数据？', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
       }).then(async () => {
-        //  a
+        await PHASE_DEL([row.id])
+        proxy.$successToast('操作成功')
+        await query()
       })
     }
     // 新增
@@ -153,12 +177,12 @@ export default defineComponent({
       addOrUpdateForm.value = {
         id: '',
         itemCode,
-        itemName: ''
+        itemName: '',
+        inspectMaterialCodeLists: []
       }
       addOrUpdateDialog.value = true
       await nextTick()
       addOrUpdateRef.value.resetFields()
-      // addOrUpdateRef.value.clearValidate()
     }
     // 修改
     const editItem = async (row: PhaseData) => {
@@ -171,18 +195,33 @@ export default defineComponent({
     const addOrUpdateFormSubmit = () => {
       addOrUpdateRef.value.validate(async (valid: boolean) => {
         if (valid) {
-          //  a
+          if (addOrUpdateForm.value.id) {
+            await PHASE_UPDATE(addOrUpdateForm.value)
+          } else {
+            await PHASE_ADD(addOrUpdateForm.value)
+          }
+          proxy.$successToast('操作成功')
+          addOrUpdateDialog.value = false
+          await query()
         }
       })
     }
+    // 关联物料弹窗
     const updateMaterial = (row: PhaseData) => {
+      tmp = row
+      itemPhaseData.value = row.inspectMaterialCodeLists
       materialDialog.value = true
+    }
+    const updateFormSubmit = async () => {
+      tmp.inspectMaterialCodeLists = itemPhaseData.value
+      await PHASE_UPDATE(tmp)
+      materialDialog.value = false
     }
 
     onMounted(async () => {
       query()
-      const res = await DICT_DROPDOWN({ dictType: 'inspect_property' })
-      calculateUnit.value = res.data.data
+      const res = await MATERIAL_DROPDOWN()
+      materialData.value = res.data.data
     })
 
     return {
@@ -193,16 +232,15 @@ export default defineComponent({
       materialDialog,
       addOrUpdateForm,
       addOrUpdateFormRule,
-      calculateUnit,
+      materialData,
       itemPhaseData,
-      phaseData,
       query,
       addData,
       selectDelete,
-      handleSelectionChange,
       editItem,
       updateMaterial,
-      addOrUpdateFormSubmit
+      addOrUpdateFormSubmit,
+      updateFormSubmit
     }
   }
 })
