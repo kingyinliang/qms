@@ -50,7 +50,7 @@
   <el-dialog v-model="addOrUpdateDialog" title="品项主数据" width="30%">
     <el-form ref="addOrUpdateRef" :model="addOrUpdateForm" :rules="addOrUpdateFormRule" label-width="120px">
       <el-form-item label="品项编码：" prop="itemCode">
-        <el-input v-model="addOrUpdateForm.itemCode" :disabled="true" autocomplete="off"></el-input>
+        <el-input v-model="addOrUpdateForm.itemCode" disabled autocomplete="off"></el-input>
       </el-form-item>
       <el-form-item label="品项名称：" prop="itemName">
         <el-input v-model="addOrUpdateForm.itemName" autocomplete="off"></el-input>
@@ -65,10 +65,18 @@
     <el-transfer
       v-model="itemPhaseData"
       :data="materialData"
+      :props="{ key: 'inspectMaterialCode', label: 'inspectMaterialName' }"
       filterable
+      :filter-method="filterMethod"
       :titles="['未关联物料', '已关联物料']"
-    />
-    <div class="dialog-footer">
+    >
+      <template #default="{option}">
+        <el-tooltip class="item" effect="dark" :content="`${option.inspectMaterialName} ${option.inspectMaterialCode}`" placement="top-end">
+          <span>{{ option.inspectMaterialName }} {{ option.inspectMaterialCode }}</span>
+        </el-tooltip>
+      </template>
+    </el-transfer>
+    <div class="dialog-footer" style="margin-top: 10px;">
       <el-button size="small" icon="el-icon-circle-close" @click="materialDialog = false">取 消</el-button>
       <el-button size="small" icon="el-icon-circle-check" type="primary" @click="updateFormSubmit">确 定</el-button>
     </div>
@@ -174,15 +182,15 @@ export default defineComponent({
       let itemCode = ''
       if (String(cycleCode).length > 3) itemCode = String(cycleCode)
       itemCode = ('0000' + cycleCode).slice(-4)
+      addOrUpdateDialog.value = true
+      await nextTick()
+      addOrUpdateRef.value.resetFields()
       addOrUpdateForm.value = {
         id: '',
         itemCode,
         itemName: '',
         inspectMaterialCodeLists: []
       }
-      addOrUpdateDialog.value = true
-      await nextTick()
-      addOrUpdateRef.value.resetFields()
     }
     // 修改
     const editItem = async (row: PhaseData) => {
@@ -206,22 +214,38 @@ export default defineComponent({
         }
       })
     }
+    const filterMethod = (query:string, item:any) => {
+      return item.inspectMaterialName.indexOf(query) > -1 || item.inspectMaterialCode.indexOf(query) > -1
+    }
     // 关联物料弹窗
     const updateMaterial = (row: PhaseData) => {
-      tmp = row
+      tmp = { ...row }
       itemPhaseData.value = row.inspectMaterialCodeLists
       materialDialog.value = true
     }
     const updateFormSubmit = async () => {
       tmp.inspectMaterialCodeLists = itemPhaseData.value
       await PHASE_UPDATE(tmp)
+      proxy.$successToast('操作成功')
       materialDialog.value = false
+      await query()
+      await getMaterial()
+    }
+    const getMaterial = async () => {
+      const res = await MATERIAL_DROPDOWN()
+      res.data.data.forEach((item: any) => {
+        if (item.inspectItemId) {
+          item.disabled = true
+        } else {
+          item.disabled = false
+        }
+      })
+      materialData.value = res.data.data
     }
 
-    onMounted(async () => {
+    onMounted(() => {
       query()
-      const res = await MATERIAL_DROPDOWN()
-      materialData.value = res.data.data
+      getMaterial()
     })
 
     return {
@@ -238,6 +262,7 @@ export default defineComponent({
       addData,
       selectDelete,
       editItem,
+      filterMethod,
       updateMaterial,
       addOrUpdateFormSubmit,
       updateFormSubmit
