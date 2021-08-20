@@ -33,8 +33,8 @@
               </el-form-item>
             </el-col>
             <el-col v-if="detailInfo.parentId === '0'" :span="12">
-              <el-form-item label="生产辅助：" prop="assistFlag" :disabled="isRedact" :label-width="formLabelWidth">
-                <el-radio-group v-model="detailInfo.assistFlag">
+              <el-form-item label="生产辅助：" prop="assistFlag" :label-width="formLabelWidth">
+                <el-radio-group v-model="detailInfo.assistFlag" :disabled="isRedact">
                   <el-radio label="Y">是</el-radio>
                   <el-radio label="N">否</el-radio>
                 </el-radio-group>

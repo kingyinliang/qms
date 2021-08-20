@@ -237,6 +237,9 @@ export default defineComponent({
         }, 0)
       }
       cycleCode++
+      addOrUpdateDialog.value = true
+      await nextTick()
+      addOrUpdateRef.value.resetFields()
       addOrUpdateForm.value = {
         id: '',
         cycleCode: `T${cycleCode < 10 ? '0' + cycleCode : cycleCode}`,
@@ -246,9 +249,6 @@ export default defineComponent({
         calculateStarts: [''],
         dateDelay: ''
       }
-      addOrUpdateDialog.value = true
-      await nextTick()
-      addOrUpdateRef.value.resetFields()
     }
     // 修改
     const editItem = async (row: TimeData) => {
