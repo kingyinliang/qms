@@ -1,4 +1,4 @@
-import { ComponentInternalInstance, computed, getCurrentInstance, ref, Ref } from 'vue'
+import { ComponentInternalInstance, computed, getCurrentInstance, ref, Ref, nextTick } from 'vue'
 import { useStore } from 'vuex'
 import { useRouter, useRoute, Router, RouteLocationNormalizedLoaded, RouteLocationNormalized } from 'vue-router'
 import { WritableComputedRef } from '@vue/reactivity'
@@ -199,7 +199,7 @@ export default function (): LayoutTs<any> {
   }
 
   // 监听路由添加tabs
-  const routeHandle = (route: RouteLocationNormalized) => {
+  const routeHandle = async (route: RouteLocationNormalized) => {
     if (route.meta.isTab) {
       let tab = mainTabs.value.filter(item => item.name === route.name)[0]
       if (!tab) {
@@ -208,8 +208,10 @@ export default function (): LayoutTs<any> {
             return
           }
         }
+        await nextTick()
         tab = {
-          componentName: route.meta.componentName as string,
+          // componentName: route.meta.componentName as string,
+          componentName: require('@/project/' + (route.name as string).replace(/-/g, '/') + '.vue').default.name,
           menuId: (route.meta.menuId || route.name) as string,
           name: route.name as string,
           title: route.meta.title as string,

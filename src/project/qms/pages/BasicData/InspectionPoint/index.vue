@@ -4,22 +4,22 @@
       <div style="float: right;">
         <el-form :model="queryForm" class="queryForm" size="small" :inline="true" label-position="right" label-width="82px" style=" float: left;">
           <el-form-item label="">
-            <el-input suffix-icon="el-icon-search" v-model="queryForm.inspectMethodCodeOrName" placeholder="生产车间" style="width: 160px;" />
+            <el-input suffix-icon="el-icon-search" v-model="queryForm.deptName" placeholder="生产车间" style="width: 160px;" />
           </el-form-item>
         </el-form>
         <div style="float: right;">
-          <el-button icon="el-icon-search" size="small" @click="query">查询</el-button>
+          <el-button icon="el-icon-search" size="small" @click="() => {queryForm.current = 1; query()}">查询</el-button>
           <el-button icon="el-icon-circle-check" type="primary" @click="addData" size="small">新增</el-button>
           <el-button icon="el-icon-delete" type="danger" size="small" @click="selectDelete">批量删除</el-button>
         </div>
       </div>
     </template>
-    <el-table ref="multipleTable" :cell-style="{'text-align':'center'}" :data="tableData" tooltip-effect="dark" style="width: 100%" @selection-change="handleSelectionChange">
+    <el-table ref="multipleTable" border :cell-style="{'text-align':'center'}" :data="tableData" tooltip-effect="dark" style="width: 100%" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" />
       <el-table-column type="index" label="序号" width="50" />
       <el-table-column label="生产车间" prop="deptName" />
-      <el-table-column label="检验点" prop="inspectMethodName" />
-      <el-table-column label="检验点" prop="inspectPropertyName" />
+      <el-table-column label="检验点" prop="siteName" />
+      <el-table-column label="建立部门" prop="inspectPropertyName" />
       <el-table-column label="操作人员" prop="inspectPropertyName" />
       <el-table-column label="操作时间" prop="inspectPropertyName" />
       <el-table-column label="操作" width="120" fixed="right">
@@ -60,7 +60,11 @@ import {
   ComponentInternalInstance
 } from 'vue'
 import {
-  DEPT_QUERY_API
+  DEPT_QUERY_API,
+  POINT_QUERY,
+  POINT_ADD,
+  POINT_UPDATE,
+  POINT_DEL
 } from '@/api/api'
 
 interface PointData {
@@ -93,7 +97,12 @@ export default defineComponent({
     const proxy = ctx.proxy as any
 
     const addOrUpdateRef = ref() // 新增修改表单节点
-    const queryForm = reactive({}) // 查询表单数据
+    const queryForm = reactive({
+      deptName: '',
+      current: 1,
+      size: 10,
+      total: 0
+    }) // 查询表单数据
     const tableData = ref<PointData[]>([]) // 表格数据
     const multipleSelection = ref<string[]>([]) // 复选数据
     const addOrUpdateDialog = ref(false) // 新增修改弹窗
@@ -105,8 +114,12 @@ export default defineComponent({
     }) // 新增修改表单数据
     const org = ref([])
 
-    const query = () => {
-      //  a
+    const query = async () => {
+      const res = await POINT_QUERY(queryForm)
+      tableData.value = res.data.data.records
+      queryForm.size = res.data.data.size
+      queryForm.current = res.data.data.current
+      queryForm.total = res.data.data.total
     }
     // 表格复选
     const handleSelectionChange = (val:PointData[]) => {
@@ -123,7 +136,9 @@ export default defineComponent({
         cancelButtonText: '取消',
         type: 'warning'
       }).then(async () => {
-        //  a
+        await POINT_DEL(multipleSelection.value)
+        proxy.$successToast('操作成功')
+        await query()
       })
     }
     // 新增
@@ -149,7 +164,13 @@ export default defineComponent({
     const addOrUpdateFormSubmit = () => {
       addOrUpdateRef.value.validate(async (valid: boolean) => {
         if (valid) {
-          console.log(addOrUpdateForm.value)
+          if (addOrUpdateForm.value.id) {
+            await POINT_UPDATE(addOrUpdateForm.value)
+          } else {
+            await POINT_ADD(addOrUpdateForm.value)
+          }
+          proxy.$successToast('操作成功')
+          await query()
         }
       })
     }

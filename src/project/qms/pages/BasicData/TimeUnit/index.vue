@@ -14,7 +14,7 @@
         </div>
       </div>
     </template>
-    <el-table ref="multipleTable" :cell-style="{'text-align':'center'}" :data="tableData" tooltip-effect="dark" style="width: 100%" @selection-change="handleSelectionChange">
+    <el-table ref="multipleTable" border :cell-style="{'text-align':'center'}" :data="tableData" tooltip-effect="dark" style="width: 100%" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" />
       <el-table-column type="index" label="序号" width="50" />
       <el-table-column label="编码" prop="cycleCode" />
