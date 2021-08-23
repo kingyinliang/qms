@@ -3,7 +3,7 @@
     ref="treeModule"
     :title="pageMainTitle"
     :leftTitle="pageLeftColumnTitle"
-    :rightTitle="pageLightColumnTitle"
+    :rightTitle="pageRightColumnTitle"
     :treeData="treeData"
     :treeProps="{ label: 'inspectMaterialType',children:'inspectGroups' }"
     @treeNodeClick="getMaterialDetail"
@@ -94,7 +94,7 @@ interface State {
     isDialogShow: boolean
     pageMainTitle: string
     pageLeftColumnTitle: string
-    pageLightColumnTitle: string
+    pageRightColumnTitle: string
     materialDetailText: string // 物料明细查找
     totalItems: number
     currentPage: number
@@ -125,7 +125,7 @@ export default defineComponent({
       isDialogShow: false,
       pageMainTitle: '物料分类',
       pageLeftColumnTitle: '物料分类',
-      pageLightColumnTitle: '物料明细',
+      pageRightColumnTitle: '物料明细',
       materialDetailText: '',
       totalItems: 0,
       currentPage: 1,
