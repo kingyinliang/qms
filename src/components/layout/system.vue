@@ -33,6 +33,16 @@ export default defineComponent({
         scssVar: '--sidebar-text-color'
       },
       {
+        val: '#00152B',
+        label: '侧边栏移入背景色',
+        scssVar: '--sidebar-hover-bg-color'
+      },
+      {
+        val: '#c5cbcf',
+        label: '侧边栏移入字体色',
+        scssVar: '--sidebar-hover-text-color'
+      },
+      {
         val: '#1890ff',
         label: '侧边栏选中背景色',
         scssVar: '--sidebar-active-bg-color'

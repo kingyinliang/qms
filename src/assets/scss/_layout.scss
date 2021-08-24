@@ -99,8 +99,10 @@
       &:hover {
         //color: mix(#fff, $sidebar-text-color, 50%);
         //background-color: mix(#fff, $sidebar-bg-color, 15%);
-        color: $sidebar-text-color;
-        background-color: $sidebar-bg-color;
+        //color: $sidebar-text-color;
+        //background-color: $sidebar-bg-color;
+        color: $sidebar-hover-text-color;
+        background-color: $sidebar-hover-bg-color;
         //background-color: set_color(#fff, $sidebar-bg-color, 15%);
       }
     }

@@ -271,10 +271,11 @@ export default defineComponent({
     // 逻辑函数
     // 列表变树结构
     const setTreeData = async (id = '') => {
+      console.log(id)
       const res = await INSPECT_TYPE_LIST_API()
       treeDataOrg = res.data.data
       treeData.value = treeDataTranslate(res.data.data, 'id', 'parentId')
-      treePage.value.focusCurrentNodeNumber = treeData.value[0].id
+      id ? treePage.value.focusCurrentNodeNumber = id : treePage.value.focusCurrentNodeNumber = treeData.value[0].id
       id ? getDetail({ id, inspectTypeCode: '' }) : getDetail(treeData.value[0])
     }
     // 下拉框数据变换
@@ -389,6 +390,7 @@ export default defineComponent({
       }).then(async () => {
         await INSPECT_TYPE_DEL_API({ id: detailInfo.value.id })
         proxy.$successToast('操作成功')
+        isRedact.value = true
         detailInfo.value = {
           id: '',
           parentId: '',
