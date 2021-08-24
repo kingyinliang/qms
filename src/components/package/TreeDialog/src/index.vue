@@ -1,7 +1,15 @@
 <template>
-  <el-popover :disabled="disabled" placement="bottom-start" trigger="click" popper-class="treeDialog">
+  <el-popover
+    :disabled="disabled"
+    placement="bottom-start"
+    trigger="click"
+    popper-class="treeDialog"
+    @show="showPopover"
+    @hide="hidePopover"
+  >
     <template #reference>
       <el-select
+        ref="treeDialogInput"
         class="treeDialog__input"
         v-model="checkedValue"
         :disabled="disabled"
@@ -13,6 +21,9 @@
         :placeholder="placeholder"
         @remove-tag="removeTag"
       >
+        <template #prefix>
+          <i :class="['treeDialog__input__prefix', 'el-select__caret', 'el-input__icon', 'el-icon-' + iconClass]"></i>
+        </template>
         <el-option v-for="item in selectOption" :key="item.id" :label="item[treeProps.label]" :value="item" />
       </el-select>
     </template>
@@ -105,7 +116,9 @@ export default defineComponent({
   },
   setup (props: Props, { emit }) {
     const treeRef = ref()
+    const treeDialogInput = ref()
     const filterText = ref('')
+    const iconClass = ref('arrow-up')
     const checkedValue = ref([])
     const selectOption = ref([])
     const { modelValue, treeProps, leafOnly } = toRefs<Props>(props)
@@ -119,6 +132,12 @@ export default defineComponent({
       }
     })
 
+    const showPopover = () => {
+      iconClass.value = 'arrow-up is-reverse'
+    }
+    const hidePopover = () => {
+      iconClass.value = 'arrow-up'
+    }
     const filterNode = (value:string, data: any) => {
       if (!value) return true
       return data[treeProps.value.label].indexOf(value) !== -1
@@ -149,10 +168,14 @@ export default defineComponent({
 
     return {
       treeRef,
+      treeDialogInput,
       filterText,
       checkedValue,
       defaultCheckedKeys,
       selectOption,
+      iconClass,
+      showPopover,
+      hidePopover,
       removeTag,
       filterNode,
       handleCheckedChange,
@@ -172,6 +195,19 @@ export default defineComponent({
   }
   .treeDialog__input{
     width: 100%;
+    .el-select__caret{
+      display: none;
+    }
+    .el-input__prefix{
+      right: 5px;
+      left: auto;
+    }
+    .el-input__inner{
+      padding-left: 15px!important;
+    }
+    .treeDialog__input__prefix{
+      display: block;
+    }
   }
 </style>
 <style lang="scss" scoped>

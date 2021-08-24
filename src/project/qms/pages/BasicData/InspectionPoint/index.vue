@@ -19,9 +19,9 @@
       <el-table-column type="index" label="序号" width="50" />
       <el-table-column label="生产车间" prop="deptName" />
       <el-table-column label="检验点" prop="siteName" />
-      <el-table-column label="建立部门" prop="inspectPropertyName" />
-      <el-table-column label="操作人员" prop="inspectPropertyName" />
-      <el-table-column label="操作时间" prop="inspectPropertyName" />
+      <el-table-column label="建立部门" prop="createDept" />
+      <el-table-column label="操作人员" prop="createMan" />
+      <el-table-column label="操作时间" prop="createDate" />
       <el-table-column label="操作" width="120" fixed="right">
         <template #default="scope">
           <el-button type="text" icon="el-icon-edit" class="role__btn" @click="editItem(scope.row)">
@@ -30,6 +30,17 @@
         </template>
       </el-table-column>
     </el-table>
+    <el-row style="float: right">
+      <el-pagination
+        :page-size="queryForm.size"
+        :current-page="queryForm.current"
+        :total="queryForm.total"
+        :page-sizes="[10, 20, 50]"
+        layout="total, sizes, prev, pager, next, jumper"
+        @size-change="val => {queryForm.size = val;query}"
+        @current-change="val => {queryForm.current = val; query}"
+      />
+    </el-row>
   </mds-card>
   <el-dialog v-model="addOrUpdateDialog" title="检验点维护" width="30%">
     <el-form ref="addOrUpdateRef" :model="addOrUpdateForm" :rules="addOrUpdateFormRule" label-width="120px">
@@ -170,6 +181,7 @@ export default defineComponent({
             await POINT_ADD(addOrUpdateForm.value)
           }
           proxy.$successToast('操作成功')
+          addOrUpdateDialog.value = false
           await query()
         }
       })
