@@ -63,7 +63,9 @@ import {
   ref,
   toRefs,
   watch,
-  computed
+  computed,
+  nextTick,
+  onMounted
 } from 'vue'
 
 interface Props{
@@ -123,6 +125,10 @@ export default defineComponent({
     const selectOption = ref([])
     const { modelValue, treeProps, leafOnly } = toRefs<Props>(props)
 
+    onMounted(async () => {
+      await nextTick()
+      treeDialogInput.value.prefixWidth = 0
+    })
     const defaultCheckedKeys = computed({
       get () {
         return props.modelValue
