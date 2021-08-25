@@ -9,7 +9,7 @@
         </el-form>
         <div style="float: right;">
           <el-button icon="el-icon-search" size="small" @click="() => { queryForm.current = 1; query() }">查询</el-button>
-          <el-button icon="el-icon-circle-check" type="primary" @click="addData" size="small">新增</el-button>
+          <el-button icon="el-icon-plus" type="primary" @click="addData" size="small">新增</el-button>
           <el-button icon="el-icon-delete" type="danger" size="small" @click="selectDelete">批量删除</el-button>
         </div>
       </div>
