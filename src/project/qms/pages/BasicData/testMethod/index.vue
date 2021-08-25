@@ -42,7 +42,7 @@
   </mds-card>
   <el-dialog v-model="addMethodBtn" title="检验类别-新增" width="30%">
       <el-form ref="addRef" :model="addMethodInfo" :rules="dataRule">
-        <el-form-item label="编码：" prop="inspectMethodCode" :label-width="formLabelWidth">
+        <el-form-item label="编码：" :label-width="formLabelWidth">
           <el-input v-model="addMethodInfo.inspectMethodCode" class="inputWidth" :disabled="true" autocomplete="off"></el-input>
         </el-form-item>
         <el-form-item label="检验方法：" prop="inspectMethodName" :label-width="formLabelWidth">
@@ -178,14 +178,15 @@ export default defineComponent({
       addMethodBtn.value = true
       await nextTick()
       addRef.value.resetFields()
-      let code = materialData.value.reduce((previousValue: number, currentValue: TargetInfo) => {
-        const currentCode = Number(currentValue.inspectMethodCode.replace(/M/g, ''))
-        return previousValue < currentCode ? currentCode : previousValue
-      }, 0)
-      code++
+      // let code = materialData.value.reduce((previousValue: number, currentValue: TargetInfo) => {
+      //   const currentCode = Number(currentValue.inspectMethodCode.replace(/M/g, ''))
+      //   return previousValue < currentCode ? currentCode : previousValue
+      // }, 0)
+      // code++
       addMethodInfo.value = {
         id: '',
-        inspectMethodCode: `M${code < 10 ? '0' + code : code}`,
+        // inspectMethodCode: `M${code < 10 ? '0' + code : code}`,
+        inspectMethodCode: '',
         inspectMethodName: '',
         inspectPropertyName: '',
         inspectProperty: ''
