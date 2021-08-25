@@ -118,7 +118,7 @@ const addOrUpdateFormRule = {
 }
 
 export default defineComponent({
-  name: 'index',
+  name: 'PhaseData',
   setup () {
     const ctx = getCurrentInstance() as ComponentInternalInstance
     const proxy = ctx.proxy as any

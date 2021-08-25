@@ -102,7 +102,7 @@ const addOrUpdateFormRule = {
 }
 
 export default defineComponent({
-  name: 'index',
+  name: 'InspectionPoint',
   setup () {
     const ctx = getCurrentInstance() as ComponentInternalInstance
     const proxy = ctx.proxy as any
