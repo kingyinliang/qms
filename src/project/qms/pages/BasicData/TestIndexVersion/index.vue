@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-07-30 11:24:46
  * @LastEditors: Telliex
- * @LastEditTime: 2021-08-24 18:04:53
+ * @LastEditTime: 2021-08-25 16:42:40
 -->
 <template>
   <mds-card class="test_method" title="版本明细" :pack-up="false" style="margin-bottom: 0; background: #fff;">
@@ -17,8 +17,8 @@
         </div>
       </div>
     </template>
-    <el-table ref="multipleTable"  :cell-style="{'text-align':'center'}" :data="topicMainData" tooltip-effect="dark" style="width: 100%" @selection-change="handleSelectionChange" @row-dblclick="handleDbclick">
-      <el-table-column type="selection" width="55" />
+    <el-table border ref="multipleTable"  :cell-style="{'text-align':'center'}" :data="topicMainData" tooltip-effect="dark" style="width: 100%" @selection-change="handleSelectionChange" @row-dblclick="handleDbclick" max-height="300">
+      <el-table-column type="selection" width="55" :selectable="checkDate" />
       <el-table-column type="index" label="序号" :index="(index) => index + 1 + (currentPage - 1) * pageSize" width="50" />
       <el-table-column label="检验类别\物料" min-width="200" prop="inspectMaterialTypeName" show-overflow-tooltip />
       <el-table-column label="指标代码" width="160" prop="indexCode" show-overflow-tooltip />
@@ -27,7 +27,6 @@
       <el-table-column label="方法" width="200" prop="indexMethod" show-overflow-tooltip />
       <el-table-column label="版本" width="160" prop="indexVersion" show-overflow-tooltip />
       <el-table-column label="版本执行方法" width="160" prop="indexVersionMethod" show-overflow-tooltip>
-
         <template #default="scope">
         <el-button
           size="mini"
@@ -37,8 +36,15 @@
       </el-table-column>
       <el-table-column label="变更说明" width="160" prop="changeInfo" show-overflow-tooltip />
       <el-table-column label="执行开始日" width="200" prop="beginDate" show-overflow-tooltip />
+      <el-table-column label="操作" width="120" fixed="right">
+        <template #default="scope">
+          <el-button type="text" icon="el-icon-edit" class="role__btn" @click="btnEditItemOfTopicMainData(scope.row)" :disabled="(new Date(scope.row.beginDate).getTime() - new Date(formatDate()).getTime()) <= 0">
+            编辑
+          </el-button>
+        </template>
+      </el-table-column>
     </el-table>
-    <el-row style="float: right">
+
       <el-pagination
         v-if="topicMainData.length!==0"
         :page-size="pageSize"
@@ -49,13 +55,16 @@
         @size-change="handleSizeChange"
         @current-change="handleCurrentChange"
       />
-    </el-row>
+
+    <!--标准值明细-->
+    <index-value-detail v-model:dialogVisible="isDialogShow" v-if="isDialogShow" ref="refIndexValueDetail" :target="versionId" />
+
   </mds-card>
   <!--指标弹窗-->
-  <el-dialog :title="'版本明细'" v-model="isDialogVisibleForItemControl" width="40%">
+  <el-dialog :title="addFormInfo.title" v-model="isDialogVisibleForItemControl" width="40%">
     <el-form ref="addRef" :model="addFormInfo" :rules="dataRule">
         <el-form-item label="版本：" prop="indexVersion" :label-width="'140px'">
-          <el-input v-model="addFormInfo.indexVersion" class="140px" autocomplete="off"></el-input>
+          <el-input v-model="addFormInfo.indexVersion" class="140px" autocomplete="off" maxlength="10"></el-input>
         </el-form-item>
         <el-form-item label="版本执行方法：" prop="indexVersionMethod" :label-width="'140px'">
             <el-upload
@@ -69,13 +78,9 @@
               :file-list="fileList"
               style="width:100%"
             >
-              <!-- <el-button size="small" type="primary">点击上传</el-button> -->
               <el-input v-model="addFormInfo.indexVersionMethod" placeholder="请上传文件" autocomplete="off" :disabled="!canUploadFile" style="width:100%"></el-input>
             </el-upload>
-          <!-- <el-input v-model="addFormInfo.indexVersionMethod" class="140px" placeholder="请选择" autocomplete="off"></el-input>
-          <el-upload ref="upload" class="org-img-upload" list-type="picture-card" :action="FILE_API" :limit="1" :http-request="httpRequest" :file-list="fileList" :on-success="addfile" :on-remove="removeFile" :on-preview="handlePictureCardPreview">
-              <el-button size="small" type="primary">点击上传</el-button>
-          </el-upload> -->
+
         </el-form-item>
         <el-form-item label="执行开始日：" prop="beginDate" :label-width="'140px'">
            <el-date-picker
@@ -90,12 +95,11 @@
     <template #footer>
       <span class="dialog-footer">
         <el-button @click="btnItemFloatClear">取 消</el-button>
-        <el-button type="primary" @click="btnItemFloatConfirm">确 定</el-button>
+        <el-button type="primary" @click="btnItemFloatConfirm" :disabled="!fileUploadFinish">确 定</el-button>
       </span>
     </template>
   </el-dialog>
-  <!--标准值明细-->
-  <index-value-detail v-model:dialogVisible="isDialogShow" v-if="isDialogShow" ref="refIndexValueDetail" :target="versionId" />
+
 </template>
 
 <script lang="ts">
@@ -110,12 +114,15 @@ import {
   INSPECT_INDEX_VERSION_QUERY_API, // 基础数据-[指标版本管理]- 查询
   INSPECT_INDEX_VERSION_ADD_API, // 基础数据-[指标版本管理]- 新增
   INSPECT_INDEX_VERSION_DELETE_API, // 基础数据-[指标版本管理]- 删除
+  INSPECT_INDEX_VERSION_UPDATE_API, // 基础数据-[指标版本管理]- 编辑
   UPLOAD_FILE_API, // 文件上传
   DOWNLOAD_FILE_API // 文件下载
   // UPLOAD_FILE_API
 } from '@/api/api'
 
 interface AddFormInfo {
+  id: string
+  title: string
   beginDate: string
   indexVersion: string
   indexVersionMethod: string
@@ -162,6 +169,7 @@ interface State {
   fileList: FileList[]
   dialogImageUrl: string
   canUploadFile: boolean
+  fileUploadFinish: boolean
 }
 
 export default defineComponent({
@@ -197,10 +205,12 @@ export default defineComponent({
       ]
     })
     const state = reactive<State>({
-      isDialogShow: false,
+      isDialogShow: true,
       isDialogVisibleForItemControl: false,
       inspectIndexMaterialId: '', // '624547859339390976'
       addFormInfo: {
+        id: '',
+        title: '',
         beginDate: '',
         indexVersion: '',
         indexVersionMethod: ''
@@ -218,7 +228,8 @@ export default defineComponent({
       fileURL: '',
       fileList: [],
       dialogImageUrl: '',
-      canUploadFile: true
+      canUploadFile: true,
+      fileUploadFinish: true
     })
 
     // 函数
@@ -237,17 +248,34 @@ export default defineComponent({
       state.totalItems = res.data.data.total
       state.currentPage = res.data.data.current
       state.pageSize = res.data.data.size
-      state.isDialogShow = false
+      state.isDialogShow = true
     }
 
     // [BTN:新增] 新增 item
-    const btnAddItemData = async () => {
+    const btnAddItemData = () => {
       state.addFormInfo = {
+        id: '',
+        title: '版本明细-新增',
         beginDate: '',
         indexVersion: '',
         indexVersionMethod: ''
       }
       state.isDialogVisibleForItemControl = true
+    }
+
+    // [BTN:编辑] 编辑 item
+    const btnEditItemOfTopicMainData = (row:TopicMainData) => {
+      console.log(row)
+      if (new Date(row.beginDate).getTime() - new Date(formatDate()).getTime() >= 0) {
+        state.addFormInfo = {
+          id: row.id,
+          title: '版本明细-编辑',
+          beginDate: row.beginDate,
+          indexVersion: row.indexVersion,
+          indexVersionMethod: row.indexVersionMethod
+        }
+        state.isDialogVisibleForItemControl = true
+      }
     }
 
     // [table] 选框选择
@@ -286,8 +314,6 @@ export default defineComponent({
 
     // [BTN:确认][float]
     const btnItemFloatConfirm = async () => {
-      console.log('state.addFormInfo')
-      console.log(state.addFormInfo)
       if (state.addFormInfo.indexVersion === '') {
         proxy.$errorToast('请输入版本')
         return
@@ -298,15 +324,23 @@ export default defineComponent({
         return
       }
 
-      if (new Date(state.addFormInfo.beginDate).getTime() - new Date(formatDate()).getTime() <= 0) {
+      if ((new Date(state.addFormInfo.beginDate).getTime() - new Date(formatDate()).getTime()) <= 0) {
         proxy.$errorToast('必须选择今天以后的日期')
         return
       }
 
-      await INSPECT_INDEX_VERSION_ADD_API({
-        inspectIndexMaterialId: state.inspectIndexMaterialId,
-        ...state.addFormInfo
-      })
+      if (state.addFormInfo.title === '版本明细-新增') { // 新增
+        await INSPECT_INDEX_VERSION_ADD_API({
+          inspectIndexMaterialId: state.inspectIndexMaterialId,
+          ...state.addFormInfo
+        })
+      } else { // 编辑
+        await INSPECT_INDEX_VERSION_UPDATE_API({
+          inspectIndexMaterialId: state.inspectIndexMaterialId,
+          ...state.addFormInfo
+        })
+      }
+
       proxy.$successToast('操作成功')
       removeFile()
       btnGetMainData() // reload
@@ -317,6 +351,8 @@ export default defineComponent({
     const btnItemFloatClear = () => {
       removeFile()
       state.addFormInfo = {
+        id: '',
+        title: '',
         beginDate: '',
         indexVersion: '',
         indexVersionMethod: ''
@@ -332,6 +368,8 @@ export default defineComponent({
     }
 
     const seeVersion = (row:TopicMainData) => {
+      console.log('row')
+      console.log(row)
       DOWNLOAD_FILE_API({ key: row.indexMethod }).then(res => {
         console.log('下载 obj')
         console.log(res.data.data)
@@ -346,6 +384,7 @@ export default defineComponent({
 
     // 上传图片前
     const httpRequest = (options:any) => {
+      state.fileUploadFinish = false
       state.canUploadFile = false
       UPLOAD_FILE_API({
         name: options.file.name
@@ -388,6 +427,7 @@ export default defineComponent({
     const addfile = (key:string) => {
       console.log('成功！')
       console.log(key)
+      state.fileUploadFinish = true
       state.fileURL = key
       state.addFormInfo.indexVersionMethod = key
       console.log(state.fileList)
@@ -412,11 +452,12 @@ export default defineComponent({
       return [year, month, day].join('-')
     }
 
-    // const useEffect = (() => {
-    //   if (router.asPath !== router.route) {
-    //     // router.query.lang is defined
-    //   }
-    // }, [router])
+    const checkDate = (row:TopicMainData) => {
+      if ((new Date(row.beginDate).getTime() - new Date(formatDate()).getTime()) <= 0) {
+        return false
+      }
+      return true
+    }
 
     const handleSizeChange = (pageSize: number) => { // 每页条数切换
       state.pageSize = pageSize
@@ -454,7 +495,9 @@ export default defineComponent({
       handleDbclick,
       seeVersion,
       handleSizeChange,
-      handleCurrentChange
+      handleCurrentChange,
+      checkDate,
+      btnEditItemOfTopicMainData
     }
   }
 })

@@ -10,7 +10,7 @@
     @treeNodeContextMenu="treeNodeContextMenuHandle"
   >
     <template #context--menu >
-      <ul>
+      <ul class="sub-menu">
         <li @click="handleMultiAsign">分配</li>
       </ul>
     </template>
@@ -169,8 +169,13 @@ export default defineComponent({
     // multiaction to go
     const handleMultiAsign = () => {
       state.whoAsign = 'multi'
-      state.isDialogShow = true
-      apiAsignMaterial()
+
+      if (state.topicMainData.length !== 0) {
+        state.isDialogShow = true
+        apiAsignMaterial()
+      } else {
+        proxy.$infoToast('此物料组下无可分配物料，请选择其它物料组')
+      }
     }
 
     const reset = () => {
@@ -391,5 +396,8 @@ export default defineComponent({
 </script>
 
 <style scoped>
-
+.sub-menu{
+  font-size: 14px;
+  line-height: 28px;
+}
 </style>
