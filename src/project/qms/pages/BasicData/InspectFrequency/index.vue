@@ -6,11 +6,11 @@
         <div>
           <el-button icon="el-icon-search" size="small" @click="btnGetTopicMainData">查询</el-button>
           <el-button icon="el-icon-circle-check" type="primary" size="small" @click="btnAddItemOfTopicMainData">新增</el-button>
-          <el-button icon="el-icon-delete" type="danger" size="small" :disabled="dataTopicMainData.length===0" @click="btnDeleteItemsOfTopicMainData">批量删除</el-button>
+          <el-button icon="el-icon-delete" type="danger" size="small"  @click="btnDeleteItemsOfTopicMainData">批量删除</el-button>
         </div>
       </div>
     </template>
-    <el-table ref="multipleTable" :cell-style="{'text-align':'center'}" :data="dataTopicMainData.slice((currentPage - 1) * pageSize, currentPage * pageSize)" tooltip-effect="dark" style="width: 100%" @selection-change="handleSelectionChange">
+    <el-table border ref="multipleTable" :cell-style="{'text-align':'center'}" :data="dataTopicMainData" tooltip-effect="dark" style="width: 100%" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" />
       <el-table-column type="index" label="序号" :index="(index) => index + 1 + (currentPage - 1) * pageSize" width="50" />
       <el-table-column label="检测频率名称" prop="frequencyName" />
@@ -34,8 +34,8 @@
         :total="totalItems"
         :page-sizes="[10, 20, 50]"
         layout="total, sizes, prev, pager, next, jumper"
-        @size-change="val => pageSize = val"
-        @current-change="val => currentPage = val"
+        @size-change="handleSizeChange"
+        @current-change="handleCurrentChange"
       />
     </div>
   </mds-card>
@@ -49,7 +49,7 @@
             </div>
         </el-form-item>
         <el-form-item label="执行次数：" prop="frequency" :label-width="cssForformLabelWidth">
-          <el-input v-model="addAndEditItemForm.frequency" class="inputWidth" placeholder="请输入" autocomplete="off"></el-input>
+          <el-input v-model.number="addAndEditItemForm.frequency" class="inputWidth" placeholder="请输入" autocomplete="off"></el-input>
         </el-form-item>
         <el-form-item label="执行周期：" prop="paramCode"  :label-width="cssForformLabelWidth">
           <el-select  v-model="addAndEditItemForm.inspectCycleId" placeholder="请选择" style="width:100%" clearable @change="changeInspectCycleId">
@@ -74,7 +74,6 @@ import {
   defineComponent, ref, toRefs, reactive, onMounted, ComponentInternalInstance, getCurrentInstance, nextTick
 } from 'vue'
 import MdsCard from '@/components/package/mds-card/src/mds-card.vue'
-import ElementPlus from 'element-plus'
 import {
   INSPECT_INSPECT_FREQUENCY_QUERY_API, // 查询
   INSPECT_INSPECT_FREQUENCY_INSERT_API, // 新增
@@ -198,13 +197,14 @@ export default defineComponent({
     const btnGetTopicMainData = async () => {
       const res = await INSPECT_INSPECT_FREQUENCY_QUERY_API({
         current: state.currentPage,
-        paramCodeOrName: state.plantList.textSearch,
+        frequencyCodeOrName: state.plantList.textSearch,
         size: state.pageSize
       })
       console.log('检测频率列表数据')
       console.log(res.data.data)
       state.dataTopicMainData = res.data.data.records
-      state.totalItems = res.data.data.records.length
+      // state.totalItems = res.data.data.records.length
+      state.totalItems = res.data.data.total
     }
     // [BTN:编辑] 编辑 item
     const btnEditItemOfTopicMainData = async (row: TopicMainData) => {
@@ -212,9 +212,6 @@ export default defineComponent({
       state.isAddItemDialogShow = true
       await nextTick()
       refAddAndEditItemDialog.value.resetFields()
-      // state.addAndEditItemForm = { ...row }
-      console.log('9999999')
-      console.log(row)
       const temp:string[] = []
       if (row.inspectAdditionalId !== '') {
         row.inspectAdditionalId.split(',').forEach(item => {
@@ -311,6 +308,15 @@ export default defineComponent({
       console.log(val)
     }
 
+    const handleSizeChange = (pageSize: number) => { // 每页条数切换
+      state.pageSize = pageSize
+      btnGetTopicMainData()
+    }
+    const handleCurrentChange = (currentPage: number) => { // 页码切换
+      state.currentPage = currentPage
+      btnGetTopicMainData()
+    }
+
     /**  == 生命周期 ==  **/
     onMounted(async () => {
       // 执行周期下拉
@@ -340,7 +346,9 @@ export default defineComponent({
       changeInspectCycleId,
       changeInspectAdditionalIds,
       dataRule,
-      props
+      props,
+      handleSizeChange,
+      handleCurrentChange
     }
   }
 })

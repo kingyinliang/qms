@@ -6,11 +6,11 @@
         <div>
           <el-button icon="el-icon-search" size="small" @click="btnGetTopicMainData">查询</el-button>
           <el-button icon="el-icon-circle-check" type="primary" size="small" @click="btnAddItemOfTopicMainData">新增</el-button>
-          <el-button icon="el-icon-delete" type="danger" size="small" :disabled="dataTopicMainData.length===0" @click="btnDeleteItemsOfTopicMainData">批量删除</el-button>
+          <el-button icon="el-icon-delete" type="danger" size="small" @click="btnDeleteItemsOfTopicMainData">批量删除</el-button>
         </div>
       </div>
     </template>
-    <el-table ref="multipleTable" :cell-style="{'text-align':'center'}" :data="dataTopicMainData.slice((currentPage - 1) * pageSize, currentPage * pageSize)" tooltip-effect="dark" style="width: 100%" @selection-change="handleSelectionChange">
+    <el-table border ref="multipleTable" :cell-style="{'text-align':'center'}" :data="dataTopicMainData" tooltip-effect="dark" style="width: 100%" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" />
       <el-table-column type="index" label="序号" :index="(index) => index + 1 + (currentPage - 1) * pageSize" width="50" />
       <!-- <el-table-column label="编码" prop="paramName" /> -->
@@ -36,8 +36,8 @@
         :total="totalItems"
         :page-sizes="[10, 20, 50]"
         layout="total, sizes, prev, pager, next, jumper"
-        @size-change="val => pageSize = val"
-        @current-change="val => currentPage = val"
+        @size-change="handleSizeChange"
+        @current-change="handleCurrentChange"
       />
     </div>
   </mds-card>
@@ -168,7 +168,8 @@ export default defineComponent({
       console.log('过程参数列表数据')
       console.log(res.data.data)
       state.dataTopicMainData = res.data.data.records
-      state.totalItems = res.data.data.records.length
+      // state.totalItems = res.data.data.records.length
+      state.totalItems = res.data.data.total
     }
     // [BTN:编辑] 编辑 item
     const btnEditItemOfTopicMainData = async (row: TopicMainData) => {
@@ -240,6 +241,14 @@ export default defineComponent({
       })
     }
 
+    const handleSizeChange = (pageSize: number) => { // 每页条数切换
+      state.pageSize = pageSize
+      btnGetTopicMainData()
+    }
+    const handleCurrentChange = (currentPage: number) => { // 页码切换
+      state.currentPage = currentPage
+      btnGetTopicMainData()
+    }
     /**  == 生命周期 ==  **/
     onMounted(async () => {
       btnGetTopicMainData()
@@ -255,7 +264,9 @@ export default defineComponent({
       btnGetTopicMainData,
       handleSelectionChange,
       dataRule,
-      props
+      props,
+      handleSizeChange,
+      handleCurrentChange
     }
   }
 })
