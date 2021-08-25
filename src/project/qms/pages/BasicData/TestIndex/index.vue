@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-07-30 11:24:46
  * @LastEditors: Telliex
- * @LastEditTime: 2021-08-25 10:24:25
+ * @LastEditTime: 2021-08-25 19:18:43
 -->
 <template>
   <mds-card class="test_method" title="检验指标标准" :pack-up="false" style="margin-bottom: 0; background: #fff;">
@@ -23,15 +23,15 @@
         </div>
       </div>
     </template>
-    <el-table border ref="multipleTable"  :cell-style="{'text-align':'center'}" :data="topicMainData" tooltip-effect="dark" style="width: 100%" @selection-change="actHandleSelectionChange">
+    <el-table border ref="multipleTable"  :cell-style="{'text-align':'center'}" :data="topicMainData" tooltip-effect="dark" style="width: 100%" @selection-change="actHandleSelectionChange" max-height="400">
       <el-table-column type="selection" width="55" />
       <el-table-column type="index" label="序号" :index="(index) => index + 1 + (currentPage - 1) * pageSize" width="50" />
       <el-table-column label="检验类别\物料" min-width="200" prop="inspectMaterialTypeName" show-overflow-tooltip />
       <el-table-column label="指标代码" width="160" prop="indexCode" show-overflow-tooltip />
-      <el-table-column label="指标名称" width="160" prop="indexName" show-overflow-tooltip />
+      <el-table-column label="指标名称" min-width="160" prop="indexName" show-overflow-tooltip />
       <el-table-column label="单位" width="100" prop="indexUnit" show-overflow-tooltip />
-      <el-table-column label="方法" width="200" prop="indexMethod" show-overflow-tooltip />
-      <el-table-column label="指标类" width="160" prop="indexType" show-overflow-tooltip />
+      <el-table-column label="方法"  min-width="200" prop="indexMethod" show-overflow-tooltip />
+      <!-- <el-table-column label="指标类" width="160" prop="indexType" show-overflow-tooltip /> -->
       <el-table-column label="指标类描述" width="160" prop="indexTypeName" show-overflow-tooltip />
       <el-table-column label="操作" width="200" fixed="right">
         <template #default="scope" >
@@ -65,7 +65,7 @@
           <el-option v-for="(opt, optIndex) in inspectMaterialOptions" :key="optIndex" :label="opt.inspectMaterialTypeName" :value="opt.id" />
         </el-select>
       </el-form-item>
-      <el-form-item label="指标代码" :label-width="'120px'" class="star">
+      <el-form-item label="指标" :label-width="'120px'" class="star">
         <template v-if="singleItemform.title==='新增指标'">
           <!-- {{singleItemform.inspectIndexName}} -->
           <div v-if="singleItemform.title='新增指标'" class="item-imput" @click="actAddIndexId">
@@ -87,7 +87,7 @@
         </template>
         <template v-if="singleItemform.title==='编辑指标'">
           <el-select v-if="singleItemform.title='编辑指标'" v-model="singleItemform.inspectIndexId" placeholder="请选择" style="width:100%" @change="selectInspectIndexChange" filterable clearable>
-            <el-option v-for="(opt, optIndex) in inspectIndexOptions" :key="optIndex" :label="opt.indexName" :value="opt.id" />
+            <el-option v-for="(opt, optIndex) in inspectIndexOptions" :key="optIndex" :label="opt.indexName+' '+opt.indexUnit+' '+opt.indexMethod" :value="opt.id" />
           </el-select>
         </template>
       </el-form-item>
@@ -298,8 +298,6 @@ export default defineComponent({
 
     // [BTN:编辑] 编辑 item
     const btnEditItemData = async (val:TopicMainData) => {
-      console.log('item info')
-      console.log(val)
       state.isDialogVisibleForItemControl = true
       apiGetInspectMaterialOptions()
       state.singleItemform = {
@@ -568,7 +566,7 @@ export default defineComponent({
 <style scoped >
   .star >>> .el-form-item__label:before {
     content: "*";
-    color: var(--el-color-danger);
+    color: #ff0000;
     margin-right: 4px;
 }
 </style>
