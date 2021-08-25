@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-07-08 11:25:52
  * @LastEditors: Telliex
- * @LastEditTime: 2021-07-23 14:36:28
+ * @LastEditTime: 2021-08-25 11:34:07
 -->
 <template>
     <dialogDevice :dialogVisible="dialogVisible" :title="title" @on-confirm="onConfirm" @on-close="onClose">
@@ -143,6 +143,7 @@ export default defineComponent({
       newValue => {
         if (newValue.length !== 0) {
           materialInspectionTree.value.setCheckedKeys(newValue)
+          state.inspectCategoryList = newValue
         }
       },
       { immediate: true }

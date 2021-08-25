@@ -3,23 +3,24 @@
  * @Anthor: Telliex
  * @Date: 2021-07-30 11:24:46
  * @LastEditors: Telliex
- * @LastEditTime: 2021-08-10 11:34:36
+ * @LastEditTime: 2021-08-25 16:47:35
 -->
 <template>
-  <mds-card class="test_method" title="标准值明细" :pack-up="false" style="margin-bottom: 0; background: #fff;">
-    <template #titleBtn>
-        <div style="float: right;display: flex; margin-bottom:10px;">
-          <el-button v-if="!controlBtnCanDo" type="primary" icon="el-icon-edit" size="small" class="role__btn" @click="btnEditItemData">编辑</el-button>
-          <el-button v-if="controlBtnCanDo" icon="el-icon-circle-plus-outline" type="primary" size="small" @click="btnAddItemData">新增</el-button>
-          <el-button v-if="controlBtnCanDo" icon="el-icon-circle-check" type="primary" size="small" @click="btnSaveItemData">保存</el-button>
-          <el-button v-if="controlBtnCanDo" icon="el-icon-circle-close" type="primary" size="small" @click="btnLeaveItemData">取消</el-button>
+  <div style="padding-top:10px">
+        <div style="display: flex; margin-bottom:10px;justify-content: space-between;">
+          <h3> <em class="title-icon" />标准值明细 </h3>
+          <div>
+            <el-button v-if="!controlBtnCanDo" type="primary" icon="el-icon-edit" size="small" class="role__btn" @click="btnEditItemData" :disabled="targetId===''">编辑</el-button>
+            <el-button v-if="controlBtnCanDo" icon="el-icon-circle-plus-outline" type="primary" size="small" @click="btnAddItemData">新增</el-button>
+            <el-button v-if="controlBtnCanDo" icon="el-icon-circle-check" type="primary" size="small" @click="btnSaveItemData">保存</el-button>
+            <el-button v-if="controlBtnCanDo" icon="el-icon-circle-close" type="primary" size="small" @click="btnLeaveItemData">取消</el-button>
+          </div>
         </div>
-    </template>
-    <el-table ref="multipleTable"  :cell-style="{'text-align':'center'}" :data="topicMainData"  tooltip-effect="dark" style="width: 100%">
+    <el-table border ref="multipleTable"  :cell-style="{'text-align':'center'}" :data="topicMainData"  tooltip-effect="dark" style="width: 100%" :header-cell-style="headerMerge" max-height="300">
       <el-table-column type="index" label="序号" width="50" />
       <el-table-column label="标定标准值" min-width="200" show-overflow-tooltip>
         <template #default="scope">
-            <el-input v-model.number="scope.row.indexStandard" size="small" type="number" placeholder="请输入" :disabled="!isRedact" />
+            <el-input v-model.number="scope.row.indexStandard" size="small" placeholder="请输入" :disabled="!isRedact" />
         </template>
       </el-table-column>
       <el-table-column label="标定上限">
@@ -39,7 +40,7 @@
           show-overflow-tooltip
         >
           <template #default="scope">
-              <el-input v-model.number="scope.row.indexUp" size="small" type="number" placeholder="请输入" :disabled="!isRedact||scope.row.upSymbol===''" />
+              <el-input v-model.number="scope.row.indexUp" size="small" placeholder="请输入" :disabled="!isRedact||scope.row.upSymbol===''" />
           </template>
         </el-table-column>
       </el-table-column>
@@ -66,7 +67,7 @@
       </el-table-column>
       <el-table-column label="内控标準值" min-width="200" show-overflow-tooltip>
         <template #default="scope">
-          <el-input v-model.number="scope.row.indexInnerStandard" type="number" size="small" placeholder="请输入" :disabled="!isRedact" />
+          <el-input v-model.number="scope.row.indexInnerStandard" size="small" placeholder="请输入" :disabled="!isRedact" />
         </template>
       </el-table-column>
       <el-table-column label="内控上限">
@@ -86,7 +87,7 @@
           show-overflow-tooltip
         >
           <template #default="scope">
-            <el-input v-model.number="scope.row.indexInnerUp" size="small" type="number" placeholder="请输入" :disabled="!isRedact||scope.row.innerUpSymbol===''" />
+            <el-input v-model.number="scope.row.indexInnerUp" size="small" placeholder="请输入" :disabled="!isRedact||scope.row.innerUpSymbol===''" />
           </template>
          </el-table-column>
       </el-table-column>
@@ -108,7 +109,7 @@
         >
           <template #default="scope">
             <!-- <el-tooltip effect="dark" :disabled="scope.row.indexInnerDown===''" :content="scope.row.indexInnerDown" placement="top-start"> -->
-                <el-input v-model.number="scope.row.indexInnerDown" size="small" type="number" placeholder="请输入" :disabled="!isRedact||scope.row.innerDownSymbol===''" />
+                <el-input v-model.number="scope.row.indexInnerDown" size="small" placeholder="请输入" :disabled="!isRedact||scope.row.innerDownSymbol===''" />
             <!-- </el-tooltip> -->
           </template>
         </el-table-column>
@@ -116,18 +117,7 @@
       <el-table-column label="执行月份" width="160" prop="standardMonth" show-overflow-tooltip>
         <template #default="scope">
             <el-select v-model="scope.row.standardMonthList" size="small" :disabled="!isRedact" multiple clearable>
-                <el-option :label="'1'" :value="'1'" />
-                <el-option :label="'2'" :value="'2'" />
-                <el-option :label="'3'" :value="'3'" />
-                <el-option :label="'4'" :value="'4'" />
-                <el-option :label="'5'" :value="'5'" />
-                <el-option :label="'6'" :value="'6'" />
-                <el-option :label="'7'" :value="'7'" />
-                <el-option :label="'8'" :value="'8'" />
-                <el-option :label="'9'" :value="'9'" />
-                <el-option :label="'10'" :value="'10'" />
-                <el-option :label="'11'" :value="'11'" />
-                <el-option :label="'12'" :value="'12'" />
+                <el-option v-for="item in ['1','2','3','4','5','6','7','8','9','10','11','12']" :key="item" :label="item" :value="item" />
             </el-select>
           </template>
       </el-table-column>
@@ -139,12 +129,12 @@
         </template>
       </el-table-column>
     </el-table>
-  </mds-card>
+  </div>
 </template>
 
 <script lang="ts">
 import { defineComponent, reactive, onMounted, toRefs, ComponentInternalInstance, getCurrentInstance, watch } from 'vue'
-import MdsCard from '@/components/package/mds-card/src/mds-card.vue'
+// import MdsCard from '@/components/package/mds-card/src/mds-card.vue'
 import {
   INSPECT_INDEX_VERSION_VALUE_QUERY_API, // 基础数据-[指标版本管理][标准值明细]- 查询
   INSPECT_INDEX_VERSION_VALUE_DELETE_API, // 基础数据-[指标版本管理][标准值明细]- 删除
@@ -188,7 +178,7 @@ interface State {
 export default defineComponent({
   name: 'TestIndexValueDetailIndex',
   components: {
-    MdsCard
+
   },
   emits: ['update:dialogVisible'],
   props: {
@@ -310,18 +300,20 @@ export default defineComponent({
         }
       })
 
-      if (ruleSubmit() && !(tempAdd.length === 0 && tempEdit.length === 0)) {
-        await INSPECT_INDEX_VERSION_VALUE_MODIFY_API(
-          {
-            insertList: tempAdd,
-            updateList: tempEdit
-          }
-        )
-        // reload
-        btnGetMainData()
+      if (ruleSubmit()) {
+        if (!(tempAdd.length === 0 && tempEdit.length === 0)) {
+          await INSPECT_INDEX_VERSION_VALUE_MODIFY_API(
+            {
+              insertList: tempAdd,
+              updateList: tempEdit
+            }
+          )
+          // reload
+          btnGetMainData()
+        }
+        // 关闭标准值明细 card
+        closeStandardValueInfoArea()
       }
-      // 关闭标准值明细 card
-      closeStandardValueInfoArea()
     }
 
     // [BTN:取消]
@@ -360,6 +352,13 @@ export default defineComponent({
       return true
     }
 
+    // 表格 header 合并
+    const headerMerge = (result:any) => {
+      if (result.rowIndex === 1) {
+        return { display: 'none' }
+      }
+    }
+
     watch(
       target,
       newValue => {
@@ -385,7 +384,8 @@ export default defineComponent({
       btnAddItemData,
       btnEditItemData,
       ruleSubmit,
-      closeStandardValueInfoArea
+      closeStandardValueInfoArea,
+      headerMerge
     }
   }
 })
@@ -394,5 +394,21 @@ export default defineComponent({
 <style lang="scss" scoped>
 .test_method{
   height: calc(100vh - 117px);
+}
+
+h3 {
+  line-height: 32px;
+  font-size: 14px !important;
+  font-weight: 600;
+  position: relative;
+  &::before{
+    display: inline-block;
+    margin-right:5px;
+    content: "";
+    width: 4px;
+    height: 12px;
+    border-radius: 2px;
+    background-color: #487bff;
+  }
 }
 </style>

@@ -186,6 +186,11 @@ export function INSPECT_INDEX_VERSION_ADD_API (params = {}):Promise<AxiosRespons
   return Http.post('/inspectIndexVersion/insertInspectIndexVersion', params, { baseURL: (process.env.VUE_APP_QMS_API as string) + (process.env.VUE_APP_API_V as string) })
 }
 
+// 基础数据-[指标版本管理]- 编辑
+export function INSPECT_INDEX_VERSION_UPDATE_API (params = {}):Promise<AxiosResponse> {
+  return Http.post('/inspectIndexVersion/updateInspectIndexVersion', params, { baseURL: (process.env.VUE_APP_QMS_API as string) + (process.env.VUE_APP_API_V as string) })
+}
+
 // 基础数据-[指标版本管理]- 删除
 export function INSPECT_INDEX_VERSION_DELETE_API (params = {}):Promise<AxiosResponse> {
   return Http.post('/inspectIndexVersion/deleteInspectIndexVersion', params, { baseURL: (process.env.VUE_APP_QMS_API as string) + (process.env.VUE_APP_API_V as string) })
