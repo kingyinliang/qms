@@ -8,7 +8,7 @@
           </el-form-item>
         </el-form>
         <div style="float: right;">
-          <el-button icon="el-icon-search" size="small" @click="() => {queryForm.current = 1; query()}">查询</el-button>
+          <el-button icon="el-icon-search" size="small" @click="() => { queryForm.current = 1; query() }">查询</el-button>
           <el-button icon="el-icon-circle-check" type="primary" @click="addData" size="small">新增</el-button>
           <el-button icon="el-icon-delete" type="danger" size="small" @click="selectDelete">批量删除</el-button>
         </div>
@@ -16,7 +16,7 @@
     </template>
     <el-table ref="multipleTable" border :cell-style="{'text-align':'center'}" :data="tableData" tooltip-effect="dark" style="width: 100%" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" />
-      <el-table-column type="index" label="序号" width="50" />
+      <el-table-column type="index" :index="(index) => index + 1 + (queryForm.current - 1) * queryForm.size" label="序号" width="50" />
       <el-table-column label="生产车间" prop="deptName" />
       <el-table-column label="检验点" prop="siteName" />
       <el-table-column label="建立部门" prop="createDept" />
@@ -37,15 +37,15 @@
         :total="queryForm.total"
         :page-sizes="[10, 20, 50]"
         layout="total, sizes, prev, pager, next, jumper"
-        @size-change="val => {queryForm.size = val;query}"
-        @current-change="val => {queryForm.current = val; query}"
+        @size-change="val => {queryForm.size = val; query()}"
+        @current-change="val => {queryForm.current = val; query()}"
       />
     </el-row>
   </mds-card>
   <el-dialog v-model="addOrUpdateDialog" title="检验点维护" width="30%">
     <el-form ref="addOrUpdateRef" :model="addOrUpdateForm" :rules="addOrUpdateFormRule" label-width="120px">
       <el-form-item label="生产车间：" prop="deptId">
-        <el-select v-model="addOrUpdateForm.deptId" class="inputWidth" placeholder="请选择" @change="val => addOrUpdateForm.deptName = org.find(it => it.id === val).deptName">
+        <el-select v-model="addOrUpdateForm.deptId" filterable class="inputWidth" placeholder="请选择" @change="val => addOrUpdateForm.deptName = org.find(it => it.id === val).deptName">
           <el-option v-for="item in org" :key="item.id" :label="item.deptName" :value="item.id" />
         </el-select>
       </el-form-item>
@@ -102,7 +102,7 @@ const addOrUpdateFormRule = {
 }
 
 export default defineComponent({
-  name: 'index',
+  name: 'InspectionPoint',
   setup () {
     const ctx = getCurrentInstance() as ComponentInternalInstance
     const proxy = ctx.proxy as any

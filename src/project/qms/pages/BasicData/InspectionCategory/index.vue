@@ -111,7 +111,7 @@
     </tree-page>
     <el-dialog v-model="addLevelBtn" title="检验类别-新增" width="50%">
       <el-form ref="addRef" :model="addLevelInfo" :rules="rules">
-        <el-form-item label="类别编码：" prop="inspectTypeCode" :label-width="formLabelWidth">
+        <el-form-item label="类别编码：" :label-width="formLabelWidth">
           <el-input v-model="addLevelInfo.inspectTypeCode" class="inputWidth" :disabled="true" autocomplete="off"></el-input>
         </el-form-item>
         <el-form-item label="类别名称：" prop="inspectTypeName" :label-width="formLabelWidth">
@@ -330,7 +330,7 @@ export default defineComponent({
       await nextTick()
       addRef.value.resetFields()
       clearForm()
-      generateCode(temp.inspectTypeCode.slice(0, temp.inspectTypeCode.length - 2))
+      // generateCode(temp.inspectTypeCode.slice(0, temp.inspectTypeCode.length - 2))
       // addLevelInfo.assistFlag = temp.assistFlag
       if (!level.value) {
         addLevelInfo.assistFlag = 'N'
@@ -341,6 +341,7 @@ export default defineComponent({
       addLevelInfo.parentName = temp.parentName
     }
     const clearForm = () => {
+      addLevelInfo.inspectTypeCode = ''
       addLevelInfo.relation = []
       addLevelInfo.sample = []
       addLevelInfo.cooperate = []
@@ -362,7 +363,7 @@ export default defineComponent({
       await nextTick()
       addRef.value.resetFields()
       clearForm()
-      generateCode(temp.inspectTypeCode)
+      // generateCode(temp.inspectTypeCode)
       addLevelInfo.assistFlag = temp.assistFlag
       addLevelInfo.parentId = temp.id
       addLevelInfo.parentName = temp.inspectTypeName
