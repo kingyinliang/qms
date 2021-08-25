@@ -192,7 +192,7 @@ export default defineComponent({
       state.totalItems = 0
       // if (!val.notShowContextMenuOnThisNode) {
       if (val.isFinalNode === true) {
-        state.currentCategoryId = ''
+        state.currentCategoryId = val.markParentId
         state.isShowSearchBar = false
         apiMaterialDetail(val.markParentId, val.itemId, state.currentPage, state.pageSize)
       } else {
@@ -257,8 +257,9 @@ export default defineComponent({
       }).then(async () => {
         proxy.$successToast('操作成功')
         // reload page
-        await getMaterialCatagoryData()
-        state.topicMainData = []
+        // await getMaterialCatagoryData()
+        apiMaterialDetail(state.currentCategoryId, state.globleSearchString, state.currentPage, state.pageSize)
+        // state.topicMainData = []
       })
     }
 
