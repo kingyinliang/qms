@@ -3,19 +3,20 @@
  * @Anthor: Telliex
  * @Date: 2021-07-30 11:24:46
  * @LastEditors: Telliex
- * @LastEditTime: 2021-08-20 19:46:44
+ * @LastEditTime: 2021-08-25 09:42:25
 -->
 <template>
   <mds-card class="test_method" :title="title" :pack-up="false" style="margin-bottom: 0; background: #fff;">
     <template #titleBtn>
         <div style="float: right;display: flex; margin-bottom:10px;">
-          <el-button v-if="!controlBtnCanDo" type="primary" icon="el-icon-edit" size="small" class="role__btn" @click="btnEditItemData">编辑</el-button>
+          <el-button v-if="!controlBtnCanDo" type="primary" icon="el-icon-edit" size="small" class="role__btn" @click="btnEditItemData" :disabled="!canEdit" >编辑</el-button>
           <el-button v-if="controlBtnCanDo" icon="el-icon-circle-plus-outline" type="primary" size="small" @click="btnAddItemData">新增</el-button>
           <el-button v-if="controlBtnCanDo" icon="el-icon-circle-check" type="primary" size="small" @click="btnSaveItemData">保存</el-button>
           <el-button v-if="controlBtnCanDo" icon="el-icon-circle-close" type="primary" size="small" @click="btnLeaveItemData">取消</el-button>
         </div>
     </template>
     <el-table
+      border
       :header-cell-style="headerMerge"
       ref="multipleTable"
       :cell-style="{'text-align':'center'}"
@@ -33,7 +34,9 @@
                 v-for="item in paramSubscriptOptions"
                 :key="item.paramSubscriptCode"
                 :label="item.paramSubscriptCode+' '+item.paramSubscript"
-                :value="item.paramSubscriptCode+' '+item.paramSubscript">
+                :value="item.paramSubscriptCode+' '+item.paramSubscript"
+                :disabled="item.disabled"
+                >
                 <span >{{ item.paramSubscriptCode }}<sub>{{item.paramSubscript}}</sub></span>
               </el-option>
             </el-select>
@@ -100,12 +103,13 @@
           <span class="required">参数类型</span>
         </template>
         <template #default="scope">
-          <el-select v-model="scope.row.paramType" size="small" :disabled="!isRedact" clearable>
+          <el-select v-model="scope.row.paramType" size="small" :disabled="!isRedact||scope.row.paramType === 'RESULT'" clearable @change="val=>changeParamTypeOptions(val,scope.row)" @focus="val=>focusParamTypeOptions(val,scope.row)">
             <el-option
               v-for="item in paramTypeOptions"
               :key="item.dictCode"
               :label="item.dictValue"
-              :value="item.dictCode">
+              :value="item.dictCode"
+              >
             </el-option>
           </el-select>
         </template>
@@ -139,19 +143,27 @@
         <template #default="scope">
           <el-select v-model="scope.row.parentParamSubscriptCodeWithParentParamSubscript" size="small" :disabled="!isRedact" clearable @change="val=>changeParentParamSubscriptOptions(val,scope.row)">
                 <el-option
-                  v-for="item in parentParamSubscriptOptions.filter(item=>item.paramCode!==scope.row.paramCode)"
+                  v-for="item in parentParamSubscriptOptions"
                   :key="item.paramSubscriptCode"
                   :label="item.paramSubscriptCode+' '+item.paramSubscript"
-                  :value="item.paramSubscriptCode+' '+item.paramSubscript">
+                  :value="item.paramSubscriptCode+' '+item.paramSubscript"
+                  :disabled="item.disabled">
                 <span >{{ item.paramSubscriptCode }}<sub>{{item.paramSubscript}}</sub></span>
               </el-option>
+              <!-- <el-option
+                  v-for="item in wropper(parentParamSubscriptOptions,scope.row)"
+                  :key="item.paramSubscriptCode"
+                  :label="item.paramSubscriptCode+' '+item.paramSubscript"
+                  :value="item.paramSubscriptCode+' '+item.paramSubscript"
+                  :disabled="item.disabled">
+                <span >{{ item.paramSubscriptCode }}<sub>{{item.paramSubscript}}</sub></span>
+              </el-option> -->
             </el-select>
         </template>
       </el-table-column>
       <el-table-column label="公式" min-width="80" show-overflow-tooltip>
         <template #default="scope">
-          <span>{{scope.row.formula}}</span>
-          <el-button size="mini"  icon="el-icon-aim" v-if="scope.row.paramType === 'HIDDEN' || scope.row.paramType === 'RESULT'" @click="editFormula(scope.row)"></el-button>
+          <el-button size="mini"  icon="el-icon-aim" v-if="scope.row.paramType === 'HIDDEN' || scope.row.paramType === 'RESULT'" @click="editFormula(scope.row)" :disabled="!isRedact"></el-button>
         </template>
       </el-table-column>
 
@@ -167,45 +179,23 @@
   <dialogDevice :dialogVisible="isResultFormulaDialogShow" :title="'结果公式'" @on-confirm="onResultFormulaConfirm" @on-close="onResultFormulaClose">
       <template #default>
         <h3>公式维护</h3>
-        <!-- <el-input
-          type="textarea"
-          :autosize="{ minRows: 2, maxRows: 4}"
-          placeholder="="
-          v-model="textFormula"
-          readonly=''
-          style="font-size:20px">
-        </el-input> -->
+
         <div class="formulaText">
-          <!-- ={{textFormula}} -->
-          =<p v-html="htmlFormula.join('')"></p>
+          =<span v-html="htmlFormula.join('')"></span>
         </div>
         <h3>变量</h3>
           <template v-for="item in topicMainData" :key="item.paramSubscriptCode">
             <el-button-group>
-              <el-button  v-if="item.paramSubscriptCode!==''" type="primary" @click="spellFormula(textFormulaList,item.paramSubscriptCode+'['+item.paramSubscript+']')">{{ item.paramSubscriptCode }}<sub>{{item.paramSubscript}}</sub></el-button>
+              <el-button  v-if="item.paramSubscriptCode!==''" type="primary" @click="spellFormula('variable',item.paramSubscriptCode,item.paramSubscript)">{{ item.paramSubscriptCode }}<sub>{{item.paramSubscript}}</sub></el-button>
             </el-button-group>
           </template>
            <el-button-group>
-              <el-button type="primary" @click="spellFormula(textFormulaList,'1')">1</el-button>
-              <el-button type="primary" @click="spellFormula(textFormulaList,'2')">2</el-button>
-              <el-button type="primary" @click="spellFormula(textFormulaList,'3')">3</el-button>
-              <el-button type="primary" @click="spellFormula(textFormulaList,'4')">4</el-button>
-              <el-button type="primary" @click="spellFormula(textFormulaList,'5')">5</el-button>
-              <el-button type="primary" @click="spellFormula(textFormulaList,'6')">6</el-button>
-              <el-button type="primary" @click="spellFormula(textFormulaList,'7')">7</el-button>
-              <el-button type="primary" @click="spellFormula(textFormulaList,'8')">8</el-button>
-              <el-button type="primary" @click="spellFormula(textFormulaList,'9')">9</el-button>
-              <el-button type="primary" @click="spellFormula(textFormulaList,'0')">0</el-button>
-            </el-button-group>
+              <el-button type="primary" v-for="item in ['1','2','3','4','5','6','7','8','9','0']" :key="item" @click="spellFormula('value',item)">{{item}}</el-button>
+          </el-button-group>
         <h3>公式</h3>
         <el-button-group>
-        <el-button type="primary" @click="spellFormula(textFormulaList,'+')">+</el-button>
-        <el-button type="primary" @click="spellFormula(textFormulaList,'-')">-</el-button>
-        <el-button type="primary" @click="spellFormula(textFormulaList,'*')">*</el-button>
-        <el-button type="primary" @click="spellFormula(textFormulaList,'/')">/</el-button>
-        <el-button type="primary" @click="spellFormula(textFormulaList,'(')">(</el-button>
-        <el-button type="primary" @click="spellFormula(textFormulaList,')')">)</el-button>
-        <el-button type="primary" @click="spellFormula(textFormulaList,'Del')">Del</el-button>
+          <el-button type="primary" v-for="item in ['+','-','*','/','(',')']" :key="item" @click="spellFormula('operator',item)">{{item}}</el-button>
+          <el-button type="primary" @click="spellFormula('del','Del')">Del</el-button>
         </el-button-group>
       </template>
     </dialogDevice>
@@ -220,12 +210,12 @@
           <el-table-column type="index" label="序号" width="50" />
           <el-table-column label="关联参数" min-width="110" show-overflow-tooltip>
             <template #default="scope">
-              <el-input v-model.number="scope.row.associate" type="number" size="small"  placeholder="请输入" :disabled="scope.row.id!==''" />
+              <el-input v-model.number="scope.row.associate" type="number" size="small"  placeholder="请输入" />
             </template>
           </el-table-column>
           <el-table-column label="结果值" min-width="110" show-overflow-tooltip>
             <template #default="scope">
-              <el-input v-model.number="scope.row.value" type="number" size="small" placeholder="请输入" :disabled="scope.row.id!==''" />
+              <el-input v-model.number="scope.row.value" type="number" size="small" placeholder="请输入" />
             </template>
           </el-table-column>
         </el-table>
@@ -243,9 +233,10 @@ import {
   INSPECT_INDEX_PROCESS_PARAMETER_MODIFY_API, // 基础数据-[指标版本管理][标准值明细]- 编辑
   INSPECT_INDEX_PROCESS_PARAMETER_DROPDOWN_API, // 基础数据-[指标版本管理][标准值明细]- 下拉
   DICTIONARY_QUERY_API,
-  INSPECT_INDEX_RELATED_PARAMETER_QUERY_API,
-  INSPECT_INDEX_RELATED_PARAMETER_DELETE_API,
-  INSPECT_INDEX_RELATED_PARAMETER_INSERT_API
+  INSPECT_INDEX_RELATED_PARAMETER_QUERY_API, // 基础数据-[指标检验方法明细][关联参数]- 查詢
+  INSPECT_INDEX_RELATED_PARAMETER_DELETE_API, // 基础数据-[指标检验方法明细][关联参数]- 删除
+  // INSPECT_INDEX_RELATED_PARAMETER_INSERT_API, // 基础数据-[指标检验方法明细][关联参数]- 新增
+  INSPECT_INDEX_RELATED_PARAMETER_UPDATE_API // 基础数据-[指标检验方法明细][关联参数]- 编辑
 
 } from '@/api/api'
 import _ from 'lodash'
@@ -277,6 +268,9 @@ interface ImportData {
   parentParamSubscriptCodeWithParentParamSubscript?: string
   upSymbol?: string
   delFlag?: number
+  formulaDisplay?: string
+  unHtmlFormula?: string
+
 }
 
 interface ImportObj { // 参数组 API
@@ -292,7 +286,6 @@ interface ImportObj { // 参数组 API
 
 interface Props{
   importObj: ImportObj
-  // importData: ImportData[]
   title:string
 }
 
@@ -302,15 +295,17 @@ interface ParamSubscriptOptions{
   paramName: string;
   paramSubscript: string;
   paramSubscriptCode: string;
+  disabled?: boolean
 }
 
 interface DictionaryReturnOptions {
-    dictCode: string;
-    dictId: string;
-    dictOrder: string;
-    dictValue: string;
-    factoryName: string;
-    id: string;
+    dictCode: string
+    dictId: string
+    dictOrder: string
+    dictValue: string
+    factoryName: string
+    id: string
+    disabled?: boolean
 }
 
 interface RelatedeFormulaData{
@@ -321,6 +316,7 @@ interface RelatedeFormulaData{
 }
 
 interface State {
+  canEdit: boolean
   isResultFormulaDialogShow: boolean
   isRelatedeFormulaDialogShow: boolean
   isDialogShow: boolean
@@ -337,11 +333,12 @@ interface State {
   paramStandardTypeOptions: DictionaryReturnOptions[]
   paramTypeOptions: DictionaryReturnOptions[]
   defaultTypeOptions: DictionaryReturnOptions[]
-  textFormula: string
-  textFormulaList: string[]
   relatedeFormulaData: RelatedeFormulaData[]
   selectedListOfRelatedeFormulaData: RelatedeFormulaData[]
   htmlFormula: string[]
+  unHtmlFormula: string[]
+  tempItemObj: ImportData
+  tempValueForOptions: string
 }
 
 export default defineComponent({
@@ -375,6 +372,7 @@ export default defineComponent({
     const parent = { ...context }
     const { importObj } = toRefs(props as Props)
     const state = reactive<State>({
+      canEdit: false, // 过程参数是否可编辑
       isResultFormulaDialogShow: false,
       isRelatedeFormulaDialogShow: false,
       isDialogShow: false,
@@ -390,12 +388,13 @@ export default defineComponent({
       paramStandardTypeOptions: [],
       paramTypeOptions: [],
       defaultTypeOptions: [],
-      textFormula: '',
-      textFormulaList: [],
       relatedeFormulaData: [],
       selectedListOfRelatedeFormulaData: [],
       inspectParameterIdOfRelatedParameter: '',
-      htmlFormula: []
+      htmlFormula: [], // to formulaDisplay
+      unHtmlFormula: [], // to formula
+      tempItemObj: {}, // item 全局变量
+      tempValueForOptions: '' // 选单暂存值
     })
 
     // 函数
@@ -405,25 +404,44 @@ export default defineComponent({
       const res = await INSPECT_INDEX_PROCESS_PARAMETER_QUERY_API({
         inspectParameterGroupId: state.targetId
       })
+
       console.log('获取过程参数数据')
       console.log(res.data.data)
+      state.parentParamSubscriptOptions = []
+
       res.data.data.forEach((item:ImportData) => {
+        // modify
         item.paramSubscriptCodeWithParamSubscript = item.paramSubscriptCode + ' ' + item.paramSubscript
         item.parentParamSubscriptCodeWithParentParamSubscript = item.parentParamSubscriptCode + ' ' + item.parentParamSubscript
-        // item.isRedact = false
-      })
+        item.formulaDisplay = escape2Html(item.formulaDisplay as string)
 
-      state.topicMainData = res.data.data
+        // 参数类型选单重置
+        if (item.paramType === 'RESULT') {
+          state.paramTypeOptions.forEach(item => {
+            if (item.dictCode === 'RESULT') {
+              item.disabled = true
+            } else {
+              item.disabled = false
+            }
+          })
+        } else {
+          state.paramTypeOptions.forEach(item => {
+            item.disabled = false
+          })
+        }
 
-      // 关联参数附值
-      state.parentParamSubscriptOptions = []
-      res.data.data.forEach((item:ImportData) => {
+        // 关联参数附值
         state.paramSubscriptOptions.forEach((subItem:ParamSubscriptOptions) => {
+          subItem.disabled = false
           if (item.paramCode === subItem.paramCode) {
             state.parentParamSubscriptOptions.push(subItem)
           }
         })
       })
+
+      // 过程参数编辑锁解开
+      state.canEdit = true
+      state.topicMainData = res.data.data
 
       state.orgTopicMainData = JSON.parse(JSON.stringify(res.data.data))
     }
@@ -457,6 +475,7 @@ export default defineComponent({
           // val.delFlag = 1
           state.topicMainData.splice(mainIndex, 1)
           proxy.$successToast('操作成功')
+          await btnGetMainData()
         } else {
           const res = await INSPECT_INDEX_PROCESS_PARAMETER_DELETE_API({ id: val.id })
           if (res.data.code === 200) {
@@ -491,33 +510,62 @@ export default defineComponent({
         parentInspectParameterId: '',
         parentParamSubscript: '', // 关联参数
         parentParamSubscriptCode: '', // 关联参数下标
-        parentParamSubscriptCodeWithParentParamSubscript: ''
+        parentParamSubscriptCodeWithParentParamSubscript: '',
+        formulaDisplay: '',
+        unHtmlFormula: ''
         // isRedact: true
       })
     }
 
-    // [BTN:保存]
+    // [BTN:保存][过程参数]
     const btnSaveItemData = async () => {
       const tempAdd:ImportData[] = []
       const tempEdit:ImportData[] = []
       state.topicMainData.forEach((item, index) => {
-        if (item.id === '') {
-          // item.standardMonth = item.standardMonthList.join(',')
-
+        if (item.id === '') { // 新增
           item.parentInspectParameterId = item.id
           delete item.paramSubscriptCodeWithParamSubscript
           delete item.parentParamSubscriptCodeWithParentParamSubscript
+
+          const container:string[] = []
+          if (item.formulaDisplay !== undefined && item.formulaDisplay !== '') {
+            item.formulaDisplay.split(',').forEach(subItem => {
+              const temp = subItem.indexOf('<sub>')
+              if (temp >= 0) {
+                container.push(`${subItem.substring(31, temp)}[${subItem.substring(temp + 5, subItem.indexOf('</sub>'))}]`)
+              }
+            })
+          }
+
+          item.formula = Array.from(new Set(container)).join(',')
+          item.formulaDisplay = html2Escape(item.formulaDisplay as string)
           tempAdd.push(item)
-        } else {
+        } else { // 编辑
           if (!_.isEqual(state.orgTopicMainData[index], item)) {
             item.parentInspectParameterId = item.id
             delete item.paramSubscriptCodeWithParamSubscript
             delete item.parentParamSubscriptCodeWithParentParamSubscript
+
+            const container:string[] = []
+            if (item.formulaDisplay !== undefined && item.formulaDisplay !== '') {
+              item.formulaDisplay.split(',').forEach(subItem => {
+                const temp = subItem.indexOf('<sub>')
+                if (temp >= 0) {
+                  container.push(`${subItem.substring(31, temp)}[${subItem.substring(temp + 5, subItem.indexOf('</sub>'))}]`)
+                }
+              })
+            }
+
+            item.formula = Array.from(new Set(container)).join(',')
+            item.formulaDisplay = html2Escape(item.formulaDisplay as string)
             tempEdit.push(item)
           }
         }
       })
+
+      console.log('tempAdd')
       console.log(tempAdd)
+      console.log('tempEdit')
       console.log(tempEdit)
 
       if (ruleSubmit() && !(tempAdd.length === 0 && tempEdit.length === 0)) {
@@ -535,22 +583,22 @@ export default defineComponent({
       closeStandardValueInfoArea()
     }
 
-    // [BTN:取消]
+    // [BTN:取消][过程参数]
     const btnLeaveItemData = () => {
       closeStandardValueInfoArea()
     }
 
-    // 关闭标准值明细 card
+    // [BTN:编辑][过程参数]
+    const btnEditItemData = () => {
+      state.controlBtnCanDo = true
+      state.isRedact = true
+    }
+
+    // [ATC] 关闭标准值明细 card
     const closeStandardValueInfoArea = () => {
       state.controlBtnCanDo = false
       state.isRedact = false
       parent.emit('update:dialogVisible', false)
-    }
-
-    // [BTN:编辑]
-    const btnEditItemData = () => {
-      state.controlBtnCanDo = true
-      state.isRedact = true
     }
 
     // const rowDelFlagOfTable = ({ row }) => {
@@ -560,7 +608,7 @@ export default defineComponent({
     //   return ''
     // }
 
-    // 验证标准值明细 data
+    // [Rule] 验证标准值明细 data
     const ruleSubmit = () => {
       for (const item of state.topicMainData) {
         if (item.paramSubscriptCode === '' || item.paramUnit === '' || item.paramType === '' || (item.paramDataType === 'FLOAT_POINT' && item.paramStandard === null)) {
@@ -571,56 +619,74 @@ export default defineComponent({
       return true
     }
 
+    // [BTN:确认][结果公式]
     const onResultFormulaConfirm = () => {
       // parent.emit('update:dialogVisible', false)
       // parent.emit('inspectCategoryList', state.inspectCategoryList)
+      state.tempItemObj.formulaDisplay = state.htmlFormula.join(',')
+      state.isResultFormulaDialogShow = false
     }
+    // [BTN:确认][关联公式]
     const onRelatedFormulaConfirm = () => {
-      INSPECT_INDEX_RELATED_PARAMETER_INSERT_API(
-        state.relatedeFormulaData.filter(item => item.id === '')
-      ).then(() => {
+      INSPECT_INDEX_RELATED_PARAMETER_UPDATE_API({
+        insertList: state.relatedeFormulaData.filter(item => item.id === ''),
+        updateList: state.relatedeFormulaData.filter(item => item.id !== '')
+      }).then(() => {
         onRelatedFormulaClose()
       })
+
+      // INSPECT_INDEX_RELATED_PARAMETER_INSERT_API(
+      //   state.relatedeFormulaData.filter(item => item.id === '')
+      // ).then(() => {
+      //   onRelatedFormulaClose()
+      // })
     }
 
+    // [BTN:关闭][结果公式]
     const onResultFormulaClose = () => {
+      state.htmlFormula = []
+      state.unHtmlFormula = []
       state.isResultFormulaDialogShow = false
       // filterText.value = ''
       // state.inspectCategoryList = []
       // parent.emit('update:dialogVisible', false)
       // parent.emit('reset')
     }
+
+    // [BTN:关闭][关联公式]
     const onRelatedFormulaClose = () => {
       state.isRelatedeFormulaDialogShow = false
     }
 
-    const spellFormula = (orgTextList:string[], addText:string) => {
-      console.log('addText')
-      console.log(addText)
-      // let str = ''
-      if (addText === 'Del') {
-        // state.textFormula = orgText.substr(0, orgText.length - 1)
-        if (orgTextList.length !== 0) {
-          orgTextList.pop()
-          state.htmlFormula.pop()
+    // [ACT][结果公式]
+    const spellFormula = (type:string, addText1:string, addText2 = '') => {
+      if (type === 'del') { // 删除字元操作
+        if (state.htmlFormula.length !== 0) {
+          const target = state.htmlFormula.pop() as string
+          if (target.indexOf('<sub>') >= 0) {
+            state.unHtmlFormula.pop()
+          }
         }
-      } else {
-        orgTextList.push(addText)
-        if (addText.indexOf('[') !== -1) {
-          state.htmlFormula.push(`<span style="padding:2px 4px;">${addText.split('[')[0]}<sub>${addText.split('[')[1].replace(']', '')}</sub></span>`)
-        } else {
-          state.htmlFormula.push(`<span style="padding:2px 4px;">${addText}</span>`)
-        }
-
-        // str = str + addText
-        // state.textFormula = str
+      } else if (type === 'value') { // 数字
+        state.htmlFormula.push(`<span style="padding:2px 4px;">${addText1}</span>`)
+      } else if (type === 'operator') { // 运算子
+        state.htmlFormula.push(`<span style="padding:2px 4px;">${addText1}</span>`)
+      } else if (type === 'variable') { // 变数
+        state.htmlFormula.push(`<span style="padding:2px 4px;">${addText1}<sub>${addText2}</sub></span>`)
+        state.unHtmlFormula.push(`${addText1}[${addText2}]`)
       }
-      state.textFormula = orgTextList.join('')
-      console.log(state.htmlFormula)
     }
 
+    // 开启结果公式后动作
     const editFormula = (row:ImportData) => {
+      state.tempItemObj = row
+      console.log('state.tempItemObj')
+      console.log(state.tempItemObj)
       if (row.paramType === 'HIDDEN') {
+        if (row.id === '') {
+          proxy.$infoToast('请先保存数据')
+          return
+        }
         state.isRelatedeFormulaDialogShow = true
         state.inspectParameterIdOfRelatedParameter = row.id as string
         getRelatedParameter(state.inspectParameterIdOfRelatedParameter)
@@ -628,15 +694,53 @@ export default defineComponent({
       } else if (row.paramType === 'RESULT') {
         state.isResultFormulaDialogShow = true
         onRelatedFormulaClose()
+
+        state.htmlFormula = !state.tempItemObj.formulaDisplay ? [] : state.tempItemObj.formulaDisplay.split(',')
+        state.unHtmlFormula = []
+        state.htmlFormula.forEach(item => {
+          const temp = item.indexOf('<sub>')
+          if (temp >= 0) {
+            state.unHtmlFormula.push(`${item.substring(31, temp)}[${item.substring(temp + 5, item.indexOf('</sub>'))}]`)
+          }
+        })
+        // state.unHtmlFormula=
       }
     }
 
+    // [SELECT:过程参数][Event:change]
     const changeParamSubscriptOptions = (val:string, row:ImportData) => {
       console.log(val)
       const temp:string[] = val.split(' ')
       row.paramSubscriptCode = temp[0]
       row.paramSubscript = temp[1]
       row.paramCode = temp[0] + '[' + temp[1] + ']'
+
+      // state.topicMainData.forEach(item => {
+      //   state.paramSubscriptOptions.forEach(subItem => {
+      //     if (item.paramCode === subItem.paramCode) {
+      //       console.log('get it')
+      //       subItem.disabled = true
+      //     } else {
+      //       console.log('not get it')
+      //       subItem.disabled = false
+      //     }
+      //   })
+      // })
+    }
+
+    // [SELECT:过程参数][Event:focus]
+    const focusParamSubscriptOptions = (val:any, row:ImportData) => {
+      state.topicMainData.forEach(item => {
+        state.paramSubscriptOptions.forEach(subItem => {
+          if (item.paramCode === subItem.paramCode) {
+            console.log('get it')
+            subItem.disabled = true
+          } else {
+            console.log('not get it')
+            subItem.disabled = false
+          }
+        })
+      })
     }
 
     const changeParentParamSubscriptOptions = (val:string, row:ImportData) => {
@@ -665,6 +769,7 @@ export default defineComponent({
       }).then((res) => {
         console.log('关联参数')
         console.log(res.data.data)
+
         state.relatedeFormulaData = res.data.data
       })
     }
@@ -713,6 +818,106 @@ export default defineComponent({
       if (result.rowIndex === 1) {
         return { display: 'none' }
       }
+    }
+
+    /* 用正则表达式实现html编码（转义）（另一种写法） */
+    const html2Escape = (str:string) => {
+      const arrEntiries:any = { '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;' }
+      return str.replace(/[<>&"]/g, (c:string) => { return arrEntiries[c] as string })
+      // let temp = ''
+      // if (str.length === 0) return ''
+      // temp = str.replace(/&/g, '&amp;')
+    }
+
+    /* 用正则表达式实现html解码（反转义）（另一种写法） */
+    const escape2Html = (str:string) => {
+      const arrEntiries:any = { '&lt;': '<', '&gt;': '>', '&nbsp': ' ', '&amp;': '&', '&quot;': '"' }
+      return str.replace(/(&lt|&gt|&nbsp|&amp|&quot);/ig, (c:string) => { return arrEntiries[c] as string })
+      //
+    }
+
+    // [SELECT:参数类型][Event:change]
+    const changeParamTypeOptions = (val:string, row:ImportData) => {
+      // 离开 HIDDEN 时的判断
+      if (row.id !== '' && state.tempValueForOptions === 'HIDDEN') {
+        proxy.$confirm('确认是否切换参数类型？关联公式将会清空', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(async () => {
+          const target = await INSPECT_INDEX_RELATED_PARAMETER_QUERY_API({
+            inspectParameterId: row.id
+          })
+          const temp:string[] = []
+          target.data.data.forEach((item:RelatedeFormulaData) => {
+            temp.push(item.id)
+          })
+          if (temp.length !== 0) {
+            await INSPECT_INDEX_RELATED_PARAMETER_DELETE_API(temp)
+          }
+        }).catch(() => {
+          row.paramType = state.tempValueForOptions
+        })
+      }
+
+      // 选择 RESULT 时行动
+      if (val === 'RESULT') {
+        state.paramTypeOptions.forEach(item => {
+          if (item.dictCode === 'RESULT') {
+            item.disabled = true
+          } else {
+            item.disabled = false
+          }
+        })
+      }
+    }
+
+    // [SELECT:参数类型][Event:focus]
+    const focusParamTypeOptions = (val:any, row:ImportData) => {
+      state.tempValueForOptions = row.paramType as string
+    }
+
+    const checkParentParamSubscriptOptions = (list:ParamSubscriptOptions[]) => {
+      const temp:ParamSubscriptOptions[] = []
+      console.log('list')
+      console.log(list)
+      console.log('state.topicMainData')
+      console.log(state.topicMainData)
+      // list.forEach((item:ParamSubscriptOptions) => {
+      //   state.topicMainData.forEach((subItem:ImportData) => {
+      //     if (item.paramCode !== subItem.paramCode) {
+      //       console.log('wawawawawawawa')
+      //       temp.push(item)
+      //     }
+      //   })
+      // })
+      // console.log('temp')
+      // console.log(temp)
+      return temp
+    }
+
+    const wropper = (target:ParamSubscriptOptions[], row:ImportData) => {
+      console.log('ssssssssssss')
+      // return target.filter(item => item.paramCode !== row.paramCode)
+      // 新 item 没有下拉
+      if (row.id === '') {
+        return []
+      }
+
+      target.forEach(item => {
+        if (item.paramCode === row.paramCode) {
+          item.disabled = true
+        } else {
+          item.disabled = false
+        }
+
+        // state.topicMainData.forEach(subItem => {
+        //   if (subItem.parentParamSubscriptCode + '[' + subItem.parentParamSubscript + ']' === item.paramCode) {
+        //     item.disabled = true
+        //   }
+        // })
+      })
+      return target
     }
 
     onMounted(async () => {
@@ -773,7 +978,12 @@ export default defineComponent({
       addItemOfrelatedeFormula,
       handleSelectionChange,
       deleteItemOfrelatedeFormula,
-      headerMerge
+      headerMerge,
+      checkParentParamSubscriptOptions,
+      changeParamTypeOptions,
+      focusParamTypeOptions,
+      focusParamSubscriptOptions,
+      wropper
     }
   }
 })

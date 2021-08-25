@@ -31,7 +31,7 @@
             <div>
               <el-button icon="el-icon-search" size="small" @click="btnGetMainData" :disabled="Object.keys(globalMainObj).length===0">查询</el-button>
               <el-button icon="el-icon-circle-plus-outline" type="primary" size="small" @click="handleParameterItem()" :disabled="Object.keys(globalMainObj).length===0">新增</el-button>
-              <el-button icon="el-icon-delete" type="danger" size="small" @click="btnDeleteOfParameterGroupDataDelete" :disabled="Object.keys(globalMainObj).length===0">批量删除</el-button>
+              <el-button icon="el-icon-delete" type="danger" size="small" @click="btnDeleteOfParameterGroupDataDelete" :disabled="multipleSelection.length===0">批量删除</el-button>
             </div>
         </div>
         <el-table :data="topicMainData"
@@ -69,7 +69,8 @@
           >
         </el-pagination>
       </div>
-    <process-parameter v-model:dialogVisible="isImportTableDataShow" ref="refFunctionDialog" :title="'过程参数'" :importObj="importObj"  @reset="reset" />
+      <process-parameter v-if="isImportTableDataShow" ref="refFunctionDialog" :title="'过程参数'" :importObj="importObj"  @reset="reset" />
+    <!-- <process-parameter v-model:dialogVisible="isImportTableDataShow" ref="refFunctionDialog" :title="'过程参数'" :importObj="importObj"  @reset="reset" /> -->
 
     </template>
   </tree-page>
@@ -143,7 +144,11 @@
               </div>
         </el-form-item>
         <el-form-item v-if="globalMainObj.inspectProperty === 'MICROBE'" label="参数明细：" prop="parameterDetailsList" :label-width="'140px'">
-          <el-input v-for="(item,index) in addParameterGroupform.parameterDetailsList" :key="index" v-model="addParameterGroupform.parameterDetailsList[index]"  autocomplete="off" placeholder="请输入" style="margin-bottom:5px; margin-right:5px; width:80% !important"></el-input><el-button @click="addParameterDetailsItem">+</el-button>
+          <div v-for="(item,index) in addParameterGroupform.parameterDetailsList" :key="index">
+            <el-input  v-model="addParameterGroupform.parameterDetailsList[index]"  autocomplete="off" placeholder="请输入" style="margin-bottom:5px; margin-right:5px; width:80% !important"></el-input>
+            <el-button icon="el-icon-delete"  size="small" @click="() => addParameterGroupform.parameterDetailsList.splice(index, 1)" />
+            <el-button icon="el-icon-plus" v-if="addParameterGroupform.parameterDetailsList.length-1 === index" @click="addParameterDetailsItem" size="small"></el-button>
+          </div>
         </el-form-item>
       </el-form>
     </template>
@@ -164,7 +169,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, toRefs, reactive, onMounted, getCurrentInstance, ComponentInternalInstance, watch } from 'vue'
+import { defineComponent, ref, toRefs, reactive, onMounted, getCurrentInstance, ComponentInternalInstance, watch, onDeactivated } from 'vue'
 import {
   INSPECT_INDEX_METHOD_QUERY_API,
   INSPECT_INDEX_METHOD_DROPDOWN_QUERY_API,
@@ -355,6 +360,7 @@ export default defineComponent({
           state.currentPage = res.data.data.current
           state.pageSize = res.data.data.size
           state.totalItems = res.data.data.total
+          state.isImportTableDataShow = false
         })
       } else {
         state.globalMainObj = {}
