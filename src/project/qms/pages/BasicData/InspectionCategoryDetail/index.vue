@@ -30,7 +30,7 @@
         border tooltip-effect="dark">
         <el-table-column type="index" :index="index => index + 1 + (Number(currentPage) - 1) * (Number(pageSize))" label="序号"  width="55" fixed align="center" size="small" />
         <el-table-column label="物料编码" prop="inspectMaterialCode" :show-overflow-tooltip="true" min-width="100" />
-        <el-table-column label="物料名称" prop="inspectMaterialName" :show-overflow-tooltip="true" min-width="100" />
+        <el-table-column label="物料描述" prop="inspectMaterialName" :show-overflow-tooltip="true" min-width="100" />
         <el-table-column label="归属上级" prop="inspectGroupName" :show-overflow-tooltip="true" min-width="100" />
         <el-table-column label="品项" prop="itemName" :show-overflow-tooltip="true" min-width="100" />
         <el-table-column fixed="right" label="操作" header-align="left" align="left" width="100">
