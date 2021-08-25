@@ -18,12 +18,13 @@
             size="small"
             clearable
             style="margin-bottom:10px; width:200px; height:35px;"
-            @change="apiMaterialDetail(currentCategoryId,materialDetailText,1,10)">
+            @keyup.enter="apiMaterialDetail(currentCategoryId,materialDetailText,1,10)">
           </el-input>
           <el-button icon="el-icon-search" size="mini" style="height:32px; margin-left:5px"  @click="apiMaterialDetail(currentCategoryId,materialDetailText,1,10)">查询</el-button>
         </template>
       </div>
-     <el-table :data="topicMainData"
+     <el-table
+        :data="topicMainData"
         style="width: 100%"
         max-height="500"
         border tooltip-effect="dark">

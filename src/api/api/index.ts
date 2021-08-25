@@ -295,6 +295,11 @@ export function INSPECT_INDEX_RELATED_PARAMETER_INSERT_API (params = {}):Promise
   return Http.post('/inspectAssociate/insertInspectAssociate', params, { baseURL: (process.env.VUE_APP_QMS_API as string) + (process.env.VUE_APP_API_V as string) })
 }
 
+// 基础数据-[指标检验方法明细][关联参数]- 编辑
+export function INSPECT_INDEX_RELATED_PARAMETER_UPDATE_API (params = {}):Promise<AxiosResponse> {
+  return Http.post('/inspectAssociate/modifyInspectAssociate', params, { baseURL: (process.env.VUE_APP_QMS_API as string) + (process.env.VUE_APP_API_V as string) })
+}
+
 // 基础数据-[指标检验方法明细][关联参数]- 删除
 export function INSPECT_INDEX_RELATED_PARAMETER_DELETE_API (params = {}):Promise<AxiosResponse> {
   return Http.post('/inspectAssociate/deleteInspectAssociate', params, { baseURL: (process.env.VUE_APP_QMS_API as string) + (process.env.VUE_APP_API_V as string) })

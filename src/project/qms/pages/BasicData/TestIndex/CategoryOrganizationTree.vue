@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-07-08 11:25:52
  * @LastEditors: Telliex
- * @LastEditTime: 2021-08-06 17:58:25
+ * @LastEditTime: 2021-08-24 18:49:36
 -->
 <template>
     <dialogDevice :dialogVisible="dialogVisible" :title="title" @on-confirm="onConfirm" @on-close="onClose" width="70%">
@@ -184,6 +184,13 @@ export default defineComponent({
         if (Object.keys(state.mainData).length === 0) {
           // state.mainData = {}
           state.materialTreeData.forEach((item:TreeData) => {
+            if (item.inspectProperty === 'PHYSICAL') {
+              item.inspectPropertyName = '理化类'
+            }
+            if (item.inspectProperty === 'MICROBE') {
+              item.inspectPropertyName = '微生物类'
+            }
+
             state.mainData[item.inspectProperty] = JSON.parse(JSON.stringify(item.inspectGroups))
           })
         }
@@ -215,21 +222,21 @@ export default defineComponent({
   padding: 10px 20px;
   li{
     margin-bottom: 5px;
+    color: black;
   }
 }
 
 .property-title{
-  height: var(--el-transfer-panel-header-height);
-  line-height: var(--el-transfer-panel-header-height);
-  background: var(--el-transfer-panel-header-background-color);
+  height: 40px;
+  line-height: 40px;
+  background: #f5f7fa;
   margin: 0;
   padding-left: 15px;
-  border-bottom: 1px solid var(--el-transfer-border-color);
+  border-bottom: 1px solid #ebeef5;
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
-  color: var(--el-color-black);
   margin-bottom: 10px;
-  color: #303133;
+  color: #000000;
   font-size: 16px;
 }
 </style>
