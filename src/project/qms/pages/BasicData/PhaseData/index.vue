@@ -14,7 +14,7 @@
       </div>
     </template>
     <el-table border :cell-style="{'text-align':'center'}" :data="tableData" tooltip-effect="dark" style="width: 100%">
-      <el-table-column type="index" label="序号" width="50" />
+      <el-table-column type="index" :index="(index) => index + 1 + (queryForm.current - 1) * queryForm.size" label="序号" width="50" />
       <el-table-column label="品项编码" prop="itemCode" />
       <el-table-column label="品项名称" prop="itemName" />
       <el-table-column label="创建人员" prop="creator" />
@@ -42,14 +42,14 @@
         :total="queryForm.total"
         :page-sizes="[10, 20, 50]"
         layout="total, sizes, prev, pager, next, jumper"
-        @size-change="val => {queryForm.size = val;query}"
-        @current-change="val => {queryForm.current = val; query}"
+        @size-change="val => {queryForm.size = val;query()}"
+        @current-change="val => {queryForm.current = val; query()}"
       />
     </el-row>
   </mds-card>
   <el-dialog v-model="addOrUpdateDialog" title="品项主数据" width="30%">
     <el-form ref="addOrUpdateRef" :model="addOrUpdateForm" :rules="addOrUpdateFormRule" label-width="120px">
-      <el-form-item label="品项编码：" prop="itemCode">
+      <el-form-item label="品项编码：">
         <el-input v-model="addOrUpdateForm.itemCode" disabled autocomplete="off"></el-input>
       </el-form-item>
       <el-form-item label="品项名称：" prop="itemName">
@@ -108,13 +108,6 @@ interface PhaseData {
   inspectMaterialCodeLists: string[];
 }
 const addOrUpdateFormRule = {
-  itemCode: [
-    {
-      required: true,
-      message: '编码自动带出',
-      trigger: 'blur'
-    }
-  ],
   itemName: [
     {
       required: true,
@@ -171,23 +164,12 @@ export default defineComponent({
     }
     // 新增
     const addData = async () => {
-      let cycleCode = 0
-      if (tableData.value.length) {
-        cycleCode = tableData.value.reduce((previousValue: number, currentValue: PhaseData) => {
-          const currentCode = Number(currentValue.itemCode)
-          return previousValue < currentCode ? currentCode : previousValue
-        }, 0)
-      }
-      cycleCode++
-      let itemCode = ''
-      if (String(cycleCode).length > 3) itemCode = String(cycleCode)
-      itemCode = ('0000' + cycleCode).slice(-4)
       addOrUpdateDialog.value = true
       await nextTick()
       addOrUpdateRef.value.resetFields()
       addOrUpdateForm.value = {
         id: '',
-        itemCode,
+        itemCode: '',
         itemName: '',
         inspectMaterialCodeLists: []
       }

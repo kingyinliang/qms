@@ -16,7 +16,7 @@
     </template>
     <el-table ref="multipleTable" border :cell-style="{'text-align':'center'}" :data="tableData" tooltip-effect="dark" style="width: 100%" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" />
-      <el-table-column type="index" label="序号" width="50" />
+      <el-table-column type="index" label="序号" :index="(index) => index + 1 + (queryForm.current - 1) * queryForm.size" width="50" />
       <el-table-column label="编码" prop="cycleCode" />
       <el-table-column label="时间单位" prop="dateUnit" />
       <el-table-column label="计算单位" prop="calculateUnit" />
@@ -41,14 +41,14 @@
         :total="queryForm.total"
         :page-sizes="[10, 20, 50]"
         layout="total, sizes, prev, pager, next, jumper"
-        @size-change="val => {queryForm.size = val;query}"
-        @current-change="val => {queryForm.current = val; query}"
+        @size-change="val => {queryForm.size = val;query()}"
+        @current-change="val => {queryForm.current = val; query()}"
       />
     </el-row>
   </mds-card>
   <el-dialog v-model="addOrUpdateDialog" title="时间单位" width="30%">
     <el-form ref="addOrUpdateRef" :model="addOrUpdateForm" :rules="addOrUpdateFormRule" label-width="120px">
-      <el-form-item label="编码：" prop="cycleCode">
+      <el-form-item label="编码：">
         <el-input v-model="addOrUpdateForm.cycleCode" :disabled="true" autocomplete="off"></el-input>
       </el-form-item>
       <el-form-item label="时间单位：" prop="dateUnit">
@@ -105,7 +105,7 @@
         </div>
       </el-form-item>
       <el-form-item label="时间长度：" prop="dateDelay">
-        <el-input v-model="addOrUpdateForm.dateDelay" autocomplete="off"></el-input>
+        <el-input v-model="addOrUpdateForm.dateDelay" type="number" autocomplete="off"></el-input>
       </el-form-item>
     </el-form>
     <div class="dialog-footer">
@@ -144,13 +144,6 @@ interface TimeData {
   dateDelay: string;
 }
 const addOrUpdateFormRule = {
-  cycleCode: [
-    {
-      required: true,
-      message: '编码自动带出',
-      trigger: 'blur'
-    }
-  ],
   dateUnit: [
     {
       required: true,
@@ -170,6 +163,15 @@ const addOrUpdateFormRule = {
       required: true,
       message: '请输入开始时间',
       trigger: 'blur'
+    },
+    {
+      trigger: 'blur',
+      validator: (rule: string, value: string[], callback: (ctx?: Error) => void) => {
+        if (!value.length) {
+          return callback(new Error('请输入开始时间'))
+        }
+        return callback()
+      }
     }
   ],
   dateDelay: [
@@ -197,7 +199,15 @@ export default defineComponent({
     const tableData = ref<TimeData[]>([]) // 表格数据
     const multipleSelection = ref<string[]>([]) // 复选数据
     const addOrUpdateDialog = ref(false) // 新增修改弹窗
-    const addOrUpdateForm = ref<TimeData>() // 新增修改表单数据
+    const addOrUpdateForm = ref<TimeData>({
+      id: '',
+      cycleCode: '',
+      dateUnit: '',
+      calculateUnit: '',
+      calculateUnitName: '',
+      calculateStarts: [''],
+      dateDelay: ''
+    }) // 新增修改表单数据
     const calculateUnit = ref<Dict[]>([]) // 下拉
 
     const query = async () => {
@@ -229,20 +239,12 @@ export default defineComponent({
     }
     // 新增
     const addData = async () => {
-      let cycleCode = 0
-      if (tableData.value.length) {
-        cycleCode = tableData.value.reduce((previousValue: number, currentValue: TimeData) => {
-          const currentCode = Number(currentValue.cycleCode.replace(/T/g, ''))
-          return previousValue < currentCode ? currentCode : previousValue
-        }, 0)
-      }
-      cycleCode++
       addOrUpdateDialog.value = true
       await nextTick()
       addOrUpdateRef.value.resetFields()
       addOrUpdateForm.value = {
         id: '',
-        cycleCode: `T${cycleCode < 10 ? '0' + cycleCode : cycleCode}`,
+        cycleCode: '',
         dateUnit: '',
         calculateUnit: '',
         calculateUnitName: '',
@@ -260,6 +262,16 @@ export default defineComponent({
     // 新增修改确认
     const addOrUpdateFormSubmit = () => {
       addOrUpdateRef.value.validate(async (valid: boolean) => {
+        if (!addOrUpdateForm.value.calculateStarts.length) {
+          proxy.$warningToast('请输入开始时间')
+          return
+        }
+        for (const item of addOrUpdateForm.value.calculateStarts) {
+          if (!item) {
+            proxy.$warningToast('请输入开始时间')
+            return
+          }
+        }
         if (valid) {
           const form: any = { ...addOrUpdateForm.value }
           // form.calculateStart = form.calculateStart.join(',')
