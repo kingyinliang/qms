@@ -5,6 +5,7 @@
     :leftTitle="pageLeftColumnTitle"
     :rightTitle="pageRightColumnTitle"
     :treeData="treeData"
+    :nodeKey="'inspectMethodId'"
     :treeProps="{ label: 'inspect',children:'inspectGroups' }"
     @treeNodeClick="val=>{return getMaterialDetail('default',val,'')}"
     @treeNodeContextMenu="treeNodeContextMenuHandle"
@@ -26,6 +27,7 @@
               clearable
               style="margin-bottom:10px; width:200px; height:35px; margin-right:10px"
               :disabled="Object.keys(globalMainObj).length===0"
+              @keyup.enter="btnGetMainData"
               >
             </el-input>
             <div>
@@ -89,8 +91,8 @@
     <!--参数配置-->
     <template v-if="mainDialog.title==='参数配置'">
       <el-form :model="addParameterGroupform">
-        <el-form-item label="编码：" prop="parameterGroupCode" :label-width="'140px'" class="required" >
-          <el-input v-model="addParameterGroupform.parameterGroupCode" class="140px" autocomplete="off" placeholder="请输入"></el-input>
+        <el-form-item label="编码：" prop="parameterGroupCode" :label-width="'140px'" >
+          <el-input v-model="addParameterGroupform.parameterGroupCode" class="140px" autocomplete="off" disabled="true" placeholder="自动带出"></el-input>
         </el-form-item>
         <el-form-item label="过程参数组：" prop="parameterGroupName" :label-width="'140px'" class="required">
           <el-input v-model="addParameterGroupform.parameterGroupName" class="140px" autocomplete="off" placeholder="请输入"></el-input>
@@ -169,7 +171,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, toRefs, reactive, onMounted, getCurrentInstance, ComponentInternalInstance, watch, onDeactivated } from 'vue'
+import { defineComponent, ref, toRefs, reactive, onMounted, getCurrentInstance, ComponentInternalInstance, watch, nextTick } from 'vue'
 import {
   INSPECT_INDEX_METHOD_QUERY_API,
   INSPECT_INDEX_METHOD_DROPDOWN_QUERY_API,
@@ -382,17 +384,15 @@ export default defineComponent({
     const getMainTreeData = () => {
       INSPECT_INDEX_METHOD_QUERY_API({
       }).then((res) => {
-        console.log('Tree-Data org')
-        console.log(res.data.data)
         state.textParameterGroupSearch = ''
         state.treeData = treeDataTranslater(res.data.data)
 
         console.log('state.treeData')
         console.log(state.treeData)
-
-        // 默认 Tree-Data 第一笔
-        // treeModule.value.focusCurrentNodeNumber = '0'
-        treeModule.value.focusCurrentNodeNumber = state.treeData[0].inspectGroups[0].id
+        state.topicMainData = []
+        // 默认 Tree-Data 第一笔 给 id
+        state.treeData[0].inspectGroups[0].inspectMethodId = 'b'
+        treeModule.value.focusCurrentNodeNumber = state.treeData[0].inspectGroups[0].inspectMethodId
       })
     }
 
@@ -400,8 +400,9 @@ export default defineComponent({
     const treeDataTranslater = (data: any[]): any[] => {
       let res: any[] = []
       for (let i = 0; i < data.length; i++) {
-        if (i === 0) {
-          data[i].id = '0'
+        // 数据缺省 id , 前端赋予 id , 避免 tree 高亮问题
+        if (data[i].inspectMethodId === '') {
+          data[i].inspectMethodId = 'a'
         }
         data[i].inspect = data[i].inspect === 'PHYSICAL' ? '理化类' : data[i].inspect === 'MICROBE' ? '微生物类' : '不分类'
         data[i].canEdit = false
@@ -409,6 +410,10 @@ export default defineComponent({
         for (let j = 0; j < data[i].inspectGroups.length; j++) {
           data[i].inspectGroups[j]._level = 2
           data[i].inspectGroups[j].canEdit = true
+          // 数据缺省 id , 前端赋予 id , 避免 tree 高亮问题
+          if (data[i].inspectGroups[j].inspectMethodId === '') {
+            data[i].inspectGroups[j].inspectMethodId = 'a'
+          }
           for (let k = 0; k < data[i].inspectGroups[j].inspectGroups.length; k++) {
             data[i].inspectGroups[j].inspectGroups[k]._level = 3
             data[i].inspectGroups[j].inspectGroups[k].canEdit = true
@@ -524,7 +529,7 @@ export default defineComponent({
 
     // [BTN:确定][参数明细] dialog
     const btnAddItemFloatConfirm = () => {
-      if (state.addParameterGroupform.parameterGroupCode === '' || state.addParameterGroupform.parameterGroupName === '' || state.parameterTreeSelectedString === '') {
+      if (state.addParameterGroupform.parameterGroupName === '' || state.parameterTreeSelectedString === '') {
         proxy.$errorToast('请录入必填栏位')
         return
       }
@@ -750,11 +755,16 @@ export default defineComponent({
       })
     }
 
+    // [db-click]可双点击参数明细 item 进入
     const setProcessParameter = (val:TopicMainData) => {
-      console.log(val)
-      state.importObj = val
-      state.isImportTableDataShow = true
+      if (state.globalMainObj.inspectProperty === 'PHYSICAL') { // 理化类方可双点击进入
+        state.importObj = val
+        state.isImportTableDataShow = true
+      } else {
+        state.isImportTableDataShow = false
+      }
     }
+
     const addParameterDetailsItem = () => {
       state.addParameterGroupform.parameterDetailsList.push('')
     }
@@ -835,4 +845,5 @@ export default defineComponent({
     color: var(--el-color-danger);
     margin-right: 4px;
 }
+
 </style>
