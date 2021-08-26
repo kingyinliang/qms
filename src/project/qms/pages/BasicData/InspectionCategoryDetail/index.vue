@@ -220,6 +220,7 @@ export default defineComponent({
     }
 
     const handleSizeChange = (pageSize: number) => { // 每页条数切换
+      state.currentPage = 1
       state.pageSize = pageSize
       apiMaterialDetail(state.currentCategoryId, state.globleSearchString, state.currentPage, state.pageSize)
     }

@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-07-30 11:24:46
  * @LastEditors: Telliex
- * @LastEditTime: 2021-08-25 16:42:40
+ * @LastEditTime: 2021-08-26 11:33:16
 -->
 <template>
   <mds-card class="test_method" title="版本明细" :pack-up="false" style="margin-bottom: 0; background: #fff;">
@@ -57,7 +57,7 @@
       />
 
     <!--标准值明细-->
-    <index-value-detail v-model:dialogVisible="isDialogShow" v-if="isDialogShow" ref="refIndexValueDetail" :target="versionId" />
+    <index-value-detail v-model:dialogVisible="isDialogShow" v-if="isDialogShow" ref="refIndexValueDetail"   :target="versionObj"/>
 
   </mds-card>
   <!--指标弹窗-->
@@ -88,7 +88,9 @@
             type="date"
             format="YYYY-MM-DD"
             value-format="YYYY-MM-DD"
-            placeholder="请选选择日期">
+            :disabled-date="pickerOptions"
+            placeholder="请选选择日期"
+            >
           </el-date-picker>
         </el-form-item>
       </el-form>
@@ -163,7 +165,7 @@ interface State {
   pageSize: number
   totalItems: number
   selectedListOfTopicMainData: TopicMainData[]
-  versionId: string
+  versionObj: TopicMainData | null
   apiFileURL: string
   fileURL: string
   fileList: FileList[]
@@ -223,7 +225,7 @@ export default defineComponent({
       pageSize: 10,
       totalItems: 0,
       selectedListOfTopicMainData: [],
-      versionId: '',
+      versionObj: null,
       apiFileURL: '',
       fileURL: '',
       fileList: [],
@@ -314,6 +316,8 @@ export default defineComponent({
 
     // [BTN:确认][float]
     const btnItemFloatConfirm = async () => {
+      console.log('state.addFormInfo.beginDate')
+      console.log(state.addFormInfo.beginDate)
       if (state.addFormInfo.indexVersion === '') {
         proxy.$errorToast('请输入版本')
         return
@@ -328,7 +332,7 @@ export default defineComponent({
         proxy.$errorToast('必须选择今天以后的日期')
         return
       }
-
+      state.addFormInfo.beginDate = state.addFormInfo.beginDate.substring(0, 10)
       if (state.addFormInfo.title === '版本明细-新增') { // 新增
         await INSPECT_INDEX_VERSION_ADD_API({
           inspectIndexMaterialId: state.inspectIndexMaterialId,
@@ -363,7 +367,7 @@ export default defineComponent({
     // [Table:Row][dbclick]
     const handleDbclick = (val:TopicMainData) => {
       console.log(val)
-      state.versionId = val.id
+      state.versionObj = val
       state.isDialogShow = true
     }
 
@@ -460,12 +464,18 @@ export default defineComponent({
     }
 
     const handleSizeChange = (pageSize: number) => { // 每页条数切换
+      state.currentPage = 1
       state.pageSize = pageSize
       btnGetMainData()
     }
     const handleCurrentChange = (currentPage: number) => { // 页码切换
       state.currentPage = currentPage
       btnGetMainData()
+    }
+
+    // 时间选取限制
+    const pickerOptions = (time:any) => {
+      return time.getTime() < Date.now()
     }
 
     onMounted(async () => {
@@ -497,7 +507,8 @@ export default defineComponent({
       handleSizeChange,
       handleCurrentChange,
       checkDate,
-      btnEditItemOfTopicMainData
+      btnEditItemOfTopicMainData,
+      pickerOptions
     }
   }
 })

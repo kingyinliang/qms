@@ -3,14 +3,14 @@
  * @Anthor: Telliex
  * @Date: 2021-07-30 11:24:46
  * @LastEditors: Telliex
- * @LastEditTime: 2021-08-25 16:47:35
+ * @LastEditTime: 2021-08-26 12:41:22
 -->
 <template>
   <div style="padding-top:10px">
         <div style="display: flex; margin-bottom:10px;justify-content: space-between;">
           <h3> <em class="title-icon" />标准值明细 </h3>
           <div>
-            <el-button v-if="!controlBtnCanDo" type="primary" icon="el-icon-edit" size="small" class="role__btn" @click="btnEditItemData" :disabled="targetId===''">编辑</el-button>
+            <el-button v-if="!controlBtnCanDo" type="primary" icon="el-icon-edit" size="small" class="role__btn" @click="btnEditItemData" :disabled="targetObj.id===''||(new Date(targetObj.beginDate).getTime() - new Date(formatDate()).getTime()) <= 0">编辑</el-button>
             <el-button v-if="controlBtnCanDo" icon="el-icon-circle-plus-outline" type="primary" size="small" @click="btnAddItemData">新增</el-button>
             <el-button v-if="controlBtnCanDo" icon="el-icon-circle-check" type="primary" size="small" @click="btnSaveItemData">保存</el-button>
             <el-button v-if="controlBtnCanDo" icon="el-icon-circle-close" type="primary" size="small" @click="btnLeaveItemData">取消</el-button>
@@ -145,16 +145,16 @@ import _ from 'lodash'
 
 interface TopicMainData {
   id: string
-  indexStandard: string // 标定-标准值
+  indexStandard: number | null // 标定-标准值
   upSymbol: string // 标定-上限符号
-  indexUp: string // 标定-上限
+  indexUp: number | null // 标定-上限 x
+  indexDown: number | null // 标定-下限 x
+  indexInnerStandard: number | null // 内控-标准值 x
+  indexInnerUp: number | null // 内控-上限 x
+  indexInnerDown: number | null // 内控-下限 x
   downSymbol: string // 标定-下限符号
-  indexDown: string // 标定-下限
-  indexInnerStandard: string // 内控-标准值
   innerUpSymbol: string // 内控-上限符号
-  indexInnerUp: string // 内控-上限
   innerDownSymbol: string // 内控-下限符号
-  indexInnerDown: string // 内控-下限
   standardMonth: string // 执行月份
   standardMonthList: string[] // 执行月份
   delFlag: number,
@@ -162,8 +162,24 @@ interface TopicMainData {
   // isRedact: boolean
 }
 
+interface targetObjData{
+  beginDate: string
+  changeInfo: string
+  currentFlag: string
+  factory: string
+  id: string
+  indexCode: string
+  indexMethod: string
+  indexName: string
+  indexUnit: string
+  indexVersion: string
+  indexVersionMethod: string
+  inspectIndexMaterialId: string
+  inspectMaterialTypeName: string
+}
+
 interface Props{
-  target:string
+  target: targetObjData
 }
 
 interface State {
@@ -171,7 +187,7 @@ interface State {
   controlBtnCanDo: boolean
   topicMainData: TopicMainData[]
   orgTopicMainData: TopicMainData[]
-  targetId: string
+  targetObj: targetObjData
   isRedact: boolean
 }
 
@@ -183,8 +199,10 @@ export default defineComponent({
   emits: ['update:dialogVisible'],
   props: {
     target: {
-      type: String,
-      default: ''
+      type: Object,
+      default: () => {
+        return {}
+      }
     }
   },
   setup (props, context) {
@@ -193,11 +211,25 @@ export default defineComponent({
     const parent = { ...context }
     const { target } = toRefs(props as Props)
     const state = reactive<State>({
-      isDialogShow: false,
+      isDialogShow: true,
       controlBtnCanDo: false,
       topicMainData: [],
       orgTopicMainData: [],
-      targetId: '',
+      targetObj: {
+        beginDate: '',
+        changeInfo: '',
+        currentFlag: '',
+        factory: '',
+        id: '',
+        indexCode: '',
+        indexMethod: '',
+        indexName: '',
+        indexUnit: '',
+        indexVersion: '',
+        indexVersionMethod: '',
+        inspectIndexMaterialId: '',
+        inspectMaterialTypeName: ''
+      },
       isRedact: false
     })
 
@@ -206,7 +238,7 @@ export default defineComponent({
     // [ACTION:load] 获取标准值明细数据
     const btnGetMainData = async () => {
       const res = await INSPECT_INDEX_VERSION_VALUE_QUERY_API({
-        inspectVersionId: state.targetId
+        inspectVersionId: state.targetObj.id
       })
       console.log('获取标准值明细数据')
       console.log(res.data.data)
@@ -266,20 +298,20 @@ export default defineComponent({
     const btnAddItemData = async () => {
       state.topicMainData.push({
         id: '',
-        indexStandard: '',
+        indexStandard: null,
         upSymbol: '',
-        indexUp: '',
+        indexUp: null,
         downSymbol: '',
-        indexDown: '',
-        indexInnerStandard: '',
+        indexDown: null,
+        indexInnerStandard: null,
         innerUpSymbol: '',
-        indexInnerUp: '',
+        indexInnerUp: null,
         innerDownSymbol: '',
-        indexInnerDown: '',
+        indexInnerDown: null,
         standardMonth: '',
         standardMonthList: [],
         delFlag: 0,
-        inspectVersionId: state.targetId
+        inspectVersionId: state.targetObj.id
         // isRedact: true
       })
     }
@@ -325,7 +357,7 @@ export default defineComponent({
     const closeStandardValueInfoArea = () => {
       state.controlBtnCanDo = false
       state.isRedact = false
-      parent.emit('update:dialogVisible', false)
+      parent.emit('update:dialogVisible', true)
     }
 
     // [BTN:编辑]
@@ -342,9 +374,10 @@ export default defineComponent({
     // }
 
     // 验证标准值明细 data
+
     const ruleSubmit = () => {
       for (const item of state.topicMainData) {
-        if (item.indexStandard === '' || item.upSymbol === '' || item.downSymbol === '' || item.indexInnerStandard === '' || item.innerUpSymbol === '' || item.innerDownSymbol === '' || item.standardMonthList.length === 0 || item.indexInnerDown === '' || item.indexInnerUp === '' || item.indexUp === '' || item.indexDown === '') {
+        if (item.indexStandard === null || item.upSymbol === '' || item.downSymbol === '' || item.indexInnerStandard === null || item.innerUpSymbol === '' || item.innerDownSymbol === '' || item.indexInnerDown === null || item.indexInnerUp === null || item.indexUp === null || item.indexDown === null) {
           proxy.$warningToast('请完整录入栏位')
           return false
         }
@@ -359,11 +392,25 @@ export default defineComponent({
       }
     }
 
+    const formatDate = () => {
+      var d = new Date()
+      var month = '' + (d.getMonth() + 1)
+      var day = '' + d.getDate()
+      var year = d.getFullYear()
+
+      if (month.length < 2) { month = '0' + month }
+      if (day.length < 2) { day = '0' + day }
+      return [year, month, day].join('-')
+    }
+
     watch(
       target,
       newValue => {
-        if (newValue !== '') {
-          state.targetId = newValue
+        if (newValue !== null) {
+          console.log('newValue')
+          console.log(newValue)
+          // new Date(row.beginDate).getTime() - new Date(formatDate()).getTime() >= 0
+          state.targetObj = newValue
           btnGetMainData()
         }
       },
@@ -385,7 +432,8 @@ export default defineComponent({
       btnEditItemData,
       ruleSubmit,
       closeStandardValueInfoArea,
-      headerMerge
+      headerMerge,
+      formatDate
     }
   }
 })
