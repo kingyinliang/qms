@@ -62,7 +62,7 @@
       <el-form-item label="开始时间：" prop="calculateStarts">
         <div class="flex" v-for="(item, index) in addOrUpdateForm.calculateStarts" :key="index">
           <el-date-picker
-            v-if="addOrUpdateForm.calculateUnitName==='月'"
+            v-if="addOrUpdateForm.calculateUnit==='月'"
             v-model="addOrUpdateForm.calculateStart[index]"
             class="inputWidth"
             popper-class="noneHeader"

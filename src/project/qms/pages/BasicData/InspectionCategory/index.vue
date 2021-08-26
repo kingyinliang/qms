@@ -305,25 +305,25 @@ export default defineComponent({
       row.parentId === '0' ? level.value = false : level.value = true
     }
     // 生成编码
-    const generateCode = (startCode: string) => {
-      let code = ''
-      let endCode = 0
-      const reg = new RegExp(`^(${startCode})(\\d{2})`)
-      treeDataOrg.forEach((it: TreeData) => {
-        if (reg.test(it.inspectTypeCode)) {
-          if (endCode < Number(RegExp.$2)) {
-            endCode = Number(RegExp.$2)
-          }
-        }
-      })
-      console.log(endCode)
-      if (endCode + 1 < 10) {
-        code = `${startCode}0${endCode + 1}`
-      } else {
-        code = `${startCode}${endCode + 1}`
-      }
-      addLevelInfo.inspectTypeCode = code
-    }
+    // const generateCode = (startCode: string) => {
+    //   let code = ''
+    //   let endCode = 0
+    //   const reg = new RegExp(`^(${startCode})(\\d{2})`)
+    //   treeDataOrg.forEach((it: TreeData) => {
+    //     if (reg.test(it.inspectTypeCode)) {
+    //       if (endCode < Number(RegExp.$2)) {
+    //         endCode = Number(RegExp.$2)
+    //       }
+    //     }
+    //   })
+    //   console.log(endCode)
+    //   if (endCode + 1 < 10) {
+    //     code = `${startCode}0${endCode + 1}`
+    //   } else {
+    //     code = `${startCode}${endCode + 1}`
+    //   }
+    //   addLevelInfo.inspectTypeCode = code
+    // }
     // 新增同级
     const addSameLevel = async () => {
       addLevelBtn.value = true
