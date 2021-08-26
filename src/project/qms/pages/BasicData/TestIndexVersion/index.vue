@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-07-30 11:24:46
  * @LastEditors: Telliex
- * @LastEditTime: 2021-08-26 11:33:16
+ * @LastEditTime: 2021-08-26 14:52:42
 -->
 <template>
   <mds-card class="test_method" title="版本明细" :pack-up="false" style="margin-bottom: 0; background: #fff;">
@@ -251,6 +251,9 @@ export default defineComponent({
       state.currentPage = res.data.data.current
       state.pageSize = res.data.data.size
       state.isDialogShow = true
+
+      // 默认第一条数据
+      handleDbclick(state.topicMainData[0])
     }
 
     // [BTN:新增] 新增 item
@@ -346,9 +349,8 @@ export default defineComponent({
       }
 
       proxy.$successToast('操作成功')
-      removeFile()
       btnGetMainData() // reload
-      state.isDialogVisibleForItemControl = false
+      btnItemFloatClear()
     }
 
     // [BTN:取消][float]

@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-07-30 11:24:46
  * @LastEditors: Telliex
- * @LastEditTime: 2021-08-25 09:42:25
+ * @LastEditTime: 2021-08-26 18:14:34
 -->
 <template>
   <mds-card class="test_method" :title="title" :pack-up="false" style="margin-bottom: 0; background: #fff;">
@@ -141,9 +141,9 @@
       </el-table-column>
          <el-table-column label="关联参数" min-width="110" show-overflow-tooltip>
         <template #default="scope">
-          <el-select v-model="scope.row.parentParamSubscriptCodeWithParentParamSubscript" size="small" :disabled="!isRedact" clearable @change="val=>changeParentParamSubscriptOptions(val,scope.row)">
+          <el-select v-model="scope.row.parentParamSubscriptCodeWithParentParamSubscript" size="small" :disabled="!isRedact || scope.row.id===''" clearable @change="val=>changeParentParamSubscriptOptions(val,scope.row)" @focus="val=>focusParentParamSubscriptOptions(val,scope.row)">
                 <el-option
-                  v-for="item in parentParamSubscriptOptions"
+                  v-for="item in parentParamSubscriptOptions.filter(subItem=>subItem.paramCode!==scope.row.paramCode)"
                   :key="item.paramSubscriptCode"
                   :label="item.paramSubscriptCode+' '+item.paramSubscript"
                   :value="item.paramSubscriptCode+' '+item.paramSubscript"
@@ -407,7 +407,6 @@ export default defineComponent({
 
       console.log('获取过程参数数据')
       console.log(res.data.data)
-      state.parentParamSubscriptOptions = []
 
       res.data.data.forEach((item:ImportData) => {
         // modify
@@ -429,7 +428,10 @@ export default defineComponent({
             item.disabled = false
           })
         }
+      })
 
+      state.parentParamSubscriptOptions = []
+      res.data.data.forEach((item:ImportData) => {
         // 关联参数附值
         state.paramSubscriptOptions.forEach((subItem:ParamSubscriptOptions) => {
           subItem.disabled = false
@@ -442,7 +444,6 @@ export default defineComponent({
       // 过程参数编辑锁解开
       state.canEdit = true
       state.topicMainData = res.data.data
-
       state.orgTopicMainData = JSON.parse(JSON.stringify(res.data.data))
     }
 
@@ -523,7 +524,6 @@ export default defineComponent({
       const tempEdit:ImportData[] = []
       state.topicMainData.forEach((item, index) => {
         if (item.id === '') { // 新增
-          item.parentInspectParameterId = item.id
           delete item.paramSubscriptCodeWithParamSubscript
           delete item.parentParamSubscriptCodeWithParentParamSubscript
 
@@ -542,7 +542,6 @@ export default defineComponent({
           tempAdd.push(item)
         } else { // 编辑
           if (!_.isEqual(state.orgTopicMainData[index], item)) {
-            item.parentInspectParameterId = item.id
             delete item.paramSubscriptCodeWithParamSubscript
             delete item.parentParamSubscriptCodeWithParentParamSubscript
 
@@ -744,10 +743,50 @@ export default defineComponent({
     }
 
     const changeParentParamSubscriptOptions = (val:string, row:ImportData) => {
+      console.log('0000000000')
       console.log(val)
-      const temp:string[] = val.split(' ')
-      row.parentParamSubscriptCode = temp[0]
-      row.parentParamSubscript = temp[1]
+      let temp:string[] = []
+      if (val !== '') {
+        temp = val.split(' ')
+        row.parentParamSubscriptCode = temp[0]
+        row.parentParamSubscript = temp[1]
+        console.log(temp[0] + '[' + temp[1] + ']')
+
+        console.log(state.topicMainData)
+        state.topicMainData.forEach(item => {
+          console.log('2222222222222')
+          console.log(item.id)
+          if (item.paramCode === temp[0] + '[' + temp[1] + ']') {
+            row.parentInspectParameterId = item.id
+          }
+        })
+      } else {
+        row.parentParamSubscriptCode = ''
+        row.parentParamSubscript = ''
+        row.parentInspectParameterId = ''
+      }
+    }
+
+    const focusParentParamSubscriptOptions = (val:string, row:ImportData) => {
+      console.log(val)
+      console.log(row)
+      // if (row.id === '') {
+      //   return []
+      // }
+
+      // target.forEach(item => {
+      //   if (item.paramCode === row.paramCode) {
+      //     item.disabled = true
+      //   } else {
+      //     item.disabled = false
+      //   }
+
+      //   // state.topicMainData.forEach(subItem => {
+      //   //   if (subItem.parentParamSubscriptCode + '[' + subItem.parentParamSubscript + ']' === item.paramCode) {
+      //   //     item.disabled = true
+      //   //   }
+      //   // })
+      // })
     }
 
     watch(
@@ -897,7 +936,6 @@ export default defineComponent({
     }
 
     const wropper = (target:ParamSubscriptOptions[], row:ImportData) => {
-      console.log('ssssssssssss')
       // return target.filter(item => item.paramCode !== row.paramCode)
       // 新 item 没有下拉
       if (row.id === '') {
@@ -983,6 +1021,7 @@ export default defineComponent({
       changeParamTypeOptions,
       focusParamTypeOptions,
       focusParamSubscriptOptions,
+      focusParentParamSubscriptOptions,
       wropper
     }
   }
