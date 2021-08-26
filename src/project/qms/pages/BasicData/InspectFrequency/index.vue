@@ -51,12 +51,12 @@
         <el-form-item label="执行次数：" prop="frequency" :label-width="cssForformLabelWidth">
           <el-input v-model.number="addAndEditItemForm.frequency" class="inputWidth" placeholder="请输入" autocomplete="off"></el-input>
         </el-form-item>
-        <el-form-item label="执行周期：" prop="paramCode"  :label-width="cssForformLabelWidth">
+        <el-form-item label="执行周期：" prop="inspectCycleId"  :label-width="cssForformLabelWidth">
           <el-select  v-model="addAndEditItemForm.inspectCycleId" placeholder="请选择" style="width:100%" clearable @change="changeInspectCycleId">
             <el-option v-for="(opt, optIndex) in dateUnitOptions" :key="optIndex" :label="opt.dateUnit" :value="opt.id" />
           </el-select>
         </el-form-item>
-        <el-form-item label="频次附加项：" prop="paramCode"  :label-width="cssForformLabelWidth">
+        <el-form-item label="频次附加项：" prop="inspectAdditionalIds"  :label-width="cssForformLabelWidth">
           <el-select  v-model="addAndEditItemForm.inspectAdditionalIds" multiple placeholder="请选择" style="width:100%"  filterable clearable @change="changeInspectAdditionalIds">
             <el-option v-for="(opt, optIndex) in inspectAdditionalIdsOptions" :key="optIndex" :label="opt.additionalName" :value="opt.id" />
           </el-select>
@@ -226,7 +226,7 @@ export default defineComponent({
         inspectAdditionalIds: row.inspectAdditionalId === '' ? [] : row.inspectAdditionalId.split(','),
         inspectAdditionalNames: temp,
         inspectCycleId: row.inspectCycleId,
-        dateUnit: state.dateUnitOptions.filter(item => item.id === row.inspectCycleId)[0].dateUnit
+        dateUnit: row.dateUnit
       }
     }
     // [Table] 复选选择
@@ -279,9 +279,20 @@ export default defineComponent({
     }
     // [弹窗][BTN:确定]
     const btnAddItemToConfirm = () => {
+      if (state.addAndEditItemForm.inspectAdditionalIds.length === 0 && state.addAndEditItemForm.inspectCycleId === '') {
+        proxy.$errorToast('请选择执行周期或输入频次附加项')
+        return
+      }
+
       refAddAndEditItemDialog.value.validate(async (valid: boolean) => {
         if (valid) {
-          state.addAndEditItemForm.frequencyName = `${state.addAndEditItemForm.frequency} 次 / ${state.addAndEditItemForm.dateUnit} / ${state.addAndEditItemForm.inspectAdditionalNames.join(',')}`
+          let tempStr = `${state.addAndEditItemForm.frequency} 次 `
+
+          tempStr += state.addAndEditItemForm.dateUnit !== '' ? '/ ' + state.addAndEditItemForm.dateUnit : ''
+          tempStr += state.addAndEditItemForm.inspectAdditionalNames.length !== 0 ? '/ ' + state.addAndEditItemForm.inspectAdditionalNames.join(',') : ''
+          // state.addAndEditItemForm.frequencyName = `${state.addAndEditItemForm.frequency} 次 / ${state.addAndEditItemForm.dateUnit} / ${state.addAndEditItemForm.inspectAdditionalNames.join(',')}`
+
+          state.addAndEditItemForm.frequencyName = tempStr
           if (state.addAndEditItemForm.id) {
             await INSPECT_INSPECT_FREQUENCY_UPDATE_API(state.addAndEditItemForm)
           } else {
@@ -295,8 +306,7 @@ export default defineComponent({
     }
 
     const changeInspectCycleId = (val:string) => {
-      state.addAndEditItemForm.dateUnit = state.dateUnitOptions.filter(item => item.id === val)[0].dateUnit
-      console.log(val)
+      state.addAndEditItemForm.dateUnit = val !== '' ? state.dateUnitOptions.filter(item => item.id === val)[0].dateUnit : ''
     }
     const changeInspectAdditionalIds = (val:string[]) => {
       const temp:string[] = []
@@ -304,11 +314,10 @@ export default defineComponent({
         temp.push(state.inspectAdditionalIdsOptions.filter(subItem => subItem.id === item)[0].additionalName)
       })
       state.addAndEditItemForm.inspectAdditionalNames = temp
-      // state.addAndEditItemForm.dateUnit = state.dateUnitOptions.filter(item => item.id === val)[0].dateUnit
-      console.log(val)
     }
 
     const handleSizeChange = (pageSize: number) => { // 每页条数切换
+      state.currentPage = 1
       state.pageSize = pageSize
       btnGetTopicMainData()
     }

@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-07-30 11:24:46
  * @LastEditors: Telliex
- * @LastEditTime: 2021-08-25 19:18:43
+ * @LastEditTime: 2021-08-26 11:13:11
 -->
 <template>
   <mds-card class="test_method" title="检验指标标准" :pack-up="false" style="margin-bottom: 0; background: #fff;">
@@ -476,6 +476,7 @@ export default defineComponent({
     }
 
     const handleSizeChange = (pageSize: number) => { // 每页条数切换
+      state.currentPage = 1
       state.pageSize = pageSize
       btnGetMainData()
     }
