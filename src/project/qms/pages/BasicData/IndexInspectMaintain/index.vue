@@ -128,14 +128,14 @@
                     <div class="tree-main SelfScrollbar" style="height:300px;overflow-y:scroll;">
                       <el-tree
                       ref="parameterTreeRef"
-                      show-checkbox
                       :data="parameterTreeData"
+                      :props="{ label: 'inspectTypeName',children:'children' }"
                       node-key="id"
+                      highlight-current
+                      show-checkbox
                       :default-expanded-keys="expandedKeys"
                       :default-checked-keys="parameterTreeSslected"
                       :filter-node-method="filterNode"
-                      :props="{ label: 'inspectTypeName',children:'children' }"
-                      highlight-current
                       @check-change="parameterTreeNodeClick"
                       />
                     </div>
@@ -369,6 +369,7 @@ export default defineComponent({
     }
 
     const handleSizeChange = (pageSize: number) => { // 每页条数切换
+      state.currentPage = 1
       state.pageSize = pageSize
       getMaterialDetail('', { id: state.globalMainObj.id, _level: state.globalMainObj._level }, state.textParameterGroupSearch)
     }
@@ -390,7 +391,8 @@ export default defineComponent({
         console.log(state.treeData)
 
         // 默认 Tree-Data 第一笔
-        treeModule.value.focusCurrentNodeNumber = '0'
+        // treeModule.value.focusCurrentNodeNumber = '0'
+        treeModule.value.focusCurrentNodeNumber = state.treeData[0].inspectGroups[0].id
       })
     }
 
