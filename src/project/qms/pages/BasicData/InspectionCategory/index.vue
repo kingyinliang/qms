@@ -97,7 +97,7 @@
             </el-col>
             <el-form-item style="width:100%">
               <div class="dialog-footer">
-                <el-button v-if="isRedact" size="small" type="primary" icon="el-icon-edit" @click="isRedact= false">编辑</el-button>
+                <el-button v-if="isRedact" size="small" type="primary" icon="iconfont factory-luru" @click="isRedact= false">编辑</el-button>
                 <!-- <div v-else> -->
                 <el-button v-if="!isRedact" size="small" icon="el-icon-circle-close" @click="cancel">取消</el-button>
                 <el-button v-if="!isRedact" size="small" type="danger" icon="el-icon-delete" @click="resetForm('ruleForm')">删除</el-button>
@@ -167,8 +167,8 @@
         </el-form-item>
       </el-form>
       <span class="dialog-footer">
-        <el-button size="small" icon="el-icon-circle-close" @click="addLevelBtn = false">取 消</el-button>
-        <el-button size="small" icon="el-icon-circle-check" type="primary" @click="addLevelSave">确 定</el-button>
+        <el-button size="small" icon="el-icon-circle-close" @click="addLevelBtn = false">取消</el-button>
+        <el-button size="small" icon="el-icon-circle-check" type="primary" @click="addLevelSave">确定</el-button>
       </span>
     </el-dialog>
   </div>

@@ -124,3 +124,18 @@ body{
 .rowDel {
     display: none;
 }
+
+body{
+  .el-button--small{
+    padding: 9px 11px;
+  }
+  .el-button [class*=el-icon-]+span{
+    margin-left: 4px;
+  }
+  .el-button{
+    .iconfont{
+      font-size: 12px;
+    }
+  }
+}
+

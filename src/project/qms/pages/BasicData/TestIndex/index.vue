@@ -94,8 +94,8 @@
     </el-form>
     <template #footer>
       <span class="dialog-footer">
-        <el-button @click="btnItemFloatClear">取 消</el-button>
-        <el-button type="primary" @click="btnItemFloatConfirm(singleItemform.title)">确 定</el-button>
+        <el-button @click="btnItemFloatClear">取消</el-button>
+        <el-button type="primary" @click="btnItemFloatConfirm(singleItemform.title)">确定</el-button>
       </span>
     </template>
   </el-dialog>
