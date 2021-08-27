@@ -26,7 +26,7 @@
           <el-button type="text" icon="el-icon-edit" class="role__btn" @click="updateMaterial(scope.row)">
             关联物料
           </el-button>
-          <el-button type="text" icon="el-icon-edit" class="role__btn" @click="editItem(scope.row)">
+          <el-button type="text" icon="iconfont factory-luru" class="role__btn" @click="editItem(scope.row)">
             编辑
           </el-button>
           <el-button type="text" icon="el-icon-edit" class="role__btn" @click="selectDelete(scope.row)">
@@ -57,8 +57,8 @@
       </el-form-item>
     </el-form>
     <div class="dialog-footer">
-      <el-button size="small" icon="el-icon-circle-close" @click="addOrUpdateDialog = false">取 消</el-button>
-      <el-button size="small" icon="el-icon-circle-check" type="primary" @click="addOrUpdateFormSubmit">确 定</el-button>
+      <el-button size="small" icon="el-icon-circle-close" @click="addOrUpdateDialog = false">取消</el-button>
+      <el-button size="small" icon="el-icon-circle-check" type="primary" @click="addOrUpdateFormSubmit">确定</el-button>
     </div>
   </el-dialog>
   <el-dialog v-model="materialDialog" title="关联物料" width="536px">
@@ -77,8 +77,8 @@
       </template>
     </el-transfer>
     <div class="dialog-footer" style="margin-top: 10px;">
-      <el-button size="small" icon="el-icon-circle-close" @click="materialDialog = false">取 消</el-button>
-      <el-button size="small" icon="el-icon-circle-check" type="primary" @click="updateFormSubmit">确 定</el-button>
+      <el-button size="small" icon="el-icon-circle-close" @click="materialDialog = false">取消</el-button>
+      <el-button size="small" icon="el-icon-circle-check" type="primary" @click="updateFormSubmit">确定</el-button>
     </div>
   </el-dialog>
 </template>

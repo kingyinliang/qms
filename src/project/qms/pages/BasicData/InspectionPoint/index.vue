@@ -24,7 +24,7 @@
       <el-table-column label="操作时间" prop="createDate" />
       <el-table-column label="操作" width="120" fixed="right">
         <template #default="scope">
-          <el-button type="text" icon="el-icon-edit" class="role__btn" @click="editItem(scope.row)">
+          <el-button type="text" icon="iconfont factory-luru" class="role__btn" @click="editItem(scope.row)">
             编辑
           </el-button>
         </template>
@@ -54,8 +54,8 @@
       </el-form-item>
     </el-form>
     <div class="dialog-footer">
-      <el-button size="small" icon="el-icon-circle-close" @click="addOrUpdateDialog = false">取 消</el-button>
-      <el-button size="small" icon="el-icon-circle-check" type="primary" @click="addOrUpdateFormSubmit">确 定</el-button>
+      <el-button size="small" icon="el-icon-circle-close" @click="addOrUpdateDialog = false">取消</el-button>
+      <el-button size="small" icon="el-icon-circle-check" type="primary" @click="addOrUpdateFormSubmit">确定</el-button>
     </div>
   </el-dialog>
 </template>

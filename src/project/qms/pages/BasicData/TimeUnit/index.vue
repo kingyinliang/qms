@@ -28,7 +28,7 @@
       <el-table-column label="时间长度" prop="dateDelay" />
       <el-table-column label="操作" width="120" fixed="right">
         <template #default="scope">
-          <el-button type="text" icon="el-icon-edit" class="role__btn" @click="editItem(scope.row)">
+          <el-button type="text" icon="iconfont factory-luru" class="role__btn" @click="editItem(scope.row)">
             编辑
           </el-button>
         </template>
@@ -63,7 +63,7 @@
         <div class="flex" v-for="(item, index) in addOrUpdateForm.calculateStarts" :key="index">
           <el-date-picker
             v-if="addOrUpdateForm.calculateUnit==='月'"
-            v-model="addOrUpdateForm.calculateStart[index]"
+            v-model="addOrUpdateForm.calculateStarts[index]"
             class="inputWidth"
             popper-class="noneHeader"
             type="month"
@@ -109,8 +109,8 @@
       </el-form-item>
     </el-form>
     <div class="dialog-footer">
-      <el-button size="small" icon="el-icon-circle-close" @click="addOrUpdateDialog = false">取 消</el-button>
-      <el-button size="small" icon="el-icon-circle-check" type="primary" @click="addOrUpdateFormSubmit">确 定</el-button>
+      <el-button size="small" icon="el-icon-circle-close" @click="addOrUpdateDialog = false">取消</el-button>
+      <el-button size="small" icon="el-icon-circle-check" type="primary" @click="addOrUpdateFormSubmit">确定</el-button>
     </div>
   </el-dialog>
 </template>

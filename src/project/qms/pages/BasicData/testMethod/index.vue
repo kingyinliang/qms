@@ -22,7 +22,7 @@
       <el-table-column label="属性" prop="inspectPropertyName" />
       <el-table-column label="操作" width="120" fixed="right">
         <template #default="scope">
-          <el-button type="text" icon="el-icon-edit" class="role__btn" @click="editItem(scope.row)">
+          <el-button type="text" icon="iconfont factory-luru" class="role__btn" @click="editItem(scope.row)">
             编辑
           </el-button>
         </template>
@@ -40,7 +40,7 @@
       />
     </el-row>
   </mds-card>
-  <el-dialog v-model="addMethodBtn" title="检验类别-新增" width="30%">
+  <el-dialog v-model="addMethodBtn" title="检验方法" width="30%">
       <el-form ref="addRef" :model="addMethodInfo" :rules="dataRule">
         <el-form-item label="编码：" :label-width="formLabelWidth">
           <el-input v-model="addMethodInfo.inspectMethodCode" class="inputWidth" :disabled="true" autocomplete="off"></el-input>
@@ -55,8 +55,8 @@
         </el-form-item>
       </el-form>
       <span class="dialog-footer">
-        <el-button size="small" icon="el-icon-circle-close" @click="addMethodBtn = false">取 消</el-button>
-        <el-button size="small" icon="el-icon-circle-check" type="primary" @click="addMethodSave">确 定</el-button>
+        <el-button size="small" icon="el-icon-circle-close" @click="addMethodBtn = false">取消</el-button>
+        <el-button size="small" icon="el-icon-circle-check" type="primary" @click="addMethodSave">确定</el-button>
       </span>
     </el-dialog>
 </template>
