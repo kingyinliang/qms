@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-07-30 11:24:46
  * @LastEditors: Telliex
- * @LastEditTime: 2021-08-27 16:01:31
+ * @LastEditTime: 2021-08-27 17:01:53
 -->
 <template>
   <mds-card class="test_method" :title="title" :pack-up="false" style="margin-bottom: 0; background: #fff;">
@@ -636,9 +636,13 @@ export default defineComponent({
     const ruleSubmit = () => {
       const tempList:any = []
       for (const item of state.topicMainData) {
-        if (tempList.indexOf(item.paramSubscriptCode + ' ' + item.paramSubscript) === -1) {
-          tempList.push(item.paramSubscriptCode + ' ' + item.paramSubscript)
+        if (tempList.indexOf(item.parentParamSubscriptCode + ' ' + item.parentParamSubscript) === -1) {
+          tempList.push(item.parentParamSubscriptCode + ' ' + item.parentParamSubscript)
+        } else {
+          proxy.$warningToast('有重复过程参数')
+          return false
         }
+
         if (item.paramSubscriptCode === '' || item.paramUnit === '' || item.paramType === '' || (item.paramDataType === 'FLOAT_POINT' && item.paramStandard === null)) {
           proxy.$warningToast('请完整录入栏位')
           return false

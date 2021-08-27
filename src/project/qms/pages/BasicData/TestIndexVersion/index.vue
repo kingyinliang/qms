@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-07-30 11:24:46
  * @LastEditors: Telliex
- * @LastEditTime: 2021-08-27 14:06:31
+ * @LastEditTime: 2021-08-27 16:47:27
 -->
 <template>
   <mds-card class="test_method" title="版本明细" :pack-up="false" style="margin-bottom: 0; background: #fff;">
@@ -336,8 +336,10 @@ export default defineComponent({
         return
       }
       if (state.addFormInfo.beginDate !== '') {
+        console.log('state.addFormInfo.beginDate')
+        console.log(state.addFormInfo.beginDate)
         const temp:string = state.addFormInfo.beginDate
-        state.addFormInfo.beginDate = String(temp).substring(0, 10)
+        state.addFormInfo.beginDate = temp.substring(0, 10)
       }
 
       if (state.addFormInfo.title === '版本明细-新增') { // 新增
