@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-07-30 11:24:46
  * @LastEditors: Telliex
- * @LastEditTime: 2021-08-26 18:14:34
+ * @LastEditTime: 2021-08-27 16:01:31
 -->
 <template>
   <mds-card class="test_method" :title="title" :pack-up="false" style="margin-bottom: 0; background: #fff;">
@@ -72,7 +72,7 @@
       <el-table-column label="数据标准">
         <el-table-column  min-width="120" show-overflow-tooltip>
           <template #default="scope">
-            <el-input v-model.number="scope.row.paramStandard" size="small" type="number" placeholder="请输入" :disabled="!isRedact" />
+            <el-input v-model.number="scope.row.paramStandard" size="small" placeholder="请输入" :disabled="!isRedact" />
           </template>
         </el-table-column>
         <el-table-column  min-width="110" show-overflow-tooltip>
@@ -90,12 +90,12 @@
       </el-table-column>
       <el-table-column label="上限" min-width="110" show-overflow-tooltip>
         <template #default="scope">
-          <el-input v-model.number="scope.row.paramUp" type="number" size="small" placeholder="请输入" :disabled="!isRedact" />
+          <el-input v-model.number="scope.row.paramUp" size="small" placeholder="请输入" :disabled="!isRedact" />
         </template>
       </el-table-column>
       <el-table-column label="下限" min-width="110" show-overflow-tooltip>
         <template #default="scope">
-          <el-input v-model.number="scope.row.paramDown" type="number" size="small" placeholder="请输入" :disabled="!isRedact" />
+          <el-input v-model.number="scope.row.paramDown" size="small" placeholder="请输入" :disabled="!isRedact" />
         </template>
       </el-table-column>
       <el-table-column label="参数类型" min-width="110" show-overflow-tooltip>
@@ -109,6 +109,7 @@
               :key="item.dictCode"
               :label="item.dictValue"
               :value="item.dictCode"
+              :disabled="item.disabled"
               >
             </el-option>
           </el-select>
@@ -135,29 +136,22 @@
           show-overflow-tooltip
         >
           <template #default="scope">
-            <el-input v-model.number="scope.row.defaultValue" size="small" type="number" placeholder="请输入" :disabled="!isRedact||scope.row.innerUpSymbol===''" />
+            <el-input v-model.number="scope.row.defaultValue" size="small" placeholder="请输入" :disabled="!isRedact||scope.row.innerUpSymbol===''" />
           </template>
          </el-table-column>
       </el-table-column>
          <el-table-column label="关联参数" min-width="110" show-overflow-tooltip>
         <template #default="scope">
-          <el-select v-model="scope.row.parentParamSubscriptCodeWithParentParamSubscript" size="small" :disabled="!isRedact || scope.row.id===''" clearable @change="val=>changeParentParamSubscriptOptions(val,scope.row)" @focus="val=>focusParentParamSubscriptOptions(val,scope.row)">
+          <el-select v-model="scope.row.parentParamSubscriptCodeWithParentParamSubscript" size="small" :disabled="!isRedact || scope.row.id===''|| scope.row.paramType === 'SHOW' || scope.row.paramType === 'RESULT'" clearable @change="val=>changeParentParamSubscriptOptions(val,scope.row)" @focus="val=>focusParentParamSubscriptOptions(val,scope.row)">
+                <!-- v-for="item in excludeItemFromMyRow(parentParamSubscriptOptions,scope.row)" -->
                 <el-option
-                  v-for="item in parentParamSubscriptOptions.filter(subItem=>subItem.paramCode!==scope.row.paramCode)"
+                  v-for="item in parentParamSubscriptOptions"
                   :key="item.paramSubscriptCode"
                   :label="item.paramSubscriptCode+' '+item.paramSubscript"
                   :value="item.paramSubscriptCode+' '+item.paramSubscript"
                   :disabled="item.disabled">
                 <span >{{ item.paramSubscriptCode }}<sub>{{item.paramSubscript}}</sub></span>
               </el-option>
-              <!-- <el-option
-                  v-for="item in wropper(parentParamSubscriptOptions,scope.row)"
-                  :key="item.paramSubscriptCode"
-                  :label="item.paramSubscriptCode+' '+item.paramSubscript"
-                  :value="item.paramSubscriptCode+' '+item.paramSubscript"
-                  :disabled="item.disabled">
-                <span >{{ item.paramSubscriptCode }}<sub>{{item.paramSubscript}}</sub></span>
-              </el-option> -->
             </el-select>
         </template>
       </el-table-column>
@@ -184,11 +178,11 @@
           =<span v-html="htmlFormula.join('')"></span>
         </div>
         <h3>变量</h3>
-          <template v-for="item in topicMainData" :key="item.paramSubscriptCode">
-            <el-button-group>
-              <el-button  v-if="item.paramSubscriptCode!==''" type="primary" @click="spellFormula('variable',item.paramSubscriptCode,item.paramSubscript)">{{ item.paramSubscriptCode }}<sub>{{item.paramSubscript}}</sub></el-button>
-            </el-button-group>
-          </template>
+          <el-button-group>
+            <template v-for="item in fomulaList" :key="item.paramSubscriptCode">
+            <el-button  v-if="item.paramSubscriptCode!==''" type="primary" @click="spellFormula('variable',item.paramSubscriptCode,item.paramSubscript)">{{ item.paramSubscriptCode }}<sub>{{item.paramSubscript}}</sub></el-button>
+            </template>
+          </el-button-group>
            <el-button-group>
               <el-button type="primary" v-for="item in ['1','2','3','4','5','6','7','8','9','0']" :key="item" @click="spellFormula('value',item)">{{item}}</el-button>
           </el-button-group>
@@ -210,12 +204,12 @@
           <el-table-column type="index" label="序号" width="50" />
           <el-table-column label="关联参数" min-width="110" show-overflow-tooltip>
             <template #default="scope">
-              <el-input v-model.number="scope.row.associate" type="number" size="small"  placeholder="请输入" />
+              <el-input v-model.number="scope.row.associate" size="small"  placeholder="请输入" />
             </template>
           </el-table-column>
           <el-table-column label="结果值" min-width="110" show-overflow-tooltip>
             <template #default="scope">
-              <el-input v-model.number="scope.row.value" type="number" size="small" placeholder="请输入" />
+              <el-input v-model.number="scope.row.value" size="small" placeholder="请输入" />
             </template>
           </el-table-column>
         </el-table>
@@ -322,6 +316,7 @@ interface State {
   isDialogShow: boolean
   controlBtnCanDo: boolean
   topicMainData: ImportData[]
+  fomulaList: ImportData[]
   orgTopicMainData: ImportData[]
   inspectParameterIdOfRelatedParameter: string
   targetId: string
@@ -347,7 +342,7 @@ export default defineComponent({
     MdsCard,
     dialogDevice
   },
-  emits: ['update:dialogVisible'],
+  // emits: ['update:dialogVisible', 'reset'],
   props: {
     title: {
       type: String,
@@ -359,12 +354,6 @@ export default defineComponent({
         return {}
       }
     }
-    // importData: {
-    //   type: Array,
-    //   default: () => {
-    //     return []
-    //   }
-    // }
   },
   setup (props, context) {
     const ctx = getCurrentInstance() as ComponentInternalInstance
@@ -378,6 +367,7 @@ export default defineComponent({
       isDialogShow: false,
       controlBtnCanDo: false,
       topicMainData: [],
+      fomulaList: [],
       orgTopicMainData: [],
       targetId: '',
       isRedact: false,
@@ -399,6 +389,53 @@ export default defineComponent({
 
     // 函数
 
+    // 预先载入变数值
+    const initVariable = async () => {
+      // 过程参数下拉
+      await INSPECT_INDEX_PROCESS_PARAMETER_DROPDOWN_API().then((res) => {
+        state.paramSubscriptOptions = res.data.data
+        console.log('1过程参数下拉')
+        console.log(state.paramSubscriptOptions)
+      })
+
+      // 单位下拉
+      await DICTIONARY_QUERY_API({ dictType: 'INDEX_UNIT' }).then((res) => {
+        state.paramUnitOptions = res.data.data
+        console.log('2单位下拉')
+        console.log(state.paramUnitOptions)
+      })
+
+      // 数据类型
+      await DICTIONARY_QUERY_API({ dictType: 'PROC_PARAM_DATA_TYPE' }).then((res) => {
+        state.paramDataTypeOptions = res.data.data
+        console.log('3数据类型下拉')
+        console.log(state.paramDataTypeOptions)
+      })
+
+      // 数据标准单位
+      await DICTIONARY_QUERY_API({ dictType: 'PROC_PARAM_STANDARD' }).then((res) => {
+        state.paramStandardTypeOptions = res.data.data
+        console.log('4数据标准单位下拉')
+        console.log(state.paramStandardTypeOptions)
+      })
+
+      // 过程参数默认值类型
+      await DICTIONARY_QUERY_API({ dictType: 'PROC_DEFAULT_TYPE' }).then((res) => {
+        state.defaultTypeOptions = res.data.data
+        console.log('5过程参数默认值类型下拉')
+        console.log(state.defaultTypeOptions)
+      })
+
+      // 过程参数类型
+      await DICTIONARY_QUERY_API({ dictType: 'PROC_PARAM_TYPE' }).then((res) => {
+        state.paramTypeOptions = res.data.data
+        console.log('6过程参数类型')
+        console.log(state.paramTypeOptions)
+      })
+
+      btnGetMainData()
+    }
+
     // [ACTION:load] 获取标准值明细数据
     const btnGetMainData = async () => {
       const res = await INSPECT_INDEX_PROCESS_PARAMETER_QUERY_API({
@@ -407,32 +444,26 @@ export default defineComponent({
 
       console.log('获取过程参数数据')
       console.log(res.data.data)
-
+      state.parentParamSubscriptOptions = []
       res.data.data.forEach((item:ImportData) => {
         // modify
         item.paramSubscriptCodeWithParamSubscript = item.paramSubscriptCode + ' ' + item.paramSubscript
         item.parentParamSubscriptCodeWithParentParamSubscript = item.parentParamSubscriptCode + ' ' + item.parentParamSubscript
-        item.formulaDisplay = escape2Html(item.formulaDisplay as string)
+        item.formulaDisplay = escape2Html(item.formulaDisplay as string) // 编码还原
 
         // 参数类型选单重置
+        // 参数类型已有结果下，不可再选
         if (item.paramType === 'RESULT') {
-          state.paramTypeOptions.forEach(item => {
-            if (item.dictCode === 'RESULT') {
-              item.disabled = true
+          state.paramTypeOptions.forEach(subItem => {
+            if (subItem.dictCode === 'RESULT') {
+              subItem.disabled = true
             } else {
-              item.disabled = false
+              subItem.disabled = false
             }
           })
-        } else {
-          state.paramTypeOptions.forEach(item => {
-            item.disabled = false
-          })
         }
-      })
 
-      state.parentParamSubscriptOptions = []
-      res.data.data.forEach((item:ImportData) => {
-        // 关联参数附值
+        // 关联参数下拉选单附值
         state.paramSubscriptOptions.forEach((subItem:ParamSubscriptOptions) => {
           subItem.disabled = false
           if (item.paramCode === subItem.paramCode) {
@@ -441,13 +472,13 @@ export default defineComponent({
         })
       })
 
-      // 过程参数编辑锁解开
+      // 过程参数编辑锁解开，避免误点
       state.canEdit = true
       state.topicMainData = res.data.data
       state.orgTopicMainData = JSON.parse(JSON.stringify(res.data.data))
     }
 
-    // [BTN:删除] 删除 item
+    // [BTN:删除][过程参数] 删除 item
     const btnDeleteItemData = (mainIndex: number, val:ImportData) => {
       let canPass = false
       state.topicMainData.forEach((item, index) => {
@@ -487,7 +518,7 @@ export default defineComponent({
       })
     }
 
-    // [BTN:新增]
+    // [BTN:新增][过程参数]
     const btnAddItemData = async () => {
       state.topicMainData.push({
         id: '',
@@ -522,6 +553,7 @@ export default defineComponent({
     const btnSaveItemData = async () => {
       const tempAdd:ImportData[] = []
       const tempEdit:ImportData[] = []
+
       state.topicMainData.forEach((item, index) => {
         if (item.id === '') { // 新增
           delete item.paramSubscriptCodeWithParamSubscript
@@ -600,31 +632,37 @@ export default defineComponent({
       parent.emit('update:dialogVisible', false)
     }
 
-    // const rowDelFlagOfTable = ({ row }) => {
-    //   if (row.delFlag === 1) {
-    //     return 'rowDel'
-    //   }
-    //   return ''
-    // }
-
     // [Rule] 验证标准值明细 data
     const ruleSubmit = () => {
+      const tempList:any = []
       for (const item of state.topicMainData) {
+        if (tempList.indexOf(item.paramSubscriptCode + ' ' + item.paramSubscript) === -1) {
+          tempList.push(item.paramSubscriptCode + ' ' + item.paramSubscript)
+        }
         if (item.paramSubscriptCode === '' || item.paramUnit === '' || item.paramType === '' || (item.paramDataType === 'FLOAT_POINT' && item.paramStandard === null)) {
           proxy.$warningToast('请完整录入栏位')
           return false
         }
       }
+      // if (tempList.length !== state.topicMainData.length) {
+      //   proxy.$warningToast('有重复过程参数')
+      //   return false
+      // }
       return true
     }
 
     // [BTN:确认][结果公式]
     const onResultFormulaConfirm = () => {
-      // parent.emit('update:dialogVisible', false)
-      // parent.emit('inspectCategoryList', state.inspectCategoryList)
       state.tempItemObj.formulaDisplay = state.htmlFormula.join(',')
       state.isResultFormulaDialogShow = false
     }
+    // [BTN:关闭][结果公式]
+    const onResultFormulaClose = () => {
+      state.htmlFormula = []
+      state.unHtmlFormula = []
+      state.isResultFormulaDialogShow = false
+    }
+
     // [BTN:确认][关联公式]
     const onRelatedFormulaConfirm = () => {
       INSPECT_INDEX_RELATED_PARAMETER_UPDATE_API({
@@ -633,23 +671,6 @@ export default defineComponent({
       }).then(() => {
         onRelatedFormulaClose()
       })
-
-      // INSPECT_INDEX_RELATED_PARAMETER_INSERT_API(
-      //   state.relatedeFormulaData.filter(item => item.id === '')
-      // ).then(() => {
-      //   onRelatedFormulaClose()
-      // })
-    }
-
-    // [BTN:关闭][结果公式]
-    const onResultFormulaClose = () => {
-      state.htmlFormula = []
-      state.unHtmlFormula = []
-      state.isResultFormulaDialogShow = false
-      // filterText.value = ''
-      // state.inspectCategoryList = []
-      // parent.emit('update:dialogVisible', false)
-      // parent.emit('reset')
     }
 
     // [BTN:关闭][关联公式]
@@ -676,7 +697,7 @@ export default defineComponent({
       }
     }
 
-    // 开启结果公式后动作
+    // [Click]结果公式按钮后动作
     const editFormula = (row:ImportData) => {
       state.tempItemObj = row
       console.log('state.tempItemObj')
@@ -691,6 +712,8 @@ export default defineComponent({
         getRelatedParameter(state.inspectParameterIdOfRelatedParameter)
         onResultFormulaClose()
       } else if (row.paramType === 'RESULT') {
+        state.fomulaList = state.topicMainData.filter(item => item.paramCode !== state.tempItemObj.paramCode)
+
         state.isResultFormulaDialogShow = true
         onRelatedFormulaClose()
 
@@ -708,111 +731,46 @@ export default defineComponent({
 
     // [SELECT:过程参数][Event:change]
     const changeParamSubscriptOptions = (val:string, row:ImportData) => {
-      console.log(val)
       const temp:string[] = val.split(' ')
       row.paramSubscriptCode = temp[0]
       row.paramSubscript = temp[1]
       row.paramCode = temp[0] + '[' + temp[1] + ']'
-
-      // state.topicMainData.forEach(item => {
-      //   state.paramSubscriptOptions.forEach(subItem => {
-      //     if (item.paramCode === subItem.paramCode) {
-      //       console.log('get it')
-      //       subItem.disabled = true
-      //     } else {
-      //       console.log('not get it')
-      //       subItem.disabled = false
-      //     }
-      //   })
-      // })
     }
 
-    // [SELECT:过程参数][Event:focus]
-    const focusParamSubscriptOptions = (val:any, row:ImportData) => {
-      state.topicMainData.forEach(item => {
-        state.paramSubscriptOptions.forEach(subItem => {
-          if (item.paramCode === subItem.paramCode) {
-            console.log('get it')
-            subItem.disabled = true
-          } else {
-            console.log('not get it')
-            subItem.disabled = false
-          }
-        })
-      })
-    }
-
+    // [SELECT:关联参数][Event:change]
     const changeParentParamSubscriptOptions = (val:string, row:ImportData) => {
-      console.log('0000000000')
-      console.log(val)
       let temp:string[] = []
       if (val !== '') {
         temp = val.split(' ')
         row.parentParamSubscriptCode = temp[0]
         row.parentParamSubscript = temp[1]
-        console.log(temp[0] + '[' + temp[1] + ']')
-
-        console.log(state.topicMainData)
+        row.parentParamCode = temp[0] + '[' + temp[1] + ']'
         state.topicMainData.forEach(item => {
-          console.log('2222222222222')
-          console.log(item.id)
           if (item.paramCode === temp[0] + '[' + temp[1] + ']') {
             row.parentInspectParameterId = item.id
           }
         })
       } else {
+        row.parentParamCode = ''
         row.parentParamSubscriptCode = ''
         row.parentParamSubscript = ''
         row.parentInspectParameterId = ''
       }
     }
 
-    const focusParentParamSubscriptOptions = (val:string, row:ImportData) => {
-      console.log(val)
-      console.log(row)
-      // if (row.id === '') {
-      //   return []
-      // }
-
-      // target.forEach(item => {
-      //   if (item.paramCode === row.paramCode) {
-      //     item.disabled = true
-      //   } else {
-      //     item.disabled = false
-      //   }
-
-      //   // state.topicMainData.forEach(subItem => {
-      //   //   if (subItem.parentParamSubscriptCode + '[' + subItem.parentParamSubscript + ']' === item.paramCode) {
-      //   //     item.disabled = true
-      //   //   }
-      //   // })
-      // })
-    }
-
-    watch(
-      importObj,
-      newValue => {
-        if (newValue !== null) {
-          console.log('importObj')
-          console.log(newValue)
-          state.targetId = newValue.id
-          btnGetMainData()
-        }
-      },
-      { immediate: true }
-    )
-
+    // [关联公式]dialog 获取 data
     const getRelatedParameter = (id:string) => {
       INSPECT_INDEX_RELATED_PARAMETER_QUERY_API({
         inspectParameterId: id
       }).then((res) => {
-        console.log('关联参数')
+        console.log('关联公式')
         console.log(res.data.data)
 
         state.relatedeFormulaData = res.data.data
       })
     }
 
+    // [BTN:新增][关联公式]dialog 新增 data
     const addItemOfrelatedeFormula = () => {
       state.relatedeFormulaData.push({
         associate: null,
@@ -822,12 +780,12 @@ export default defineComponent({
       })
     }
 
-    // [table] 选框选择
+    // [关联公式]dialog table 选框选择
     const handleSelectionChange = (val: RelatedeFormulaData[]) => {
       state.selectedListOfRelatedeFormulaData = val
     }
 
-    // [BTN:批次删除]
+    // [BTN:批次删除][关联公式]
     const deleteItemOfrelatedeFormula = () => {
       if (state.selectedListOfRelatedeFormulaData.length === 0) {
         return
@@ -852,7 +810,8 @@ export default defineComponent({
         }
       })
     }
-    // 表格 header 合并
+
+    // [过程参数]表格 header 合并
     const headerMerge = (result:any) => {
       if (result.rowIndex === 1) {
         return { display: 'none' }
@@ -863,16 +822,12 @@ export default defineComponent({
     const html2Escape = (str:string) => {
       const arrEntiries:any = { '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;' }
       return str.replace(/[<>&"]/g, (c:string) => { return arrEntiries[c] as string })
-      // let temp = ''
-      // if (str.length === 0) return ''
-      // temp = str.replace(/&/g, '&amp;')
     }
 
     /* 用正则表达式实现html解码（反转义）（另一种写法） */
     const escape2Html = (str:string) => {
       const arrEntiries:any = { '&lt;': '<', '&gt;': '>', '&nbsp': ' ', '&amp;': '&', '&quot;': '"' }
       return str.replace(/(&lt|&gt|&nbsp|&amp|&quot);/ig, (c:string) => { return arrEntiries[c] as string })
-      //
     }
 
     // [SELECT:参数类型][Event:change]
@@ -916,83 +871,45 @@ export default defineComponent({
       state.tempValueForOptions = row.paramType as string
     }
 
-    const checkParentParamSubscriptOptions = (list:ParamSubscriptOptions[]) => {
-      const temp:ParamSubscriptOptions[] = []
-      console.log('list')
-      console.log(list)
-      console.log('state.topicMainData')
-      console.log(state.topicMainData)
-      // list.forEach((item:ParamSubscriptOptions) => {
-      //   state.topicMainData.forEach((subItem:ImportData) => {
-      //     if (item.paramCode !== subItem.paramCode) {
-      //       console.log('wawawawawawawa')
-      //       temp.push(item)
-      //     }
-      //   })
-      // })
-      // console.log('temp')
-      // console.log(temp)
-      return temp
-    }
-
-    const wropper = (target:ParamSubscriptOptions[], row:ImportData) => {
-      // return target.filter(item => item.paramCode !== row.paramCode)
-      // 新 item 没有下拉
-      if (row.id === '') {
-        return []
-      }
-
-      target.forEach(item => {
-        if (item.paramCode === row.paramCode) {
-          item.disabled = true
+    // [function] 下拉选单排除该过程参数
+    const excludeItemFromMyRow = (target:ParamSubscriptOptions[], row:ImportData) => {
+      target.map(subItem => {
+        if (subItem.paramCode !== row.paramCode) {
+          subItem.disabled = false
         } else {
-          item.disabled = false
+          subItem.disabled = true
         }
-
-        // state.topicMainData.forEach(subItem => {
-        //   if (subItem.parentParamSubscriptCode + '[' + subItem.parentParamSubscript + ']' === item.paramCode) {
-        //     item.disabled = true
-        //   }
-        // })
       })
       return target
     }
 
-    onMounted(async () => {
-      // 过程参数下拉
-      INSPECT_INDEX_PROCESS_PARAMETER_DROPDOWN_API().then((res) => {
-        state.paramSubscriptOptions = res.data.data
-        console.log('过程参数下拉')
-        console.log(state.paramSubscriptOptions)
+    const focusParentParamSubscriptOptions = (val:any, row:ImportData) => {
+      state.parentParamSubscriptOptions.map(subItem => {
+        if (subItem.paramCode !== row.paramCode) {
+          subItem.disabled = false
+        } else {
+          subItem.disabled = true
+        }
       })
+    }
 
-      // 单位下拉
-      DICTIONARY_QUERY_API({ dictType: 'INDEX_UNIT' }).then((res) => {
-        state.paramUnitOptions = res.data.data
-      })
-
-      // 数据类型
-      DICTIONARY_QUERY_API({ dictType: 'PROC_PARAM_DATA_TYPE' }).then((res) => {
-        state.paramDataTypeOptions = res.data.data
-      })
-
-      // 数据标准单位
-      DICTIONARY_QUERY_API({ dictType: 'PROC_PARAM_STANDARD' }).then((res) => {
-        state.paramStandardTypeOptions = res.data.data
-      })
-
-      // 过程参数默认值类型
-      DICTIONARY_QUERY_API({ dictType: 'PROC_DEFAULT_TYPE' }).then((res) => {
-        state.defaultTypeOptions = res.data.data
-      })
-
-      // 过程参数类型
-      DICTIONARY_QUERY_API({ dictType: 'PROC_PARAM_TYPE' }).then((res) => {
-        state.paramTypeOptions = res.data.data
-      })
-
-      // btnGetMainData()
+    watch(
+      importObj,
+      newValue => {
+        if (newValue !== null) {
+          console.log('importObj')
+          console.log(newValue)
+          state.targetId = newValue.id
+          // btnGetMainData()
+          initVariable()
+        }
+      },
+      { immediate: true }
+    )
+    onMounted(() => {
+      //
     })
+
     return {
       // rowDelFlagOfTable,
       ...toRefs(state),
@@ -1017,12 +934,11 @@ export default defineComponent({
       handleSelectionChange,
       deleteItemOfrelatedeFormula,
       headerMerge,
-      checkParentParamSubscriptOptions,
       changeParamTypeOptions,
       focusParamTypeOptions,
-      focusParamSubscriptOptions,
-      focusParentParamSubscriptOptions,
-      wropper
+      initVariable,
+      excludeItemFromMyRow,
+      focusParentParamSubscriptOptions
     }
   }
 })
