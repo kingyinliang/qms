@@ -5,22 +5,22 @@
 
         <el-input
             size="small"
-            style="margin-bottom:10px; width:200px; height:35px;margin-right:10px"
+            style="margin-bottom:10px; width:300px; height:35px;margin-right:10px"
             v-model="controlForm.filterText"
-            placeholder="名称"
+            placeholder="指标类描述/代码、指标名称/代码"
             clearable
-            @change="getMainData" />
+            @keyup.enter="getMainData" />
         <div style="float: right;">
           <el-button icon="el-icon-search" size="small" @click="getMainData">查询</el-button>
         </div>
       </div>
     </template>
-    <el-table ref="multipleTable" :cell-style="{'text-align':'center'}" :data="topicMainData.slice((currentPage - 1) * pageSize, currentPage * pageSize)" tooltip-effect="dark" style="width: 100%" >
+    <el-table border ref="multipleTable" :cell-style="{'text-align':'center'}" :data="topicMainData" tooltip-effect="dark" style="width: 100%" max-height="400" >
       <el-table-column type="index" label="序号" :index="(index) => index + 1 + (currentPage - 1) * pageSize" width="50" />
-      <el-table-column label="指标类"  min-width="160" prop="indexType" show-overflow-tooltip />
-      <el-table-column label="指标类描述" width="100" prop="indexTypeName" show-overflow-tooltip />
+      <!-- <el-table-column label="指标类"  width="80" prop="indexType" show-overflow-tooltip /> -->
+      <el-table-column label="指标类描述" min-width="220" prop="indexTypeName" show-overflow-tooltip />
       <el-table-column label="指标代码" width="100" prop="indexCode" show-overflow-tooltip />
-      <el-table-column label="指标名称" width="100" prop="indexName" show-overflow-tooltip />
+      <el-table-column label="指标名称" width="180" prop="indexName" show-overflow-tooltip />
       <el-table-column label="单位" width="100" prop="indexUnit" show-overflow-tooltip />
       <el-table-column label="方法" width="160" prop="indexMethod" show-overflow-tooltip />
       <el-table-column label="属性" width="160" prop="inspectPropertyName" show-overflow-tooltip />
@@ -42,8 +42,8 @@
         :total="totalItems"
         :page-sizes="[10, 20, 50]"
         layout="total, sizes, prev, pager, next, jumper"
-        @size-change="val => pageSize = val"
-        @current-change="val => currentPage = val"
+        @size-change="handleSizeChange"
+        @current-change="handleCurrentChange"
       />
     </el-row>
   </mds-card>
@@ -154,8 +154,8 @@ export default defineComponent({
     const getMainData = async () => {
       const res = await INSPECT_INDEX_LIBRARY_QUERY_API({
         indexCodeOrName: state.controlForm.filterText,
-        current: 1,
-        size: 10
+        current: state.currentPage,
+        size: state.pageSize
       })
       console.log('获取检验指标库数据')
       console.log(res.data.data)
@@ -196,6 +196,16 @@ export default defineComponent({
       getMainData()
     }
 
+    const handleSizeChange = (pageSize: number) => { // 每页条数切换
+      state.currentPage = 1
+      state.pageSize = pageSize
+      getMainData()
+    }
+    const handleCurrentChange = (currentPage: number) => { // 页码切换
+      state.currentPage = currentPage
+      getMainData()
+    }
+
     onMounted(() => {
       getMainData()
     })
@@ -206,7 +216,9 @@ export default defineComponent({
       btnEditItem,
       getMainData,
       actReset,
-      actConfirm
+      actConfirm,
+      handleSizeChange,
+      handleCurrentChange
     }
   }
 })

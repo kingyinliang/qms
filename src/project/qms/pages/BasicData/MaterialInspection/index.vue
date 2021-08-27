@@ -3,14 +3,14 @@
     ref="treeModule"
     :title="pageMainTitle"
     :leftTitle="pageLeftColumnTitle"
-    :rightTitle="pageLightColumnTitle"
+    :rightTitle="pageRightColumnTitle"
     :treeData="treeData"
     :treeProps="{ label: 'inspectMaterialType',children:'inspectGroups' }"
     @treeNodeClick="getMaterialDetail"
     @treeNodeContextMenu="treeNodeContextMenuHandle"
   >
     <template #context--menu >
-      <ul>
+      <ul class="sub-menu">
         <li @click="handleMultiAsign">分配</li>
       </ul>
     </template>
@@ -22,14 +22,16 @@
         size="small"
         clearable
         style="margin-bottom:10px; width:200px; height:35px;"
-        @change="apiMaterialDetail(currentMaterialString,currentMaterialGroupString,materialDetailText,'searchBar')">
+        @keyup.enter="apiMaterialDetail(currentMaterialString,currentMaterialGroupString,materialDetailText,'searchBar')">
       </el-input>
       <el-button icon="el-icon-search" size="mini" style="height:32px; margin-left:5px" @click="apiMaterialDetail(currentMaterialString,currentMaterialGroupString,materialDetailText,'searchBar')">查询</el-button>
       </div>
      <el-table :data="topicMainData"
         style="width: 100%"
         max-height="500"
-        border tooltip-effect="dark">
+        border
+        tooltip-effect="dark"
+        >
         <el-table-column type="index" :index="index => index + 1 + (Number(currentPage) - 1) * (Number(pageSize))" label="序号" width="55" fixed align="center" size="small" />
         <el-table-column label="物料编码" prop="inspectMaterialCode" :show-overflow-tooltip="true" min-width="100" />
         <el-table-column label="物料描述" prop="inspectMaterialName" :show-overflow-tooltip="true" min-width="100" />
@@ -94,7 +96,7 @@ interface State {
     isDialogShow: boolean
     pageMainTitle: string
     pageLeftColumnTitle: string
-    pageLightColumnTitle: string
+    pageRightColumnTitle: string
     materialDetailText: string // 物料明细查找
     totalItems: number
     currentPage: number
@@ -125,7 +127,7 @@ export default defineComponent({
       isDialogShow: false,
       pageMainTitle: '物料分类',
       pageLeftColumnTitle: '物料分类',
-      pageLightColumnTitle: '物料明细',
+      pageRightColumnTitle: '物料明细',
       materialDetailText: '',
       totalItems: 0,
       currentPage: 1,
@@ -167,8 +169,13 @@ export default defineComponent({
     // multiaction to go
     const handleMultiAsign = () => {
       state.whoAsign = 'multi'
-      state.isDialogShow = true
-      apiAsignMaterial()
+
+      if (state.topicMainData.length !== 0) {
+        state.isDialogShow = true
+        apiAsignMaterial()
+      } else {
+        proxy.$infoToast('此物料组下无可分配物料，请选择其它物料组')
+      }
     }
 
     const reset = () => {
@@ -247,6 +254,7 @@ export default defineComponent({
     }
 
     const handleSizeChange = (pageSize: number) => { // 每页条数切换
+      state.currentPage = 1
       state.pageSize = pageSize
       handleCurrentChange(state.currentPage)
     }
@@ -389,5 +397,8 @@ export default defineComponent({
 </script>
 
 <style scoped>
-
+.sub-menu{
+  font-size: 14px;
+  line-height: 28px;
+}
 </style>

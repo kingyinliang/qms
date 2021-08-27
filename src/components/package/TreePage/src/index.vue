@@ -14,7 +14,7 @@
             </el-input>
           </div>
           <div class="tree-main SelfScrollbar">
-            <el-tree ref="treeRef" :data="treeData" node-key="id" :default-expanded-keys="expandedKeys" :current-node-key="focusCurrentNodeNumber" :props="treeProps" highlight-current :filter-node-method="filterNode" @node-click="treeNodeClick" @node-contextmenu="treeNodeContextMenu" />
+            <el-tree ref="treeRef" :data="treeData" :node-key="nodeKey" :default-expanded-keys="expandedKeys" :current-node-key="focusCurrentNodeNumber" :props="treeProps" highlight-current :filter-node-method="filterNode" @node-click="treeNodeClick" @node-contextmenu="treeNodeContextMenu" />
           </div>
         </div>
       </el-col>
@@ -83,6 +83,10 @@ export default defineComponent({
     floatMenu: { // 开启 float menu
       type: Boolean,
       default: true
+    },
+    nodeKey: {
+      type: String,
+      default: 'id'
     }
   },
   setup (props, { emit }) {
@@ -106,14 +110,12 @@ export default defineComponent({
       expandedKeys.value = []
       for (const item of val.treeData) {
         if (item[(props as any).treeProps.children] && item[(props as any).treeProps.children].length) {
-          expandedKeys.value.push(item.id)
+          expandedKeys.value.push(item[(props as any).nodeKey])
         }
       }
     })
 
     watch(focusCurrentNodeNumber, async (val) => {
-      console.log('0000000')
-      console.log(val)
       if (val.toString()) {
         await nextTick()
         treeRef.value.setCurrentKey(val)

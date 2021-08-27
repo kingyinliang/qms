@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-07-30 11:24:46
  * @LastEditors: Telliex
- * @LastEditTime: 2021-08-10 15:33:30
+ * @LastEditTime: 2021-08-26 11:13:11
 -->
 <template>
   <mds-card class="test_method" title="检验指标标准" :pack-up="false" style="margin-bottom: 0; background: #fff;">
@@ -15,7 +15,7 @@
           v-model="controlForm.filterText"
           placeholder="指标名称"
           clearable
-          @change="btnGetMainData" />
+          @keyup.enter="btnGetMainData" />
         <div style="float: right;">
           <el-button icon="el-icon-search" size="small" @click="btnGetMainData">查询</el-button>
           <el-button icon="el-icon-circle-plus-outline" type="primary" size="small" @click="btnAddItemData">新增</el-button>
@@ -23,15 +23,15 @@
         </div>
       </div>
     </template>
-    <el-table ref="multipleTable"  :cell-style="{'text-align':'center'}" :data="topicMainData.slice((currentPage - 1) * pageSize, currentPage * pageSize)" tooltip-effect="dark" style="width: 100%" @selection-change="actHandleSelectionChange">
+    <el-table border ref="multipleTable"  :cell-style="{'text-align':'center'}" :data="topicMainData" tooltip-effect="dark" style="width: 100%" @selection-change="actHandleSelectionChange" max-height="400">
       <el-table-column type="selection" width="55" />
       <el-table-column type="index" label="序号" :index="(index) => index + 1 + (currentPage - 1) * pageSize" width="50" />
       <el-table-column label="检验类别\物料" min-width="200" prop="inspectMaterialTypeName" show-overflow-tooltip />
       <el-table-column label="指标代码" width="160" prop="indexCode" show-overflow-tooltip />
-      <el-table-column label="指标名称" width="160" prop="indexName" show-overflow-tooltip />
+      <el-table-column label="指标名称" min-width="160" prop="indexName" show-overflow-tooltip />
       <el-table-column label="单位" width="100" prop="indexUnit" show-overflow-tooltip />
-      <el-table-column label="方法" width="200" prop="indexMethod" show-overflow-tooltip />
-      <el-table-column label="指标类" width="160" prop="indexType" show-overflow-tooltip />
+      <el-table-column label="方法"  min-width="200" prop="indexMethod" show-overflow-tooltip />
+      <!-- <el-table-column label="指标类" width="160" prop="indexType" show-overflow-tooltip /> -->
       <el-table-column label="指标类描述" width="160" prop="indexTypeName" show-overflow-tooltip />
       <el-table-column label="操作" width="200" fixed="right">
         <template #default="scope" >
@@ -52,8 +52,8 @@
         :total="totalItems"
         :page-sizes="[10, 20, 50]"
         layout="total, sizes, prev, pager, next, jumper"
-        @size-change="val => pageSize = val"
-        @current-change="val => currentPage = val"
+        @size-change="handleSizeChange"
+        @current-change="handleCurrentChange"
       />
     </el-row>
   </mds-card>
@@ -65,7 +65,7 @@
           <el-option v-for="(opt, optIndex) in inspectMaterialOptions" :key="optIndex" :label="opt.inspectMaterialTypeName" :value="opt.id" />
         </el-select>
       </el-form-item>
-      <el-form-item label="指标代码" :label-width="'120px'" class="star">
+      <el-form-item label="指标" :label-width="'120px'" class="star">
         <template v-if="singleItemform.title==='新增指标'">
           <!-- {{singleItemform.inspectIndexName}} -->
           <div v-if="singleItemform.title='新增指标'" class="item-imput" @click="actAddIndexId">
@@ -87,7 +87,7 @@
         </template>
         <template v-if="singleItemform.title==='编辑指标'">
           <el-select v-if="singleItemform.title='编辑指标'" v-model="singleItemform.inspectIndexId" placeholder="请选择" style="width:100%" @change="selectInspectIndexChange" filterable clearable>
-            <el-option v-for="(opt, optIndex) in inspectIndexOptions" :key="optIndex" :label="opt.indexName" :value="opt.id" />
+            <el-option v-for="(opt, optIndex) in inspectIndexOptions" :key="optIndex" :label="opt.indexName+' '+opt.indexUnit+' '+opt.indexMethod" :value="opt.id" />
           </el-select>
         </template>
       </el-form-item>
@@ -298,8 +298,6 @@ export default defineComponent({
 
     // [BTN:编辑] 编辑 item
     const btnEditItemData = async (val:TopicMainData) => {
-      console.log('item info')
-      console.log(val)
       state.isDialogVisibleForItemControl = true
       apiGetInspectMaterialOptions()
       state.singleItemform = {
@@ -477,6 +475,16 @@ export default defineComponent({
       state.tempMultiSelected.splice(state.tempMultiSelected.indexOf(tag), 1)
     }
 
+    const handleSizeChange = (pageSize: number) => { // 每页条数切换
+      state.currentPage = 1
+      state.pageSize = pageSize
+      btnGetMainData()
+    }
+    const handleCurrentChange = (currentPage: number) => { // 页码切换
+      state.currentPage = currentPage
+      btnGetMainData()
+    }
+
     onMounted(async () => {
       // 数据字典查找
       const resPropertyObject = await DICTIONARY_QUERY_API({ dictType: 'INSPECT_PROPERTY' })
@@ -508,7 +516,9 @@ export default defineComponent({
       apiGetInspectMaterialOptions,
       selectInspectMaterialChange,
       selectInspectIndexChange,
-      tagHandleClose
+      tagHandleClose,
+      handleSizeChange,
+      handleCurrentChange
     }
   }
 })
@@ -557,7 +567,7 @@ export default defineComponent({
 <style scoped >
   .star >>> .el-form-item__label:before {
     content: "*";
-    color: var(--el-color-danger);
+    color: #ff0000;
     margin-right: 4px;
 }
 </style>

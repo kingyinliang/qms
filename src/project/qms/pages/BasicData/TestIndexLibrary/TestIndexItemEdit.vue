@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-07-08 11:25:52
  * @LastEditors: Telliex
- * @LastEditTime: 2021-08-06 10:19:40
+ * @LastEditTime: 2021-08-25 10:09:37
 -->
 <template>
     <dialogDevice :dialogVisible="dialogVisible" :title="title" @on-confirm="onConfirm" @on-close="onClose">
@@ -21,8 +21,8 @@
           <el-form-item label="方法：" prop="indexMethod" :label-width="'120px'">
             <el-input v-model="formData.indexMethod" class="inputWidth" :disabled="true" placeholder="来料检验" autocomplete="off"></el-input>
           </el-form-item>
-          <el-form-item label="检验组：" prop="inspectProperty" :label-width="'120px'">
-            <el-select v-model="formData.inspectProperty" style="width: 100%"  clearable  placeholder="请选择">
+          <el-form-item label="属性：" prop="inspectProperty" :label-width="'120px'">
+            <el-select v-model="formData.inspectProperty" style="width: 100%"  :disabled="true"  placeholder="请选择">
               <el-option v-for="(opt, optIndex) in inspectPropertyOptions" :key="optIndex" :label="opt.dictValue" :value="opt.dictCode" />
             </el-select>
           </el-form-item>

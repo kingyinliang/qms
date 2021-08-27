@@ -3,7 +3,7 @@
     ref="treeModule"
     :title="pageMainTitle"
     :leftTitle="pageLeftColumnTitle"
-    :rightTitle="pageLightColumnTitle"
+    :rightTitle="pageRightColumnTitle"
     :treeData="treeData"
     :treeProps="{ label: 'inspectTypeName',children:'children' }"
     @treeNodeClick="getMaterialDetail"
@@ -18,18 +18,19 @@
             size="small"
             clearable
             style="margin-bottom:10px; width:200px; height:35px;"
-            @change="apiMaterialDetail(currentCategoryId,materialDetailText,1,10)">
+            @keyup.enter="apiMaterialDetail(currentCategoryId,materialDetailText,1,10)">
           </el-input>
           <el-button icon="el-icon-search" size="mini" style="height:32px; margin-left:5px"  @click="apiMaterialDetail(currentCategoryId,materialDetailText,1,10)">查询</el-button>
         </template>
       </div>
-     <el-table :data="topicMainData"
+     <el-table
+        :data="topicMainData"
         style="width: 100%"
         max-height="500"
         border tooltip-effect="dark">
         <el-table-column type="index" :index="index => index + 1 + (Number(currentPage) - 1) * (Number(pageSize))" label="序号"  width="55" fixed align="center" size="small" />
         <el-table-column label="物料编码" prop="inspectMaterialCode" :show-overflow-tooltip="true" min-width="100" />
-        <el-table-column label="物料名称" prop="inspectMaterialName" :show-overflow-tooltip="true" min-width="100" />
+        <el-table-column label="物料描述" prop="inspectMaterialName" :show-overflow-tooltip="true" min-width="100" />
         <el-table-column label="归属上级" prop="inspectGroupName" :show-overflow-tooltip="true" min-width="100" />
         <el-table-column label="品项" prop="itemName" :show-overflow-tooltip="true" min-width="100" />
         <el-table-column fixed="right" label="操作" header-align="left" align="left" width="100">
@@ -96,7 +97,7 @@ interface State {
     isDialogShow: boolean
     pageMainTitle: string
     pageLeftColumnTitle: string
-    pageLightColumnTitle: string
+    pageRightColumnTitle: string
     materialDetailText: string // 物料明细查找
     totalItems: number
     currentPage: number
@@ -126,7 +127,7 @@ export default defineComponent({
       isDialogShow: false,
       pageMainTitle: '检验类别',
       pageLeftColumnTitle: '类别组织',
-      pageLightColumnTitle: '物料明细',
+      pageRightColumnTitle: '物料明细',
       materialDetailText: '',
       totalItems: 0,
       currentPage: 1,
@@ -191,7 +192,7 @@ export default defineComponent({
       state.totalItems = 0
       // if (!val.notShowContextMenuOnThisNode) {
       if (val.isFinalNode === true) {
-        state.currentCategoryId = ''
+        state.currentCategoryId = val.markParentId
         state.isShowSearchBar = false
         apiMaterialDetail(val.markParentId, val.itemId, state.currentPage, state.pageSize)
       } else {
@@ -219,6 +220,7 @@ export default defineComponent({
     }
 
     const handleSizeChange = (pageSize: number) => { // 每页条数切换
+      state.currentPage = 1
       state.pageSize = pageSize
       apiMaterialDetail(state.currentCategoryId, state.globleSearchString, state.currentPage, state.pageSize)
     }
@@ -256,8 +258,9 @@ export default defineComponent({
       }).then(async () => {
         proxy.$successToast('操作成功')
         // reload page
-        await getMaterialCatagoryData()
-        state.topicMainData = []
+        // await getMaterialCatagoryData()
+        apiMaterialDetail(state.currentCategoryId, state.globleSearchString, state.currentPage, state.pageSize)
+        // state.topicMainData = []
       })
     }
 

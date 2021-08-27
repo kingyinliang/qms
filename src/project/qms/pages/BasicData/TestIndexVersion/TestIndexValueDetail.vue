@@ -3,23 +3,24 @@
  * @Anthor: Telliex
  * @Date: 2021-07-30 11:24:46
  * @LastEditors: Telliex
- * @LastEditTime: 2021-08-10 11:34:36
+ * @LastEditTime: 2021-08-26 12:41:22
 -->
 <template>
-  <mds-card class="test_method" title="标准值明细" :pack-up="false" style="margin-bottom: 0; background: #fff;">
-    <template #titleBtn>
-        <div style="float: right;display: flex; margin-bottom:10px;">
-          <el-button v-if="!controlBtnCanDo" type="primary" icon="el-icon-edit" size="small" class="role__btn" @click="btnEditItemData">编辑</el-button>
-          <el-button v-if="controlBtnCanDo" icon="el-icon-circle-plus-outline" type="primary" size="small" @click="btnAddItemData">新增</el-button>
-          <el-button v-if="controlBtnCanDo" icon="el-icon-circle-check" type="primary" size="small" @click="btnSaveItemData">保存</el-button>
-          <el-button v-if="controlBtnCanDo" icon="el-icon-circle-close" type="primary" size="small" @click="btnLeaveItemData">取消</el-button>
+  <div style="padding-top:10px">
+        <div style="display: flex; margin-bottom:10px;justify-content: space-between;">
+          <h3> <em class="title-icon" />标准值明细 </h3>
+          <div>
+            <el-button v-if="!controlBtnCanDo" type="primary" icon="el-icon-edit" size="small" class="role__btn" @click="btnEditItemData" :disabled="targetObj.id===''||(new Date(targetObj.beginDate).getTime() - new Date(formatDate()).getTime()) <= 0">编辑</el-button>
+            <el-button v-if="controlBtnCanDo" icon="el-icon-circle-plus-outline" type="primary" size="small" @click="btnAddItemData">新增</el-button>
+            <el-button v-if="controlBtnCanDo" icon="el-icon-circle-check" type="primary" size="small" @click="btnSaveItemData">保存</el-button>
+            <el-button v-if="controlBtnCanDo" icon="el-icon-circle-close" type="primary" size="small" @click="btnLeaveItemData">取消</el-button>
+          </div>
         </div>
-    </template>
-    <el-table ref="multipleTable"  :cell-style="{'text-align':'center'}" :data="topicMainData"  tooltip-effect="dark" style="width: 100%">
+    <el-table border ref="multipleTable"  :cell-style="{'text-align':'center'}" :data="topicMainData"  tooltip-effect="dark" style="width: 100%" :header-cell-style="headerMerge" max-height="300">
       <el-table-column type="index" label="序号" width="50" />
       <el-table-column label="标定标准值" min-width="200" show-overflow-tooltip>
         <template #default="scope">
-            <el-input v-model.number="scope.row.indexStandard" size="small" type="number" placeholder="请输入" :disabled="!isRedact" />
+            <el-input v-model.number="scope.row.indexStandard" size="small" placeholder="请输入" :disabled="!isRedact" />
         </template>
       </el-table-column>
       <el-table-column label="标定上限">
@@ -39,7 +40,7 @@
           show-overflow-tooltip
         >
           <template #default="scope">
-              <el-input v-model.number="scope.row.indexUp" size="small" type="number" placeholder="请输入" :disabled="!isRedact||scope.row.upSymbol===''" />
+              <el-input v-model.number="scope.row.indexUp" size="small" placeholder="请输入" :disabled="!isRedact||scope.row.upSymbol===''" />
           </template>
         </el-table-column>
       </el-table-column>
@@ -66,7 +67,7 @@
       </el-table-column>
       <el-table-column label="内控标準值" min-width="200" show-overflow-tooltip>
         <template #default="scope">
-          <el-input v-model.number="scope.row.indexInnerStandard" type="number" size="small" placeholder="请输入" :disabled="!isRedact" />
+          <el-input v-model.number="scope.row.indexInnerStandard" size="small" placeholder="请输入" :disabled="!isRedact" />
         </template>
       </el-table-column>
       <el-table-column label="内控上限">
@@ -86,7 +87,7 @@
           show-overflow-tooltip
         >
           <template #default="scope">
-            <el-input v-model.number="scope.row.indexInnerUp" size="small" type="number" placeholder="请输入" :disabled="!isRedact||scope.row.innerUpSymbol===''" />
+            <el-input v-model.number="scope.row.indexInnerUp" size="small" placeholder="请输入" :disabled="!isRedact||scope.row.innerUpSymbol===''" />
           </template>
          </el-table-column>
       </el-table-column>
@@ -108,7 +109,7 @@
         >
           <template #default="scope">
             <!-- <el-tooltip effect="dark" :disabled="scope.row.indexInnerDown===''" :content="scope.row.indexInnerDown" placement="top-start"> -->
-                <el-input v-model.number="scope.row.indexInnerDown" size="small" type="number" placeholder="请输入" :disabled="!isRedact||scope.row.innerDownSymbol===''" />
+                <el-input v-model.number="scope.row.indexInnerDown" size="small" placeholder="请输入" :disabled="!isRedact||scope.row.innerDownSymbol===''" />
             <!-- </el-tooltip> -->
           </template>
         </el-table-column>
@@ -116,18 +117,7 @@
       <el-table-column label="执行月份" width="160" prop="standardMonth" show-overflow-tooltip>
         <template #default="scope">
             <el-select v-model="scope.row.standardMonthList" size="small" :disabled="!isRedact" multiple clearable>
-                <el-option :label="'1'" :value="'1'" />
-                <el-option :label="'2'" :value="'2'" />
-                <el-option :label="'3'" :value="'3'" />
-                <el-option :label="'4'" :value="'4'" />
-                <el-option :label="'5'" :value="'5'" />
-                <el-option :label="'6'" :value="'6'" />
-                <el-option :label="'7'" :value="'7'" />
-                <el-option :label="'8'" :value="'8'" />
-                <el-option :label="'9'" :value="'9'" />
-                <el-option :label="'10'" :value="'10'" />
-                <el-option :label="'11'" :value="'11'" />
-                <el-option :label="'12'" :value="'12'" />
+                <el-option v-for="item in ['1','2','3','4','5','6','7','8','9','10','11','12']" :key="item" :label="item" :value="item" />
             </el-select>
           </template>
       </el-table-column>
@@ -139,12 +129,12 @@
         </template>
       </el-table-column>
     </el-table>
-  </mds-card>
+  </div>
 </template>
 
 <script lang="ts">
 import { defineComponent, reactive, onMounted, toRefs, ComponentInternalInstance, getCurrentInstance, watch } from 'vue'
-import MdsCard from '@/components/package/mds-card/src/mds-card.vue'
+// import MdsCard from '@/components/package/mds-card/src/mds-card.vue'
 import {
   INSPECT_INDEX_VERSION_VALUE_QUERY_API, // 基础数据-[指标版本管理][标准值明细]- 查询
   INSPECT_INDEX_VERSION_VALUE_DELETE_API, // 基础数据-[指标版本管理][标准值明细]- 删除
@@ -155,16 +145,16 @@ import _ from 'lodash'
 
 interface TopicMainData {
   id: string
-  indexStandard: string // 标定-标准值
+  indexStandard: number | null // 标定-标准值
   upSymbol: string // 标定-上限符号
-  indexUp: string // 标定-上限
+  indexUp: number | null // 标定-上限 x
+  indexDown: number | null // 标定-下限 x
+  indexInnerStandard: number | null // 内控-标准值 x
+  indexInnerUp: number | null // 内控-上限 x
+  indexInnerDown: number | null // 内控-下限 x
   downSymbol: string // 标定-下限符号
-  indexDown: string // 标定-下限
-  indexInnerStandard: string // 内控-标准值
   innerUpSymbol: string // 内控-上限符号
-  indexInnerUp: string // 内控-上限
   innerDownSymbol: string // 内控-下限符号
-  indexInnerDown: string // 内控-下限
   standardMonth: string // 执行月份
   standardMonthList: string[] // 执行月份
   delFlag: number,
@@ -172,8 +162,24 @@ interface TopicMainData {
   // isRedact: boolean
 }
 
+interface targetObjData{
+  beginDate: string
+  changeInfo: string
+  currentFlag: string
+  factory: string
+  id: string
+  indexCode: string
+  indexMethod: string
+  indexName: string
+  indexUnit: string
+  indexVersion: string
+  indexVersionMethod: string
+  inspectIndexMaterialId: string
+  inspectMaterialTypeName: string
+}
+
 interface Props{
-  target:string
+  target: targetObjData
 }
 
 interface State {
@@ -181,20 +187,22 @@ interface State {
   controlBtnCanDo: boolean
   topicMainData: TopicMainData[]
   orgTopicMainData: TopicMainData[]
-  targetId: string
+  targetObj: targetObjData
   isRedact: boolean
 }
 
 export default defineComponent({
   name: 'TestIndexValueDetailIndex',
   components: {
-    MdsCard
+
   },
   emits: ['update:dialogVisible'],
   props: {
     target: {
-      type: String,
-      default: ''
+      type: Object,
+      default: () => {
+        return {}
+      }
     }
   },
   setup (props, context) {
@@ -203,11 +211,25 @@ export default defineComponent({
     const parent = { ...context }
     const { target } = toRefs(props as Props)
     const state = reactive<State>({
-      isDialogShow: false,
+      isDialogShow: true,
       controlBtnCanDo: false,
       topicMainData: [],
       orgTopicMainData: [],
-      targetId: '',
+      targetObj: {
+        beginDate: '',
+        changeInfo: '',
+        currentFlag: '',
+        factory: '',
+        id: '',
+        indexCode: '',
+        indexMethod: '',
+        indexName: '',
+        indexUnit: '',
+        indexVersion: '',
+        indexVersionMethod: '',
+        inspectIndexMaterialId: '',
+        inspectMaterialTypeName: ''
+      },
       isRedact: false
     })
 
@@ -216,7 +238,7 @@ export default defineComponent({
     // [ACTION:load] 获取标准值明细数据
     const btnGetMainData = async () => {
       const res = await INSPECT_INDEX_VERSION_VALUE_QUERY_API({
-        inspectVersionId: state.targetId
+        inspectVersionId: state.targetObj.id
       })
       console.log('获取标准值明细数据')
       console.log(res.data.data)
@@ -276,20 +298,20 @@ export default defineComponent({
     const btnAddItemData = async () => {
       state.topicMainData.push({
         id: '',
-        indexStandard: '',
+        indexStandard: null,
         upSymbol: '',
-        indexUp: '',
+        indexUp: null,
         downSymbol: '',
-        indexDown: '',
-        indexInnerStandard: '',
+        indexDown: null,
+        indexInnerStandard: null,
         innerUpSymbol: '',
-        indexInnerUp: '',
+        indexInnerUp: null,
         innerDownSymbol: '',
-        indexInnerDown: '',
+        indexInnerDown: null,
         standardMonth: '',
         standardMonthList: [],
         delFlag: 0,
-        inspectVersionId: state.targetId
+        inspectVersionId: state.targetObj.id
         // isRedact: true
       })
     }
@@ -310,18 +332,20 @@ export default defineComponent({
         }
       })
 
-      if (ruleSubmit() && !(tempAdd.length === 0 && tempEdit.length === 0)) {
-        await INSPECT_INDEX_VERSION_VALUE_MODIFY_API(
-          {
-            insertList: tempAdd,
-            updateList: tempEdit
-          }
-        )
-        // reload
-        btnGetMainData()
+      if (ruleSubmit()) {
+        if (!(tempAdd.length === 0 && tempEdit.length === 0)) {
+          await INSPECT_INDEX_VERSION_VALUE_MODIFY_API(
+            {
+              insertList: tempAdd,
+              updateList: tempEdit
+            }
+          )
+          // reload
+          btnGetMainData()
+        }
+        // 关闭标准值明细 card
+        closeStandardValueInfoArea()
       }
-      // 关闭标准值明细 card
-      closeStandardValueInfoArea()
     }
 
     // [BTN:取消]
@@ -333,7 +357,7 @@ export default defineComponent({
     const closeStandardValueInfoArea = () => {
       state.controlBtnCanDo = false
       state.isRedact = false
-      parent.emit('update:dialogVisible', false)
+      parent.emit('update:dialogVisible', true)
     }
 
     // [BTN:编辑]
@@ -350,9 +374,10 @@ export default defineComponent({
     // }
 
     // 验证标准值明细 data
+
     const ruleSubmit = () => {
       for (const item of state.topicMainData) {
-        if (item.indexStandard === '' || item.upSymbol === '' || item.downSymbol === '' || item.indexInnerStandard === '' || item.innerUpSymbol === '' || item.innerDownSymbol === '' || item.standardMonthList.length === 0 || item.indexInnerDown === '' || item.indexInnerUp === '' || item.indexUp === '' || item.indexDown === '') {
+        if (item.indexStandard === null || item.upSymbol === '' || item.downSymbol === '' || item.indexInnerStandard === null || item.innerUpSymbol === '' || item.innerDownSymbol === '' || item.indexInnerDown === null || item.indexInnerUp === null || item.indexUp === null || item.indexDown === null) {
           proxy.$warningToast('请完整录入栏位')
           return false
         }
@@ -360,11 +385,32 @@ export default defineComponent({
       return true
     }
 
+    // 表格 header 合并
+    const headerMerge = (result:any) => {
+      if (result.rowIndex === 1) {
+        return { display: 'none' }
+      }
+    }
+
+    const formatDate = () => {
+      var d = new Date()
+      var month = '' + (d.getMonth() + 1)
+      var day = '' + d.getDate()
+      var year = d.getFullYear()
+
+      if (month.length < 2) { month = '0' + month }
+      if (day.length < 2) { day = '0' + day }
+      return [year, month, day].join('-')
+    }
+
     watch(
       target,
       newValue => {
-        if (newValue !== '') {
-          state.targetId = newValue
+        if (newValue !== null) {
+          console.log('newValue')
+          console.log(newValue)
+          // new Date(row.beginDate).getTime() - new Date(formatDate()).getTime() >= 0
+          state.targetObj = newValue
           btnGetMainData()
         }
       },
@@ -385,7 +431,9 @@ export default defineComponent({
       btnAddItemData,
       btnEditItemData,
       ruleSubmit,
-      closeStandardValueInfoArea
+      closeStandardValueInfoArea,
+      headerMerge,
+      formatDate
     }
   }
 })
@@ -394,5 +442,21 @@ export default defineComponent({
 <style lang="scss" scoped>
 .test_method{
   height: calc(100vh - 117px);
+}
+
+h3 {
+  line-height: 32px;
+  font-size: 14px !important;
+  font-weight: 600;
+  position: relative;
+  &::before{
+    display: inline-block;
+    margin-right:5px;
+    content: "";
+    width: 4px;
+    height: 12px;
+    border-radius: 2px;
+    background-color: #487bff;
+  }
 }
 </style>
