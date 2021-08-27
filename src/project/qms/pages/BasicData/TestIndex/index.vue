@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-07-30 11:24:46
  * @LastEditors: Telliex
- * @LastEditTime: 2021-08-26 11:13:11
+ * @LastEditTime: 2021-08-27 18:45:23
 -->
 <template>
   <mds-card class="test_method" title="检验指标标准" :pack-up="false" style="margin-bottom: 0; background: #fff;">
@@ -18,7 +18,7 @@
           @keyup.enter="btnGetMainData" />
         <div style="float: right;">
           <el-button icon="el-icon-search" size="small" @click="btnGetMainData">查询</el-button>
-          <el-button icon="el-icon-circle-plus-outline" type="primary" size="small" @click="btnAddItemData">新增</el-button>
+          <el-button icon="el-icon-plus" type="primary" size="small" @click="btnAddItemData">新增</el-button>
           <el-button icon="el-icon-delete" type="danger" size="small" @click="btnBatchDelete">批量删除</el-button>
         </div>
       </div>

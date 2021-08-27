@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-07-30 11:24:46
  * @LastEditors: Telliex
- * @LastEditTime: 2021-08-26 12:41:22
+ * @LastEditTime: 2021-08-27 18:45:30
 -->
 <template>
   <div style="padding-top:10px">
@@ -11,7 +11,7 @@
           <h3> <em class="title-icon" />标准值明细 </h3>
           <div>
             <el-button v-if="!controlBtnCanDo" type="primary" icon="el-icon-edit" size="small" class="role__btn" @click="btnEditItemData" :disabled="targetObj.id===''||(new Date(targetObj.beginDate).getTime() - new Date(formatDate()).getTime()) <= 0">编辑</el-button>
-            <el-button v-if="controlBtnCanDo" icon="el-icon-circle-plus-outline" type="primary" size="small" @click="btnAddItemData">新增</el-button>
+            <el-button v-if="controlBtnCanDo" icon="el-icon-plus" type="primary" size="small" @click="btnAddItemData">新增</el-button>
             <el-button v-if="controlBtnCanDo" icon="el-icon-circle-check" type="primary" size="small" @click="btnSaveItemData">保存</el-button>
             <el-button v-if="controlBtnCanDo" icon="el-icon-circle-close" type="primary" size="small" @click="btnLeaveItemData">取消</el-button>
           </div>

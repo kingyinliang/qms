@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-07-30 11:24:46
  * @LastEditors: Telliex
- * @LastEditTime: 2021-08-27 18:08:30
+ * @LastEditTime: 2021-08-27 18:49:02
 -->
 <template>
   <mds-card class="test_method" title="版本明细" :pack-up="false" style="margin-bottom: 0; background: #fff;">
@@ -12,7 +12,7 @@
         <el-input size="small" style="margin-bottom:10px; width:200px; height:35px;margin-right:10px" v-model="controlForm.filterText" placeholder="版本号" clearable @keyup.enter="btnGetMainData"  />
         <div style="float: right;">
           <el-button icon="el-icon-search"  size="small" @click="btnGetMainData">查询</el-button>
-          <el-button icon="el-icon-circle-plus-outline" type="primary" size="small" @click="btnAddItemData">新增</el-button>
+          <el-button icon="el-icon-plus" type="primary" size="small" @click="btnAddItemData">新增</el-button>
           <el-button icon="el-icon-delete" type="danger" size="small" @click="actBatchDelete">批量删除</el-button>
         </div>
       </div>
