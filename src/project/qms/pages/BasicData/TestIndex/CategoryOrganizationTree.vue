@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-07-08 11:25:52
  * @LastEditors: Telliex
- * @LastEditTime: 2021-08-24 18:49:36
+ * @LastEditTime: 2021-08-27 18:21:02
 -->
 <template>
     <dialogDevice :dialogVisible="dialogVisible" :title="title" @on-confirm="onConfirm" @on-close="onClose" width="70%">
@@ -15,7 +15,7 @@
                     属性
                 </div>
                 <ul class="category">
-                  <li v-for="item in materialTreeData" v-bind:key="item"><el-button type="text" @click="clickGategoryToChangeData(item.inspectProperty)">{{item.inspectPropertyName}}</el-button></li>
+                  <li :class="{'item-focus-status':currentIndex===index}" v-for="(item, index) in materialTreeData" v-bind:key="item"><el-button type="text" @click="clickGategoryToChangeData(item.inspectProperty,index)">{{item.inspectPropertyName}}</el-button></li>
                 </ul>
             </el-card>
           </div>
@@ -71,6 +71,7 @@ interface State {
     treeValueSelected: string[]
     materialTreeData: TreeData[]
     mainData: MainData
+    currentIndex: number
 }
 
 export default defineComponent({
@@ -109,7 +110,8 @@ export default defineComponent({
       treeFrameworkData: [],
       materialTreeData: [],
       mainData: {},
-      treeValueSelected: []
+      treeValueSelected: [],
+      currentIndex: 0
     })
     const parent = { ...context }
     const { dialogVisible, dialogData, importData } = toRefs(props as Props)
@@ -140,8 +142,9 @@ export default defineComponent({
       parent.emit('update:dialogVisible', false)
     }
 
-    const clickGategoryToChangeData = (val:string) => {
+    const clickGategoryToChangeData = (val:string, index = 0) => {
       const tempTreeData:TreeData[] = state.mainData[val]
+      state.currentIndex = index
       state.treeFrameworkData = []
       for (let i = 0; i < tempTreeData.length; i++) {
         state.treeFrameworkData.push({
@@ -219,10 +222,11 @@ export default defineComponent({
 <style lang="scss" scoped>
 .category{
   list-style: none;
-  padding: 10px 20px;
+  padding: 10px ;
   li{
-    margin-bottom: 5px;
+    margin-bottom: 3px;
     color: black;
+    padding: 4px 10px;
   }
 }
 
@@ -238,6 +242,11 @@ export default defineComponent({
   margin-bottom: 10px;
   color: #000000;
   font-size: 16px;
+}
+
+.item-focus-status{
+  background-color: #ecf5ff;
+
 }
 </style>
 <style scoped>

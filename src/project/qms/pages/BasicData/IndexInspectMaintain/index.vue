@@ -32,7 +32,7 @@
             </el-input>
             <div>
               <el-button icon="el-icon-search" size="small" @click="btnGetMainData" :disabled="Object.keys(globalMainObj).length===0">查询</el-button>
-              <el-button icon="el-icon-circle-plus-outline" type="primary" size="small" @click="handleParameterItem()" :disabled="Object.keys(globalMainObj).length===0">新增</el-button>
+              <el-button icon="el-icon-plus" type="primary" size="small" @click="handleParameterItem()" :disabled="Object.keys(globalMainObj).length===0">新增</el-button>
               <el-button icon="el-icon-delete" type="danger" size="small" @click="btnDeleteOfParameterGroupDataDelete" :disabled="multipleSelection.length===0">批量删除</el-button>
             </div>
         </div>

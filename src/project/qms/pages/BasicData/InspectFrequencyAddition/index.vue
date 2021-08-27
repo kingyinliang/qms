@@ -5,7 +5,7 @@
         <el-input size="small" style="margin-bottom:10px; width:200px; height:35px;margin-right:10px" clearable  v-model="plantList.textSearch" placeholder="名称" @keyup.enter="btnGetTopicMainData" />
         <div>
           <el-button icon="el-icon-search" size="small" @click="btnGetTopicMainData">查询</el-button>
-          <el-button icon="el-icon-circle-check" type="primary" size="small" @click="btnAddItemOfTopicMainData">新增</el-button>
+          <el-button icon="el-icon-plus" type="primary" size="small" @click="btnAddItemOfTopicMainData">新增</el-button>
           <el-button icon="el-icon-delete" type="danger" size="small" @click="btnDeleteItemsOfTopicMainData">批量删除</el-button>
         </div>
       </div>
