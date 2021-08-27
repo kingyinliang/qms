@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-07-30 11:24:46
  * @LastEditors: Telliex
- * @LastEditTime: 2021-08-27 16:47:27
+ * @LastEditTime: 2021-08-27 18:08:30
 -->
 <template>
   <mds-card class="test_method" title="版本明细" :pack-up="false" style="margin-bottom: 0; background: #fff;">
@@ -338,8 +338,8 @@ export default defineComponent({
       if (state.addFormInfo.beginDate !== '') {
         console.log('state.addFormInfo.beginDate')
         console.log(state.addFormInfo.beginDate)
-        const temp:string = state.addFormInfo.beginDate
-        state.addFormInfo.beginDate = temp.substring(0, 10)
+        const temp:string = formatDateTransfer(state.addFormInfo.beginDate)
+        state.addFormInfo.beginDate = temp
       }
 
       if (state.addFormInfo.title === '版本明细-新增') { // 新增
@@ -464,6 +464,17 @@ export default defineComponent({
       return [year, month, day].join('-')
     }
 
+    const formatDateTransfer = (date:any) => {
+      var d = new Date(date)
+      var month = '' + (d.getMonth() + 1)
+      var day = '' + d.getDate()
+      var year = d.getFullYear()
+
+      if (month.length < 2) { month = '0' + month }
+      if (day.length < 2) { day = '0' + day }
+      return [year, month, day].join('-')
+    }
+
     const checkDate = (row:TopicMainData) => {
       if ((new Date(row.beginDate).getTime() - new Date(formatDate()).getTime()) <= 0) {
         return false
@@ -516,7 +527,8 @@ export default defineComponent({
       handleCurrentChange,
       checkDate,
       btnEditItemOfTopicMainData,
-      pickerOptions
+      pickerOptions,
+      formatDateTransfer
     }
   }
 })
