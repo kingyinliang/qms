@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-07-30 11:24:46
  * @LastEditors: Telliex
- * @LastEditTime: 2021-08-26 14:52:42
+ * @LastEditTime: 2021-08-27 14:06:31
 -->
 <template>
   <mds-card class="test_method" title="版本明细" :pack-up="false" style="margin-bottom: 0; background: #fff;">
@@ -253,7 +253,9 @@ export default defineComponent({
       state.isDialogShow = true
 
       // 默认第一条数据
-      handleDbclick(state.topicMainData[0])
+      if (state.topicMainData.length !== 0) {
+        handleDbclick(state.topicMainData[0])
+      }
     }
 
     // [BTN:新增] 新增 item
@@ -286,8 +288,6 @@ export default defineComponent({
     // [table] 选框选择
     const handleSelectionChange = (val: TopicMainData[]) => {
       state.selectedListOfTopicMainData = val
-      console.log(state.selectedListOfTopicMainData)
-      // multipleSelection.value = val.map((item: TargetInfo) => item.id)
     }
 
     // [BTN:批次删除]
@@ -335,7 +335,11 @@ export default defineComponent({
         proxy.$errorToast('必须选择今天以后的日期')
         return
       }
-      state.addFormInfo.beginDate = state.addFormInfo.beginDate.substring(0, 10)
+      if (state.addFormInfo.beginDate !== '') {
+        const temp:string = state.addFormInfo.beginDate
+        state.addFormInfo.beginDate = String(temp).substring(0, 10)
+      }
+
       if (state.addFormInfo.title === '版本明细-新增') { // 新增
         await INSPECT_INDEX_VERSION_ADD_API({
           inspectIndexMaterialId: state.inspectIndexMaterialId,
