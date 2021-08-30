@@ -55,7 +55,7 @@
         </el-form-item>
         <el-form-item label="过程参数：" prop="paramCode"  :label-width="cssForformLabelWidth">
           <!-- <el-input v-model="addAndEditItemForm.paramCode" class="inputWidth" disabled="true" placeholder="请输入" autocomplete="off"></el-input> -->
-           <div class="fake-input">
+           <div class="fake-input-disabled">
             <span>{{addAndEditItemForm.paramCode===''?'':addAndEditItemForm.paramCode.split('[')[0]}}<sub>{{addAndEditItemForm.paramCode===''?'':addAndEditItemForm.paramCode.split('[')[1].replace(']','')}}</sub></span>
           </div>
         </el-form-item>
@@ -292,29 +292,8 @@ export default defineComponent({
   display: flex;
   justify-content: flex-end;
 }
-.el-form /deep/.inputWidth {
+.el-form::v-deep(.inputWidth) {
   width: 100%;
 }
 
-.fake-input{
-    background-color: var(--el-disabled-fill-base);
-    border-color: var(--el-disabled-border-base);
-    color: var(--el-disabled-color-base);
-    cursor: not-allowed;
-    -webkit-appearance: none;
-    background-image: none;
-    border-radius: var(--el-input-border-radius,var(--el-border-radius-base));
-    border: var(--el-input-border,var(--el-border-base));
-    -webkit-box-sizing: border-box;
-    box-sizing: border-box;
-    display: inline-block;
-    font-size: inherit;
-    height: 40px;
-    line-height: 40px;
-    outline: 0;
-    padding: 0 15px;
-    -webkit-transition: var(--el-border-transition-base);
-    transition: var(--el-border-transition-base);
-    width: 100%;
-}
 </style>

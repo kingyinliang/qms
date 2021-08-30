@@ -139,3 +139,25 @@ body{
   }
 }
 
+
+.fake-input-disabled{
+    background-color: var(--el-disabled-fill-base,#f5f7fa);
+    border-color: var(--el-disabled-border-base,#e4e7ed);
+    color: var(--el-disabled-color-base,#c0c4cc);
+    cursor: not-allowed;
+    -webkit-appearance: none;
+    background-image: none;
+    border-radius: var(--el-input-border-radius,var(--el-border-radius-base),4px);
+    border: var(--el-input-border,var(--el-border-base),1px);
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+    display: inline-block;
+    font-size: inherit;
+    height: 40px;
+    line-height: 40px;
+    outline: 0;
+    padding: 0 15px;
+    -webkit-transition: var(--el-border-transition-base);
+    transition: var(--el-border-transition-base);
+    width: 100%;
+}

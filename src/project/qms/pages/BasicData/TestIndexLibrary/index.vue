@@ -190,9 +190,6 @@ export default defineComponent({
         inspectScene: data.inspectScene
       })
       proxy.$successToast('操作成功')
-      state.currentPage = 1
-      state.pageSize = 10
-      state.totalItems = 0
       getMainData()
     }
 

@@ -3,26 +3,26 @@
  * @Anthor: Telliex
  * @Date: 2021-07-08 11:25:52
  * @LastEditors: Telliex
- * @LastEditTime: 2021-08-25 10:09:37
+ * @LastEditTime: 2021-08-30 14:06:19
 -->
 <template>
     <dialogDevice :dialogVisible="dialogVisible" :title="title" @on-confirm="onConfirm" @on-close="onClose">
       <template #default>
          <el-form ref="ruleForm"  :model="formData" :rules="dataRule">
           <el-form-item label="指标代码：" prop="indexCode" :label-width="'120px'">
-            <el-input v-model="formData.indexCode" class="inputWidth" :disabled="true" autocomplete="off"></el-input>
+            <el-input v-model="formData.indexCode" class="inputWidth" :disabled="true" placeholder="" autocomplete="off"></el-input>
           </el-form-item>
           <el-form-item label="指标名称：" prop="indexName" :label-width="'120px'">
-            <el-input v-model="formData.indexName" class="inputWidth" :disabled="true" placeholder="请输入" autocomplete="off"></el-input>
+            <el-input v-model="formData.indexName" class="inputWidth" :disabled="true" placeholder="" autocomplete="off"></el-input>
           </el-form-item>
           <el-form-item label="单位：" prop="indexUnit" :label-width="'120px'">
-            <el-input v-model="formData.indexUnit" class="inputWidth" :disabled="true" placeholder="来料检验" autocomplete="off"></el-input>
+            <el-input v-model="formData.indexUnit" class="inputWidth" :disabled="true" placeholder="" autocomplete="off"></el-input>
           </el-form-item>
           <el-form-item label="方法：" prop="indexMethod" :label-width="'120px'">
-            <el-input v-model="formData.indexMethod" class="inputWidth" :disabled="true" placeholder="来料检验" autocomplete="off"></el-input>
+            <el-input v-model="formData.indexMethod" class="inputWidth" :disabled="true" placeholder="" autocomplete="off"></el-input>
           </el-form-item>
           <el-form-item label="属性：" prop="inspectProperty" :label-width="'120px'">
-            <el-select v-model="formData.inspectProperty" style="width: 100%"  :disabled="true"  placeholder="请选择">
+            <el-select v-model="formData.inspectProperty" style="width: 100%"  :disabled="true"  placeholder="">
               <el-option v-for="(opt, optIndex) in inspectPropertyOptions" :key="optIndex" :label="opt.dictValue" :value="opt.dictCode" />
             </el-select>
           </el-form-item>
