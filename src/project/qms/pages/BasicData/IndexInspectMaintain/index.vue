@@ -803,7 +803,7 @@ export default defineComponent({
 
 </style>
 <style scoped >
-.required >>> .el-form-item__label:before {
+.required ::v-deep(.el-form-item__label:before) {
     content: "*";
     color: var(--el-color-danger);
     margin-right: 4px;
