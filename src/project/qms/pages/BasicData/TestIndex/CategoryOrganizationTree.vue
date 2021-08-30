@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-07-08 11:25:52
  * @LastEditors: Telliex
- * @LastEditTime: 2021-08-27 18:21:02
+ * @LastEditTime: 2021-08-30 09:04:41
 -->
 <template>
     <dialogDevice :dialogVisible="dialogVisible" :title="title" @on-confirm="onConfirm" @on-close="onClose" width="70%">
@@ -250,15 +250,15 @@ export default defineComponent({
 }
 </style>
 <style scoped>
-.el-card.property >>> .el-card__body{
+.el-card.property ::v-deep(.el-card__body){
   padding: 0;
   font-size: 16px;
 }
 
-.el-button >>> span{
+.el-button ::v-deep(span){
   color:#606266;
 }
-.el-button >>> span:hover{
+.el-button ::v-deep(span:hover){
   color:#487bff;
 }
 </style>

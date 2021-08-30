@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-07-30 11:24:46
  * @LastEditors: Telliex
- * @LastEditTime: 2021-08-27 18:45:23
+ * @LastEditTime: 2021-08-30 09:04:58
 -->
 <template>
   <mds-card class="test_method" title="检验指标标准" :pack-up="false" style="margin-bottom: 0; background: #fff;">
@@ -565,7 +565,7 @@ export default defineComponent({
 
 </style>
 <style scoped >
-  .star >>> .el-form-item__label:before {
+  .star::v-deep( .el-form-item__label:before){
     content: "*";
     color: #ff0000;
     margin-right: 4px;

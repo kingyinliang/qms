@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-07-30 11:24:46
  * @LastEditors: Telliex
- * @LastEditTime: 2021-08-27 18:49:02
+ * @LastEditTime: 2021-08-30 09:05:10
 -->
 <template>
   <mds-card class="test_method" title="版本明细" :pack-up="false" style="margin-bottom: 0; background: #fff;">
@@ -575,7 +575,7 @@ export default defineComponent({
 
 </style>
 <style scoped>
-.el-form-item__content >>> .el-upload--text{
+.el-form-item__content ::v-deep(.el-upload--text){
   width: 100%;
 }
 </style>
