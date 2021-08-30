@@ -43,17 +43,17 @@
             @selection-change="handleSelectionChange"
             @row-dblclick="setProcessParameter"
             >
-            <el-table-column type="selection" width="55" />
+            <el-table-column type="selection" width="45" />
             <el-table-column type="index" :index="index => index + 1 + (Number(currentPage) - 1) * (Number(pageSize))" label="序号"  width="55" fixed align="center" size="small" />
             <el-table-column label="编码" prop="parameterGroupCode" :show-overflow-tooltip="true" min-width="100" />
             <el-table-column label="过程参数组" prop="parameterGroupName" :show-overflow-tooltip="true" min-width="100" />
             <el-table-column label="关联项" prop="groupMaterialName" :show-overflow-tooltip="true" min-width="100" />
             <!--todo-->
             <el-table-column v-if="globalMainObj.inspectProperty === 'MICROBE'" label="参数明细" prop="parameterDetails" :show-overflow-tooltip="true" min-width="100" />
-            <el-table-column fixed="right" label="操作" header-align="left" align="left" width="100">
+            <el-table-column fixed="right" label="操作" header-align="left" align="left" width="80">
                 <template #default="scope">
                     <el-button  type="text" icon="el-icon-edit" @click="handleParameterItem(scope.row)" class="role__btn">
-                        编辑
+                        <em>编辑</em>
                     </el-button>
                 </template>
             </el-table-column>
@@ -155,13 +155,14 @@
 
     <template #footer>
       <span class="dialog-footer">
-        <el-button @click="btnItemFloatClear">取 消</el-button>
+        <el-button size="small" icon="el-icon-circle-close" @click="btnItemFloatClear">取 消</el-button>
         <!--检验方法-->
         <template v-if="mainDialog.title==='检验方法'">
-          <el-button type="primary" @click="btnItemFloatConfirm(inspectTypeform.inspectType)">确 定</el-button>
+          <el-button size="small" type="primary" icon="el-icon-circle-check" @click="btnItemFloatConfirm(inspectTypeform.inspectType)">确 定</el-button>
+
         </template>
         <template v-if="mainDialog.title==='参数配置'">
-          <el-button type="primary" @click="btnAddItemFloatConfirm()">确 定</el-button>
+          <el-button size="small" type="primary" icon="el-icon-circle-check" @click="btnAddItemFloatConfirm()">确 定</el-button>
         </template>
       </span>
     </template>

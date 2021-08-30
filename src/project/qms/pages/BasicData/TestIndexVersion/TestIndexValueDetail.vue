@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-07-30 11:24:46
  * @LastEditors: Telliex
- * @LastEditTime: 2021-08-27 18:45:30
+ * @LastEditTime: 2021-08-30 14:57:00
 -->
 <template>
   <div style="padding-top:10px">
@@ -121,10 +121,10 @@
             </el-select>
           </template>
       </el-table-column>
-      <el-table-column label="操作" width="200" fixed="right">
+      <el-table-column label="操作" width="80" fixed="right">
         <template #default="scope" >
           <el-button type="text" icon="el-icon-remove-outline" class="role__btn" @click="btnDeleteItemData(scope.$index,scope.row)" :disabled="!isRedact">
-           删除
+           <em>删除</em>
           </el-button>
         </template>
       </el-table-column>

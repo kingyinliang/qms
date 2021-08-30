@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-07-08 11:25:52
  * @LastEditors: Telliex
- * @LastEditTime: 2021-07-21 16:59:31
+ * @LastEditTime: 2021-08-30 14:47:26
 -->
 <template>
   <el-dialog :title="title" v-model="isDialogShow" width="30%" @close="onClose">
@@ -12,8 +12,8 @@
     </slot>
     <template #footer>
       <span class="dialog-footer">
-        <el-button size="mini" @click="onClose">取 消</el-button>
-        <el-button size="mini" type="primary" @click="onConfirm">确 定</el-button>
+        <el-button size="small" icon="el-icon-circle-close" @click="onClose">取 消</el-button>
+        <el-button size="small" icon="el-icon-circle-check" type="primary" @click="onConfirm">确 定</el-button>
       </span>
     </template>
   </el-dialog>

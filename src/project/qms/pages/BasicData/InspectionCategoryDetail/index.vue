@@ -20,23 +20,24 @@
             style="margin-bottom:10px; width:200px; height:35px;"
             @keyup.enter="apiMaterialDetail(currentCategoryId,materialDetailText,1,10)">
           </el-input>
-          <el-button icon="el-icon-search" size="mini" style="height:32px; margin-left:5px"  @click="apiMaterialDetail(currentCategoryId,materialDetailText,1,10)">查询</el-button>
+          <el-button icon="el-icon-search" size="small" class="topic-button"  @click="apiMaterialDetail(currentCategoryId,materialDetailText,1,10)">查询</el-button>
         </template>
       </div>
      <el-table
         :data="topicMainData"
         style="width: 100%"
         max-height="500"
-        border tooltip-effect="dark">
+        border tooltip-effect="dark"
+        class="bueatyScroll">
         <el-table-column type="index" :index="index => index + 1 + (Number(currentPage) - 1) * (Number(pageSize))" label="序号"  width="55" fixed align="center" size="small" />
         <el-table-column label="物料编码" prop="inspectMaterialCode" :show-overflow-tooltip="true" min-width="100" />
         <el-table-column label="物料描述" prop="inspectMaterialName" :show-overflow-tooltip="true" min-width="100" />
         <el-table-column label="归属上级" prop="inspectGroupName" :show-overflow-tooltip="true" min-width="100" />
         <el-table-column label="品项" prop="itemName" :show-overflow-tooltip="true" min-width="100" />
-        <el-table-column fixed="right" label="操作" header-align="left" align="left" width="100">
+        <el-table-column fixed="right" label="操作" header-align="left" align="left" width="80">
             <template #default="scope">
                 <el-button  type="text" icon="el-icon-edit" @click="handleSingleEdit(scope.row)" class="role__btn">
-                    编辑
+                    <em>编辑</em>
                 </el-button>
             </template>
         </el-table-column>
