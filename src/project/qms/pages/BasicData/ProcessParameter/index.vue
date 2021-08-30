@@ -11,7 +11,7 @@
       </div>
     </template>
     <el-table border ref="multipleTable" :cell-style="{'text-align':'center'}" :data="dataTopicMainData" tooltip-effect="dark" style="width: 100%" @selection-change="handleSelectionChange">
-      <el-table-column type="selection" width="55" />
+      <el-table-column type="selection" width="45" />
       <el-table-column type="index" label="序号" :index="(index) => index + 1 + (currentPage - 1) * pageSize" width="50" />
       <!-- <el-table-column label="编码" prop="paramName" /> -->
       <el-table-column label="参数名称" prop="paramSubscriptCode" />
@@ -21,10 +21,10 @@
           <span>{{scope.row.paramCode.split('[')[0]}}<sub>{{scope.row.paramCode.split('[')[1].replace(']','')}}</sub></span>
         </template>
       </el-table-column>
-      <el-table-column label="操作" width="120" fixed="right">
+      <el-table-column label="操作" width="80" fixed="right">
         <template #default="scope">
           <el-button type="text" icon="el-icon-edit" class="role__btn" @click="btnEditItemOfTopicMainData(scope.row)">
-            编辑
+            <em>编辑</em>
           </el-button>
         </template>
       </el-table-column>
@@ -55,7 +55,7 @@
         </el-form-item>
         <el-form-item label="过程参数：" prop="paramCode"  :label-width="cssForformLabelWidth">
           <!-- <el-input v-model="addAndEditItemForm.paramCode" class="inputWidth" disabled="true" placeholder="请输入" autocomplete="off"></el-input> -->
-           <div class="fake-input">
+           <div class="fake-input-disabled">
             <span>{{addAndEditItemForm.paramCode===''?'':addAndEditItemForm.paramCode.split('[')[0]}}<sub>{{addAndEditItemForm.paramCode===''?'':addAndEditItemForm.paramCode.split('[')[1].replace(']','')}}</sub></span>
           </div>
         </el-form-item>
@@ -292,29 +292,8 @@ export default defineComponent({
   display: flex;
   justify-content: flex-end;
 }
-.el-form /deep/.inputWidth {
+.el-form::v-deep(.inputWidth) {
   width: 100%;
 }
 
-.fake-input{
-    background-color: var(--el-disabled-fill-base);
-    border-color: var(--el-disabled-border-base);
-    color: var(--el-disabled-color-base);
-    cursor: not-allowed;
-    -webkit-appearance: none;
-    background-image: none;
-    border-radius: var(--el-input-border-radius,var(--el-border-radius-base));
-    border: var(--el-input-border,var(--el-border-base));
-    -webkit-box-sizing: border-box;
-    box-sizing: border-box;
-    display: inline-block;
-    font-size: inherit;
-    height: 40px;
-    line-height: 40px;
-    outline: 0;
-    padding: 0 15px;
-    -webkit-transition: var(--el-border-transition-base);
-    transition: var(--el-border-transition-base);
-    width: 100%;
-}
 </style>

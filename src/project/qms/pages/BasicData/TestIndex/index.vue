@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-07-30 11:24:46
  * @LastEditors: Telliex
- * @LastEditTime: 2021-08-27 18:45:23
+ * @LastEditTime: 2021-08-30 15:04:20
 -->
 <template>
   <mds-card class="test_method" title="检验指标标准" :pack-up="false" style="margin-bottom: 0; background: #fff;">
@@ -24,8 +24,8 @@
       </div>
     </template>
     <el-table border ref="multipleTable"  :cell-style="{'text-align':'center'}" :data="topicMainData" tooltip-effect="dark" style="width: 100%" @selection-change="actHandleSelectionChange" max-height="400">
-      <el-table-column type="selection" width="55" />
-      <el-table-column type="index" label="序号" :index="(index) => index + 1 + (currentPage - 1) * pageSize" width="50" />
+      <el-table-column type="selection" width="45" />
+      <el-table-column type="index" label="序号" :index="(index) => index + 1 + (currentPage - 1) * pageSize" width="55" />
       <el-table-column label="检验类别\物料" min-width="200" prop="inspectMaterialTypeName" show-overflow-tooltip />
       <el-table-column label="指标代码" width="160" prop="indexCode" show-overflow-tooltip />
       <el-table-column label="指标名称" min-width="160" prop="indexName" show-overflow-tooltip />
@@ -33,13 +33,13 @@
       <el-table-column label="方法"  min-width="200" prop="indexMethod" show-overflow-tooltip />
       <!-- <el-table-column label="指标类" width="160" prop="indexType" show-overflow-tooltip /> -->
       <el-table-column label="指标类描述" width="160" prop="indexTypeName" show-overflow-tooltip />
-      <el-table-column label="操作" width="200" fixed="right">
+      <el-table-column label="操作" width="180" fixed="right">
         <template #default="scope" >
           <el-button type="text" icon="el-icon-edit" class="role__btn" @click="btnEditItemData(scope.row)">
-           编辑
+           <em>编辑</em>
           </el-button>
           <el-button type="text" icon="el-icon-money" class="role__btn" @click="btnVersionController(scope.row)">
-           版本管理
+           <em>版本管理</em>
           </el-button>
         </template>
       </el-table-column>
@@ -94,8 +94,8 @@
     </el-form>
     <template #footer>
       <span class="dialog-footer">
-        <el-button @click="btnItemFloatClear">取消</el-button>
-        <el-button type="primary" @click="btnItemFloatConfirm(singleItemform.title)">确定</el-button>
+        <el-button size="small" icon="el-icon-circle-close" @click="btnItemFloatClear">取消</el-button>
+        <el-button size="small" icon="el-icon-circle-check" type="primary" @click="btnItemFloatConfirm(singleItemform.title)">确定</el-button>
       </span>
     </template>
   </el-dialog>
@@ -565,7 +565,7 @@ export default defineComponent({
 
 </style>
 <style scoped >
-  .star >>> .el-form-item__label:before {
+  .star ::v-deep(.el-form-item__label:before){
     content: "*";
     color: #ff0000;
     margin-right: 4px;

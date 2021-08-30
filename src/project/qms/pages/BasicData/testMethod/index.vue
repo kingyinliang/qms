@@ -2,11 +2,7 @@
   <mds-card class="test_method" title="检验方法" :pack-up="false" style="margin-bottom: 0; background: #fff;">
     <template #titleBtn>
       <div style="float: right;display: flex;">
-        <!-- <el-form ref="pstngDate" :model="plantList" size="small" :inline="true" label-position="right" label-width="82px" class="topforms" style=" float: left;">
-          <el-form-item label="" prop="pstngDate"> -->
-            <el-input size="small" style="margin-bottom:10px; width:200px; height:35px;margin-right:10px"  v-model="plantList.inspectMethodCodeOrName" placeholder="检验方法编码/名称" @keyup.enter="getList" />
-          <!-- </el-form-item>
-        </el-form> -->
+        <el-input size="small" style="margin-bottom:10px; width:200px; height:35px;margin-right:10px"  v-model="plantList.inspectMethodCodeOrName" placeholder="检验方法编码/名称" @keyup.enter="getList" />
         <div style="float: right;">
           <el-button icon="el-icon-search" size="small" @click="getList">查询</el-button>
           <el-button icon="el-icon-plus" type="primary" @click="addData" size="small">新增</el-button>
@@ -15,15 +11,15 @@
       </div>
     </template>
     <el-table ref="multipleTable" border :cell-style="{'text-align':'center'}" :data="materialData.slice((currPage - 1) * pageSize, currPage * pageSize)" tooltip-effect="dark" style="width: 100%" @selection-change="handleSelectionChange">
-      <el-table-column type="selection" width="55" />
-      <el-table-column type="index" label="序号" :index="(index) => index + 1 + (currPage - 1) * pageSize" width="50" />
+      <el-table-column type="selection" width="45" />
+      <el-table-column type="index" label="序号" :index="(index) => index + 1 + (currPage - 1) * pageSize" width="55" />
       <el-table-column label="编码" prop="inspectMethodCode" />
       <el-table-column label="检验方法" prop="inspectMethodName" />
       <el-table-column label="属性" prop="inspectPropertyName" />
-      <el-table-column label="操作" width="120" fixed="right">
+      <el-table-column label="操作" width="80" fixed="right">
         <template #default="scope">
           <el-button type="text" icon="iconfont factory-luru" class="role__btn" @click="editItem(scope.row)">
-            编辑
+            <em>编辑</em>
           </el-button>
         </template>
       </el-table-column>
