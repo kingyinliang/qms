@@ -19,10 +19,10 @@
       <el-table-column label="频次附加项" prop="additionalName" />
       <el-table-column label="操作人员" prop="changer" />
       <el-table-column label="操作时间" prop="changed" />
-      <el-table-column label="操作" width="120" fixed="right">
+      <el-table-column label="操作" width="80" fixed="right">
         <template #default="scope">
           <el-button type="text" icon="el-icon-edit" class="role__btn" @click="btnEditItemOfTopicMainData(scope.row)">
-            编辑
+            <em>编辑</em>
           </el-button>
         </template>
       </el-table-column>
@@ -43,7 +43,7 @@
   <el-dialog v-model="isAddItemDialogShow" :title="dialogTitle" width="30%">
       <el-form ref="refAddAndEditItemDialog" :model="addAndEditItemForm" :rules="dataRule">
         <el-form-item label="检验频次名称：" prop="frequencyName" :label-width="cssForformLabelWidth">
-          <div class="fake-input">
+          <div class="fake-input-disabled">
             <!-- <span>{{addAndEditItemForm.frequency}}/{{addAndEditItemForm.inspectIndexId}}</span> -->
             {{addAndEditItemForm.frequency}}<em v-if="addAndEditItemForm.frequency!==null"> 次 </em> <em v-if="addAndEditItemForm.dateUnit!==''"> / </em>{{addAndEditItemForm.dateUnit}} <em v-if="addAndEditItemForm.inspectAdditionalNames.length!==0">/</em> {{addAndEditItemForm.inspectAdditionalNames.join(',')}}
             </div>
@@ -367,44 +367,13 @@ export default defineComponent({
 .test_method{
   height: calc(100vh - 117px);
 }
-.topforms {
-  display: flex;
-  .el-date-editor.el-input {
-    width: auto;
-  }
-  .formtextarea {
-    .el-form-item__content {
-      width: 500px;
-    }
-  }
-}
+
 .dialog-footer {
   display: flex;
   justify-content: flex-end;
 }
-.el-form /deep/.inputWidth {
+.el-form::v-deep(.inputWidth) {
   width: 100%;
 }
 
-.fake-input{
-    background-color: var(--el-disabled-fill-base);
-    border-color: var(--el-disabled-border-base);
-    color: var(--el-disabled-color-base);
-    cursor: not-allowed;
-    -webkit-appearance: none;
-    background-image: none;
-    border-radius: var(--el-input-border-radius,var(--el-border-radius-base));
-    border: var(--el-input-border,var(--el-border-base));
-    -webkit-box-sizing: border-box;
-    box-sizing: border-box;
-    display: inline-block;
-    font-size: inherit;
-    height: 40px;
-    line-height: 40px;
-    outline: 0;
-    padding: 0 15px;
-    -webkit-transition: var(--el-border-transition-base);
-    transition: var(--el-border-transition-base);
-    width: 100%;
-}
 </style>
