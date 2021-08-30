@@ -11,16 +11,16 @@
       </div>
     </template>
     <el-table border ref="multipleTable" :cell-style="{'text-align':'center'}" :data="dataTopicMainData" tooltip-effect="dark" style="width: 100%" @selection-change="handleSelectionChange">
-      <el-table-column type="selection" width="55" />
+      <el-table-column type="selection" width="45" />
       <el-table-column type="index" label="序号" :index="(index) => index + 1 + (currentPage - 1) * pageSize" width="50" />
       <el-table-column label="编码" prop="additionalCode" />
       <el-table-column label="名称" prop="additionalName" />
       <el-table-column label="操作人员" prop="changer" />
       <el-table-column label="操作时间" prop="changed" />
-      <el-table-column label="操作" width="120" fixed="right">
+      <el-table-column label="操作" width="80" fixed="right">
         <template #default="scope">
           <el-button type="text" icon="el-icon-edit" class="role__btn" @click="btnEditItemOfTopicMainData(scope.row)">
-            编辑
+            <em>编辑</em>
           </el-button>
         </template>
       </el-table-column>

@@ -19,10 +19,10 @@
       <el-table-column label="频次附加项" prop="additionalName" />
       <el-table-column label="操作人员" prop="changer" />
       <el-table-column label="操作时间" prop="changed" />
-      <el-table-column label="操作" width="120" fixed="right">
+      <el-table-column label="操作" width="80" fixed="right">
         <template #default="scope">
           <el-button type="text" icon="el-icon-edit" class="role__btn" @click="btnEditItemOfTopicMainData(scope.row)">
-            编辑
+            <em>编辑</em>
           </el-button>
         </template>
       </el-table-column>

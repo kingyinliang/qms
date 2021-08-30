@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-07-30 11:24:46
  * @LastEditors: Telliex
- * @LastEditTime: 2021-08-30 09:05:10
+ * @LastEditTime: 2021-08-30 18:21:30
 -->
 <template>
   <mds-card class="test_method" title="版本明细" :pack-up="false" style="margin-bottom: 0; background: #fff;">
@@ -17,9 +17,9 @@
         </div>
       </div>
     </template>
-    <el-table border ref="multipleTable"  :cell-style="{'text-align':'center'}" :data="topicMainData" tooltip-effect="dark" style="width: 100%" @selection-change="handleSelectionChange" @row-dblclick="handleDbclick" max-height="300">
-      <el-table-column type="selection" width="55" :selectable="checkDate" />
-      <el-table-column type="index" label="序号" :index="(index) => index + 1 + (currentPage - 1) * pageSize" width="50" />
+    <el-table border class="bueatlyScrol" :row-class-name="tableRowClassName" highlight-current-row ref="multipleTable"  :cell-style="{'text-align':'center'}" :data="topicMainData" tooltip-effect="dark" style="width: 100%" @selection-change="handleSelectionChange" @row-dblclick="handleDbclick" max-height="300">
+      <el-table-column type="selection" width="45" :selectable="checkDate" />
+      <el-table-column type="index" label="序号" :index="(index) => index + 1 + (currentPage - 1) * pageSize" width="55" />
       <el-table-column label="检验类别\物料" min-width="200" prop="inspectMaterialTypeName" show-overflow-tooltip />
       <el-table-column label="指标代码" width="160" prop="indexCode" show-overflow-tooltip />
       <el-table-column label="指标名称" width="160" prop="indexName" show-overflow-tooltip />
@@ -36,10 +36,10 @@
       </el-table-column>
       <el-table-column label="变更说明" width="160" prop="changeInfo" show-overflow-tooltip />
       <el-table-column label="执行开始日" width="200" prop="beginDate" show-overflow-tooltip />
-      <el-table-column label="操作" width="120" fixed="right">
+      <el-table-column label="操作" width="80" fixed="right">
         <template #default="scope">
           <el-button type="text" icon="el-icon-edit" class="role__btn" @click="btnEditItemOfTopicMainData(scope.row)" :disabled="(new Date(scope.row.beginDate).getTime() - new Date(formatDate()).getTime()) <= 0">
-            编辑
+            <em>编辑</em>
           </el-button>
         </template>
       </el-table-column>
@@ -96,8 +96,8 @@
       </el-form>
     <template #footer>
       <span class="dialog-footer">
-        <el-button @click="btnItemFloatClear">取 消</el-button>
-        <el-button type="primary" @click="btnItemFloatConfirm" :disabled="!fileUploadFinish">确 定</el-button>
+        <el-button size="small" icon="el-icon-circle-close" @click="btnItemFloatClear">取 消</el-button>
+        <el-button size="small" icon="el-icon-circle-check" type="primary" @click="btnItemFloatConfirm" :disabled="!fileUploadFinish">确 定</el-button>
       </span>
     </template>
   </el-dialog>
@@ -497,6 +497,13 @@ export default defineComponent({
       return time.getTime() < Date.now()
     }
 
+    const tableRowClassName = (object: any) => {
+      if (object.rowIndex === 0) {
+        return 'current-row'
+      }
+      return ''
+    }
+
     onMounted(async () => {
       if (store.state.common.inspectIndexMaterialId === '') {
         store.commit('common/updateInspectIndexMaterialId', router.currentRoute.value.query.versionID as string)
@@ -528,7 +535,8 @@ export default defineComponent({
       checkDate,
       btnEditItemOfTopicMainData,
       pickerOptions,
-      formatDateTransfer
+      formatDateTransfer,
+      tableRowClassName
     }
   }
 })
@@ -578,4 +586,5 @@ export default defineComponent({
 .el-form-item__content ::v-deep(.el-upload--text){
   width: 100%;
 }
+
 </style>

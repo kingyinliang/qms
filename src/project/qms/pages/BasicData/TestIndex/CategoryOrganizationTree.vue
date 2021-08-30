@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-07-08 11:25:52
  * @LastEditors: Telliex
- * @LastEditTime: 2021-08-30 09:04:41
+ * @LastEditTime: 2021-08-30 16:32:00
 -->
 <template>
     <dialogDevice :dialogVisible="dialogVisible" :title="title" @on-confirm="onConfirm" @on-close="onClose" width="70%">
@@ -138,6 +138,7 @@ export default defineComponent({
     }
 
     const onClose = () => {
+      state.treeFrameworkData = []
       parent.emit('actReset')
       parent.emit('update:dialogVisible', false)
     }
@@ -181,22 +182,24 @@ export default defineComponent({
     watch(
       dialogData,
       newValue => {
+        console.log('newValue')
+        console.log(newValue)
         state.materialTreeData = newValue
         state.treeValueSelected = [] // 进页面 elected items init
         state.treeFrameworkData = [] // 进页面 data structure init
-        if (Object.keys(state.mainData).length === 0) {
-          // state.mainData = {}
-          state.materialTreeData.forEach((item:TreeData) => {
-            if (item.inspectProperty === 'PHYSICAL') {
-              item.inspectPropertyName = '理化类'
-            }
-            if (item.inspectProperty === 'MICROBE') {
-              item.inspectPropertyName = '微生物类'
-            }
+        // if (Object.keys(state.mainData).length === 0) {
+        // state.mainData = {}
+        state.materialTreeData.forEach((item:TreeData) => {
+          if (item.inspectProperty === 'PHYSICAL') {
+            item.inspectPropertyName = '理化类'
+          }
+          if (item.inspectProperty === 'MICROBE') {
+            item.inspectPropertyName = '微生物类'
+          }
 
-            state.mainData[item.inspectProperty] = JSON.parse(JSON.stringify(item.inspectGroups))
-          })
-        }
+          state.mainData[item.inspectProperty] = JSON.parse(JSON.stringify(item.inspectGroups))
+        })
+        // }
 
         if (state.materialTreeData.length >= 1) {
           clickGategoryToChangeData(state.materialTreeData[0].inspectProperty)

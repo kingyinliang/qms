@@ -24,7 +24,7 @@
         style="margin-bottom:10px; width:200px; height:35px;"
         @keyup.enter="apiMaterialDetail(currentMaterialString,currentMaterialGroupString,materialDetailText,'searchBar')">
       </el-input>
-      <el-button icon="el-icon-search" size="mini" style="height:32px; margin-left:5px" @click="apiMaterialDetail(currentMaterialString,currentMaterialGroupString,materialDetailText,'searchBar')">查询</el-button>
+      <el-button icon="el-icon-search" size="small" class="topic-button" @click="apiMaterialDetail(currentMaterialString,currentMaterialGroupString,materialDetailText,'searchBar')">查询</el-button>
       </div>
      <el-table :data="topicMainData"
         style="width: 100%"
@@ -36,10 +36,10 @@
         <el-table-column label="物料编码" prop="inspectMaterialCode" :show-overflow-tooltip="true" min-width="100" />
         <el-table-column label="物料描述" prop="inspectMaterialName" :show-overflow-tooltip="true" min-width="100" />
         <el-table-column label="所属物料组" prop="inspectGroupName" :show-overflow-tooltip="true" min-width="100" />
-        <el-table-column fixed="right" label="操作" header-align="left" align="left" width="100">
+        <el-table-column fixed="right" label="操作" header-align="left" align="left" width="80">
             <template #default="scope">
                 <el-button type="text" @click="handleSingleAsign(scope.row)" icon="el-icon-tickets">
-                    分配
+                    <em>分配</em>
                 </el-button>
             </template>
         </el-table-column>

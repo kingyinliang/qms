@@ -16,7 +16,7 @@
       </div>
     </template>
     <el-table border ref="multipleTable" :cell-style="{'text-align':'center'}" :data="topicMainData" tooltip-effect="dark" style="width: 100%" max-height="400" >
-      <el-table-column type="index" label="序号" :index="(index) => index + 1 + (currentPage - 1) * pageSize" width="50" />
+      <el-table-column type="index" label="序号" :index="(index) => index + 1 + (currentPage - 1) * pageSize" width="55" />
       <!-- <el-table-column label="指标类"  width="80" prop="indexType" show-overflow-tooltip /> -->
       <el-table-column label="指标类描述" min-width="220" prop="indexTypeName" show-overflow-tooltip />
       <el-table-column label="指标代码" width="100" prop="indexCode" show-overflow-tooltip />
@@ -26,10 +26,10 @@
       <el-table-column label="属性" width="160" prop="inspectPropertyName" show-overflow-tooltip />
       <el-table-column label="应用场景" width="160" prop="inspectSceneName" show-overflow-tooltip />
       <el-table-column label="同步时间" width="200" prop="syncDate" show-overflow-tooltip />
-      <el-table-column label="操作" width="120" fixed="right">
+      <el-table-column label="操作" width="80" fixed="right">
         <template #default="scope">
           <el-button type="text" icon="el-icon-edit" class="role__btn" @click="btnEditItem(scope.row)">
-            编辑
+            <em>编辑</em>
           </el-button>
         </template>
       </el-table-column>

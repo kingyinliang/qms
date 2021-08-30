@@ -11,7 +11,7 @@
       </div>
     </template>
     <el-table border ref="multipleTable" :cell-style="{'text-align':'center'}" :data="dataTopicMainData" tooltip-effect="dark" style="width: 100%" @selection-change="handleSelectionChange">
-      <el-table-column type="selection" width="55" />
+      <el-table-column type="selection" width="45" />
       <el-table-column type="index" label="序号" :index="(index) => index + 1 + (currentPage - 1) * pageSize" width="50" />
       <!-- <el-table-column label="编码" prop="paramName" /> -->
       <el-table-column label="参数名称" prop="paramSubscriptCode" />
@@ -21,10 +21,10 @@
           <span>{{scope.row.paramCode.split('[')[0]}}<sub>{{scope.row.paramCode.split('[')[1].replace(']','')}}</sub></span>
         </template>
       </el-table-column>
-      <el-table-column label="操作" width="120" fixed="right">
+      <el-table-column label="操作" width="80" fixed="right">
         <template #default="scope">
           <el-button type="text" icon="el-icon-edit" class="role__btn" @click="btnEditItemOfTopicMainData(scope.row)">
-            编辑
+            <em>编辑</em>
           </el-button>
         </template>
       </el-table-column>
