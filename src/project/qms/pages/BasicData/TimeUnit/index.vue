@@ -4,7 +4,7 @@
       <div style="float: right;">
         <el-form :model="queryForm" class="queryForm" size="small" :inline="true" label-position="right" label-width="82px" style=" float: left;">
           <el-form-item label="">
-            <el-input suffix-icon="el-icon-search" v-model="queryForm.cycleCodeOrName" placeholder="名称" style="width: 160px;" />
+            <el-input suffix-icon="el-icon-search" v-model="queryForm.cycleCodeOrName" placeholder="时间单位/编码" style="width: 160px;" />
           </el-form-item>
         </el-form>
         <div style="float: right;">
@@ -52,7 +52,7 @@
         <el-input v-model="addOrUpdateForm.cycleCode" :disabled="true" autocomplete="off"></el-input>
       </el-form-item>
       <el-form-item label="时间单位：" prop="dateUnit">
-        <el-input v-model="addOrUpdateForm.dateUnit" autocomplete="off"></el-input>
+        <el-input v-model="addOrUpdateForm.dateUnit" maxlength="10" autocomplete="off"></el-input>
       </el-form-item>
       <el-form-item label="计算单位：" prop="calculateUnit">
         <el-select v-model="addOrUpdateForm.calculateUnit" class="inputWidth" placeholder="请选择" @change="addOrUpdateForm.calculateStarts = ['']">
@@ -100,12 +100,12 @@
             end='24:00'
             step='01:00'
           />
-          <el-button icon="el-icon-plus" v-if="index === 0" size="small" @click="() => addOrUpdateForm.calculateStarts.push('')" />
+          <el-button icon="el-icon-plus" v-if="index === 0" :disabled="!addOrUpdateForm.calculateUnit" size="small" @click="() => addOrUpdateForm.calculateStarts.push('')" />
           <el-button type="danger" icon="el-icon-delete" v-if="index !== 0" size="small" @click="() => addOrUpdateForm.calculateStarts.splice(index, 1)" />
         </div>
       </el-form-item>
       <el-form-item label="时间长度：" prop="dateDelay">
-        <el-input v-model="addOrUpdateForm.dateDelay" type="number" autocomplete="off"></el-input>
+        <el-input v-model="addOrUpdateForm.dateDelay" maxlength='2' @input="e => addOrUpdateForm.dateDelay = e.replace(/[^0-9]/gi, '')" autocomplete="off"></el-input>
       </el-form-item>
     </el-form>
     <div class="dialog-footer">
