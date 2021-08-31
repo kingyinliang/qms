@@ -10,7 +10,7 @@
         </div>
       </div>
     </template>
-    <el-table ref="multipleTable" border class="bueatlyScrol"  :row-style="tableRowFocusStyle"    :cell-style="{'text-align':'center'}" :data="topicMainData" tooltip-effect="dark" @selection-change="handleSelectionChangeOfTopicMainData" @row-dblclick="handleDbclickOfTopicMainData" max-height="300" style="width: 100%">
+    <el-table ref="multipleTable" border :row-style="tableRowFocusStyle"    :cell-style="{'text-align':'center'}" :data="topicMainData" tooltip-effect="dark" @selection-change="handleSelectionChangeOfTopicMainData" @row-dblclick="handleDbclickOfTopicMainData" max-height="300" style="width: 100%">
       <el-table-column type="selection" width="45" :selectable="checkDate" />
       <el-table-column type="index" label="序号" :index="(index) => index + 1 + (currentPage - 1) * pageSize" width="55" />
       <el-table-column label="检验类别\物料" min-width="200" prop="inspectMaterialTypeName" show-overflow-tooltip />
