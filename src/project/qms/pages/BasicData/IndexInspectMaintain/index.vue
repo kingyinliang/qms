@@ -42,6 +42,7 @@
             border tooltip-effect="dark"
             @selection-change="handleSelectionChange"
             @row-dblclick="setProcessParameter"
+            :row-style="tableRowFocusStyle"
             >
             <el-table-column type="selection" width="45" />
             <el-table-column type="index" :index="index => index + 1 + (Number(currentPage) - 1) * (Number(pageSize))" label="序号"  width="55" fixed align="center" size="small" />
@@ -49,7 +50,7 @@
             <el-table-column label="过程参数组" prop="parameterGroupName" :show-overflow-tooltip="true" min-width="100" />
             <el-table-column label="关联项" prop="groupMaterialName" :show-overflow-tooltip="true" min-width="100" />
             <!--todo-->
-            <el-table-column v-if="globalMainObj.inspectProperty === 'MICROORGANISM'" label="参数明细" prop="parameterDetails" :show-overflow-tooltip="true" min-width="100" />
+            <el-table-column v-if="globalMainObj.inspectPropertyName === '微生物类'" label="参数明细" prop="parameterDetails" :show-overflow-tooltip="true" min-width="100" />
             <el-table-column fixed="right" label="操作" header-align="left" align="left" width="80">
                 <template #default="scope">
                     <el-button  type="text" icon="el-icon-edit" @click="handleParameterItem(scope.row)" class="role__btn">
@@ -90,7 +91,7 @@
     <!--参数配置-->
     <template v-if="mainDialog.title==='参数配置'">
       <el-form :model="addParameterGroupform">
-        <el-form-item label="编码：" prop="parameterGroupCode" :label-width="'140px'" >
+        <el-form-item v-if="addParameterGroupform.id!==''" label="编码：" prop="parameterGroupCode" :label-width="'140px'" >
           <el-input v-model="addParameterGroupform.parameterGroupCode" class="140px" autocomplete="off" :disabled="true" placeholder="自动带出"></el-input>
         </el-form-item>
         <el-form-item label="过程参数组：" prop="parameterGroupName" :label-width="'140px'" class="required">
@@ -143,10 +144,10 @@
                 </el-popover>
               </div>
         </el-form-item>
-        <el-form-item v-if="globalMainObj.inspectProperty === 'MICROORGANISM'" label="参数明细：" prop="parameterDetailsList" :label-width="'140px'">
+        <el-form-item v-if="globalMainObj.inspectPropertyName === '微生物类'" label="参数明细：" prop="parameterDetailsList" :label-width="'140px'">
           <div v-for="(item,index) in addParameterGroupform.parameterDetailsList" :key="index">
-            <el-input  v-model="addParameterGroupform.parameterDetailsList[index]"  autocomplete="off" placeholder="请输入" style="margin-bottom:5px; margin-right:5px; width:80% !important"></el-input>
-            <el-button icon="el-icon-delete"  size="small" @click="() => addParameterGroupform.parameterDetailsList.splice(index, 1)" />
+            <el-input  v-model="addParameterGroupform.parameterDetailsList[index]" maxlength="10"  autocomplete="off" placeholder="请输入" style="margin-bottom:5px; margin-right:5px; width:80% !important"></el-input>
+            <el-button icon="el-icon-delete"  size="small" @click="() => addParameterGroupform.parameterDetailsList.splice(index, 1)" v-if="addParameterGroupform.parameterDetailsList.length>=2" />
             <el-button icon="el-icon-plus" v-if="addParameterGroupform.parameterDetailsList.length-1 === index" @click="addParameterDetailsItem" size="small"></el-button>
           </div>
         </el-form-item>
@@ -181,7 +182,8 @@ import {
   INSPECT_INDEX_PARAMETER_RELATIVE_ITEM_API,
   INSPECT_INDEX_PARAMETER_GROUP_INSERT_API,
   INSPECT_INDEX_PARAMETER_GROUP_EDIT_API,
-  INSPECT_INDEX_PARAMETER_GROUP_DELETE_API
+  INSPECT_INDEX_PARAMETER_GROUP_DELETE_API,
+  DICTIONARY_QUERY_API
 } from '@/api/api'
 import ProcessParameter from './ProcessParameter.vue'
 
@@ -237,6 +239,7 @@ interface TopicMainData { // 参数组 API
   parameterDetails:string;
   parameterGroupCode: string;
   parameterGroupName: string;
+  isCurrentFocusRow: boolean
 }
 
 interface InspectTypeOptions {
@@ -277,6 +280,7 @@ interface State {
   parameterTreeSelectedString: string
   multipleSelection: string[]
   importObj: TopicMainData | null
+  inspectPropertyOptions: any
 }
 
 export default defineComponent({
@@ -329,7 +333,8 @@ export default defineComponent({
       parameterTreeCheckNodes: [],
       parameterTreeSelectedString: '',
       multipleSelection: [],
-      importObj: null
+      importObj: null,
+      inspectPropertyOptions: {}
     })
     const refFunctionDialog = ref()
     const treeModule = ref()
@@ -359,6 +364,7 @@ export default defineComponent({
           console.log('获取参数组')
           console.log(res.data.data)
           state.topicMainData = res.data.data.records
+          state.topicMainData.forEach((item:TopicMainData) => { item.isCurrentFocusRow = false })
           state.currentPage = res.data.data.current
           state.pageSize = res.data.data.size
           state.totalItems = res.data.data.total
@@ -408,7 +414,8 @@ export default defineComponent({
         if (data[i].inspectMethodId === '') {
           data[i].inspectMethodId = 'a'
         }
-        data[i].inspect = data[i].inspect === 'CHEMISTRY' ? '理化类' : data[i].inspect === 'MICROORGANISM' ? '微生物类' : '不分类'
+        data[i].inspect = state.inspectPropertyOptions[data[i].inspect] || '不分类'
+        // data[i].inspect = data[i].inspect === 'CHEMISTRY' ? '理化类' : data[i].inspect === 'MICROORGANISM' ? '微生物类' : '不分类'
         data[i].canEdit = false
         data[i]._level = 1
         for (let j = 0; j < data[i].inspectGroups.length; j++) {
@@ -531,7 +538,7 @@ export default defineComponent({
 
       let temp:string[] = []
       let tempStr = ''
-      if (state.globalMainObj.inspectProperty === 'MICROORGANISM') { // 微生物类
+      if (state.globalMainObj.inspectPropertyName === '微生物类') { // 微生物类
         temp = state.addParameterGroupform.parameterDetailsList.filter(item => item !== '')
         tempStr = temp.join()
       }
@@ -652,7 +659,9 @@ export default defineComponent({
         state.parameterTreeSslected = row.inspectMaterialIds
         state.addParameterGroupform.parameterGroupCode = row.parameterGroupCode
         state.addParameterGroupform.parameterGroupName = row.parameterGroupName
-        if (state.globalMainObj.inspectProperty === 'MICROORGANISM') { // 微生物类
+        console.log('state.globalMainObj')
+        console.log(state.globalMainObj)
+        if (state.globalMainObj.inspectPropertyName === '微生物类') { // 微生物类
           state.addParameterGroupform.parameterDetails = row.parameterDetails
           state.addParameterGroupform.parameterDetailsList = row.parameterDetails.split(',')
         } else { // 理化类
@@ -661,7 +670,7 @@ export default defineComponent({
         }
       } else { // 新增
         console.log('新增')
-        if (state.globalMainObj.inspectProperty === 'MICROORGANISM') { // 微生物类
+        if (state.globalMainObj.inspectPropertyName === '微生物类') { // 微生物类
           state.addParameterGroupform = { // [form]参数配置
             id: '',
             inspectIndexMethodId: '',
@@ -723,9 +732,11 @@ export default defineComponent({
     }
 
     // [db-click]可双点击参数明细 item 进入
-    const setProcessParameter = (val:TopicMainData) => {
-      if (state.globalMainObj.inspectProperty === 'CHEMISTRY') { // 理化类方可双点击进入
-        state.importObj = val
+    const setProcessParameter = (row:TopicMainData) => {
+      if (state.globalMainObj.inspectPropertyName === '理化类') { // 理化类方可双点击进入
+        state.topicMainData.forEach((item:TopicMainData) => { item.isCurrentFocusRow = false })
+        row.isCurrentFocusRow = true
+        state.importObj = row
         state.isImportTableDataShow = true
       } else {
         state.isImportTableDataShow = false
@@ -736,9 +747,23 @@ export default defineComponent({
       state.addParameterGroupform.parameterDetailsList.push('')
     }
 
-    onMounted(() => {
+    const tableRowFocusStyle = (object: any) => {
+      if (state.topicMainData[object.rowIndex].isCurrentFocusRow === true) {
+        return 'background-color: #ecf5ff' // --el-color-primary-light-9
+      }
+    }
+
+    onMounted(async () => {
+      // 检验属性下拉
+      await DICTIONARY_QUERY_API({ dictType: 'INSPECT_PROPERTY' }).then((res) => {
+        res.data.data.forEach((item:any) => {
+          state.inspectPropertyOptions[item.dictCode] = item.dictValue
+        })
+        console.log('检验属性下拉')
+        console.log(state.inspectPropertyOptions)
+      })
       // 获取
-      getMainTreeData()
+      await getMainTreeData()
     })
 
     return {
@@ -766,7 +791,8 @@ export default defineComponent({
       popperHide,
       handleSelectionChange,
       setProcessParameter,
-      addParameterDetailsItem
+      addParameterDetailsItem,
+      tableRowFocusStyle
     }
   }
 })
