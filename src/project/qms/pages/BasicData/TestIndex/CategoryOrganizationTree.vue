@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-07-08 11:25:52
  * @LastEditors: Telliex
- * @LastEditTime: 2021-08-30 16:32:00
+ * @LastEditTime: 2021-08-31 12:48:19
 -->
 <template>
     <dialogDevice :dialogVisible="dialogVisible" :title="title" @on-confirm="onConfirm" @on-close="onClose" width="70%">
@@ -190,10 +190,10 @@ export default defineComponent({
         // if (Object.keys(state.mainData).length === 0) {
         // state.mainData = {}
         state.materialTreeData.forEach((item:TreeData) => {
-          if (item.inspectProperty === 'PHYSICAL') {
+          if (item.inspectProperty === 'CHEMISTRY') {
             item.inspectPropertyName = '理化类'
           }
-          if (item.inspectProperty === 'MICROBE') {
+          if (item.inspectProperty === 'MICROORGANISM') {
             item.inspectPropertyName = '微生物类'
           }
 
