@@ -86,6 +86,7 @@ interface TopicMainData { // 物料明细 API
   inspectMaterialType: string
   inspectMaterialCode: string
   inspectMaterialName: string
+  inspectTypeId: string
 }
 
 interface MaterialTreeData {
@@ -143,7 +144,8 @@ export default defineComponent({
         inspectGroupName: '',
         inspectMaterialType: '',
         inspectMaterialCode: '',
-        inspectMaterialName: ''
+        inspectMaterialName: '',
+        inspectTypeId: ''
       },
       globleSearchString: '', // 点击过 search bar , keep resulte  or 点最末节点
       isShowSearchBar: true,
@@ -155,13 +157,15 @@ export default defineComponent({
 
     // single action to go
     const handleSingleEdit = (row:TopicMainData) => {
+      console.log(row)
       state.globleItem = {
         id: row.id,
         inspectGroupCode: row.inspectGroupCode,
         inspectGroupName: row.inspectGroupName,
         inspectMaterialType: row.inspectMaterialType,
         inspectMaterialCode: row.inspectMaterialCode,
-        inspectMaterialName: row.inspectMaterialName
+        inspectMaterialName: row.inspectMaterialName,
+        inspectTypeId: row.inspectTypeId
       }
       state.isDialogShow = true
       INSPECT_MATERIAL_CHECKED_INSPECT_TYPE_QUERY_API({
@@ -181,7 +185,8 @@ export default defineComponent({
         inspectGroupName: '',
         inspectMaterialType: '',
         inspectMaterialCode: '',
-        inspectMaterialName: ''
+        inspectMaterialName: '',
+        inspectTypeId: ''
       }
     }
 
@@ -231,7 +236,7 @@ export default defineComponent({
     }
 
     // get material detail data
-    const getMaterialCatagoryData = () => {
+    const getMaterialCatagoryData = (inspectTypeId = '') => {
       INSPECT_MATERIAL_INSPECT_TYPE_MATERIAL_API({
       }).then((res) => {
         state.materialDetailText = ''
@@ -245,11 +250,15 @@ export default defineComponent({
           // '619922389037592576'
           treeModule.value.focusCurrentNodeNumber = state.treeData[0].id
           apiMaterialDetail(state.currentCategoryId, '', state.currentPage, state.pageSize)
+        } else {
+          treeModule.value.focusCurrentNodeNumber = inspectTypeId
         }
       })
     }
 
     const updateInspectCategoryList = (val:string[]) => {
+      console.log('state.globleItem')
+      console.log(state.globleItem)
       const dataTemp:TopicMainData[] = []
       dataTemp.push(state.globleItem)
 
@@ -260,6 +269,7 @@ export default defineComponent({
         proxy.$successToast('操作成功')
         // reload page
         // await getMaterialCatagoryData()
+        getMaterialCatagoryData(state.globleItem.inspectTypeId)
         apiMaterialDetail(state.currentCategoryId, state.globleSearchString, state.currentPage, state.pageSize)
         // state.topicMainData = []
       })

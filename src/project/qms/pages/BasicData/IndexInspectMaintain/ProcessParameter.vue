@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-07-30 11:24:46
  * @LastEditors: Telliex
- * @LastEditTime: 2021-08-27 17:01:53
+ * @LastEditTime: 2021-08-31 16:26:33
 -->
 <template>
   <mds-card class="test_method" :title="title" :pack-up="false" style="margin-bottom: 0; background: #fff;">
@@ -136,7 +136,7 @@
           show-overflow-tooltip
         >
           <template #default="scope">
-            <el-input v-model.number="scope.row.defaultValue" size="small" placeholder="请输入" :disabled="!isRedact||scope.row.innerUpSymbol===''" />
+            <el-input v-model.number="scope.row.defaultValue" size="small" placeholder="请输入" :disabled="!isRedact||scope.row.defaultType===''||scope.row.defaultType==='CURRENT'" />
           </template>
          </el-table-column>
       </el-table-column>
@@ -157,7 +157,7 @@
       </el-table-column>
       <el-table-column label="公式" min-width="80" show-overflow-tooltip>
         <template #default="scope">
-          <el-button size="mini"  icon="el-icon-aim" v-if="scope.row.paramType === 'HIDDEN' || scope.row.paramType === 'RESULT'" @click="editFormula(scope.row)" :disabled="!isRedact"></el-button>
+          <el-button size="mini"  icon="el-icon-aim" v-if="scope.row.paramType === 'HIDDEN' || scope.row.paramType === 'RESULT'" @click="editFormula(scope.row)" :disabled="!isRedact|| scope.row.id===''"></el-button>
         </template>
       </el-table-column>
 
@@ -445,6 +445,10 @@ export default defineComponent({
       console.log('获取过程参数数据')
       console.log(res.data.data)
       state.parentParamSubscriptOptions = []
+      // 对 paramTypeOptions 重置
+      state.paramTypeOptions.forEach(subItem => {
+        subItem.disabled = false
+      })
       res.data.data.forEach((item:ImportData) => {
         // modify
         item.paramSubscriptCodeWithParamSubscript = item.paramSubscriptCode + ' ' + item.paramSubscript
@@ -634,18 +638,31 @@ export default defineComponent({
 
     // [Rule] 验证标准值明细 data
     const ruleSubmit = () => {
-      const tempList:any = []
+      console.log('state.topicMainData')
+      console.log(state.topicMainData)
+      const tempParentParamSubscriptList:any = []
+      const tempParamSubscriptList:any = []
       for (const item of state.topicMainData) {
-        if (tempList.indexOf(item.parentParamSubscriptCode + ' ' + item.parentParamSubscript) === -1) {
-          tempList.push(item.parentParamSubscriptCode + ' ' + item.parentParamSubscript)
-        } else {
-          proxy.$warningToast('有重复过程参数')
-          return false
+        if (item.parentParamSubscriptCode !== '' && item.parentParamSubscript !== '') {
+          if (tempParentParamSubscriptList.indexOf(item.parentParamSubscriptCode + ' ' + item.parentParamSubscript) === -1) {
+            tempParentParamSubscriptList.push(item.parentParamSubscriptCode + ' ' + item.parentParamSubscript)
+          } else {
+            proxy.$warningToast('有重复关联参数')
+            return false
+          }
         }
-
         if (item.paramSubscriptCode === '' || item.paramUnit === '' || item.paramType === '' || (item.paramDataType === 'FLOAT_POINT' && item.paramStandard === null)) {
           proxy.$warningToast('请完整录入栏位')
           return false
+        }
+
+        if (item.paramSubscriptCode !== '' && item.paramSubscript !== '') {
+          if (tempParamSubscriptList.indexOf(item.paramSubscriptCode + ' ' + item.paramSubscript) === -1) {
+            tempParamSubscriptList.push(item.paramSubscriptCode + ' ' + item.paramSubscript)
+          } else {
+            proxy.$warningToast('有重复过程参数')
+            return false
+          }
         }
       }
       // if (tempList.length !== state.topicMainData.length) {
