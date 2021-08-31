@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-07-08 11:25:52
  * @LastEditors: Telliex
- * @LastEditTime: 2021-08-30 16:32:00
+ * @LastEditTime: 2021-08-31 15:10:45
 -->
 <template>
     <dialogDevice :dialogVisible="dialogVisible" :title="title" @on-confirm="onConfirm" @on-close="onClose" width="70%">
@@ -34,6 +34,7 @@
 <script lang="ts">
 import { defineComponent, ref, onMounted, watch, reactive, toRefs, getCurrentInstance, ComponentInternalInstance } from 'vue'
 import dialogDevice from '../../components/SHDialog.vue'
+import { DICTIONARY_QUERY_API } from '@/api/api'
 
 interface TreeData {
   id: string
@@ -72,6 +73,7 @@ interface State {
     materialTreeData: TreeData[]
     mainData: MainData
     currentIndex: number
+    inspectPropertyOptions: any
 }
 
 export default defineComponent({
@@ -111,7 +113,8 @@ export default defineComponent({
       materialTreeData: [],
       mainData: {},
       treeValueSelected: [],
-      currentIndex: 0
+      currentIndex: 0,
+      inspectPropertyOptions: {}
     })
     const parent = { ...context }
     const { dialogVisible, dialogData, importData } = toRefs(props as Props)
@@ -156,7 +159,14 @@ export default defineComponent({
     }
 
     onMounted(() => {
-      //
+      // 检验属性下拉
+      DICTIONARY_QUERY_API({ dictType: 'INSPECT_PROPERTY' }).then((res) => {
+        res.data.data.forEach((item:any) => {
+          state.inspectPropertyOptions[item.dictCode] = item.dictValue
+        })
+        console.log('检验属性下拉')
+        console.log(state.inspectPropertyOptions)
+      })
     })
 
     watch(
@@ -190,12 +200,13 @@ export default defineComponent({
         // if (Object.keys(state.mainData).length === 0) {
         // state.mainData = {}
         state.materialTreeData.forEach((item:TreeData) => {
-          if (item.inspectProperty === 'CHEMISTRY') {
-            item.inspectPropertyName = '理化类'
-          }
-          if (item.inspectProperty === 'MICROORGANISM') {
-            item.inspectPropertyName = '微生物类'
-          }
+          item.inspectPropertyName = state.inspectPropertyOptions[item.inspectProperty]
+          // if (item.inspectProperty === 'CHEMISTRY') {
+          //   item.inspectPropertyName = '理化类'
+          // }
+          // if (item.inspectProperty === 'MICROORGANISM') {
+          //   item.inspectPropertyName = '微生物类'
+          // }
 
           state.mainData[item.inspectProperty] = JSON.parse(JSON.stringify(item.inspectGroups))
         })
