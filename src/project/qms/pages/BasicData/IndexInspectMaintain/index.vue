@@ -49,7 +49,7 @@
             <el-table-column label="过程参数组" prop="parameterGroupName" :show-overflow-tooltip="true" min-width="100" />
             <el-table-column label="关联项" prop="groupMaterialName" :show-overflow-tooltip="true" min-width="100" />
             <!--todo-->
-            <el-table-column v-if="globalMainObj.inspectProperty === 'MICROBE'" label="参数明细" prop="parameterDetails" :show-overflow-tooltip="true" min-width="100" />
+            <el-table-column v-if="globalMainObj.inspectProperty === 'MICROORGANISM'" label="参数明细" prop="parameterDetails" :show-overflow-tooltip="true" min-width="100" />
             <el-table-column fixed="right" label="操作" header-align="left" align="left" width="80">
                 <template #default="scope">
                     <el-button  type="text" icon="el-icon-edit" @click="handleParameterItem(scope.row)" class="role__btn">
@@ -143,7 +143,7 @@
                 </el-popover>
               </div>
         </el-form-item>
-        <el-form-item v-if="globalMainObj.inspectProperty === 'MICROBE'" label="参数明细：" prop="parameterDetailsList" :label-width="'140px'">
+        <el-form-item v-if="globalMainObj.inspectProperty === 'MICROORGANISM'" label="参数明细：" prop="parameterDetailsList" :label-width="'140px'">
           <div v-for="(item,index) in addParameterGroupform.parameterDetailsList" :key="index">
             <el-input  v-model="addParameterGroupform.parameterDetailsList[index]"  autocomplete="off" placeholder="请输入" style="margin-bottom:5px; margin-right:5px; width:80% !important"></el-input>
             <el-button icon="el-icon-delete"  size="small" @click="() => addParameterGroupform.parameterDetailsList.splice(index, 1)" />
@@ -388,6 +388,8 @@ export default defineComponent({
       INSPECT_INDEX_METHOD_QUERY_API({
       }).then((res) => {
         state.textParameterGroupSearch = ''
+        console.log('res.data.data')
+        console.log(res.data.data)
         state.treeData = treeDataTranslater(res.data.data) // 转换结构
 
         console.log('指标检验方法明细 treeData')
@@ -406,7 +408,7 @@ export default defineComponent({
         if (data[i].inspectMethodId === '') {
           data[i].inspectMethodId = 'a'
         }
-        data[i].inspect = data[i].inspect === 'PHYSICAL' ? '理化类' : data[i].inspect === 'MICROBE' ? '微生物类' : '不分类'
+        data[i].inspect = data[i].inspect === 'CHEMISTRY' ? '理化类' : data[i].inspect === 'MICROORGANISM' ? '微生物类' : '不分类'
         data[i].canEdit = false
         data[i]._level = 1
         for (let j = 0; j < data[i].inspectGroups.length; j++) {
@@ -529,7 +531,7 @@ export default defineComponent({
 
       let temp:string[] = []
       let tempStr = ''
-      if (state.globalMainObj.inspectProperty === 'MICROBE') { // 微生物类
+      if (state.globalMainObj.inspectProperty === 'MICROORGANISM') { // 微生物类
         temp = state.addParameterGroupform.parameterDetailsList.filter(item => item !== '')
         tempStr = temp.join()
       }
@@ -650,7 +652,7 @@ export default defineComponent({
         state.parameterTreeSslected = row.inspectMaterialIds
         state.addParameterGroupform.parameterGroupCode = row.parameterGroupCode
         state.addParameterGroupform.parameterGroupName = row.parameterGroupName
-        if (state.globalMainObj.inspectProperty === 'MICROBE') { // 微生物类
+        if (state.globalMainObj.inspectProperty === 'MICROORGANISM') { // 微生物类
           state.addParameterGroupform.parameterDetails = row.parameterDetails
           state.addParameterGroupform.parameterDetailsList = row.parameterDetails.split(',')
         } else { // 理化类
@@ -659,7 +661,7 @@ export default defineComponent({
         }
       } else { // 新增
         console.log('新增')
-        if (state.globalMainObj.inspectProperty === 'MICROBE') { // 微生物类
+        if (state.globalMainObj.inspectProperty === 'MICROORGANISM') { // 微生物类
           state.addParameterGroupform = { // [form]参数配置
             id: '',
             inspectIndexMethodId: '',
@@ -722,7 +724,7 @@ export default defineComponent({
 
     // [db-click]可双点击参数明细 item 进入
     const setProcessParameter = (val:TopicMainData) => {
-      if (state.globalMainObj.inspectProperty === 'PHYSICAL') { // 理化类方可双点击进入
+      if (state.globalMainObj.inspectProperty === 'CHEMISTRY') { // 理化类方可双点击进入
         state.importObj = val
         state.isImportTableDataShow = true
       } else {
