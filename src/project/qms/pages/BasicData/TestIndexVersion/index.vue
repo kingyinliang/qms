@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-07-30 11:24:46
  * @LastEditors: Telliex
- * @LastEditTime: 2021-08-30 18:21:30
+ * @LastEditTime: 2021-08-31 11:09:15
 -->
 <template>
   <mds-card class="test_method" title="版本明细" :pack-up="false" style="margin-bottom: 0; background: #fff;">
@@ -17,7 +17,7 @@
         </div>
       </div>
     </template>
-    <el-table border class="bueatlyScrol" :row-class-name="tableRowClassName" highlight-current-row ref="multipleTable"  :cell-style="{'text-align':'center'}" :data="topicMainData" tooltip-effect="dark" style="width: 100%" @selection-change="handleSelectionChange" @row-dblclick="handleDbclick" max-height="300">
+    <el-table ref="multipleTable" border class="bueatlyScrol"  :row-style="tableRowFocusStyle"    :cell-style="{'text-align':'center'}" :data="topicMainData" tooltip-effect="dark" @selection-change="handleSelectionChangeOfTopicMainData" @row-dblclick="handleDbclickOfTopicMainData" max-height="300" style="width: 100%">
       <el-table-column type="selection" width="45" :selectable="checkDate" />
       <el-table-column type="index" label="序号" :index="(index) => index + 1 + (currentPage - 1) * pageSize" width="55" />
       <el-table-column label="检验类别\物料" min-width="200" prop="inspectMaterialTypeName" show-overflow-tooltip />
@@ -144,6 +144,7 @@ interface TopicMainData{
   indexVersionMethod: string
   inspectIndexMaterialId: string
   inspectMaterialTypeName: string
+  isCurrentFocusRow: boolean
 }
 interface ControlForm{
   filterText: string;
@@ -247,15 +248,19 @@ export default defineComponent({
       console.log('获取指标版本管理数据')
       console.log(res.data.data)
       state.topicMainData = res.data.data.records
+      // 默认第一条数据
+      state.topicMainData.forEach((item, index) => {
+        if (index === 0) {
+          item.isCurrentFocusRow = true
+        } else {
+          item.isCurrentFocusRow = false
+        }
+      })
+
       state.totalItems = res.data.data.total
       state.currentPage = res.data.data.current
       state.pageSize = res.data.data.size
       state.isDialogShow = true
-
-      // 默认第一条数据
-      if (state.topicMainData.length !== 0) {
-        handleDbclick(state.topicMainData[0])
-      }
     }
 
     // [BTN:新增] 新增 item
@@ -286,7 +291,7 @@ export default defineComponent({
     }
 
     // [table] 选框选择
-    const handleSelectionChange = (val: TopicMainData[]) => {
+    const handleSelectionChangeOfTopicMainData = (val: TopicMainData[]) => {
       state.selectedListOfTopicMainData = val
     }
 
@@ -373,9 +378,10 @@ export default defineComponent({
     }
 
     // [Table:Row][dbclick]
-    const handleDbclick = (val:TopicMainData) => {
-      console.log(val)
-      state.versionObj = val
+    const handleDbclickOfTopicMainData = (row:TopicMainData) => {
+      state.topicMainData.forEach((item:TopicMainData) => { item.isCurrentFocusRow = false })
+      row.isCurrentFocusRow = true
+      state.versionObj = row
       state.isDialogShow = true
     }
 
@@ -497,11 +503,10 @@ export default defineComponent({
       return time.getTime() < Date.now()
     }
 
-    const tableRowClassName = (object: any) => {
-      if (object.rowIndex === 0) {
-        return 'current-row'
+    const tableRowFocusStyle = (object: any) => {
+      if (state.topicMainData[object.rowIndex].isCurrentFocusRow === true) {
+        return 'background-color: #ecf5ff' // --el-color-primary-light-9
       }
-      return ''
     }
 
     onMounted(async () => {
@@ -522,13 +527,13 @@ export default defineComponent({
       refIndexValueDetail,
       upload,
       btnGetMainData,
-      handleSelectionChange,
+      handleSelectionChangeOfTopicMainData,
       actBatchDelete,
       btnAddItemData,
       btnItemFloatConfirm,
       btnItemFloatClear,
       dataRule,
-      handleDbclick,
+      handleDbclickOfTopicMainData,
       seeVersion,
       handleSizeChange,
       handleCurrentChange,
@@ -536,7 +541,7 @@ export default defineComponent({
       btnEditItemOfTopicMainData,
       pickerOptions,
       formatDateTransfer,
-      tableRowClassName
+      tableRowFocusStyle
     }
   }
 })
