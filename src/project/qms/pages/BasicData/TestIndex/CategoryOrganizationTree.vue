@@ -190,10 +190,10 @@ export default defineComponent({
         // if (Object.keys(state.mainData).length === 0) {
         // state.mainData = {}
         state.materialTreeData.forEach((item:TreeData) => {
-          if (item.inspectProperty === 'PHYSICAL') {
+          if (item.inspectProperty === 'CHEMISTRY') {
             item.inspectPropertyName = '理化类'
           }
-          if (item.inspectProperty === 'MICROBE') {
+          if (item.inspectProperty === 'MICROORGANISM') {
             item.inspectPropertyName = '微生物类'
           }
 
