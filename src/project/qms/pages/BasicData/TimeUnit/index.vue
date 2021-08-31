@@ -116,90 +116,133 @@
 </template>
 
 <script lang="ts">
-  import {
-    defineComponent,
-    ref,
-    reactive,
-    nextTick,
-    onMounted,
-    getCurrentInstance,
-    ComponentInternalInstance
-  } from 'vue'
-  import {
-    TIME_QUERY,
-    TIME_ADD,
-    TIME_UPDATE,
-    TIME_DEL,
-    DICT_DROPDOWN,
-    Dict
-  } from '@/api/api'
+import {
+  defineComponent,
+  ref,
+  reactive,
+  nextTick,
+  onMounted,
+  getCurrentInstance,
+  ComponentInternalInstance
+} from 'vue'
+import {
+  TIME_QUERY,
+  TIME_ADD,
+  TIME_UPDATE,
+  TIME_DEL,
+  DICT_DROPDOWN,
+  Dict
+} from '@/api/api'
 
-  interface TimeData {
-    id: string;
-    cycleCode: string;
-    dateUnit: string;
-    calculateUnit: string;
-    calculateUnitName: string;
-    calculateStarts: string[];
-    dateDelay: string;
-  }
-  const addOrUpdateFormRule = {
-    dateUnit: [
-      {
-        required: true,
-        message: '请输入时间单位',
-        trigger: 'blur'
-      }
-    ],
-    calculateUnit: [
-      {
-        required: true,
-        message: '请输入计算单位',
-        trigger: 'blur'
-      }
-    ],
-    calculateStarts: [
-      {
-        required: true,
-        message: '请输入开始时间',
-        trigger: 'blur'
-      },
-      {
-        trigger: 'blur',
-        validator: (rule: string, value: string[], callback: (ctx?: Error) => void) => {
-          if (!value.length) {
-            return callback(new Error('请输入开始时间'))
-          }
-          return callback()
+interface TimeData {
+  id: string;
+  cycleCode: string;
+  dateUnit: string;
+  calculateUnit: string;
+  calculateUnitName: string;
+  calculateStarts: string[];
+  dateDelay: string;
+}
+const addOrUpdateFormRule = {
+  dateUnit: [
+    {
+      required: true,
+      message: '请输入时间单位',
+      trigger: 'blur'
+    }
+  ],
+  calculateUnit: [
+    {
+      required: true,
+      message: '请输入计算单位',
+      trigger: 'blur'
+    }
+  ],
+  calculateStarts: [
+    {
+      required: true,
+      message: '请输入开始时间',
+      trigger: 'blur'
+    },
+    {
+      trigger: 'blur',
+      validator: (rule: string, value: string[], callback: (ctx?: Error) => void) => {
+        if (!value.length) {
+          return callback(new Error('请输入开始时间'))
         }
+        return callback()
       }
-    ],
-    dateDelay: [
-      {
-        required: true,
-        message: '请输入时间长度',
-        trigger: 'blur'
+    }
+  ],
+  dateDelay: [
+    {
+      required: true,
+      message: '请输入时间长度',
+      trigger: 'blur'
+    }
+  ]
+}
+
+export default defineComponent({
+  name: 'TimeUnit',
+  setup () {
+    const ctx = getCurrentInstance() as ComponentInternalInstance
+    const proxy = ctx.proxy as any
+
+    const addOrUpdateRef = ref() // 新增修改表单节点
+    const queryForm = reactive({
+      cycleCodeOrName: '',
+      current: 1,
+      size: 10,
+      total: 0
+    }) // 查询表单数据
+    const tableData = ref<TimeData[]>([]) // 表格数据
+    const multipleSelection = ref<string[]>([]) // 复选数据
+    const addOrUpdateDialog = ref(false) // 新增修改弹窗
+    const addOrUpdateForm = ref<TimeData>({
+      id: '',
+      cycleCode: '',
+      dateUnit: '',
+      calculateUnit: '',
+      calculateUnitName: '',
+      calculateStarts: [''],
+      dateDelay: ''
+    }) // 新增修改表单数据
+    const calculateUnit = ref<Dict[]>([]) // 下拉
+
+    const query = async () => {
+      const res = await TIME_QUERY(queryForm)
+      tableData.value = res.data.data.records
+      queryForm.size = res.data.data.size
+      queryForm.current = res.data.data.current
+      queryForm.total = res.data.data.total
+    }
+    // 表格复选
+    const handleSelectionChange = (val:TimeData[]) => {
+      multipleSelection.value = val.map((item: TimeData) => item.id)
+    }
+    // 删除确认
+    const selectDelete = () => {
+      if (!multipleSelection.value.length) {
+        proxy.$warningToast('请选择数据')
+        return
       }
-    ]
-  }
-
-  export default defineComponent({
-    name: 'TimeUnit',
-    setup () {
-      const ctx = getCurrentInstance() as ComponentInternalInstance
-      const proxy = ctx.proxy as any
-
-      const addOrUpdateRef = ref() // 新增修改表单节点
-      const queryForm = reactive({
-        cycleCodeOrName: '',
-        current: 1,
-        size: 10,
-        total: 0
-      }) // 查询表单数据
-      const tableData = ref<TimeData[]>([]) // 表格数据
-      const multipleSelection = ref<string[]>([]) // 复选数据
-      const addOrUpdateDialog = ref(false) // 新增修改弹窗
-      const addOrUpdateForm = ref<TimeData>({
+      proxy.$confirm('确认删除选中的数据？', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(async () => {
+        await TIME_DEL(multipleSelection.value)
+        proxy.$successToast('操作成功')
+        await query()
+      })
+    }
+    // 新增
+    const addData = async () => {
+      addOrUpdateDialog.value = true
+      await nextTick()
+      addOrUpdateRef.value.resetFields()
+      addOrUpdateForm.value = {
         id: '',
         cycleCode: '',
         dateUnit: '',
@@ -207,114 +250,71 @@
         calculateUnitName: '',
         calculateStarts: [''],
         dateDelay: ''
-      }) // 新增修改表单数据
-      const calculateUnit = ref<Dict[]>([]) // 下拉
-
-      const query = async () => {
-        const res = await TIME_QUERY(queryForm)
-        tableData.value = res.data.data.records
-        queryForm.size = res.data.data.size
-        queryForm.current = res.data.data.current
-        queryForm.total = res.data.data.total
       }
-      // 表格复选
-      const handleSelectionChange = (val:TimeData[]) => {
-        multipleSelection.value = val.map((item: TimeData) => item.id)
-      }
-      // 删除确认
-      const selectDelete = () => {
-        if (!multipleSelection.value.length) {
-          proxy.$warningToast('请选择数据')
+    }
+    // 修改
+    const editItem = async (row: TimeData) => {
+      addOrUpdateForm.value = { ...row }
+      addOrUpdateDialog.value = true
+      await nextTick()
+      addOrUpdateRef.value.clearValidate()
+    }
+    // 新增修改确认
+    const addOrUpdateFormSubmit = () => {
+      addOrUpdateRef.value.validate(async (valid: boolean) => {
+        if (!addOrUpdateForm.value.calculateStarts.length) {
+          proxy.$warningToast('请输入开始时间')
           return
         }
-        proxy.$confirm('确认删除选中的数据？', '提示', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          type: 'warning'
-        }).then(async () => {
-          await TIME_DEL(multipleSelection.value)
-          proxy.$successToast('操作成功')
-          await query()
-        })
-      }
-      // 新增
-      const addData = async () => {
-        addOrUpdateDialog.value = true
-        await nextTick()
-        addOrUpdateRef.value.resetFields()
-        addOrUpdateForm.value = {
-          id: '',
-          cycleCode: '',
-          dateUnit: '',
-          calculateUnit: '',
-          calculateUnitName: '',
-          calculateStarts: [''],
-          dateDelay: ''
-        }
-      }
-      // 修改
-      const editItem = async (row: TimeData) => {
-        addOrUpdateForm.value = { ...row }
-        addOrUpdateDialog.value = true
-        await nextTick()
-        addOrUpdateRef.value.clearValidate()
-      }
-      // 新增修改确认
-      const addOrUpdateFormSubmit = () => {
-        addOrUpdateRef.value.validate(async (valid: boolean) => {
-          if (!addOrUpdateForm.value.calculateStarts.length) {
+        for (const item of addOrUpdateForm.value.calculateStarts) {
+          if (!item) {
             proxy.$warningToast('请输入开始时间')
             return
           }
-          for (const item of addOrUpdateForm.value.calculateStarts) {
-            if (!item) {
-              proxy.$warningToast('请输入开始时间')
-              return
-            }
+        }
+        if (valid) {
+          const form: any = { ...addOrUpdateForm.value }
+          // form.calculateStart = form.calculateStart.join(',')
+          if (form.id) {
+            await TIME_UPDATE(form)
+          } else {
+            await TIME_ADD(form)
           }
-          if (valid) {
-            const form: any = { ...addOrUpdateForm.value }
-            // form.calculateStart = form.calculateStart.join(',')
-            if (form.id) {
-              await TIME_UPDATE(form)
-            } else {
-              await TIME_ADD(form)
-            }
-            proxy.$successToast('操作成功')
-            addOrUpdateDialog.value = false
-            await query()
-          }
-        })
-      }
-      const calculateUnitChange = (val: string) => {
-        (addOrUpdateForm.value as TimeData).calculateStarts = [''];
-        (addOrUpdateForm.value as TimeData).calculateUnitName = (calculateUnit.value.find(it => it.dictCode === val) as Dict).dictValue
-      }
-
-      onMounted(async () => {
-        query()
-        const res = await DICT_DROPDOWN({ dictType: 'TIME_UNIT' })
-        calculateUnit.value = res.data.data
+          proxy.$successToast('操作成功')
+          addOrUpdateDialog.value = false
+          await query()
+        }
       })
-
-      return {
-        addOrUpdateRef,
-        queryForm,
-        tableData,
-        addOrUpdateDialog,
-        addOrUpdateForm,
-        addOrUpdateFormRule,
-        calculateUnit,
-        query,
-        addData,
-        calculateUnitChange,
-        selectDelete,
-        handleSelectionChange,
-        editItem,
-        addOrUpdateFormSubmit
-      }
     }
-  })
+    const calculateUnitChange = (val: string) => {
+      (addOrUpdateForm.value as TimeData).calculateStarts = [''];
+      (addOrUpdateForm.value as TimeData).calculateUnitName = (calculateUnit.value.find(it => it.dictCode === val) as Dict).dictValue
+    }
+
+    onMounted(async () => {
+      query()
+      const res = await DICT_DROPDOWN({ dictType: 'TIME_UNIT' })
+      calculateUnit.value = res.data.data
+    })
+
+    return {
+      addOrUpdateRef,
+      queryForm,
+      tableData,
+      addOrUpdateDialog,
+      addOrUpdateForm,
+      addOrUpdateFormRule,
+      calculateUnit,
+      query,
+      addData,
+      calculateUnitChange,
+      selectDelete,
+      handleSelectionChange,
+      editItem,
+      addOrUpdateFormSubmit
+    }
+  }
+})
 </script>
 
 <style lang="scss">
