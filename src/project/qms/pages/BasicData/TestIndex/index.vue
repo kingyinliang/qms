@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-07-30 11:24:46
  * @LastEditors: Telliex
- * @LastEditTime: 2021-08-30 15:04:20
+ * @LastEditTime: 2021-09-01 16:15:52
 -->
 <template>
   <mds-card class="test_method" title="检验指标标准" :pack-up="false" style="margin-bottom: 0; background: #fff;">
@@ -61,8 +61,8 @@
   <el-dialog :title="singleItemform.title" v-model="isDialogVisibleForItemControl" width="40%" >
     <el-form :model="singleItemform">
       <el-form-item label="检验类别\物料" :label-width="'120px'" class="star">
-        <el-select v-model="singleItemform.inspectMaterialId" placeholder="请选择" style="width:100%" filterable @change="selectInspectMaterialChange" clearable>
-          <el-option v-for="(opt, optIndex) in inspectMaterialOptions" :key="optIndex" :label="opt.inspectMaterialTypeName" :value="opt.id" />
+        <el-select v-model="singleItemform.inspectMaterialCode" placeholder="请选择" style="width:100%" filterable @change="selectInspectMaterialChange" clearable>
+          <el-option v-for="(opt, optIndex) in inspectMaterialOptions" :key="optIndex" :label="opt.inspectMaterialTypeName" :value="opt.inspectMaterialCode" />
         </el-select>
       </el-form-item>
       <el-form-item label="指标" :label-width="'120px'" class="star">
@@ -125,6 +125,7 @@ interface ItemFormate{
     inspectIndexId: string
     inspectIndexName: string
     inspectMaterialId: string
+    inspectMaterialCode: string
     relationType: string
     id: string
 }
@@ -163,6 +164,7 @@ interface TopicMainData{
   inspectMaterialId: string;
   inspectMaterialTypeName: string;
   relationType: string;
+  inspectMaterialCode: string;
 }
 
 interface ControlForm{
@@ -252,6 +254,7 @@ export default defineComponent({
         inspectIndexId: '',
         inspectIndexName: '',
         inspectMaterialId: '',
+        inspectMaterialCode: '',
         relationType: '',
         id: ''
       },
@@ -290,7 +293,8 @@ export default defineComponent({
         inspectIndexId: '',
         inspectMaterialId: '',
         relationType: '',
-        id: ''
+        id: '',
+        inspectMaterialCode: ''
       }
       // 指标代码清空
       state.tempMultiSelected = []
@@ -305,6 +309,7 @@ export default defineComponent({
         inspectIndexName: val.indexCode,
         inspectIndexId: val.inspectIndexId,
         inspectMaterialId: val.inspectMaterialId,
+        inspectMaterialCode: val.inspectMaterialCode,
         relationType: val.relationType,
         id: val.id
       }
@@ -318,15 +323,6 @@ export default defineComponent({
           versionID: row.id
         }
       })
-      // if (ctx.state.common.mainTabs.find(tabItem => tabItem.name === 'qms-pages-BasicData-TestIndexVersion-index')) {
-      //   this.$store.commit('common/updateMsgTabAlive', true)
-      // } else {
-      //   setTimeout(() => {
-      //     this.$router.push({
-      //       name: 'qms-pages-BasicData-TestIndexVersion-index'
-      //     })
-      //   }, 500)
-      // }
     }
 
     // [table] 选框选择
@@ -378,7 +374,7 @@ export default defineComponent({
     // 编辑/新增 操作确认
     const btnItemFloatConfirm = async (val:string) => {
       if (val === '新增指标') { // 新增指标
-        if (state.singleItemform.inspectMaterialId === '') {
+        if (state.singleItemform.inspectMaterialCode === '') {
           proxy.$errorToast('检验类别\\物料字段未填写')
           return
         }
@@ -394,8 +390,9 @@ export default defineComponent({
             title: state.singleItemform.title,
             id: '',
             inspectIndexId: item.id,
-            inspectMaterialId: state.singleItemform.inspectMaterialId,
             inspectIndexName: item.name,
+            inspectMaterialId: state.singleItemform.inspectMaterialId,
+            inspectMaterialCode: state.singleItemform.inspectMaterialCode,
             relationType: state.singleItemform.relationType
           })
         })
@@ -424,6 +421,7 @@ export default defineComponent({
         inspectIndexId: '',
         inspectIndexName: '',
         inspectMaterialId: '',
+        inspectMaterialCode: '',
         relationType: '',
         id: ''
       }

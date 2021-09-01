@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-07-30 11:24:46
  * @LastEditors: Telliex
- * @LastEditTime: 2021-08-30 14:57:00
+ * @LastEditTime: 2021-09-01 15:49:11
 -->
 <template>
   <div style="padding-top:10px">
@@ -20,7 +20,7 @@
       <el-table-column type="index" label="序号" width="50" />
       <el-table-column label="标定标准值" min-width="200" show-overflow-tooltip>
         <template #default="scope">
-            <el-input v-model.number="scope.row.indexStandard" size="small" placeholder="请输入" :disabled="!isRedact" />
+            <el-input v-model="scope.row.indexStandard" size="small" placeholder="请输入" :disabled="!isRedact" />
         </template>
       </el-table-column>
       <el-table-column label="标定上限">
@@ -67,7 +67,7 @@
       </el-table-column>
       <el-table-column label="内控标準值" min-width="200" show-overflow-tooltip>
         <template #default="scope">
-          <el-input v-model.number="scope.row.indexInnerStandard" size="small" placeholder="请输入" :disabled="!isRedact" />
+          <el-input v-model="scope.row.indexInnerStandard" size="small" placeholder="请输入" :disabled="!isRedact" />
         </template>
       </el-table-column>
       <el-table-column label="内控上限">
@@ -145,11 +145,11 @@ import _ from 'lodash'
 
 interface TopicMainData {
   id: string
-  indexStandard: number | null // 标定-标准值
+  indexStandard: number | string | null // 标定-标准值
   upSymbol: string // 标定-上限符号
   indexUp: number | null // 标定-上限 x
   indexDown: number | null // 标定-下限 x
-  indexInnerStandard: number | null // 内控-标准值 x
+  indexInnerStandard: number | string | null // 内控-标准值 x
   indexInnerUp: number | null // 内控-上限 x
   indexInnerDown: number | null // 内控-下限 x
   downSymbol: string // 标定-下限符号
