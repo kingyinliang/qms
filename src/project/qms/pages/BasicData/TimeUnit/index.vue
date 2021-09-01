@@ -4,7 +4,7 @@
       <div style="float: right;">
         <el-form :model="queryForm" class="queryForm" size="small" :inline="true" label-position="right" label-width="82px" style=" float: left;">
           <el-form-item label="">
-            <el-input suffix-icon="el-icon-search" v-model="queryForm.cycleCodeOrName" placeholder="时间单位/编码" style="width: 160px;" />
+            <el-input suffix-icon="el-icon-search" v-model="queryForm.cycleCodeOrName" placeholder="时间单位/编码" style="width: 160px;" @keyup.enter="() => {queryForm.current = 1; query()}" />
           </el-form-item>
         </el-form>
         <div style="float: right;">
@@ -14,39 +14,6 @@
         </div>
       </div>
     </template>
-    <el-date-picker
-      v-model="a"
-      class="inputWidth"
-      popper-class="noneHeader"
-      type="month"
-      value-format="YYYY-MM-DD"
-      format="YYYY-MM-DD"
-    />
-    <el-date-picker
-      v-model="a"
-      class="inputWidth"
-      popper-class="noneHeader"
-      type="month"
-      value-format="MM-DD"
-      format="MM-DD"
-    />
-    <el-date-picker
-      v-model="a"
-      class="inputWidth"
-      popper-class="noneHeader"
-      type="month"
-      value-format="MM"
-      format="MM"
-    />
-    <el-date-picker
-      v-model="a"
-      class="inputWidth"
-      popper-class="noneHeader"
-      type="month"
-      value-format="DD"
-      format="DD"
-    />
-    <el-button icon="el-icon-search" size="small" @click="getA">查询</el-button>
     <el-table ref="multipleTable" border :cell-style="{'text-align':'center'}" :data="tableData" tooltip-effect="dark" style="width: 100%" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" />
       <el-table-column type="index" label="序号" :index="(index) => index + 1 + (queryForm.current - 1) * queryForm.size" width="50" />
@@ -222,10 +189,6 @@ export default defineComponent({
     const ctx = getCurrentInstance() as ComponentInternalInstance
     const proxy = ctx.proxy as any
 
-    const a = ref('')
-    const getA = () => {
-      console.log(a.value)
-    }
     const addOrUpdateRef = ref() // 新增修改表单节点
     const queryForm = reactive({
       cycleCodeOrName: '',
@@ -233,6 +196,7 @@ export default defineComponent({
       size: 10,
       total: 0
     }) // 查询表单数据
+    const a = ref('')
     const tableData = ref<TimeData[]>([]) // 表格数据
     const multipleSelection = ref<string[]>([]) // 复选数据
     const addOrUpdateDialog = ref(false) // 新增修改弹窗
@@ -326,6 +290,9 @@ export default defineComponent({
     const calculateUnitChange = (val: string) => {
       (addOrUpdateForm.value as TimeData).calculateStarts = [''];
       (addOrUpdateForm.value as TimeData).calculateUnitName = (calculateUnit.value.find(it => it.dictCode === val) as Dict).dictValue
+    }
+    const getA = () => {
+      console.log(a.value)
     }
 
     onMounted(async () => {
