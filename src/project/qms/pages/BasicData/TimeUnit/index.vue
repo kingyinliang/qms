@@ -4,7 +4,7 @@
       <div style="float: right;">
         <el-form :model="queryForm" class="queryForm" size="small" :inline="true" label-position="right" label-width="82px" style=" float: left;">
           <el-form-item label="">
-            <el-input suffix-icon="el-icon-search" v-model="queryForm.cycleCodeOrName" placeholder="时间单位/编码" style="width: 160px;" />
+            <el-input suffix-icon="el-icon-search" v-model="queryForm.cycleCodeOrName" placeholder="时间单位/编码" style="width: 160px;" @keyup.enter="() => {queryForm.current = 1; query()}" />
           </el-form-item>
         </el-form>
         <div style="float: right;">
@@ -196,6 +196,7 @@ export default defineComponent({
       size: 10,
       total: 0
     }) // 查询表单数据
+    const a = ref('')
     const tableData = ref<TimeData[]>([]) // 表格数据
     const multipleSelection = ref<string[]>([]) // 复选数据
     const addOrUpdateDialog = ref(false) // 新增修改弹窗
@@ -290,6 +291,9 @@ export default defineComponent({
       (addOrUpdateForm.value as TimeData).calculateStarts = [''];
       (addOrUpdateForm.value as TimeData).calculateUnitName = (calculateUnit.value.find(it => it.dictCode === val) as Dict).dictValue
     }
+    const getA = () => {
+      console.log(a.value)
+    }
 
     onMounted(async () => {
       query()
@@ -298,6 +302,8 @@ export default defineComponent({
     })
 
     return {
+      a,
+      getA,
       addOrUpdateRef,
       queryForm,
       tableData,
