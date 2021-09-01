@@ -236,42 +236,47 @@ export default defineComponent({
     }
 
     // get material detail data
-    const getMaterialCatagoryData = (inspectTypeId = '') => {
+    const getMaterialCatagoryData = () => {
       INSPECT_MATERIAL_INSPECT_TYPE_MATERIAL_API({
       }).then((res) => {
         state.materialDetailText = ''
         state.isShowSearchBar = true
         state.treeData = treeDataTranslater('category', JSON.parse(JSON.stringify(res.data.data)), 'id', 'parentId')
+        console.log('state.treeData')
+        console.log(state.treeData)
         // 一进页面默认跑第一笔
         if (state.currentCategoryId === '') {
           state.currentCategoryId = state.treeData[0].id
           state.initFocusNode = state.treeData[0].id
-
-          // '619922389037592576'
           treeModule.value.focusCurrentNodeNumber = state.treeData[0].id
           apiMaterialDetail(state.currentCategoryId, '', state.currentPage, state.pageSize)
         } else {
-          treeModule.value.focusCurrentNodeNumber = inspectTypeId
+          console.log('state.currentCategoryId')
+          console.log(state.currentCategoryId)
+
+          treeModule.value.focusCurrentNodeNumber = state.currentCategoryId
+
+          // apiMaterialDetail(state.currentCategoryId, state.globleSearchString, state.currentPage, state.pageSize)
         }
       })
     }
 
     const updateInspectCategoryList = (val:string[]) => {
-      console.log('state.globleItem')
-      console.log(state.globleItem)
       const dataTemp:TopicMainData[] = []
       dataTemp.push(state.globleItem)
+      console.log('=========state.globleItem=========')
+      console.log(state.globleItem)
 
       INSPECT_MATERIAL_CHECKED_INSPECT_TYPE_UPDATE_API({
         inspectMaterialDetails: dataTemp,
         inspectTypeIdList: val // 检验类id数组
       }).then(async () => {
         proxy.$successToast('操作成功')
+        // 清除 highlight
+        treeModule.value.focusCurrentNodeNumber = ''
         // reload page
-        // await getMaterialCatagoryData()
-        getMaterialCatagoryData(state.globleItem.inspectTypeId)
+        getMaterialCatagoryData()
         apiMaterialDetail(state.currentCategoryId, state.globleSearchString, state.currentPage, state.pageSize)
-        // state.topicMainData = []
       })
     }
 
@@ -282,8 +287,8 @@ export default defineComponent({
         if (who === 'category') {
           if (data[i].inspectMaterials.length !== 0 && data[i].assistFlag !== 'Y') {
             data[i].children = []
-            data[i].inspectMaterials.forEach((item: string) => {
-              data[i].children.push({ inspectTypeName: item, isFinalNode: true, markParentId: data[i].id, itemId: item.slice(item.lastIndexOf(' ') + 1) })
+            data[i].inspectMaterials.forEach((item: string, index: number) => {
+              data[i].children.push({ inspectTypeName: item, isFinalNode: true, markParentId: data[i].id, itemId: item.slice(item.lastIndexOf(' ') + 1), id: data[i].id + index })
             })
           } else {
             data[i].notShowContextMenuOnThisNode = true
