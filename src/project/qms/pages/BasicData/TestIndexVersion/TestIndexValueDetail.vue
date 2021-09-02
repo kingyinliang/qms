@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-07-30 11:24:46
  * @LastEditors: Telliex
- * @LastEditTime: 2021-09-01 15:49:11
+ * @LastEditTime: 2021-09-01 16:23:42
 -->
 <template>
   <div style="padding-top:10px">
@@ -20,7 +20,7 @@
       <el-table-column type="index" label="序号" width="50" />
       <el-table-column label="标定标准值" min-width="200" show-overflow-tooltip>
         <template #default="scope">
-            <el-input v-model="scope.row.indexStandard" size="small" placeholder="请输入" :disabled="!isRedact" />
+            <el-input v-model="scope.row.indexStandard" size="small" maxlength="10" placeholder="请输入" :disabled="!isRedact" />
         </template>
       </el-table-column>
       <el-table-column label="标定上限">
@@ -67,7 +67,7 @@
       </el-table-column>
       <el-table-column label="内控标準值" min-width="200" show-overflow-tooltip>
         <template #default="scope">
-          <el-input v-model="scope.row.indexInnerStandard" size="small" placeholder="请输入" :disabled="!isRedact" />
+          <el-input v-model="scope.row.indexInnerStandard" maxlength="10" size="small" placeholder="请输入" :disabled="!isRedact" />
         </template>
       </el-table-column>
       <el-table-column label="内控上限">
