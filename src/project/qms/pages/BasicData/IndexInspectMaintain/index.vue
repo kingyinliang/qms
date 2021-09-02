@@ -12,9 +12,9 @@
   >
     <template #context--menu >
       <ul>
-        <li @click="btnHandleItemOfTreeMenu(globalMainObj)" v-if="isSubMenuAddBNTShow">新增</li>
-        <li @click="btnHandleItemOfTreeMenu(globalMainObj)" v-if="isSubMenuDeitBNTShow">编辑</li>
-        <li @click="btnRemoveItemOfTreeMenu(globalMainObj)" v-if="isSubMenuDeitBNTShow">删除</li>
+        <li class="contextMenu" @click="btnHandleItemOfTreeMenu(globalMainObj)" v-if="isSubMenuAddBNTShow">新增</li>
+        <li class="contextMenu" @click="btnHandleItemOfTreeMenu(globalMainObj)" v-if="isSubMenuDeitBNTShow">编辑</li>
+        <li class="contextMenu" @click="btnRemoveItemOfTreeMenu(globalMainObj)" v-if="isSubMenuDeitBNTShow">删除</li>
       </ul>
     </template>
     <template #view>
@@ -31,9 +31,9 @@
               >
             </el-input>
             <div>
-              <el-button icon="el-icon-search" size="small" @click="btnGetMainData" :disabled="Object.keys(globalMainObj).length===0">查询</el-button>
-              <el-button icon="el-icon-plus" type="primary" size="small" @click="handleParameterItem()" :disabled="Object.keys(globalMainObj).length===0">新增</el-button>
-              <el-button icon="el-icon-delete" type="danger" size="small" @click="btnDeleteOfParameterGroupDataDelete" :disabled="multipleSelection.length===0">批量删除</el-button>
+              <el-button icon="el-icon-search" class="topic-button" size="small" @click="btnGetMainData" :disabled="Object.keys(globalMainObj).length===0">查询</el-button>
+              <el-button icon="el-icon-plus" class="topic-button" type="primary" size="small" @click="handleParameterItem()" :disabled="Object.keys(globalMainObj).length===0">新增</el-button>
+              <el-button icon="el-icon-delete" class="topic-button" type="danger" size="small" @click="btnDeleteOfParameterGroupDataDelete" :disabled="multipleSelection.length===0">批量删除</el-button>
             </div>
         </div>
         <el-table :data="topicMainData"
@@ -156,14 +156,14 @@
 
     <template #footer>
       <span class="dialog-footer">
-        <el-button size="small" icon="el-icon-circle-close" @click="btnItemFloatClear">取 消</el-button>
+        <el-button size="small" class="topic-button" icon="el-icon-circle-close" @click="btnItemFloatClear">取 消</el-button>
         <!--检验方法-->
         <template v-if="mainDialog.title==='检验方法'">
-          <el-button size="small" type="primary" icon="el-icon-circle-check" @click="btnItemFloatConfirm(inspectTypeform.inspectType)">确 定</el-button>
+          <el-button size="small" class="topic-button" type="primary" icon="el-icon-circle-check" @click="btnItemFloatConfirm(inspectTypeform.inspectType)">确 定</el-button>
 
         </template>
         <template v-if="mainDialog.title==='参数配置'">
-          <el-button size="small" type="primary" icon="el-icon-circle-check" @click="btnAddItemFloatConfirm()">确 定</el-button>
+          <el-button size="small" class="topic-button" type="primary" icon="el-icon-circle-check" @click="btnAddItemFloatConfirm()">确 定</el-button>
         </template>
       </span>
     </template>
