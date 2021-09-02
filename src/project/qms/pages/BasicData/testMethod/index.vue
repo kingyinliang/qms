@@ -4,9 +4,9 @@
       <div style="float: right;display: flex;">
         <el-input size="small" style="margin-bottom:10px; width:200px; height:35px;margin-right:10px"  v-model="plantList.inspectMethodCodeOrName" placeholder="检验方法编码/名称" @keyup.enter="getList" />
         <div style="float: right;">
-          <el-button icon="el-icon-search" size="small" @click="getList">查询</el-button>
-          <el-button icon="el-icon-plus" type="primary" @click="addData" size="small">新增</el-button>
-          <el-button icon="el-icon-delete" type="danger" size="small" @click="selectDelete">批量删除</el-button>
+          <el-button icon="el-icon-search" size="small" class="topic-button" @click="getList">查询</el-button>
+          <el-button icon="el-icon-plus" type="primary" class="topic-button" @click="addData" size="small">新增</el-button>
+          <el-button icon="el-icon-delete" type="danger" class="topic-button" size="small" @click="selectDelete">批量删除</el-button>
         </div>
       </div>
     </template>
@@ -51,8 +51,8 @@
         </el-form-item>
       </el-form>
       <span class="dialog-footer">
-        <el-button size="small" icon="el-icon-circle-close" @click="addMethodBtn = false">取消</el-button>
-        <el-button size="small" icon="el-icon-circle-check" type="primary" @click="addMethodSave">确定</el-button>
+        <el-button size="small" class="topic-button" icon="el-icon-circle-close" @click="addMethodBtn = false">取消</el-button>
+        <el-button size="small" class="topic-button" icon="el-icon-circle-check" type="primary" @click="addMethodSave">确定</el-button>
       </span>
     </el-dialog>
 </template>
