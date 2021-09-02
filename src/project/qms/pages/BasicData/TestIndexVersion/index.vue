@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-07-30 11:24:46
  * @LastEditors: Telliex
- * @LastEditTime: 2021-09-01 16:56:07
+ * @LastEditTime: 2021-09-02 14:51:21
 -->
 <template>
   <mds-card class="test_method" title="版本明细" :pack-up="false" style="margin-bottom: 0; background: #fff;">
@@ -11,9 +11,9 @@
       <div style="float: right;display: flex;">
         <el-input size="small" style="margin-bottom:10px; width:200px; height:35px;margin-right:10px" v-model="controlForm.filterText" placeholder="版本号" clearable @keyup.enter="btnGetMainData"  />
         <div style="float: right;">
-          <el-button icon="el-icon-search"  size="small" @click="btnGetMainData">查询</el-button>
-          <el-button icon="el-icon-plus" type="primary" size="small" @click="btnAddItemData">新增</el-button>
-          <el-button icon="el-icon-delete" type="danger" size="small" @click="actBatchDelete">批量删除</el-button>
+          <el-button icon="el-icon-search" size="small" class="topic-button" @click="btnGetMainData">查询</el-button>
+          <el-button icon="el-icon-plus" type="primary" size="small" class="topic-button" @click="btnAddItemData">新增</el-button>
+          <el-button icon="el-icon-delete" type="danger" size="small" class="topic-button" @click="actBatchDelete">批量删除</el-button>
         </div>
       </div>
     </template>
@@ -97,8 +97,8 @@
       </el-form>
     <template #footer>
       <span class="dialog-footer">
-        <el-button size="small" icon="el-icon-circle-close" @click="btnItemFloatClear">取 消</el-button>
-        <el-button size="small" icon="el-icon-circle-check" type="primary" @click="btnItemFloatConfirm" :disabled="!fileUploadFinish">确 定</el-button>
+        <el-button size="small" class="topic-button" icon="el-icon-circle-close" @click="btnItemFloatClear">取 消</el-button>
+        <el-button size="small" class="topic-button" icon="el-icon-circle-check" type="primary" @click="btnItemFloatConfirm" :disabled="!fileUploadFinish">确 定</el-button>
       </span>
     </template>
   </el-dialog>

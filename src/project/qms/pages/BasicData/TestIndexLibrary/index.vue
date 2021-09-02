@@ -11,7 +11,7 @@
             clearable
             @keyup.enter="getMainData" />
         <div style="float: right;">
-          <el-button icon="el-icon-search" size="small" @click="getMainData">查询</el-button>
+          <el-button icon="el-icon-search" size="small" class="topic-button" @click="getMainData">查询</el-button>
         </div>
       </div>
     </template>
