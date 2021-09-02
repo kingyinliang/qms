@@ -1,3 +1,10 @@
+<!--
+ * @Description:
+ * @Anthor: Telliex
+ * @Date: 2021-07-30 11:24:46
+ * @LastEditors: Telliex
+ * @LastEditTime: 2021-09-02 08:30:37
+-->
 <template>
   <mds-card class="test_method" title="版本明细" :pack-up="false" style="margin-bottom: 0; background: #fff;">
     <template #titleBtn>
@@ -24,7 +31,7 @@
         <el-button
           size="mini"
           type="text"
-          @click="seeVersion(scope.row)">{{scope.row.indexVersionMethod}}</el-button>
+          @click="seeVersion(scope.row)">{{scope.row.indexVersionMethod.substring(scope.row.indexVersionMethod.lastIndexOf('/')+1,scope.row.indexVersionMethod.length)}}</el-button>
          </template>
       </el-table-column>
       <el-table-column label="变更说明" width="160" prop="changeInfo" show-overflow-tooltip />
@@ -54,7 +61,7 @@
 
   </mds-card>
   <!--指标弹窗-->
-  <el-dialog :title="addFormInfo.title" v-model="isDialogVisibleForItemControl" width="40%">
+  <el-dialog :title="addFormInfo.title" v-model="isDialogVisibleForItemControl" width="550px">
     <el-form ref="addRef" :model="addFormInfo" :rules="dataRule">
         <el-form-item label="版本：" prop="indexVersion" :label-width="'140px'">
           <el-input v-model="addFormInfo.indexVersion" class="140px" autocomplete="off" maxlength="10"></el-input>
@@ -83,6 +90,7 @@
             value-format="YYYY-MM-DD"
             :disabled-date="pickerOptions"
             placeholder="请选选择日期"
+            style="width:100%"
             >
           </el-date-picker>
         </el-form-item>
@@ -578,7 +586,9 @@ export default defineComponent({
       }
     }
 }
-
+::v-deep(.el-upload.el-upload--text){
+  width:100%
+}
 </style>
 <style scoped>
 .el-form-item__content ::v-deep(.el-upload--text){
