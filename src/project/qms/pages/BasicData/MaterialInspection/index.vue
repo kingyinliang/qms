@@ -10,8 +10,8 @@
     @treeNodeContextMenu="treeNodeContextMenuHandle"
   >
     <template #context--menu >
-      <ul class="sub-menu">
-        <li @click="handleMultiAsign">分配</li>
+      <ul>
+        <li class="contextMenu" @click="handleMultiAsign">分配</li>
       </ul>
     </template>
     <template #view>
@@ -395,10 +395,3 @@ export default defineComponent({
   }
 })
 </script>
-
-<style scoped>
-.sub-menu{
-  font-size: 14px;
-  line-height: 28px;
-}
-</style>

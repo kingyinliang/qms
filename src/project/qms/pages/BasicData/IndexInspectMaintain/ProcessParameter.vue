@@ -3,16 +3,16 @@
  * @Anthor: Telliex
  * @Date: 2021-07-30 11:24:46
  * @LastEditors: Telliex
- * @LastEditTime: 2021-08-31 16:26:33
+ * @LastEditTime: 2021-09-02 15:45:13
 -->
 <template>
   <mds-card class="test_method" :title="title" :pack-up="false" style="margin-bottom: 0; background: #fff;">
     <template #titleBtn>
         <div style="float: right;display: flex; margin-bottom:10px;">
-          <el-button v-if="!controlBtnCanDo" type="primary" icon="el-icon-edit" size="small" class="role__btn" @click="btnEditItemData" :disabled="!canEdit" >编辑</el-button>
-          <el-button v-if="controlBtnCanDo" icon="el-icon-circle-plus-outline" type="primary" size="small" @click="btnAddItemData">新增</el-button>
-          <el-button v-if="controlBtnCanDo" icon="el-icon-circle-check" type="primary" size="small" @click="btnSaveItemData">保存</el-button>
-          <el-button v-if="controlBtnCanDo" icon="el-icon-circle-close" type="primary" size="small" @click="btnLeaveItemData">取消</el-button>
+          <el-button v-if="!controlBtnCanDo" type="primary" icon="el-icon-edit" size="small" class="role__btn topic-button" @click="btnEditItemData" :disabled="!canEdit" >编辑</el-button>
+          <el-button v-if="controlBtnCanDo" icon="el-icon-plus" type="primary" size="small" class="topic-button" @click="btnAddItemData">新增</el-button>
+          <el-button v-if="controlBtnCanDo" icon="el-icon-circle-check" type="primary" size="small" class="topic-button" @click="btnSaveItemData">保存</el-button>
+          <el-button v-if="controlBtnCanDo" icon="el-icon-circle-close" type="primary" size="small" class="topic-button" @click="btnLeaveItemData">取消</el-button>
         </div>
     </template>
     <el-table
@@ -164,7 +164,7 @@
       <el-table-column label="操作" width="100" fixed="right">
         <template #default="scope" >
           <el-button type="text" icon="el-icon-remove-outline" class="role__btn" @click="btnDeleteItemData(scope.$index,scope.row)" :disabled="!isRedact">
-           删除
+           <span>删除</span>
           </el-button>
         </template>
       </el-table-column>
@@ -180,24 +180,24 @@
         <h3>变量</h3>
           <el-button-group>
             <template v-for="item in fomulaList" :key="item.paramSubscriptCode">
-            <el-button  v-if="item.paramSubscriptCode!==''" type="primary" @click="spellFormula('variable',item.paramSubscriptCode,item.paramSubscript)">{{ item.paramSubscriptCode }}<sub>{{item.paramSubscript}}</sub></el-button>
+            <el-button size="small" class="topic-button"  v-if="item.paramSubscriptCode!==''" type="primary" @click="spellFormula('variable',item.paramSubscriptCode,item.paramSubscript)">{{ item.paramSubscriptCode }}<sub v-if="item.paramSubscript!==''">{{item.paramSubscript}}</sub></el-button>
             </template>
           </el-button-group>
            <el-button-group>
-              <el-button type="primary" v-for="item in ['1','2','3','4','5','6','7','8','9','0']" :key="item" @click="spellFormula('value',item)">{{item}}</el-button>
+              <el-button size="small" class="topic-button" type="primary" v-for="item in ['1','2','3','4','5','6','7','8','9','0']" :key="item" @click="spellFormula('value',item)">{{item}}</el-button>
           </el-button-group>
         <h3>公式</h3>
         <el-button-group>
-          <el-button type="primary" v-for="item in ['+','-','*','/','(',')']" :key="item" @click="spellFormula('operator',item)">{{item}}</el-button>
-          <el-button type="primary" @click="spellFormula('del','Del')">Del</el-button>
+          <el-button size="small" class="topic-button" type="primary" v-for="item in ['+','-','*','/','(',')']" :key="item" @click="spellFormula('operator',item)">{{item}}</el-button>
+          <el-button size="small" class="topic-button" type="primary" @click="spellFormula('del','Del')">Del</el-button>
         </el-button-group>
       </template>
     </dialogDevice>
     <dialogDevice :dialogVisible="isRelatedeFormulaDialogShow" :title="'关联公式'" @on-confirm="onRelatedFormulaConfirm" @on-close="onRelatedFormulaClose">
       <template #default>
         <div style="display:flex; justify-content: flex-end;margin-bottom:5px;">
-          <el-button  type="primary" size="mini" @click="addItemOfrelatedeFormula">新增</el-button>
-          <el-button  type="danger" size="mini"  @click="deleteItemOfrelatedeFormula">批量删除</el-button>
+          <el-button  type="primary" size="small" icon="el-icon-plus" class="topic-button" @click="addItemOfrelatedeFormula">新增</el-button>
+          <el-button  type="danger" size="small" icon="el-icon-delete"  class="topic-button" @click="deleteItemOfrelatedeFormula">批量删除</el-button>
         </div>
         <el-table ref="multipleTable" type="mini"  :cell-style="{'text-align':'center'}" :data="relatedeFormulaData"  tooltip-effect="dark" style="width: 100%" @selection-change="handleSelectionChange">
           <el-table-column type="selection" width="55" />
@@ -734,6 +734,8 @@ export default defineComponent({
         onResultFormulaClose()
       } else if (row.paramType === 'RESULT') {
         state.fomulaList = state.topicMainData.filter(item => item.paramCode !== state.tempItemObj.paramCode)
+        console.log('state.fomulaList')
+        console.log(state.fomulaList)
 
         state.isResultFormulaDialogShow = true
         onRelatedFormulaClose()

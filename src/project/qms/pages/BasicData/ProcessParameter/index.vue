@@ -2,23 +2,22 @@
   <mds-card class="test_method" title="过程参数" :pack-up="false" style="margin-bottom: 0; background: #fff;">
     <template #titleBtn>
       <div style="display: flex; justify-content: flex-end;">
-        <el-input size="small" style="margin-bottom:10px; width:200px; height:35px;margin-right:10px" clearable  v-model="plantList.textSearch" placeholder="名称" @keyup.enter="btnGetTopicMainData" />
+        <el-input size="small" style="margin-bottom:10px; width:200px; height:35px;margin-right:10px" clearable  v-model="plantList.textSearch" placeholder="参数名称" @keyup.enter="btnGetTopicMainData" />
         <div>
-          <el-button icon="el-icon-search" size="small" @click="btnGetTopicMainData">查询</el-button>
-          <el-button icon="el-icon-plus" type="primary" size="small" @click="btnAddItemOfTopicMainData">新增</el-button>
-          <el-button icon="el-icon-delete" type="danger" size="small" @click="btnDeleteItemsOfTopicMainData">批量删除</el-button>
+          <el-button icon="el-icon-search" size="small" class="topic-button" @click="btnGetTopicMainData">查询</el-button>
+          <el-button icon="el-icon-plus" type="primary" class="topic-button" size="small" @click="btnAddItemOfTopicMainData">新增</el-button>
+          <el-button icon="el-icon-delete" type="danger" class="topic-button" size="small" @click="btnDeleteItemsOfTopicMainData">批量删除</el-button>
         </div>
       </div>
     </template>
     <el-table border ref="multipleTable" :cell-style="{'text-align':'center'}" :data="dataTopicMainData" tooltip-effect="dark" style="width: 100%" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="45" />
       <el-table-column type="index" label="序号" :index="(index) => index + 1 + (currentPage - 1) * pageSize" width="50" />
-      <!-- <el-table-column label="编码" prop="paramName" /> -->
       <el-table-column label="参数名称" prop="paramSubscriptCode" />
       <el-table-column label="下标" prop="paramSubscript" />
       <el-table-column label="过程参数" >
         <template #default="scope">
-          <span>{{scope.row.paramCode.split('[')[0]}}<sub>{{scope.row.paramCode.split('[')[1].replace(']','')}}</sub></span>
+          <span>{{scope.row.paramCode.split('[')[0]}}<sub v-if="scope.row.paramCode.paramSubscript!==''">{{scope.row.paramCode.split('[')[1].replace(']','')}}</sub></span>
         </template>
       </el-table-column>
       <el-table-column label="操作" width="80" fixed="right">
@@ -44,25 +43,21 @@
 
   <el-dialog v-model="isAddItemDialogShow" :title="dialogTitle" width="30%">
       <el-form ref="refAddAndEditItemDialog" :model="addAndEditItemForm" :rules="dataRule">
-        <!-- <el-form-item label="编码：" prop="paramCode" :label-width="cssForformLabelWidth">
-          <el-input v-model="addAndEditItemForm.paramCode" class="inputWidth" placeholder="请输入" disabled="true"  autocomplete="off"></el-input>
-        </el-form-item> -->
         <el-form-item label="参数名称：" prop="paramSubscriptCode" :label-width="cssForformLabelWidth">
           <el-input v-model="addAndEditItemForm.paramSubscriptCode" class="inputWidth" placeholder="请输入" autocomplete="off" @change="addAndEditItemForm.paramCode=addAndEditItemForm.paramSubscriptCode+'['+addAndEditItemForm.paramSubscript+']'"></el-input>
         </el-form-item>
         <el-form-item label="下标：" prop="paramSubscript" :label-width="cssForformLabelWidth">
-          <el-input v-model="addAndEditItemForm.paramSubscript" class="inputWidth" placeholder="请输入" autocomplete="off" @change="addAndEditItemForm.paramCode=addAndEditItemForm.paramSubscriptCode+'['+addAndEditItemForm.paramSubscript+']'"></el-input>
+          <el-input v-model="addAndEditItemForm.paramSubscript" maxlength="10" class="inputWidth" placeholder="请输入" autocomplete="off" @change="addAndEditItemForm.paramCode=addAndEditItemForm.paramSubscriptCode+'['+addAndEditItemForm.paramSubscript+']'"></el-input>
         </el-form-item>
         <el-form-item label="过程参数：" prop="paramCode"  :label-width="cssForformLabelWidth">
-          <!-- <el-input v-model="addAndEditItemForm.paramCode" class="inputWidth" disabled="true" placeholder="请输入" autocomplete="off"></el-input> -->
            <div class="fake-input-disabled">
             <span>{{addAndEditItemForm.paramCode===''?'':addAndEditItemForm.paramCode.split('[')[0]}}<sub>{{addAndEditItemForm.paramCode===''?'':addAndEditItemForm.paramCode.split('[')[1].replace(']','')}}</sub></span>
           </div>
         </el-form-item>
       </el-form>
       <span class="dialog-footer">
-        <el-button size="small" icon="el-icon-circle-close" @click="isAddItemDialogShow = false">取 消</el-button>
-        <el-button size="small" icon="el-icon-circle-check" type="primary" @click="btnAddItemToConfirm">确 定</el-button>
+        <el-button size="small" class="topic-button" icon="el-icon-circle-close" @click="isAddItemDialogShow = false">取 消</el-button>
+        <el-button size="small" class="topic-button" icon="el-icon-circle-check" type="primary" @click="btnAddItemToConfirm">确 定</el-button>
       </span>
     </el-dialog>
 </template>
@@ -144,13 +139,6 @@ export default defineComponent({
         {
           required: true,
           message: '请输入参数名称',
-          trigger: 'blur'
-        }
-      ],
-      paramSubscript: [
-        {
-          required: true,
-          message: '请输入下标',
           trigger: 'blur'
         }
       ]

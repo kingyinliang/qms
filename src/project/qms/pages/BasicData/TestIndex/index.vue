@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-07-30 11:24:46
  * @LastEditors: Telliex
- * @LastEditTime: 2021-09-01 16:15:52
+ * @LastEditTime: 2021-09-02 14:50:36
 -->
 <template>
   <mds-card class="test_method" title="检验指标标准" :pack-up="false" style="margin-bottom: 0; background: #fff;">
@@ -17,9 +17,9 @@
           clearable
           @keyup.enter="btnGetMainData" />
         <div style="float: right;">
-          <el-button icon="el-icon-search" size="small" @click="btnGetMainData">查询</el-button>
-          <el-button icon="el-icon-plus" type="primary" size="small" @click="btnAddItemData">新增</el-button>
-          <el-button icon="el-icon-delete" type="danger" size="small" @click="btnBatchDelete">批量删除</el-button>
+          <el-button icon="el-icon-search" size="small" class="topic-button" @click="btnGetMainData">查询</el-button>
+          <el-button icon="el-icon-plus" type="primary" class="topic-button" size="small" @click="btnAddItemData">新增</el-button>
+          <el-button icon="el-icon-delete" type="danger" class="topic-button" size="small" @click="btnBatchDelete">批量删除</el-button>
         </div>
       </div>
     </template>
@@ -94,8 +94,8 @@
     </el-form>
     <template #footer>
       <span class="dialog-footer">
-        <el-button size="small" icon="el-icon-circle-close" @click="btnItemFloatClear">取消</el-button>
-        <el-button size="small" icon="el-icon-circle-check" type="primary" @click="btnItemFloatConfirm(singleItemform.title)">确定</el-button>
+        <el-button size="small" class="topic-button" icon="el-icon-circle-close" @click="btnItemFloatClear">取消</el-button>
+        <el-button size="small" class="topic-button" icon="el-icon-circle-check" type="primary" @click="btnItemFloatConfirm(singleItemform.title)">确定</el-button>
       </span>
     </template>
   </el-dialog>

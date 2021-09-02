@@ -4,9 +4,9 @@
       <div style="display: flex; justify-content: flex-end;">
         <el-input size="small" style="margin-bottom:10px; width:200px; height:35px;margin-right:10px" clearable  v-model="plantList.textSearch" placeholder="名称" @keyup.enter="btnGetTopicMainData" />
         <div>
-          <el-button icon="el-icon-search" size="small" @click="btnGetTopicMainData">查询</el-button>
-          <el-button icon="el-icon-plus" type="primary" size="small" @click="btnAddItemOfTopicMainData">新增</el-button>
-          <el-button icon="el-icon-delete" type="danger" size="small" @click="btnDeleteItemsOfTopicMainData">批量删除</el-button>
+          <el-button icon="el-icon-search" size="small"  class="topic-button" @click="btnGetTopicMainData">查询</el-button>
+          <el-button icon="el-icon-plus" type="primary" size="small" class="topic-button"  @click="btnAddItemOfTopicMainData">新增</el-button>
+          <el-button icon="el-icon-delete" type="danger" size="small" class="topic-button" @click="btnDeleteItemsOfTopicMainData">批量删除</el-button>
         </div>
       </div>
     </template>
@@ -48,8 +48,8 @@
         </el-form-item>
       </el-form>
       <span class="dialog-footer">
-        <el-button size="small" icon="el-icon-circle-close" @click="isAddItemDialogShow = false">取 消</el-button>
-        <el-button size="small" icon="el-icon-circle-check" type="primary" @click="btnAddItemToConfirm">确 定</el-button>
+        <el-button size="small" class="topic-button" icon="el-icon-circle-close" @click="isAddItemDialogShow = false">取 消</el-button>
+        <el-button size="small" class="topic-button" icon="el-icon-circle-check" type="primary" @click="btnAddItemToConfirm">确 定</el-button>
       </span>
     </el-dialog>
 </template>
