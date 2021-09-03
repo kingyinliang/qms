@@ -43,11 +43,11 @@
 
   <el-dialog v-model="isAddItemDialogShow" :title="dialogTitle" width="30%">
       <el-form ref="refAddAndEditItemDialog" :model="addAndEditItemForm" :rules="dataRule">
-        <el-form-item label="参数名称：" prop="paramSubscriptCode" :label-width="cssForformLabelWidth">
-          <el-input v-model="addAndEditItemForm.paramSubscriptCode" class="inputWidth" placeholder="请输入" autocomplete="off" @change="addAndEditItemForm.paramCode=addAndEditItemForm.paramSubscriptCode+'['+addAndEditItemForm.paramSubscript+']'"></el-input>
+        <el-form-item label="参数名称："  prop="paramSubscriptCode" :label-width="cssForformLabelWidth">
+          <el-input v-model="addAndEditItemForm.paramSubscriptCode" maxlength="10" class="inputWidth" placeholder="请输入" autocomplete="off" @change="addAndEditItemForm.paramCode=addAndEditItemForm.paramSubscriptCode+'['+addAndEditItemForm.paramSubscript+']'"></el-input>
         </el-form-item>
         <el-form-item label="下标：" prop="paramSubscript" :label-width="cssForformLabelWidth">
-          <el-input v-model="addAndEditItemForm.paramSubscript" maxlength="10" class="inputWidth" placeholder="请输入" autocomplete="off" @change="addAndEditItemForm.paramCode=addAndEditItemForm.paramSubscriptCode+'['+addAndEditItemForm.paramSubscript+']'"></el-input>
+          <el-input v-model="addAndEditItemForm.paramSubscript" maxlength="5" class="inputWidth" placeholder="请输入" autocomplete="off" @change="addAndEditItemForm.paramCode=addAndEditItemForm.paramSubscriptCode+'['+addAndEditItemForm.paramSubscript+']'"></el-input>
         </el-form-item>
         <el-form-item label="过程参数：" prop="paramCode"  :label-width="cssForformLabelWidth">
            <div class="fake-input-disabled">

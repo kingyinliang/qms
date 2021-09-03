@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-07-30 11:24:46
  * @LastEditors: Telliex
- * @LastEditTime: 2021-09-02 14:52:06
+ * @LastEditTime: 2021-09-03 14:41:19
 -->
 <template>
   <div style="padding-top:10px">
@@ -40,7 +40,7 @@
           show-overflow-tooltip
         >
           <template #default="scope">
-              <el-input v-model.number="scope.row.indexUp" size="small" placeholder="请输入" :disabled="!isRedact||scope.row.upSymbol===''" />
+              <el-input v-model="scope.row.indexUp"  maxlength="10" size="small" placeholder="请输入" :disabled="!isRedact||scope.row.upSymbol===''" oninput="value=value.replace(/[^\d.]/g, '').replace(/\.{2,}/g, '.').replace('.', '$#$').replace(/\./g, '').replace('$#$', '.').replace(/^(\-)*(\d+)\.(\d\d).*$/, '$1$2.$3').replace(/^\./g, '')" @change="val=>checkOnlyNumber(val,scope.row,'indexUp')" />
           </template>
         </el-table-column>
       </el-table-column>
@@ -61,11 +61,11 @@
           show-overflow-tooltip
         >
           <template #default="scope">
-            <el-input v-model.number="scope.row.indexDown" size="small" placeholder="请输入" :disabled="!isRedact||scope.row.downSymbol===''" />
+            <el-input v-model="scope.row.indexDown"  maxlength="10" size="small" placeholder="请输入" :disabled="!isRedact||scope.row.downSymbol===''" oninput="value=value.replace(/[^\d.]/g, '').replace(/\.{2,}/g, '.').replace('.', '$#$').replace(/\./g, '').replace('$#$', '.').replace(/^(\-)*(\d+)\.(\d\d).*$/, '$1$2.$3').replace(/^\./g, '')" @change="val=>checkOnlyNumber(val,scope.row,'indexDown')" />
           </template>
          </el-table-column>
       </el-table-column>
-      <el-table-column label="内控标準值" min-width="200" show-overflow-tooltip>
+      <el-table-column label="内控标准值" min-width="200" show-overflow-tooltip>
         <template #default="scope">
           <el-input v-model="scope.row.indexInnerStandard" maxlength="10" size="small" placeholder="请输入" :disabled="!isRedact" />
         </template>
@@ -87,7 +87,7 @@
           show-overflow-tooltip
         >
           <template #default="scope">
-            <el-input v-model.number="scope.row.indexInnerUp" size="small" placeholder="请输入" :disabled="!isRedact||scope.row.innerUpSymbol===''" />
+            <el-input v-model="scope.row.indexInnerUp"  maxlength="10" size="small" placeholder="请输入" :disabled="!isRedact||scope.row.innerUpSymbol===''" oninput="value=value.replace(/[^\d.]/g, '').replace(/\.{2,}/g, '.').replace('.', '$#$').replace(/\./g, '').replace('$#$', '.').replace(/^(\-)*(\d+)\.(\d\d).*$/, '$1$2.$3').replace(/^\./g, '')" @change="val=>checkOnlyNumber(val,scope.row,'indexInnerUp')"  />
           </template>
          </el-table-column>
       </el-table-column>
@@ -109,7 +109,7 @@
         >
           <template #default="scope">
             <!-- <el-tooltip effect="dark" :disabled="scope.row.indexInnerDown===''" :content="scope.row.indexInnerDown" placement="top-start"> -->
-                <el-input v-model.number="scope.row.indexInnerDown" size="small" placeholder="请输入" :disabled="!isRedact||scope.row.innerDownSymbol===''" />
+                <el-input v-model="scope.row.indexInnerDown"  maxlength="10" size="small" placeholder="请输入" :disabled="!isRedact||scope.row.innerDownSymbol===''" oninput="value=value.replace(/[^\d.]/g, '').replace(/\.{2,}/g, '.').replace('.', '$#$').replace(/\./g, '').replace('$#$', '.').replace(/^(\-)*(\d+)\.(\d\d).*$/, '$1$2.$3').replace(/^\./g, '')" @change="val=>checkOnlyNumber(val,scope.row,'indexInnerDown')" />
             <!-- </el-tooltip> -->
           </template>
         </el-table-column>
@@ -417,6 +417,24 @@ export default defineComponent({
       { immediate: true }
     )
 
+    const checkOnlyNumber = (val:string|number, node:any, target:string) => {
+      console.log(val)
+      let targetStr:string | number = '' + val
+      // targetStr = targetStr
+      //   .replace(/[^\d.]/g, '') // 清除“数字”和“.”以外的字符
+      //   .replace(/\.{2,}/g, '.') // 只保留第一个. 清除多余的
+      //   .replace('.', '$#$')
+      //   .replace(/\./g, '')
+      //   .replace('$#$', '.')
+      //   .replace(/^(-)*(\d+)\.(\d\d).*$/, '$1$2.$3') // 只能输入两个小数
+      // console.log(targetStr)
+      if (targetStr.indexOf('.') < 0 && targetStr !== '') {
+        // 以上已经过滤，此处控制的是如果没有小数点，首位不能为类似于 01、02的金额
+        targetStr = parseFloat(targetStr)
+      }
+      node[target] = Number(targetStr)
+    }
+
     onMounted(async () => {
       // btnGetMainData()
     })
@@ -433,7 +451,8 @@ export default defineComponent({
       ruleSubmit,
       closeStandardValueInfoArea,
       headerMerge,
-      formatDate
+      formatDate,
+      checkOnlyNumber
     }
   }
 })
