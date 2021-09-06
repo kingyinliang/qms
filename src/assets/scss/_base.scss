@@ -208,3 +208,10 @@ body{
     color: #333333;
     line-height: 28px;
   }
+
+// 必填 mark
+.required::before{
+    content: '*';
+    color: #f00;
+    margin-right: 5px;
+}

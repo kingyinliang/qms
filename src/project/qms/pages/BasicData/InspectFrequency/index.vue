@@ -210,6 +210,7 @@ export default defineComponent({
     const btnEditItemOfTopicMainData = async (row: TopicMainData) => {
       state.dialogTitle = '检测频率-编辑'
       state.isAddItemDialogShow = true
+      getOptions() // 更细 API
       await nextTick()
       refAddAndEditItemDialog.value.resetFields()
       const temp:string[] = []
@@ -253,6 +254,7 @@ export default defineComponent({
     const btnAddItemOfTopicMainData = async () => {
       state.dialogTitle = '检测频率-新增'
       state.isAddItemDialogShow = true
+      getOptions() // 更细 API
       await nextTick()
       refAddAndEditItemDialog.value.resetFields()
 
@@ -328,6 +330,11 @@ export default defineComponent({
 
     /**  == 生命周期 ==  **/
     onMounted(async () => {
+      await getOptions()
+      await btnGetTopicMainData()
+    })
+
+    const getOptions = () => {
       // 执行周期下拉
       INSPECT_CYCLE_QUERY_DROPDOWN_API().then((res) => {
         console.log('执行周期下拉')
@@ -340,8 +347,7 @@ export default defineComponent({
         console.log(res.data.data)
         state.inspectAdditionalIdsOptions = res.data.data
       })
-      btnGetTopicMainData()
-    })
+    }
 
     return {
       ...toRefs(state),
