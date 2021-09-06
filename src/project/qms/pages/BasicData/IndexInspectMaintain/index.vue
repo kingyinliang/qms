@@ -459,14 +459,14 @@ export default defineComponent({
         title: '检验方法'
       }
       // 呼叫下拉选单
-      if (state.inspectTypeOptions.length === 0) { // 加判断,避免多次 API
-        INSPECT_INDEX_METHOD_DROPDOWN_QUERY_API({ // get 检验方法
-          id: '',
-          inspectProperty: val.inspectProperty
-        }).then((res) => {
-          state.inspectTypeOptions = res.data.data
-        })
-      }
+      // if (state.inspectTypeOptions.length === 0) { // 加判断,避免多次 API
+      INSPECT_INDEX_METHOD_DROPDOWN_QUERY_API({ // get 检验方法
+        id: '',
+        inspectProperty: val.inspectProperty
+      }).then((res) => {
+        state.inspectTypeOptions = res.data.data
+      })
+      // }
     }
 
     // [BTN:删除][指标检验方法明细] Tree submenu
