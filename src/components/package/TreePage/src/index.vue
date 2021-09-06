@@ -108,6 +108,7 @@ export default defineComponent({
     watch(props, async (val: any) => {
       await nextTick()
       expandedKeys.value = []
+      treeRef.value.filter(filterText.value) // when reload filter still work
       for (const item of val.treeData) {
         if (item[(props as any).treeProps.children] && item[(props as any).treeProps.children].length) {
           expandedKeys.value.push(item[(props as any).nodeKey])

@@ -193,6 +193,7 @@ interface TreeItemData { // 物料分类 API
   canEdit?: boolean
   inspect?: string
   inspectGroups?:TreeItemData[]
+  inspectMethodCode?:string
   inspectIndexId?: string
   inspectMethodId?: string
   inspectProperty?: string
@@ -546,6 +547,7 @@ export default defineComponent({
       if (!state.addParameterGroupform.id) { // 新增
         INSPECT_INDEX_PARAMETER_GROUP_INSERT_API({
           inspectIndexMethodId: state.globalMainObj.id,
+          inspectMethodCode: state.globalMainObj.inspectMethodCode,
           parameterGroupCode: state.addParameterGroupform.parameterGroupCode,
           parameterGroupName: state.addParameterGroupform.parameterGroupName,
           inspectMaterialNames: state.parameterTreeCheckNodes,
@@ -559,6 +561,7 @@ export default defineComponent({
       } else { // 编辑
         INSPECT_INDEX_PARAMETER_GROUP_EDIT_API({ // 编辑
           id: state.addParameterGroupform.id,
+          inspectMethodCode: state.globalMainObj.inspectMethodCode,
           inspectIndexMethodId: state.globalMainObj.id,
           parameterGroupCode: state.addParameterGroupform.parameterGroupCode,
           parameterGroupName: state.addParameterGroupform.parameterGroupName,

@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-07-30 11:24:46
  * @LastEditors: Telliex
- * @LastEditTime: 2021-09-02 14:50:36
+ * @LastEditTime: 2021-09-03 14:47:07
 -->
 <template>
   <mds-card class="test_method" title="检验指标标准" :pack-up="false" style="margin-bottom: 0; background: #fff;">
@@ -13,7 +13,7 @@
           size="small"
           style="margin-bottom:10px; width:200px; height:35px;margin-right:10px"
           v-model="controlForm.filterText"
-          placeholder="指标名称"
+          placeholder="指标名称、检验类别\物料"
           clearable
           @keyup.enter="btnGetMainData" />
         <div style="float: right;">
