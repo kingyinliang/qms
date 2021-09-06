@@ -3,13 +3,13 @@
  * @Anthor: Telliex
  * @Date: 2021-07-08 11:25:52
  * @LastEditors: Telliex
- * @LastEditTime: 2021-08-31 15:10:45
+ * @LastEditTime: 2021-09-06 14:35:11
 -->
 <template>
     <dialogDevice :dialogVisible="dialogVisible" :title="title" @on-confirm="onConfirm" @on-close="onClose" width="70%">
       <template #default>
         <div style="display:flex;">
-          <div style="width: 250px;margin-right:15px">
+          <div style="width: 26%;margin-right:15px">
             <el-card style="height: 303px; overflow-y: scroll;" class="property" shadow="never">
                 <div class="property-title">
                     属性
@@ -25,7 +25,14 @@
             :titles="['未分配指标', '已分配指标']"
             filter-placeholder="搜索指标"
             :data="treeFrameworkData"
-          />
+            class="transferWrap"
+          >
+            <template #default="{option}">
+            <el-tooltip class="item" effect="dark" :content="option.label" placement="top-end">
+              <span>{{ option.label }}</span>
+            </el-tooltip>
+          </template>
+          </el-transfer>
         </div>
       </template>
     </dialogDevice>
@@ -221,6 +228,17 @@ export default defineComponent({
       { immediate: true }
     )
 
+    // const addTransferTooltip = (e:any) => {
+    //   if (e.target.nodeName === 'SPAN' && e.target.className === 'el-checkbox__label') {
+    //     console.log(e)
+    //     console.log('e.target')
+    //     console.log(e.target)
+    //     const target = e.target
+    //     // target.innerHTML = '<el-tooltip class="item" effect="dark" content="Top Left 提示文字" placement="top-start"><span>' + target.innerText + '</span></el-tooltip>'
+    //     target.title = target.innerText
+    //   }
+    // }
+
     return {
       ...toRefs(state),
       materialInspectionTree,
@@ -262,6 +280,26 @@ export default defineComponent({
   background-color: #ecf5ff;
 
 }
+
+.transferWrap ::v-deep(.el-transfer-panel){
+  width: 40%;
+}
+
+//.transferWrap ::v-deep(.el-transfer-panel__body .el-checkbox__label){
+  // position: relative;
+//}
+
+// .transferWrap ::v-deep(.el-transfer-panel__body .el-transfer-panel__item:hover .el-checkbox__label:after) {
+//    content: attr(data-title);
+//    color: #fff;
+//    position: absolute;
+//    left: 50px;
+//    top:0;
+//    background: #000000;
+//    border-radius: 4px;
+//    padding:0 6px;
+// }
+
 </style>
 <style scoped>
 .el-card.property ::v-deep(.el-card__body){
