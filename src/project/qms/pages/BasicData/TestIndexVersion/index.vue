@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-07-30 11:24:46
  * @LastEditors: Telliex
- * @LastEditTime: 2021-09-02 16:21:38
+ * @LastEditTime: 2021-09-06 17:17:04
 -->
 <template>
   <mds-card class="test_method" title="版本明细" :pack-up="false" style="margin-bottom: 0; background: #fff;">
@@ -78,7 +78,8 @@
               :file-list="fileList"
               style="width:100%"
             >
-              <el-input v-model="addFormInfo.indexVersionMethod" placeholder="请上传文件" autocomplete="off" :disabled="!canUploadFile" style="width:100%"></el-input>
+              <!-- <el-input v-model="addFormInfo.indexVersionMethod" placeholder="请上传文件" autocomplete="off" :disabled="!canUploadFile" style="width:100%"></el-input> -->
+             <el-button size="small" type="primary">点击上传</el-button>
             </el-upload>
 
         </el-form-item>
@@ -262,6 +263,7 @@ export default defineComponent({
       state.currentPage = res.data.data.current
       state.pageSize = res.data.data.size
       state.isDialogShow = true
+      handleDbclickOfTopicMainData(state.topicMainData[0])
     }
 
     // [BTN:新增] 新增 item

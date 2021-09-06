@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-07-30 11:24:46
  * @LastEditors: Telliex
- * @LastEditTime: 2021-09-02 15:45:13
+ * @LastEditTime: 2021-09-06 16:32:42
 -->
 <template>
   <mds-card class="test_method" :title="title" :pack-up="false" style="margin-bottom: 0; background: #fff;">
@@ -90,12 +90,12 @@
       </el-table-column>
       <el-table-column label="上限" min-width="110" show-overflow-tooltip>
         <template #default="scope">
-          <el-input v-model.number="scope.row.paramUp" size="small" placeholder="请输入" :disabled="!isRedact" />
+          <el-input v-model="scope.row.paramUp" size="small" maxlength="5" placeholder="请输入" :disabled="!isRedact" oninput="value=value.replace(/[^\d.]/g, '')" />
         </template>
       </el-table-column>
       <el-table-column label="下限" min-width="110" show-overflow-tooltip>
         <template #default="scope">
-          <el-input v-model.number="scope.row.paramDown" size="small" placeholder="请输入" :disabled="!isRedact" />
+          <el-input v-model="scope.row.paramDown" size="small" maxlength="5"  placeholder="请输入" :disabled="!isRedact" oninput="value=value.replace(/[^\d.]/g, '')"  />
         </template>
       </el-table-column>
       <el-table-column label="参数类型" min-width="110" show-overflow-tooltip>
@@ -142,7 +142,7 @@
       </el-table-column>
          <el-table-column label="关联参数" min-width="110" show-overflow-tooltip>
         <template #default="scope">
-          <el-select v-model="scope.row.parentParamSubscriptCodeWithParentParamSubscript" size="small" :disabled="!isRedact || scope.row.id===''|| scope.row.paramType === 'SHOW' || scope.row.paramType === 'RESULT'" clearable @change="val=>changeParentParamSubscriptOptions(val,scope.row)" @focus="val=>focusParentParamSubscriptOptions(val,scope.row)">
+          <el-select v-model="scope.row.parentParamSubscriptCodeWithParentParamSubscript" size="small" :disabled="!isRedact ||  scope.row.paramType === 'SHOW' || scope.row.paramType === 'RESULT'" clearable @change="val=>changeParentParamSubscriptOptions(val,scope.row)" @focus="val=>focusParentParamSubscriptOptions(val,scope.row)">
                 <!-- v-for="item in excludeItemFromMyRow(parentParamSubscriptOptions,scope.row)" -->
                 <el-option
                   v-for="item in parentParamSubscriptOptions"
@@ -157,7 +157,7 @@
       </el-table-column>
       <el-table-column label="公式" min-width="80" show-overflow-tooltip>
         <template #default="scope">
-          <el-button size="mini"  icon="el-icon-aim" v-if="scope.row.paramType === 'HIDDEN' || scope.row.paramType === 'RESULT'" @click="editFormula(scope.row)" :disabled="!isRedact|| scope.row.id===''"></el-button>
+          <el-button size="mini"  icon="el-icon-aim" v-if="scope.row.paramType === 'HIDDEN' || scope.row.paramType === 'RESULT'" @click="editFormula(scope.row)" :disabled="!isRedact"></el-button>
         </template>
       </el-table-column>
 
@@ -180,7 +180,7 @@
         <h3>变量</h3>
           <el-button-group>
             <template v-for="item in fomulaList" :key="item.paramSubscriptCode">
-            <el-button size="small" class="topic-button"  v-if="item.paramSubscriptCode!==''" type="primary" @click="spellFormula('variable',item.paramSubscriptCode,item.paramSubscript)">{{ item.paramSubscriptCode }}<sub v-if="item.paramSubscript!==''">{{item.paramSubscript}}</sub></el-button>
+            <el-button size="small" class="topic-button"  v-if="item.paramSubscriptCode!==''&item.id!==''" type="primary" @click="spellFormula('variable',item.paramSubscriptCode,item.paramSubscript)">{{ item.paramSubscriptCode }}<sub v-if="item.paramSubscript!==''">{{item.paramSubscript}}</sub></el-button>
             </template>
           </el-button-group>
            <el-button-group>
@@ -511,7 +511,6 @@ export default defineComponent({
           // val.delFlag = 1
           state.topicMainData.splice(mainIndex, 1)
           proxy.$successToast('操作成功')
-          await btnGetMainData()
         } else {
           const res = await INSPECT_INDEX_PROCESS_PARAMETER_DELETE_API({ id: val.id })
           if (res.data.code === 200) {
@@ -554,7 +553,11 @@ export default defineComponent({
     }
 
     // [BTN:保存][过程参数]
-    const btnSaveItemData = async () => {
+    const btnSaveItemData = () => {
+      if (!ruleSubmit()) {
+        return
+      }
+
       const tempAdd:ImportData[] = []
       const tempEdit:ImportData[] = []
 
@@ -603,19 +606,25 @@ export default defineComponent({
       console.log('tempEdit')
       console.log(tempEdit)
 
-      if (ruleSubmit() && !(tempAdd.length === 0 && tempEdit.length === 0)) {
-        await INSPECT_INDEX_PROCESS_PARAMETER_MODIFY_API(
+      if (!(tempAdd.length === 0 && tempEdit.length === 0)) {
+        INSPECT_INDEX_PROCESS_PARAMETER_MODIFY_API(
           {
             insertList: tempAdd,
             updateList: tempEdit
           }
-        )
-        proxy.$successToast('操作成功')
+        ).then(() => {
+          proxy.$successToast('操作成功')
+          // reload
+          btnGetMainData()
+          // 关闭标准值明细 card
+          closeStandardValueInfoArea()
+        })
+      } else {
         // reload
         btnGetMainData()
+        // 关闭标准值明细 card
+        closeStandardValueInfoArea()
       }
-      // 关闭标准值明细 card
-      closeStandardValueInfoArea()
     }
 
     // [BTN:取消][过程参数]
@@ -656,7 +665,7 @@ export default defineComponent({
           return false
         }
 
-        if (item.paramSubscriptCode !== '' && item.paramSubscript !== '') {
+        if (item.paramSubscriptCode !== '') {
           if (tempParamSubscriptList.indexOf(item.paramSubscriptCode + ' ' + item.paramSubscript) === -1) {
             tempParamSubscriptList.push(item.paramSubscriptCode + ' ' + item.paramSubscript)
           } else {
