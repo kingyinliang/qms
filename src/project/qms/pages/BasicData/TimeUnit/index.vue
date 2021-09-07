@@ -2,11 +2,7 @@
   <mds-card class="time_unit" title="时间单位" :pack-up="false" style="margin-bottom: 0; background: #fff;">
     <template #titleBtn>
       <div style="float: right;">
-        <el-form :model="queryForm" class="queryForm" size="small" :inline="true" label-position="right" label-width="82px" style=" float: left;" @submit.prevent="() => {queryForm.current = 1; query()}" >
-          <el-form-item label="">
-            <el-input suffix-icon="el-icon-search" v-model="queryForm.cycleCodeOrName" placeholder="时间单位/编码" style="width: 160px;" />
-          </el-form-item>
-        </el-form>
+        <el-input size="small" style="margin-bottom:10px; width:200px; height:35px;margin-right:10px" suffix-icon="el-icon-search" v-model="queryForm.cycleCodeOrName" placeholder="时间单位/编码" @keyup.enter="() => {queryForm.current = 1; query()}" />
         <div style="float: right;">
           <el-button icon="el-icon-search" size="small" @click="() => {queryForm.current = 1; query()}">查询</el-button>
           <el-button icon="el-icon-plus" type="primary" @click="addData" size="small">新增</el-button>
