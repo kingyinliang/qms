@@ -2,11 +2,7 @@
   <mds-card class="phaseData" title="品项主数据" :pack-up="false" style="margin-bottom: 0; background: #fff;">
     <template #titleBtn>
       <div style="float: right;">
-        <el-form :model="queryForm" class="queryForm" size="small" :inline="true" label-position="right" label-width="82px" style=" float: left;">
-          <el-form-item label="">
-            <el-input suffix-icon="el-icon-search" v-model="queryForm.itemCodeOrName" placeholder="名称" style="width: 160px;" />
-          </el-form-item>
-        </el-form>
+        <el-input size="small" suffix-icon="el-icon-search" v-model="queryForm.itemCodeOrName" placeholder="品项名称/编码" style="margin-bottom:10px; width:200px; height:35px;margin-right:10px" @keyup.enter="() => { queryForm.current = 1; query() }" />
         <div style="float: right;">
           <el-button icon="el-icon-search" size="small" @click="() => {queryForm.current = 1; query()}">查询</el-button>
           <el-button icon="el-icon-plus" type="primary" @click="addData" size="small">新增</el-button>
@@ -200,9 +196,10 @@ export default defineComponent({
       return item.inspectMaterialName.indexOf(query) > -1 || item.inspectMaterialCode.indexOf(query) > -1
     }
     // 关联物料弹窗
-    const updateMaterial = (row: PhaseData) => {
+    const updateMaterial = async (row: PhaseData) => {
       tmp = { ...row }
       itemPhaseData.value = row.inspectMaterialCodeLists
+      await getMaterial()
       materialDialog.value = true
     }
     const updateFormSubmit = async () => {
@@ -217,7 +214,11 @@ export default defineComponent({
       const res = await MATERIAL_DROPDOWN()
       res.data.data.forEach((item: any) => {
         if (item.inspectItemId) {
-          item.disabled = true
+          if (itemPhaseData.value.filter((it: any) => it === item.inspectMaterialCode).length) {
+            item.disabled = false
+          } else {
+            item.disabled = true
+          }
         } else {
           item.disabled = false
         }
@@ -227,7 +228,6 @@ export default defineComponent({
 
     onMounted(() => {
       query()
-      getMaterial()
     })
 
     return {
@@ -255,7 +255,7 @@ export default defineComponent({
 
 <style lang="scss" scoped>
   .phaseData{
-    height: calc(100vh - 117px);
+    min-height: calc(100vh - 117px);
   }
   .el-form /deep/.inputWidth {
     width: 100%;

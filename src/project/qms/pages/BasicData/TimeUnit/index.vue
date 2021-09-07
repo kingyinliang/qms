@@ -2,9 +2,9 @@
   <mds-card class="time_unit" title="时间单位" :pack-up="false" style="margin-bottom: 0; background: #fff;">
     <template #titleBtn>
       <div style="float: right;">
-        <el-form :model="queryForm" class="queryForm" size="small" :inline="true" label-position="right" label-width="82px" style=" float: left;">
+        <el-form :model="queryForm" class="queryForm" size="small" :inline="true" label-position="right" label-width="82px" style=" float: left;" @submit.prevent="() => {queryForm.current = 1; query()}" >
           <el-form-item label="">
-            <el-input suffix-icon="el-icon-search" v-model="queryForm.cycleCodeOrName" placeholder="时间单位/编码" style="width: 160px;" @keyup.enter="() => {queryForm.current = 1; query()}" />
+            <el-input suffix-icon="el-icon-search" v-model="queryForm.cycleCodeOrName" placeholder="时间单位/编码" style="width: 160px;" />
           </el-form-item>
         </el-form>
         <div style="float: right;">
@@ -330,7 +330,7 @@ export default defineComponent({
 </style>
 <style lang="scss" scoped>
   .time_unit{
-    height: calc(100vh - 117px);
+    min-height: calc(100vh - 117px);
   }
   .el-form /deep/.inputWidth {
     width: 100%;

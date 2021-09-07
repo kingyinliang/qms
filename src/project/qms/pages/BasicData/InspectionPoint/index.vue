@@ -2,11 +2,7 @@
   <mds-card class="inspectionPoint" title="检验点维护" :pack-up="false" style="margin-bottom: 0; background: #fff;">
     <template #titleBtn>
       <div style="float: right;">
-        <el-form :model="queryForm" class="queryForm" size="small" :inline="true" label-position="right" label-width="82px" style=" float: left;">
-          <el-form-item label="">
-            <el-input suffix-icon="el-icon-search" v-model="queryForm.deptName" placeholder="生产车间" style="width: 160px;" />
-          </el-form-item>
-        </el-form>
+        <el-input size="small" suffix-icon="el-icon-search" v-model="queryForm.deptName" placeholder="生产车间" style="margin-bottom:10px; width:200px; height:35px;margin-right:10px" @keyup.enter="() => { queryForm.current = 1; query() }" />
         <div style="float: right;">
           <el-button icon="el-icon-search" size="small" @click="() => { queryForm.current = 1; query() }">查询</el-button>
           <el-button icon="el-icon-plus" type="primary" @click="addData" size="small">新增</el-button>
@@ -214,7 +210,7 @@ export default defineComponent({
 
 <style lang="scss" scoped>
   .inspectionPoint{
-    height: calc(100vh - 117px);
+    min-height: calc(100vh - 117px);
   }
   .el-form /deep/.inputWidth {
     width: 100%;

@@ -237,7 +237,7 @@ export default defineComponent({
 
 <style lang="scss" scoped>
 .test_method{
-  height: calc(100vh - 117px);
+  min-height: calc(100vh - 117px);
 }
 .topforms {
   display: flex;
