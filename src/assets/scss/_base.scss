@@ -209,9 +209,16 @@ body{
     line-height: 28px;
   }
 
-// 必填 mark
-.required::before{
+// table 必填 mark
+.el-table__header .required::before{
     content: '*';
+    color: var(--el-color-danger);
+    margin-right: 4px;
+}
+
+// form 必填 mark
+.required .el-form-item__label:before {
+    content: "*";
     color: #f00;
-    margin-right: 5px;
+    margin-right: 4px;
 }
