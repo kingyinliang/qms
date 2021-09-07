@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-07-30 11:24:46
  * @LastEditors: Telliex
- * @LastEditTime: 2021-09-06 09:35:16
+ * @LastEditTime: 2021-09-07 18:14:20
 -->
 <template>
   <mds-card class="test_method" title="版本明细" :pack-up="false" style="margin-bottom: 0; background: #fff;">
@@ -26,12 +26,23 @@
       <el-table-column label="单位" width="100" prop="indexUnit" show-overflow-tooltip />
       <el-table-column label="方法" width="200" prop="indexMethod" show-overflow-tooltip />
       <el-table-column label="版本" width="160" prop="indexVersion" show-overflow-tooltip />
-      <el-table-column label="版本执行方法" width="160" prop="indexVersionMethod" show-overflow-tooltip>
+      <el-table-column label="版本执行方法" min-width="260" prop="indexVersionMethod" >
         <template #default="scope">
-        <el-button
-          size="mini"
-          type="text"
-          @click="seeVersion(scope.row)">{{scope.row.indexVersionMethod.substring(scope.row.indexVersionMethod.lastIndexOf('/')+1,scope.row.indexVersionMethod.length)}}</el-button>
+          <ul style="text-align:left">
+            <li v-for="item in scope.row.indexVersionMethodRemoveRouteList"
+            :key="item" style="margin-bottom: 5px;">
+              <el-tooltip
+                effect="dark"
+                :content="item.name"
+                placement="top"
+              >
+                <el-button
+                  size="mini"
+                  type="text"
+                  @click="seeVersion(scope.row,scope.$index)">{{item.name}}</el-button>
+              </el-tooltip>
+            </li>
+          </ul>
          </template>
       </el-table-column>
       <el-table-column label="变更说明" width="160" prop="changeInfo" show-overflow-tooltip />
@@ -57,7 +68,7 @@
       />
 
     <!--标准值明细-->
-    <index-value-detail v-model:dialogVisible="isDialogShow" v-if="isDialogShow" ref="refIndexValueDetail"   :target="versionObj"/>
+    <index-value-detail v-model:dialogVisible="isDialogShow" v-if="isDialogShow" ref="refIndexValueDetail"   :target="versionObj" style="margin-bottom:20px"/>
 
   </mds-card>
   <!--指标弹窗-->
@@ -70,16 +81,18 @@
             <el-upload
               ref="upload"
               :action="apiFileURL"
-              :on-remove="removeFile"
-              :on-success="addfile"
+              :before-remove="beforeRemove"
+              :on-remove="uploadOfRemoveFile"
+              :on-success="uploadOfAddfileSuccess"
               :http-request="httpRequest"
-              :on-error="errorFile"
-              :limit="1"
-              :file-list="fileList"
-              style="width:100%"
+              :on-error="uploadOfErrorFile"
+              :file-list="uploadFileListRemoveRoute"
+              show-file-list
             >
               <!-- <el-input v-model="addFormInfo.indexVersionMethod" placeholder="请上传文件" autocomplete="off" :disabled="!canUploadFile" style="width:100%"></el-input> -->
-             <el-button size="small" type="primary">点击上传</el-button>
+
+              <el-button size="small" type="primary" :disabled="!fileUploadFinish">选取上传文件</el-button>
+
             </el-upload>
 
         </el-form-item>
@@ -122,7 +135,12 @@ import {
   UPLOAD_FILE_API, // 文件上传
   DOWNLOAD_FILE_API // 文件下载
   // UPLOAD_FILE_API
-} from '@/api/api'
+} from '../../../../../api/api/index'
+
+interface FileList{
+  name: string
+  url: string
+}
 
 interface AddFormInfo {
   id: string
@@ -130,6 +148,9 @@ interface AddFormInfo {
   beginDate: string
   indexVersion: string
   indexVersionMethod: string
+  indexVersionMethodList: FileList []
+  indexVersionMethodRemoveRoute: string
+  indexVersionMethodRemoveRouteList: FileList []
 }
 
 interface TopicMainData{
@@ -144,17 +165,15 @@ interface TopicMainData{
   indexUnit: string
   indexVersion: string
   indexVersionMethod: string
+  indexVersionMethodList:FileList[]
+  indexVersionMethodRemoveRoute: string
+  indexVersionMethodRemoveRouteList: FileList[]
   inspectIndexMaterialId: string
   inspectMaterialTypeName: string
   isCurrentFocusRow: boolean
 }
 interface ControlForm{
   filterText: string;
-}
-
-interface FileList{
-  name: string
-  url: string
 }
 
 interface State {
@@ -170,8 +189,9 @@ interface State {
   selectedListOfTopicMainData: TopicMainData[]
   versionObj: TopicMainData | null
   apiFileURL: string
-  fileURL: string
-  fileList: FileList[]
+  // fileURL: string
+  uploadFileListRemoveRoute: FileList[]
+  uploadFileList: FileList[]
   dialogImageUrl: string
   canUploadFile: boolean
   fileUploadFinish: boolean
@@ -218,7 +238,10 @@ export default defineComponent({
         title: '',
         beginDate: '',
         indexVersion: '',
-        indexVersionMethod: ''
+        indexVersionMethod: '',
+        indexVersionMethodList: [],
+        indexVersionMethodRemoveRoute: '',
+        indexVersionMethodRemoveRouteList: []
       },
       topicMainData: [],
       controlForm: {
@@ -230,8 +253,9 @@ export default defineComponent({
       selectedListOfTopicMainData: [],
       versionObj: null,
       apiFileURL: '',
-      fileURL: '',
-      fileList: [],
+      // fileURL: '',
+      uploadFileListRemoveRoute: [],
+      uploadFileList: [],
       dialogImageUrl: '',
       canUploadFile: true,
       fileUploadFinish: true
@@ -247,9 +271,25 @@ export default defineComponent({
         current: state.currentPage,
         size: state.pageSize
       })
-      console.log('获取指标版本管理数据')
-      console.log(res.data.data)
       state.topicMainData = res.data.data.records
+      state.topicMainData.forEach(item => {
+        const temp:string[] = item.indexVersionMethod.split(',')
+        item.indexVersionMethodRemoveRouteList = []
+        item.indexVersionMethodList = []
+        temp.forEach(subItem => {
+          item.indexVersionMethodRemoveRouteList.push({
+            name: subItem.substring(subItem.lastIndexOf('/') + 1, subItem.length),
+            url: ''
+          })
+          item.indexVersionMethodList.push({
+            name: subItem,
+            url: ''
+          })
+        })
+        item.indexVersionMethodRemoveRoute = temp.map(subItem => subItem.substring(subItem.lastIndexOf('/') + 1, subItem.length)).join(',')
+      })
+      console.log('获取指标版本管理数据')
+      console.log(state.topicMainData)
       // 默认第一条数据
       state.topicMainData.forEach((item, index) => {
         if (index === 0) {
@@ -268,12 +308,17 @@ export default defineComponent({
 
     // [BTN:新增] 新增 item
     const btnAddItemData = () => {
+      state.uploadFileListRemoveRoute = []
+      state.uploadFileList = []
       state.addFormInfo = {
         id: '',
         title: '版本明细-新增',
         beginDate: '',
         indexVersion: '',
-        indexVersionMethod: ''
+        indexVersionMethod: '',
+        indexVersionMethodList: [],
+        indexVersionMethodRemoveRoute: '',
+        indexVersionMethodRemoveRouteList: []
       }
       state.isDialogVisibleForItemControl = true
     }
@@ -287,8 +332,15 @@ export default defineComponent({
           title: '版本明细-编辑',
           beginDate: row.beginDate,
           indexVersion: row.indexVersion,
-          indexVersionMethod: row.indexVersionMethod
+          indexVersionMethod: row.indexVersionMethod,
+          indexVersionMethodList: row.indexVersionMethodList,
+          indexVersionMethodRemoveRoute: row.indexVersionMethodRemoveRoute,
+          indexVersionMethodRemoveRouteList: row.indexVersionMethodRemoveRouteList
         }
+        console.log('state.addFormInfo')
+        console.log(state.addFormInfo)
+        state.uploadFileListRemoveRoute = JSON.parse(JSON.stringify(state.addFormInfo.indexVersionMethodRemoveRouteList))
+        state.uploadFileList = JSON.parse(JSON.stringify(state.addFormInfo.indexVersionMethodList))
         state.isDialogVisibleForItemControl = true
       }
     }
@@ -344,18 +396,22 @@ export default defineComponent({
         return
       }
       if (state.addFormInfo.beginDate !== '') {
-        console.log('state.addFormInfo.beginDate')
-        console.log(state.addFormInfo.beginDate)
         const temp:string = formatDateTransfer(state.addFormInfo.beginDate)
         state.addFormInfo.beginDate = temp
       }
 
       if (state.addFormInfo.title === '版本明细-新增') { // 新增
+        state.addFormInfo.indexVersionMethod = state.uploadFileList.map(item => item.name).join(',')
+        console.log('state.addFormInfo')
+        console.log(state.addFormInfo)
+
         await INSPECT_INDEX_VERSION_ADD_API({
           inspectIndexMaterialId: state.inspectIndexMaterialId,
           ...state.addFormInfo
         })
       } else { // 编辑
+        state.addFormInfo.indexVersionMethod = state.uploadFileList.map(item => item.name).join(',')
+
         await INSPECT_INDEX_VERSION_UPDATE_API({
           inspectIndexMaterialId: state.inspectIndexMaterialId,
           ...state.addFormInfo
@@ -369,13 +425,16 @@ export default defineComponent({
 
     // [BTN:取消][float]
     const btnItemFloatClear = () => {
-      removeFile()
+      // uploadOfRemoveFile()
       state.addFormInfo = {
         id: '',
         title: '',
         beginDate: '',
         indexVersion: '',
-        indexVersionMethod: ''
+        indexVersionMethod: '',
+        indexVersionMethodList: [],
+        indexVersionMethodRemoveRoute: '',
+        indexVersionMethodRemoveRouteList: []
       }
       state.isDialogVisibleForItemControl = false
     }
@@ -388,23 +447,25 @@ export default defineComponent({
       state.isDialogShow = true
     }
 
-    const seeVersion = (row:TopicMainData) => {
-      console.log('row')
+    const seeVersion = (row:TopicMainData, index:number) => {
       console.log(row)
-      DOWNLOAD_FILE_API({ key: row.indexMethod }).then(res => {
+      console.log(index)
+      DOWNLOAD_FILE_API({ key: row.indexVersionMethodList[index].name }).then(res => {
         console.log('下载 obj')
         console.log(res.data.data)
         window.open(res.data.data.url, '_blank')
       })
     }
 
-    const errorFile = () => {
+    const uploadOfErrorFile = () => {
       state.canUploadFile = true
       state.addFormInfo.indexVersionMethod = ''
     }
 
-    // 上传图片前
+    // 上传档案前
     const httpRequest = (options:any) => {
+      console.log('options')
+      console.log(options)
       state.fileUploadFinish = false
       state.canUploadFile = false
       UPLOAD_FILE_API({
@@ -417,49 +478,64 @@ export default defineComponent({
           state.apiFileURL = data.data.url
           axios.put(data.data.url, options.file).then(res => {
             if (res.status === 200) {
+              console.log('9999999')
               options.onSuccess(data.data.key, options)
             }
           })
         }
       })
-
-      // UPLOAD_FILE_API({
-      //   name: options.file.name
-      // }).then(({ data }) => {
-      //   if (data.code === 200) {
-      //     console.log('data.data.url')
-      //     console.log(data.data.url)
-      //     console.log('state.fileList2')
-      //     console.log(state.fileList)
-      //     state.apiFileURL = data.data.url
-      //     axios.put(data.data.url, options.file).then(res => {
-      //       if (res.status === 200) {
-      //         console.log('77777777')
-      //         console.log(data.data)
-      //         console.log(options)
-      //         options.onSuccess(data.data.key, options)
-      //       }
-      //     })
-      //   }
-      // })
     }
 
-    // 上传图片后
-    const addfile = (key:string) => {
-      console.log('成功！')
+    // 上传档案后
+    const uploadOfAddfileSuccess = (key:string) => {
+      console.log('上传成功！')
       console.log(key)
       state.fileUploadFinish = true
-      state.fileURL = key
-      state.addFormInfo.indexVersionMethod = key
-      console.log(state.fileList)
+      // state.fileURL = key
+      state.uploadFileListRemoveRoute.push({
+        name: key.substring(key.lastIndexOf('/') + 1, key.length),
+        url: ''
+      })
+      state.uploadFileList.push({
+        name: key,
+        url: ''
+      })
+
+      console.log('state.uploadFileListRemoveRoute')
+      console.log(state.uploadFileListRemoveRoute)
+      console.log('state.uploadFileList')
+      console.log(state.uploadFileList)
     }
 
-    // 移出图片
-    const removeFile = () => {
-      console.log('removeFile')
+    // 移除上传档案
+    const uploadOfRemoveFile = (file:FileList) => {
       state.canUploadFile = true
-      state.addFormInfo.indexVersionMethod = ''
-      state.fileList = []
+      let tempIndex = null
+      // 取得欲删除 index
+      state.uploadFileListRemoveRoute.forEach((item, index) => {
+        if (item.name === file.name) {
+          tempIndex = index
+        }
+      })
+      if (tempIndex !== null) {
+        state.uploadFileListRemoveRoute.splice(tempIndex, 1)
+        state.uploadFileList.splice(tempIndex, 1)
+      }
+      console.log('state.uploadFileListRemoveRoute')
+      console.log(state.uploadFileListRemoveRoute)
+      console.log('state.uploadFileList')
+      console.log(state.uploadFileList)
+    }
+
+    // 移出上传档案前提示
+    const beforeRemove = (file:any) => {
+      if (state.canUploadFile === true) {
+        return proxy.$confirm(`确定移除 ${file.name}？`, '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        })
+      }
     }
 
     const formatDate = () => {
@@ -524,9 +600,9 @@ export default defineComponent({
       ...toRefs(state),
       formatDate,
       httpRequest,
-      addfile,
-      removeFile,
-      errorFile,
+      uploadOfAddfileSuccess,
+      uploadOfRemoveFile,
+      uploadOfErrorFile,
       refIndexValueDetail,
       upload,
       btnGetMainData,
@@ -544,16 +620,15 @@ export default defineComponent({
       btnEditItemOfTopicMainData,
       pickerOptions,
       formatDateTransfer,
-      tableRowFocusStyle
+      tableRowFocusStyle,
+      beforeRemove
     }
   }
 })
 </script>
 
 <style lang="scss" scoped>
-.test_method{
-  height: calc(100vh - 117px);
-}
+
 .topforms {
   display: flex;
   .el-date-editor.el-input {
@@ -589,10 +664,10 @@ export default defineComponent({
     }
 }
 ::v-deep(.el-upload.el-upload--text){
-  width:100%
+  width:100%;
+  text-align: left;
 }
-</style>
-<style scoped>
+
 .el-form-item__content ::v-deep(.el-upload--text){
   width: 100%;
 }

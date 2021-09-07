@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-07-30 11:24:46
  * @LastEditors: Telliex
- * @LastEditTime: 2021-09-06 16:32:42
+ * @LastEditTime: 2021-09-07 17:58:20
 -->
 <template>
   <mds-card class="test_method" :title="title" :pack-up="false" style="margin-bottom: 0; background: #fff;">
@@ -204,12 +204,12 @@
           <el-table-column type="index" label="序号" width="50" />
           <el-table-column label="关联参数" min-width="110" show-overflow-tooltip>
             <template #default="scope">
-              <el-input v-model.number="scope.row.associate" size="small"  placeholder="请输入" />
+              <el-input v-model="scope.row.associate" size="small"  placeholder="请输入" oninput="value=value.replace(/[^\d]/g,'')"  />
             </template>
           </el-table-column>
           <el-table-column label="结果值" min-width="110" show-overflow-tooltip>
             <template #default="scope">
-              <el-input v-model.number="scope.row.value" size="small" placeholder="请输入" />
+              <el-input v-model="scope.row.value" size="small" placeholder="请输入" oninput="value=value.replace(/[^\d]/g,'')"  />
             </template>
           </el-table-column>
         </el-table>
@@ -234,6 +234,16 @@ import {
 
 } from '@/api/api'
 import _ from 'lodash'
+
+interface RelatedeFormulaData{
+  associate: number | null
+  id: string
+  inspectParameterId: string
+  value: string
+}
+interface RelatedeFormulaDataNoId{
+  insertList?: RelatedeFormulaData[]
+}
 
 interface ImportData {
   defaultDate?: string
@@ -264,7 +274,8 @@ interface ImportData {
   delFlag?: number
   formulaDisplay?: string
   unHtmlFormula?: string
-
+  relatedFormulaForNoId?: RelatedeFormulaData[]
+  inspectAssciateAll?: RelatedeFormulaDataNoId
 }
 
 interface ImportObj { // 参数组 API
@@ -300,13 +311,6 @@ interface DictionaryReturnOptions {
     factoryName: string
     id: string
     disabled?: boolean
-}
-
-interface RelatedeFormulaData{
-  associate: number | null
-  id: string
-  inspectParameterId: string
-  value: string
 }
 
 interface State {
@@ -454,6 +458,7 @@ export default defineComponent({
         item.paramSubscriptCodeWithParamSubscript = item.paramSubscriptCode + ' ' + item.paramSubscript
         item.parentParamSubscriptCodeWithParentParamSubscript = item.parentParamSubscriptCode + ' ' + item.parentParamSubscript
         item.formulaDisplay = escape2Html(item.formulaDisplay as string) // 编码还原
+        item.relatedFormulaForNoId = []
 
         // 参数类型选单重置
         // 参数类型已有结果下，不可再选
@@ -479,6 +484,7 @@ export default defineComponent({
       // 过程参数编辑锁解开，避免误点
       state.canEdit = true
       state.topicMainData = res.data.data
+
       state.orgTopicMainData = JSON.parse(JSON.stringify(res.data.data))
     }
 
@@ -547,7 +553,10 @@ export default defineComponent({
         parentParamSubscriptCode: '', // 关联参数下标
         parentParamSubscriptCodeWithParentParamSubscript: '',
         formulaDisplay: '',
-        unHtmlFormula: ''
+        unHtmlFormula: '',
+        inspectAssciateAll: {
+          insertList: []
+        }
         // isRedact: true
       })
     }
@@ -578,6 +587,10 @@ export default defineComponent({
 
           item.formula = Array.from(new Set(container)).join(',')
           item.formulaDisplay = html2Escape(item.formulaDisplay as string)
+          if (item.inspectAssciateAll) {
+            item.inspectAssciateAll.insertList = item.relatedFormulaForNoId
+          }
+
           tempAdd.push(item)
         } else { // 编辑
           if (!_.isEqual(state.orgTopicMainData[index], item)) {
@@ -695,12 +708,19 @@ export default defineComponent({
 
     // [BTN:确认][关联公式]
     const onRelatedFormulaConfirm = () => {
-      INSPECT_INDEX_RELATED_PARAMETER_UPDATE_API({
-        insertList: state.relatedeFormulaData.filter(item => item.id === ''),
-        updateList: state.relatedeFormulaData.filter(item => item.id !== '')
-      }).then(() => {
+      console.log('state.tempItemObj')
+      console.log(state.tempItemObj)
+      if (state.tempItemObj.id !== '') { // 有 id
+        INSPECT_INDEX_RELATED_PARAMETER_UPDATE_API({
+          insertList: state.relatedeFormulaData.filter(item => item.id === ''),
+          updateList: state.relatedeFormulaData.filter(item => item.id !== '')
+        }).then(() => {
+          onRelatedFormulaClose()
+        })
+      } else { // 无 id
+        state.tempItemObj.relatedFormulaForNoId = JSON.parse(JSON.stringify(state.relatedeFormulaData))
         onRelatedFormulaClose()
-      })
+      }
     }
 
     // [BTN:关闭][关联公式]
@@ -733,10 +753,10 @@ export default defineComponent({
       console.log('state.tempItemObj')
       console.log(state.tempItemObj)
       if (row.paramType === 'HIDDEN') {
-        if (row.id === '') {
-          proxy.$infoToast('请先保存数据')
-          return
-        }
+        // if (row.id === '') {
+        //   proxy.$infoToast('请先保存数据')
+        //   return
+        // }
         state.isRelatedeFormulaDialogShow = true
         state.inspectParameterIdOfRelatedParameter = row.id as string
         getRelatedParameter(state.inspectParameterIdOfRelatedParameter)
@@ -792,14 +812,17 @@ export default defineComponent({
 
     // [关联公式]dialog 获取 data
     const getRelatedParameter = (id:string) => {
-      INSPECT_INDEX_RELATED_PARAMETER_QUERY_API({
-        inspectParameterId: id
-      }).then((res) => {
-        console.log('关联公式')
-        console.log(res.data.data)
+      // PO 不合常理需求，修改时请小心
+      if (id !== '') {
+        INSPECT_INDEX_RELATED_PARAMETER_QUERY_API({
+          inspectParameterId: id
+        }).then((res) => {
+          console.log('关联公式')
+          console.log(res.data.data)
 
-        state.relatedeFormulaData = res.data.data
-      })
+          state.relatedeFormulaData = res.data.data
+        })
+      }
     }
 
     // [BTN:新增][关联公式]dialog 新增 data
@@ -981,11 +1004,6 @@ export default defineComponent({
   height: calc(100vh - 117px);
 }
 
-.required::before{
-  content: '*';
-  color: #f00;
-  margin-right: 5px;
-}
 h3 {
       line-height: 32px;
       font-size: 14px !important;
