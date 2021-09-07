@@ -178,3 +178,41 @@ export function dateFormat (date: Date, fmt: string): string {
   }
   return fmtTemp
 }
+
+export function checkNum (obj:HTMLInputElement, intNum = 0, decNum = 0):string {
+  let value = obj.value
+  let changeValue, t1, t2
+  switch (decNum) {
+    case 0:
+      value = value.replace(/[^\d]/g, '')// 去除数字以外的字符，若要支持负数，可将此处正则改为/[^\-\d]/g
+      value = value.replace(/^0\d+/g, '0')// 防止整数位出现'00'的情况
+      if (intNum !== 0) {
+        value = value.substr(0, intNum)
+      }
+      break
+    default:
+      value = value.replace(/[^\d.]/g, '')// 去除数字和小数点以外的字符，若要支持负数，可将此处正则改为/[^\-\d.]/g
+      value = value.replace(/^[^\d]/g, '')// 保证第一个字符是数字，若要支持负数，可将此处正则改为/^[^\-\d]/g
+      value = value.replace(/\.{2}/g, '.')// 去除第二个小数点
+      value = value.replace(/^0\d+/g, '0')
+      changeValue = value.split('.')
+      if (changeValue.length > 1) { // 表示用户输入的既有整数又有小数
+        if (intNum === 0) {
+          t1 = changeValue[0]
+        } else {
+          t1 = changeValue[0].substr(0, intNum)
+        }
+        t2 = changeValue[1].substr(0, decNum)
+        value = t1 + '.' + t2
+      } else {
+        if (intNum !== 0) {
+          value = value.substr(0, intNum)
+        }
+      }
+      break
+  }
+  if (obj.value !== value) {
+    obj.value = value
+  }
+  return value
+}
