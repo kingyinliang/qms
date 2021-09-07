@@ -144,9 +144,9 @@
                 </el-popover>
               </div>
         </el-form-item>
-        <el-form-item v-if="globalMainObj.inspectPropertyName === '微生物类'" label="参数明细：" prop="parameterDetailsList" :label-width="'140px'">
+        <el-form-item v-if="globalMainObj.inspectPropertyName === '微生物类'" label="参数明细：" prop="parameterDetailsList" :label-width="'140px'" class="required">
           <div v-for="(item,index) in addParameterGroupform.parameterDetailsList" :key="index">
-            <el-input  v-model="addParameterGroupform.parameterDetailsList[index]" maxlength="10"  autocomplete="off" placeholder="请输入" style="margin-bottom:5px; margin-right:5px; width:80% !important"></el-input>
+            <el-input  v-model="addParameterGroupform.parameterDetailsList[index]" maxlength="10"  autocomplete="off" placeholder="请输入" style="margin-bottom:5px; margin-right:5px; width:80% !important" oninput="value=value.replace(/[^\-\d]/g, '')"></el-input>
             <el-button icon="el-icon-delete"  size="small" @click="() => addParameterGroupform.parameterDetailsList.splice(index, 1)" v-if="addParameterGroupform.parameterDetailsList.length>=2" />
             <el-button icon="el-icon-plus" v-if="addParameterGroupform.parameterDetailsList.length-1 === index" @click="addParameterDetailsItem" size="small"></el-button>
           </div>
@@ -186,6 +186,7 @@ import {
   DICTIONARY_QUERY_API
 } from '@/api/api'
 import ProcessParameter from './ProcessParameter.vue'
+// import { checkNum } from '@/utils/index'
 
 interface TreeItemData { // 物料分类 API
   id?: string
@@ -537,6 +538,11 @@ export default defineComponent({
         return
       }
 
+      if (state.globalMainObj.inspectPropertyName === '微生物类' && state.addParameterGroupform.parameterDetailsList[0] === '') {
+        proxy.$errorToast('请录入必填栏位')
+        return
+      }
+
       let temp:string[] = []
       let tempStr = ''
       if (state.globalMainObj.inspectPropertyName === '微生物类') { // 微生物类
@@ -835,10 +841,5 @@ export default defineComponent({
 
 </style>
 <style scoped >
-.required ::v-deep(.el-form-item__label:before) {
-    content: "*";
-    color: var(--el-color-danger);
-    margin-right: 4px;
-}
 
 </style>

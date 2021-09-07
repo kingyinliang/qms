@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-07-08 11:25:52
  * @LastEditors: Telliex
- * @LastEditTime: 2021-08-30 14:06:19
+ * @LastEditTime: 2021-09-07 10:00:32
 -->
 <template>
     <dialogDevice :dialogVisible="dialogVisible" :title="title" @on-confirm="onConfirm" @on-close="onClose">
@@ -120,41 +120,41 @@ export default defineComponent({
     const { dialogVisible, dialogData } = toRefs(props as Props)
     const ruleForm = ref()
     const dataRule = {
-      indexCode: [
-        {
-          required: true,
-          message: '请选择指标代码',
-          trigger: 'blur'
-        }
-      ],
-      indexName: [
-        {
-          required: true,
-          message: '请输入指标名称',
-          trigger: 'blur'
-        }
-      ],
-      indexUnit: [
-        {
-          required: true,
-          message: '请输入单位',
-          trigger: 'blur'
-        }
-      ],
-      indexMethod: [
-        {
-          required: true,
-          message: '请输入方法',
-          trigger: 'blur'
-        }
-      ],
-      inspectProperty: [
-        {
-          required: true,
-          message: '请选择检验组',
-          trigger: 'blur'
-        }
-      ],
+      // indexCode: [
+      //   {
+      //     required: true,
+      //     message: '请选择指标代码',
+      //     trigger: 'blur'
+      //   }
+      // ],
+      // indexName: [
+      //   {
+      //     required: true,
+      //     message: '请输入指标名称',
+      //     trigger: 'blur'
+      //   }
+      // ],
+      // indexUnit: [
+      //   {
+      //     required: true,
+      //     message: '请输入单位',
+      //     trigger: 'blur'
+      //   }
+      // ],
+      // indexMethod: [
+      //   {
+      //     required: true,
+      //     message: '请输入方法',
+      //     trigger: 'blur'
+      //   }
+      // ],
+      // inspectProperty: [
+      //   {
+      //     required: true,
+      //     message: '请选择检验组',
+      //     trigger: 'blur'
+      //   }
+      // ],
       inspectScene: [
         {
           required: true,
