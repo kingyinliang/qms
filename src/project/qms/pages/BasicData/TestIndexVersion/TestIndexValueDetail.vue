@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-07-30 11:24:46
  * @LastEditors: Telliex
- * @LastEditTime: 2021-09-06 17:10:02
+ * @LastEditTime: 2021-09-07 18:10:55
 -->
 <template>
   <div style="padding-top:10px">
@@ -46,7 +46,7 @@
           show-overflow-tooltip
         >
           <template #default="scope">
-              <el-input v-model="scope.row.indexUp"  maxlength="10" size="small" placeholder="请输入" :disabled="!isRedact||scope.row.upSymbol===''" oninput="value=value.replace(/[^\d.]/g, '').replace(/\.{2,}/g, '.').replace('.', '$#$').replace(/\./g, '').replace('$#$', '.').replace(/^(\-)*(\d+)\.(\d\d).*$/, '$1$2.$3').replace(/^\./g, '')" @change="val=>checkOnlyNumber(val,scope.row,'indexUp')" />
+              <el-input v-model="scope.row.indexUp"  maxlength="5" size="small" placeholder="请输入" :disabled="!isRedact||scope.row.upSymbol===''" oninput="value=value.replace(/[^\d.]/g, '').replace(/\.{2,}/g, '.').replace('.', '$#$').replace(/\./g, '').replace('$#$', '.').replace(/^(\-)*(\d+)\.(\d\d).*$/, '$1$2.$3').replace(/^\./g, '')" @change="val=>checkOnlyNumber(val,scope.row,'indexUp')" />
           </template>
         </el-table-column>
       </el-table-column>
@@ -70,7 +70,7 @@
           show-overflow-tooltip
         >
           <template #default="scope">
-            <el-input v-model="scope.row.indexDown"  maxlength="10" size="small" placeholder="请输入" :disabled="!isRedact||scope.row.downSymbol===''" oninput="value=value.replace(/[^\d.]/g, '').replace(/\.{2,}/g, '.').replace('.', '$#$').replace(/\./g, '').replace('$#$', '.').replace(/^(\-)*(\d+)\.(\d\d).*$/, '$1$2.$3').replace(/^\./g, '')" @change="val=>checkOnlyNumber(val,scope.row,'indexDown')" />
+            <el-input v-model="scope.row.indexDown"  maxlength="5" size="small" placeholder="请输入" :disabled="!isRedact||scope.row.downSymbol===''" oninput="value=value.replace(/[^\d.]/g, '').replace(/\.{2,}/g, '.').replace('.', '$#$').replace(/\./g, '').replace('$#$', '.').replace(/^(\-)*(\d+)\.(\d\d).*$/, '$1$2.$3').replace(/^\./g, '')" @change="val=>checkOnlyNumber(val,scope.row,'indexDown')" />
           </template>
          </el-table-column>
       </el-table-column>
@@ -102,7 +102,7 @@
           show-overflow-tooltip
         >
           <template #default="scope">
-            <el-input v-model="scope.row.indexInnerUp"  maxlength="10" size="small" placeholder="请输入" :disabled="!isRedact||scope.row.innerUpSymbol===''" oninput="value=value.replace(/[^\d.]/g, '').replace(/\.{2,}/g, '.').replace('.', '$#$').replace(/\./g, '').replace('$#$', '.').replace(/^(\-)*(\d+)\.(\d\d).*$/, '$1$2.$3').replace(/^\./g, '')" @change="val=>checkOnlyNumber(val,scope.row,'indexInnerUp')"  />
+            <el-input v-model="scope.row.indexInnerUp"  maxlength="5" size="small" placeholder="请输入" :disabled="!isRedact||scope.row.innerUpSymbol===''" oninput="value=value.replace(/[^\d.]/g, '').replace(/\.{2,}/g, '.').replace('.', '$#$').replace(/\./g, '').replace('$#$', '.').replace(/^(\-)*(\d+)\.(\d\d).*$/, '$1$2.$3').replace(/^\./g, '')" @change="val=>checkOnlyNumber(val,scope.row,'indexInnerUp')"  />
           </template>
          </el-table-column>
       </el-table-column>
@@ -127,7 +127,7 @@
         >
           <template #default="scope">
             <!-- <el-tooltip effect="dark" :disabled="scope.row.indexInnerDown===''" :content="scope.row.indexInnerDown" placement="top-start"> -->
-                <el-input v-model="scope.row.indexInnerDown"  maxlength="10" size="small" placeholder="请输入" :disabled="!isRedact||scope.row.innerDownSymbol===''" oninput="value=value.replace(/[^\d.]/g, '').replace(/\.{2,}/g, '.').replace('.', '$#$').replace(/\./g, '').replace('$#$', '.').replace(/^(\-)*(\d+)\.(\d\d).*$/, '$1$2.$3').replace(/^\./g, '')" @change="val=>checkOnlyNumber(val,scope.row,'indexInnerDown')" />
+                <el-input v-model="scope.row.indexInnerDown"  maxlength="5" size="small" placeholder="请输入" :disabled="!isRedact||scope.row.innerDownSymbol===''" oninput="value=value.replace(/[^\d.]/g, '').replace(/\.{2,}/g, '.').replace('.', '$#$').replace(/\./g, '').replace('$#$', '.').replace(/^(\-)*(\d+)\.(\d\d).*$/, '$1$2.$3').replace(/^\./g, '')" @change="val=>checkOnlyNumber(val,scope.row,'indexInnerDown')" />
             <!-- </el-tooltip> -->
           </template>
         </el-table-column>
