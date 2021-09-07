@@ -20,23 +20,24 @@
             style="margin-bottom:10px; width:200px; height:35px;"
             @keyup.enter="apiMaterialDetail(currentCategoryId,materialDetailText,1,10)">
           </el-input>
-          <el-button icon="el-icon-search" size="mini" style="height:32px; margin-left:5px"  @click="apiMaterialDetail(currentCategoryId,materialDetailText,1,10)">查询</el-button>
+          <el-button icon="el-icon-search" size="small" class="topic-button"  @click="apiMaterialDetail(currentCategoryId,materialDetailText,1,10)">查询</el-button>
         </template>
       </div>
      <el-table
         :data="topicMainData"
         style="width: 100%"
         max-height="500"
-        border tooltip-effect="dark">
+        border tooltip-effect="dark"
+        class="bueatyScroll">
         <el-table-column type="index" :index="index => index + 1 + (Number(currentPage) - 1) * (Number(pageSize))" label="序号"  width="55" fixed align="center" size="small" />
         <el-table-column label="物料编码" prop="inspectMaterialCode" :show-overflow-tooltip="true" min-width="100" />
         <el-table-column label="物料描述" prop="inspectMaterialName" :show-overflow-tooltip="true" min-width="100" />
         <el-table-column label="归属上级" prop="inspectGroupName" :show-overflow-tooltip="true" min-width="100" />
         <el-table-column label="品项" prop="itemName" :show-overflow-tooltip="true" min-width="100" />
-        <el-table-column fixed="right" label="操作" header-align="left" align="left" width="100">
+        <el-table-column fixed="right" label="操作" header-align="left" align="left" width="80">
             <template #default="scope">
                 <el-button  type="text" icon="el-icon-edit" @click="handleSingleEdit(scope.row)" class="role__btn">
-                    编辑
+                    <em>编辑</em>
                 </el-button>
             </template>
         </el-table-column>
@@ -85,6 +86,7 @@ interface TopicMainData { // 物料明细 API
   inspectMaterialType: string
   inspectMaterialCode: string
   inspectMaterialName: string
+  inspectTypeId: string
 }
 
 interface MaterialTreeData {
@@ -142,7 +144,8 @@ export default defineComponent({
         inspectGroupName: '',
         inspectMaterialType: '',
         inspectMaterialCode: '',
-        inspectMaterialName: ''
+        inspectMaterialName: '',
+        inspectTypeId: ''
       },
       globleSearchString: '', // 点击过 search bar , keep resulte  or 点最末节点
       isShowSearchBar: true,
@@ -154,13 +157,15 @@ export default defineComponent({
 
     // single action to go
     const handleSingleEdit = (row:TopicMainData) => {
+      console.log(row)
       state.globleItem = {
         id: row.id,
         inspectGroupCode: row.inspectGroupCode,
         inspectGroupName: row.inspectGroupName,
         inspectMaterialType: row.inspectMaterialType,
         inspectMaterialCode: row.inspectMaterialCode,
-        inspectMaterialName: row.inspectMaterialName
+        inspectMaterialName: row.inspectMaterialName,
+        inspectTypeId: row.inspectTypeId
       }
       state.isDialogShow = true
       INSPECT_MATERIAL_CHECKED_INSPECT_TYPE_QUERY_API({
@@ -180,7 +185,8 @@ export default defineComponent({
         inspectGroupName: '',
         inspectMaterialType: '',
         inspectMaterialCode: '',
-        inspectMaterialName: ''
+        inspectMaterialName: '',
+        inspectTypeId: ''
       }
     }
 
@@ -236,14 +242,21 @@ export default defineComponent({
         state.materialDetailText = ''
         state.isShowSearchBar = true
         state.treeData = treeDataTranslater('category', JSON.parse(JSON.stringify(res.data.data)), 'id', 'parentId')
+        console.log('state.treeData')
+        console.log(state.treeData)
         // 一进页面默认跑第一笔
         if (state.currentCategoryId === '') {
           state.currentCategoryId = state.treeData[0].id
           state.initFocusNode = state.treeData[0].id
-
-          // '619922389037592576'
           treeModule.value.focusCurrentNodeNumber = state.treeData[0].id
           apiMaterialDetail(state.currentCategoryId, '', state.currentPage, state.pageSize)
+        } else {
+          console.log('state.currentCategoryId')
+          console.log(state.currentCategoryId)
+
+          treeModule.value.focusCurrentNodeNumber = state.currentCategoryId
+
+          // apiMaterialDetail(state.currentCategoryId, state.globleSearchString, state.currentPage, state.pageSize)
         }
       })
     }
@@ -251,16 +264,19 @@ export default defineComponent({
     const updateInspectCategoryList = (val:string[]) => {
       const dataTemp:TopicMainData[] = []
       dataTemp.push(state.globleItem)
+      console.log('=========state.globleItem=========')
+      console.log(state.globleItem)
 
       INSPECT_MATERIAL_CHECKED_INSPECT_TYPE_UPDATE_API({
         inspectMaterialDetails: dataTemp,
         inspectTypeIdList: val // 检验类id数组
       }).then(async () => {
         proxy.$successToast('操作成功')
+        // 清除 highlight
+        treeModule.value.focusCurrentNodeNumber = ''
         // reload page
-        // await getMaterialCatagoryData()
+        getMaterialCatagoryData()
         apiMaterialDetail(state.currentCategoryId, state.globleSearchString, state.currentPage, state.pageSize)
-        // state.topicMainData = []
       })
     }
 
@@ -271,8 +287,8 @@ export default defineComponent({
         if (who === 'category') {
           if (data[i].inspectMaterials.length !== 0 && data[i].assistFlag !== 'Y') {
             data[i].children = []
-            data[i].inspectMaterials.forEach((item: string) => {
-              data[i].children.push({ inspectTypeName: item, isFinalNode: true, markParentId: data[i].id, itemId: item.slice(item.lastIndexOf(' ') + 1) })
+            data[i].inspectMaterials.forEach((item: string, index: number) => {
+              data[i].children.push({ inspectTypeName: item, isFinalNode: true, markParentId: data[i].id, itemId: item.slice(item.lastIndexOf(' ') + 1), id: data[i].id + index })
             })
           } else {
             data[i].notShowContextMenuOnThisNode = true

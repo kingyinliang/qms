@@ -4,9 +4,9 @@
       <div style="display: flex; justify-content: flex-end;">
         <el-input size="small" style="margin-bottom:10px; width:200px; height:35px;margin-right:10px" clearable  v-model="plantList.textSearch" placeholder="检测频率名称" @keyup.enter="btnGetTopicMainData" />
         <div>
-          <el-button icon="el-icon-search" size="small" @click="btnGetTopicMainData">查询</el-button>
-          <el-button icon="el-icon-circle-check" type="primary" size="small" @click="btnAddItemOfTopicMainData">新增</el-button>
-          <el-button icon="el-icon-delete" type="danger" size="small"  @click="btnDeleteItemsOfTopicMainData">批量删除</el-button>
+          <el-button icon="el-icon-search" class="topic-button" size="small" @click="btnGetTopicMainData">查询</el-button>
+          <el-button icon="el-icon-plus" class="topic-button" type="primary" size="small" @click="btnAddItemOfTopicMainData">新增</el-button>
+          <el-button icon="el-icon-delete" class="topic-button" type="danger" size="small"  @click="btnDeleteItemsOfTopicMainData">批量删除</el-button>
         </div>
       </div>
     </template>
@@ -19,10 +19,10 @@
       <el-table-column label="频次附加项" prop="additionalName" />
       <el-table-column label="操作人员" prop="changer" />
       <el-table-column label="操作时间" prop="changed" />
-      <el-table-column label="操作" width="120" fixed="right">
+      <el-table-column label="操作" width="80" fixed="right">
         <template #default="scope">
           <el-button type="text" icon="el-icon-edit" class="role__btn" @click="btnEditItemOfTopicMainData(scope.row)">
-            编辑
+            <em>编辑</em>
           </el-button>
         </template>
       </el-table-column>
@@ -43,7 +43,7 @@
   <el-dialog v-model="isAddItemDialogShow" :title="dialogTitle" width="30%">
       <el-form ref="refAddAndEditItemDialog" :model="addAndEditItemForm" :rules="dataRule">
         <el-form-item label="检验频次名称：" prop="frequencyName" :label-width="cssForformLabelWidth">
-          <div class="fake-input">
+          <div class="fake-input-disabled">
             <!-- <span>{{addAndEditItemForm.frequency}}/{{addAndEditItemForm.inspectIndexId}}</span> -->
             {{addAndEditItemForm.frequency}}<em v-if="addAndEditItemForm.frequency!==null"> 次 </em> <em v-if="addAndEditItemForm.dateUnit!==''"> / </em>{{addAndEditItemForm.dateUnit}} <em v-if="addAndEditItemForm.inspectAdditionalNames.length!==0">/</em> {{addAndEditItemForm.inspectAdditionalNames.join(',')}}
             </div>
@@ -63,8 +63,8 @@
         </el-form-item>
       </el-form>
       <span class="dialog-footer">
-        <el-button size="small" icon="el-icon-circle-close" @click="isAddItemDialogShow = false">取 消</el-button>
-        <el-button size="small" icon="el-icon-circle-check" type="primary" @click="btnAddItemToConfirm">确 定</el-button>
+        <el-button size="small" class="topic-button" icon="el-icon-circle-close" @click="isAddItemDialogShow = false">取 消</el-button>
+        <el-button size="small" class="topic-button" icon="el-icon-circle-check" type="primary" @click="btnAddItemToConfirm">确 定</el-button>
       </span>
     </el-dialog>
 </template>
@@ -210,6 +210,7 @@ export default defineComponent({
     const btnEditItemOfTopicMainData = async (row: TopicMainData) => {
       state.dialogTitle = '检测频率-编辑'
       state.isAddItemDialogShow = true
+      getOptions() // 更细 API
       await nextTick()
       refAddAndEditItemDialog.value.resetFields()
       const temp:string[] = []
@@ -253,6 +254,7 @@ export default defineComponent({
     const btnAddItemOfTopicMainData = async () => {
       state.dialogTitle = '检测频率-新增'
       state.isAddItemDialogShow = true
+      getOptions() // 更细 API
       await nextTick()
       refAddAndEditItemDialog.value.resetFields()
 
@@ -328,6 +330,11 @@ export default defineComponent({
 
     /**  == 生命周期 ==  **/
     onMounted(async () => {
+      await getOptions()
+      await btnGetTopicMainData()
+    })
+
+    const getOptions = () => {
       // 执行周期下拉
       INSPECT_CYCLE_QUERY_DROPDOWN_API().then((res) => {
         console.log('执行周期下拉')
@@ -340,8 +347,7 @@ export default defineComponent({
         console.log(res.data.data)
         state.inspectAdditionalIdsOptions = res.data.data
       })
-      btnGetTopicMainData()
-    })
+    }
 
     return {
       ...toRefs(state),
@@ -367,44 +373,13 @@ export default defineComponent({
 .test_method{
   height: calc(100vh - 117px);
 }
-.topforms {
-  display: flex;
-  .el-date-editor.el-input {
-    width: auto;
-  }
-  .formtextarea {
-    .el-form-item__content {
-      width: 500px;
-    }
-  }
-}
+
 .dialog-footer {
   display: flex;
   justify-content: flex-end;
 }
-.el-form /deep/.inputWidth {
+.el-form::v-deep(.inputWidth) {
   width: 100%;
 }
 
-.fake-input{
-    background-color: var(--el-disabled-fill-base);
-    border-color: var(--el-disabled-border-base);
-    color: var(--el-disabled-color-base);
-    cursor: not-allowed;
-    -webkit-appearance: none;
-    background-image: none;
-    border-radius: var(--el-input-border-radius,var(--el-border-radius-base));
-    border: var(--el-input-border,var(--el-border-base));
-    -webkit-box-sizing: border-box;
-    box-sizing: border-box;
-    display: inline-block;
-    font-size: inherit;
-    height: 40px;
-    line-height: 40px;
-    outline: 0;
-    padding: 0 15px;
-    -webkit-transition: var(--el-border-transition-base);
-    transition: var(--el-border-transition-base);
-    width: 100%;
-}
 </style>

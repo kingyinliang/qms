@@ -3,27 +3,33 @@
  * @Anthor: Telliex
  * @Date: 2021-07-30 11:24:46
  * @LastEditors: Telliex
- * @LastEditTime: 2021-08-26 12:41:22
+ * @LastEditTime: 2021-09-06 17:10:02
 -->
 <template>
   <div style="padding-top:10px">
         <div style="display: flex; margin-bottom:10px;justify-content: space-between;">
           <h3> <em class="title-icon" />标准值明细 </h3>
           <div>
-            <el-button v-if="!controlBtnCanDo" type="primary" icon="el-icon-edit" size="small" class="role__btn" @click="btnEditItemData" :disabled="targetObj.id===''||(new Date(targetObj.beginDate).getTime() - new Date(formatDate()).getTime()) <= 0">编辑</el-button>
-            <el-button v-if="controlBtnCanDo" icon="el-icon-circle-plus-outline" type="primary" size="small" @click="btnAddItemData">新增</el-button>
-            <el-button v-if="controlBtnCanDo" icon="el-icon-circle-check" type="primary" size="small" @click="btnSaveItemData">保存</el-button>
-            <el-button v-if="controlBtnCanDo" icon="el-icon-circle-close" type="primary" size="small" @click="btnLeaveItemData">取消</el-button>
+            <el-button v-if="!controlBtnCanDo" type="primary" icon="el-icon-edit" size="small" class="role__btn topic-button" @click="btnEditItemData" :disabled="targetObj.id===''||(new Date(targetObj.beginDate).getTime() - new Date(formatDate()).getTime()) <= 0">编辑</el-button>
+            <el-button v-if="controlBtnCanDo" icon="el-icon-plus" type="primary" size="small" class="topic-button" @click="btnAddItemData" >新增</el-button>
+            <el-button v-if="controlBtnCanDo" icon="el-icon-circle-check" type="primary" size="small" class="topic-button" @click="btnSaveItemData">保存</el-button>
+            <el-button v-if="controlBtnCanDo" icon="el-icon-circle-close" type="primary" size="small" class="topic-button" @click="btnLeaveItemData">取消</el-button>
           </div>
         </div>
     <el-table border ref="multipleTable"  :cell-style="{'text-align':'center'}" :data="topicMainData"  tooltip-effect="dark" style="width: 100%" :header-cell-style="headerMerge" max-height="300">
       <el-table-column type="index" label="序号" width="50" />
-      <el-table-column label="标定标准值" min-width="200" show-overflow-tooltip>
+      <el-table-column label="标定标准值" min-width="200" show-overflow-tooltip class="">
+        <template #header>
+          <span class="required">标定标准值</span>
+        </template>
         <template #default="scope">
-            <el-input v-model.number="scope.row.indexStandard" size="small" placeholder="请输入" :disabled="!isRedact" />
+            <el-input v-model="scope.row.indexStandard" size="small" maxlength="10" placeholder="请输入" :disabled="!isRedact" />
         </template>
       </el-table-column>
       <el-table-column label="标定上限">
+        <template #header>
+          <span class="required">标定上限</span>
+        </template>
         <el-table-column
           width="120"
           show-overflow-tooltip
@@ -40,11 +46,14 @@
           show-overflow-tooltip
         >
           <template #default="scope">
-              <el-input v-model.number="scope.row.indexUp" size="small" placeholder="请输入" :disabled="!isRedact||scope.row.upSymbol===''" />
+              <el-input v-model="scope.row.indexUp"  maxlength="10" size="small" placeholder="请输入" :disabled="!isRedact||scope.row.upSymbol===''" oninput="value=value.replace(/[^\d.]/g, '').replace(/\.{2,}/g, '.').replace('.', '$#$').replace(/\./g, '').replace('$#$', '.').replace(/^(\-)*(\d+)\.(\d\d).*$/, '$1$2.$3').replace(/^\./g, '')" @change="val=>checkOnlyNumber(val,scope.row,'indexUp')" />
           </template>
         </el-table-column>
       </el-table-column>
       <el-table-column label="标定下限">
+        <template #header>
+          <span class="required">标定下限</span>
+        </template>
         <el-table-column
           width="120"
           show-overflow-tooltip
@@ -61,16 +70,22 @@
           show-overflow-tooltip
         >
           <template #default="scope">
-            <el-input v-model.number="scope.row.indexDown" size="small" placeholder="请输入" :disabled="!isRedact||scope.row.downSymbol===''" />
+            <el-input v-model="scope.row.indexDown"  maxlength="10" size="small" placeholder="请输入" :disabled="!isRedact||scope.row.downSymbol===''" oninput="value=value.replace(/[^\d.]/g, '').replace(/\.{2,}/g, '.').replace('.', '$#$').replace(/\./g, '').replace('$#$', '.').replace(/^(\-)*(\d+)\.(\d\d).*$/, '$1$2.$3').replace(/^\./g, '')" @change="val=>checkOnlyNumber(val,scope.row,'indexDown')" />
           </template>
          </el-table-column>
       </el-table-column>
-      <el-table-column label="内控标準值" min-width="200" show-overflow-tooltip>
+      <el-table-column label="内控标准值" min-width="200" show-overflow-tooltip>
+        <template #header>
+          <span class="required">内控标准值</span>
+        </template>
         <template #default="scope">
-          <el-input v-model.number="scope.row.indexInnerStandard" size="small" placeholder="请输入" :disabled="!isRedact" />
+          <el-input v-model="scope.row.indexInnerStandard" maxlength="10" size="small" placeholder="请输入" :disabled="!isRedact" />
         </template>
       </el-table-column>
       <el-table-column label="内控上限">
+        <template #header>
+          <span class="required">内控上限</span>
+        </template>
         <el-table-column
           width="120"
           show-overflow-tooltip
@@ -87,11 +102,14 @@
           show-overflow-tooltip
         >
           <template #default="scope">
-            <el-input v-model.number="scope.row.indexInnerUp" size="small" placeholder="请输入" :disabled="!isRedact||scope.row.innerUpSymbol===''" />
+            <el-input v-model="scope.row.indexInnerUp"  maxlength="10" size="small" placeholder="请输入" :disabled="!isRedact||scope.row.innerUpSymbol===''" oninput="value=value.replace(/[^\d.]/g, '').replace(/\.{2,}/g, '.').replace('.', '$#$').replace(/\./g, '').replace('$#$', '.').replace(/^(\-)*(\d+)\.(\d\d).*$/, '$1$2.$3').replace(/^\./g, '')" @change="val=>checkOnlyNumber(val,scope.row,'indexInnerUp')"  />
           </template>
          </el-table-column>
       </el-table-column>
       <el-table-column label="内控下限">
+        <template #header>
+          <span class="required">内控下限</span>
+        </template>
         <el-table-column
           width="120"
           show-overflow-tooltip
@@ -109,7 +127,7 @@
         >
           <template #default="scope">
             <!-- <el-tooltip effect="dark" :disabled="scope.row.indexInnerDown===''" :content="scope.row.indexInnerDown" placement="top-start"> -->
-                <el-input v-model.number="scope.row.indexInnerDown" size="small" placeholder="请输入" :disabled="!isRedact||scope.row.innerDownSymbol===''" />
+                <el-input v-model="scope.row.indexInnerDown"  maxlength="10" size="small" placeholder="请输入" :disabled="!isRedact||scope.row.innerDownSymbol===''" oninput="value=value.replace(/[^\d.]/g, '').replace(/\.{2,}/g, '.').replace('.', '$#$').replace(/\./g, '').replace('$#$', '.').replace(/^(\-)*(\d+)\.(\d\d).*$/, '$1$2.$3').replace(/^\./g, '')" @change="val=>checkOnlyNumber(val,scope.row,'indexInnerDown')" />
             <!-- </el-tooltip> -->
           </template>
         </el-table-column>
@@ -121,10 +139,10 @@
             </el-select>
           </template>
       </el-table-column>
-      <el-table-column label="操作" width="200" fixed="right">
+      <el-table-column label="操作" width="80" fixed="right">
         <template #default="scope" >
           <el-button type="text" icon="el-icon-remove-outline" class="role__btn" @click="btnDeleteItemData(scope.$index,scope.row)" :disabled="!isRedact">
-           删除
+           <em>删除</em>
           </el-button>
         </template>
       </el-table-column>
@@ -145,11 +163,11 @@ import _ from 'lodash'
 
 interface TopicMainData {
   id: string
-  indexStandard: number | null // 标定-标准值
+  indexStandard: number | string | null // 标定-标准值
   upSymbol: string // 标定-上限符号
   indexUp: number | null // 标定-上限 x
   indexDown: number | null // 标定-下限 x
-  indexInnerStandard: number | null // 内控-标准值 x
+  indexInnerStandard: number | string | null // 内控-标准值 x
   indexInnerUp: number | null // 内控-上限 x
   indexInnerDown: number | null // 内控-下限 x
   downSymbol: string // 标定-下限符号
@@ -189,6 +207,7 @@ interface State {
   orgTopicMainData: TopicMainData[]
   targetObj: targetObjData
   isRedact: boolean
+  addDissabled: boolean
 }
 
 export default defineComponent({
@@ -230,7 +249,8 @@ export default defineComponent({
         inspectIndexMaterialId: '',
         inspectMaterialTypeName: ''
       },
-      isRedact: false
+      isRedact: false,
+      addDissabled: false
     })
 
     // 函数
@@ -248,10 +268,15 @@ export default defineComponent({
         } else {
           item.standardMonthList = []
         }
+
+        if (item.standardMonthList.length === 0) {
+          state.addDissabled = true
+        }
         // item.isRedact = false
       })
 
       state.topicMainData = res.data.data
+
       state.orgTopicMainData = JSON.parse(JSON.stringify(res.data.data))
     }
 
@@ -296,30 +321,42 @@ export default defineComponent({
 
     // [BTN:新增]
     const btnAddItemData = async () => {
-      state.topicMainData.push({
-        id: '',
-        indexStandard: null,
-        upSymbol: '',
-        indexUp: null,
-        downSymbol: '',
-        indexDown: null,
-        indexInnerStandard: null,
-        innerUpSymbol: '',
-        indexInnerUp: null,
-        innerDownSymbol: '',
-        indexInnerDown: null,
-        standardMonth: '',
-        standardMonthList: [],
-        delFlag: 0,
-        inspectVersionId: state.targetObj.id
-        // isRedact: true
+      let isAddItem = true
+      state.topicMainData.forEach((item:TopicMainData) => {
+        if (item.standardMonthList.length === 0) {
+          isAddItem = false
+        }
       })
+
+      if (isAddItem === true) {
+        state.topicMainData.push({
+          id: '',
+          indexStandard: null,
+          upSymbol: '',
+          indexUp: null,
+          downSymbol: '',
+          indexDown: null,
+          indexInnerStandard: null,
+          innerUpSymbol: '',
+          indexInnerUp: null,
+          innerDownSymbol: '',
+          indexInnerDown: null,
+          standardMonth: '',
+          standardMonthList: [],
+          delFlag: 0,
+          inspectVersionId: state.targetObj.id
+        // isRedact: true
+        })
+      } else {
+        proxy.$errorToast('已有数据执行月份为空！')
+      }
     }
 
     // [BTN:保存]
     const btnSaveItemData = async () => {
       const tempAdd:TopicMainData[] = []
       const tempEdit:TopicMainData[] = []
+      let nowMonthStatus = 0
       state.topicMainData.forEach((item, index) => {
         if (item.id === '') {
           item.standardMonth = item.standardMonthList.join(',')
@@ -330,7 +367,15 @@ export default defineComponent({
             tempEdit.push(item)
           }
         }
+        if (item.standardMonthList.length === 0) {
+          nowMonthStatus += 1
+        }
       })
+
+      if (state.topicMainData.length >= 2 && nowMonthStatus >= 1) {
+        proxy.$errorToast('已有数据执行月份为空！')
+        return
+      }
 
       if (ruleSubmit()) {
         if (!(tempAdd.length === 0 && tempEdit.length === 0)) {
@@ -340,6 +385,7 @@ export default defineComponent({
               updateList: tempEdit
             }
           )
+          proxy.$successToast('操作成功')
           // reload
           btnGetMainData()
         }
@@ -407,15 +453,30 @@ export default defineComponent({
       target,
       newValue => {
         if (newValue !== null) {
-          console.log('newValue')
-          console.log(newValue)
-          // new Date(row.beginDate).getTime() - new Date(formatDate()).getTime() >= 0
           state.targetObj = newValue
           btnGetMainData()
         }
       },
       { immediate: true }
     )
+
+    const checkOnlyNumber = (val:string|number, node:any, target:string) => {
+      console.log(val)
+      let targetStr:string | number = '' + val
+      // targetStr = targetStr
+      //   .replace(/[^\d.]/g, '') // 清除“数字”和“.”以外的字符
+      //   .replace(/\.{2,}/g, '.') // 只保留第一个. 清除多余的
+      //   .replace('.', '$#$')
+      //   .replace(/\./g, '')
+      //   .replace('$#$', '.')
+      //   .replace(/^(-)*(\d+)\.(\d\d).*$/, '$1$2.$3') // 只能输入两个小数
+      // console.log(targetStr)
+      if (targetStr.indexOf('.') < 0 && targetStr !== '') {
+        // 以上已经过滤，此处控制的是如果没有小数点，首位不能为类似于 01、02的金额
+        targetStr = parseFloat(targetStr)
+      }
+      node[target] = Number(targetStr)
+    }
 
     onMounted(async () => {
       // btnGetMainData()
@@ -433,7 +494,8 @@ export default defineComponent({
       ruleSubmit,
       closeStandardValueInfoArea,
       headerMerge,
-      formatDate
+      formatDate,
+      checkOnlyNumber
     }
   }
 })

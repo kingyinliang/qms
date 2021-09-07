@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-07-30 11:24:46
  * @LastEditors: Telliex
- * @LastEditTime: 2021-08-26 11:13:11
+ * @LastEditTime: 2021-09-03 14:47:07
 -->
 <template>
   <mds-card class="test_method" title="检验指标标准" :pack-up="false" style="margin-bottom: 0; background: #fff;">
@@ -13,19 +13,19 @@
           size="small"
           style="margin-bottom:10px; width:200px; height:35px;margin-right:10px"
           v-model="controlForm.filterText"
-          placeholder="指标名称"
+          placeholder="指标名称、检验类别\物料"
           clearable
           @keyup.enter="btnGetMainData" />
         <div style="float: right;">
-          <el-button icon="el-icon-search" size="small" @click="btnGetMainData">查询</el-button>
-          <el-button icon="el-icon-circle-plus-outline" type="primary" size="small" @click="btnAddItemData">新增</el-button>
-          <el-button icon="el-icon-delete" type="danger" size="small" @click="btnBatchDelete">批量删除</el-button>
+          <el-button icon="el-icon-search" size="small" class="topic-button" @click="btnGetMainData">查询</el-button>
+          <el-button icon="el-icon-plus" type="primary" class="topic-button" size="small" @click="btnAddItemData">新增</el-button>
+          <el-button icon="el-icon-delete" type="danger" class="topic-button" size="small" @click="btnBatchDelete">批量删除</el-button>
         </div>
       </div>
     </template>
     <el-table border ref="multipleTable"  :cell-style="{'text-align':'center'}" :data="topicMainData" tooltip-effect="dark" style="width: 100%" @selection-change="actHandleSelectionChange" max-height="400">
-      <el-table-column type="selection" width="55" />
-      <el-table-column type="index" label="序号" :index="(index) => index + 1 + (currentPage - 1) * pageSize" width="50" />
+      <el-table-column type="selection" width="45" />
+      <el-table-column type="index" label="序号" :index="(index) => index + 1 + (currentPage - 1) * pageSize" width="55" />
       <el-table-column label="检验类别\物料" min-width="200" prop="inspectMaterialTypeName" show-overflow-tooltip />
       <el-table-column label="指标代码" width="160" prop="indexCode" show-overflow-tooltip />
       <el-table-column label="指标名称" min-width="160" prop="indexName" show-overflow-tooltip />
@@ -33,13 +33,13 @@
       <el-table-column label="方法"  min-width="200" prop="indexMethod" show-overflow-tooltip />
       <!-- <el-table-column label="指标类" width="160" prop="indexType" show-overflow-tooltip /> -->
       <el-table-column label="指标类描述" width="160" prop="indexTypeName" show-overflow-tooltip />
-      <el-table-column label="操作" width="200" fixed="right">
+      <el-table-column label="操作" width="180" fixed="right">
         <template #default="scope" >
           <el-button type="text" icon="el-icon-edit" class="role__btn" @click="btnEditItemData(scope.row)">
-           编辑
+           <em>编辑</em>
           </el-button>
           <el-button type="text" icon="el-icon-money" class="role__btn" @click="btnVersionController(scope.row)">
-           版本管理
+           <em>版本管理</em>
           </el-button>
         </template>
       </el-table-column>
@@ -61,8 +61,8 @@
   <el-dialog :title="singleItemform.title" v-model="isDialogVisibleForItemControl" width="40%" >
     <el-form :model="singleItemform">
       <el-form-item label="检验类别\物料" :label-width="'120px'" class="star">
-        <el-select v-model="singleItemform.inspectMaterialId" placeholder="请选择" style="width:100%" filterable @change="selectInspectMaterialChange" clearable>
-          <el-option v-for="(opt, optIndex) in inspectMaterialOptions" :key="optIndex" :label="opt.inspectMaterialTypeName" :value="opt.id" />
+        <el-select v-model="singleItemform.inspectMaterialCode" placeholder="请选择" style="width:100%" filterable @change="selectInspectMaterialChange" clearable>
+          <el-option v-for="(opt, optIndex) in inspectMaterialOptions" :key="optIndex" :label="opt.inspectMaterialTypeName" :value="opt.inspectMaterialCode" />
         </el-select>
       </el-form-item>
       <el-form-item label="指标" :label-width="'120px'" class="star">
@@ -94,8 +94,8 @@
     </el-form>
     <template #footer>
       <span class="dialog-footer">
-        <el-button @click="btnItemFloatClear">取消</el-button>
-        <el-button type="primary" @click="btnItemFloatConfirm(singleItemform.title)">确定</el-button>
+        <el-button size="small" class="topic-button" icon="el-icon-circle-close" @click="btnItemFloatClear">取消</el-button>
+        <el-button size="small" class="topic-button" icon="el-icon-circle-check" type="primary" @click="btnItemFloatConfirm(singleItemform.title)">确定</el-button>
       </span>
     </template>
   </el-dialog>
@@ -125,6 +125,7 @@ interface ItemFormate{
     inspectIndexId: string
     inspectIndexName: string
     inspectMaterialId: string
+    inspectMaterialCode: string
     relationType: string
     id: string
 }
@@ -163,6 +164,7 @@ interface TopicMainData{
   inspectMaterialId: string;
   inspectMaterialTypeName: string;
   relationType: string;
+  inspectMaterialCode: string;
 }
 
 interface ControlForm{
@@ -252,6 +254,7 @@ export default defineComponent({
         inspectIndexId: '',
         inspectIndexName: '',
         inspectMaterialId: '',
+        inspectMaterialCode: '',
         relationType: '',
         id: ''
       },
@@ -290,7 +293,8 @@ export default defineComponent({
         inspectIndexId: '',
         inspectMaterialId: '',
         relationType: '',
-        id: ''
+        id: '',
+        inspectMaterialCode: ''
       }
       // 指标代码清空
       state.tempMultiSelected = []
@@ -305,6 +309,7 @@ export default defineComponent({
         inspectIndexName: val.indexCode,
         inspectIndexId: val.inspectIndexId,
         inspectMaterialId: val.inspectMaterialId,
+        inspectMaterialCode: val.inspectMaterialCode,
         relationType: val.relationType,
         id: val.id
       }
@@ -318,15 +323,6 @@ export default defineComponent({
           versionID: row.id
         }
       })
-      // if (ctx.state.common.mainTabs.find(tabItem => tabItem.name === 'qms-pages-BasicData-TestIndexVersion-index')) {
-      //   this.$store.commit('common/updateMsgTabAlive', true)
-      // } else {
-      //   setTimeout(() => {
-      //     this.$router.push({
-      //       name: 'qms-pages-BasicData-TestIndexVersion-index'
-      //     })
-      //   }, 500)
-      // }
     }
 
     // [table] 选框选择
@@ -378,7 +374,7 @@ export default defineComponent({
     // 编辑/新增 操作确认
     const btnItemFloatConfirm = async (val:string) => {
       if (val === '新增指标') { // 新增指标
-        if (state.singleItemform.inspectMaterialId === '') {
+        if (state.singleItemform.inspectMaterialCode === '') {
           proxy.$errorToast('检验类别\\物料字段未填写')
           return
         }
@@ -394,8 +390,9 @@ export default defineComponent({
             title: state.singleItemform.title,
             id: '',
             inspectIndexId: item.id,
-            inspectMaterialId: state.singleItemform.inspectMaterialId,
             inspectIndexName: item.name,
+            inspectMaterialId: state.singleItemform.inspectMaterialId,
+            inspectMaterialCode: state.singleItemform.inspectMaterialCode,
             relationType: state.singleItemform.relationType
           })
         })
@@ -424,6 +421,7 @@ export default defineComponent({
         inspectIndexId: '',
         inspectIndexName: '',
         inspectMaterialId: '',
+        inspectMaterialCode: '',
         relationType: '',
         id: ''
       }
@@ -565,7 +563,7 @@ export default defineComponent({
 
 </style>
 <style scoped >
-  .star >>> .el-form-item__label:before {
+  .star ::v-deep(.el-form-item__label:before){
     content: "*";
     color: #ff0000;
     margin-right: 4px;

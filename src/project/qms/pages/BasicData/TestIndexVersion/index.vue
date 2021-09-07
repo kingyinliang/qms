@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-07-30 11:24:46
  * @LastEditors: Telliex
- * @LastEditTime: 2021-08-26 14:52:42
+ * @LastEditTime: 2021-09-06 09:35:16
 -->
 <template>
   <mds-card class="test_method" title="版本明细" :pack-up="false" style="margin-bottom: 0; background: #fff;">
@@ -11,15 +11,15 @@
       <div style="float: right;display: flex;">
         <el-input size="small" style="margin-bottom:10px; width:200px; height:35px;margin-right:10px" v-model="controlForm.filterText" placeholder="版本号" clearable @keyup.enter="btnGetMainData"  />
         <div style="float: right;">
-          <el-button icon="el-icon-search"  size="small" @click="btnGetMainData">查询</el-button>
-          <el-button icon="el-icon-circle-plus-outline" type="primary" size="small" @click="btnAddItemData">新增</el-button>
-          <el-button icon="el-icon-delete" type="danger" size="small" @click="actBatchDelete">批量删除</el-button>
+          <el-button icon="el-icon-search" size="small" class="topic-button" @click="btnGetMainData">查询</el-button>
+          <el-button icon="el-icon-plus" type="primary" size="small" class="topic-button" @click="btnAddItemData">新增</el-button>
+          <el-button icon="el-icon-delete" type="danger" size="small" class="topic-button" @click="actBatchDelete">批量删除</el-button>
         </div>
       </div>
     </template>
-    <el-table border ref="multipleTable"  :cell-style="{'text-align':'center'}" :data="topicMainData" tooltip-effect="dark" style="width: 100%" @selection-change="handleSelectionChange" @row-dblclick="handleDbclick" max-height="300">
-      <el-table-column type="selection" width="55" :selectable="checkDate" />
-      <el-table-column type="index" label="序号" :index="(index) => index + 1 + (currentPage - 1) * pageSize" width="50" />
+    <el-table ref="multipleTable" border :row-style="tableRowFocusStyle"    :cell-style="{'text-align':'center'}" :data="topicMainData" tooltip-effect="dark" @selection-change="handleSelectionChangeOfTopicMainData" @row-dblclick="handleDbclickOfTopicMainData" max-height="300" style="width: 100%">
+      <el-table-column type="selection" width="45" :selectable="checkDate" />
+      <el-table-column type="index" label="序号" :index="(index) => index + 1 + (currentPage - 1) * pageSize" width="55" />
       <el-table-column label="检验类别\物料" min-width="200" prop="inspectMaterialTypeName" show-overflow-tooltip />
       <el-table-column label="指标代码" width="160" prop="indexCode" show-overflow-tooltip />
       <el-table-column label="指标名称" width="160" prop="indexName" show-overflow-tooltip />
@@ -31,15 +31,15 @@
         <el-button
           size="mini"
           type="text"
-          @click="seeVersion(scope.row)">{{scope.row.indexVersionMethod}}</el-button>
+          @click="seeVersion(scope.row)">{{scope.row.indexVersionMethod.substring(scope.row.indexVersionMethod.lastIndexOf('/')+1,scope.row.indexVersionMethod.length)}}</el-button>
          </template>
       </el-table-column>
       <el-table-column label="变更说明" width="160" prop="changeInfo" show-overflow-tooltip />
       <el-table-column label="执行开始日" width="200" prop="beginDate" show-overflow-tooltip />
-      <el-table-column label="操作" width="120" fixed="right">
+      <el-table-column label="操作" width="80" fixed="right">
         <template #default="scope">
           <el-button type="text" icon="el-icon-edit" class="role__btn" @click="btnEditItemOfTopicMainData(scope.row)" :disabled="(new Date(scope.row.beginDate).getTime() - new Date(formatDate()).getTime()) <= 0">
-            编辑
+            <em>编辑</em>
           </el-button>
         </template>
       </el-table-column>
@@ -61,7 +61,7 @@
 
   </mds-card>
   <!--指标弹窗-->
-  <el-dialog :title="addFormInfo.title" v-model="isDialogVisibleForItemControl" width="40%">
+  <el-dialog :title="addFormInfo.title" v-model="isDialogVisibleForItemControl" width="550px">
     <el-form ref="addRef" :model="addFormInfo" :rules="dataRule">
         <el-form-item label="版本：" prop="indexVersion" :label-width="'140px'">
           <el-input v-model="addFormInfo.indexVersion" class="140px" autocomplete="off" maxlength="10"></el-input>
@@ -78,7 +78,8 @@
               :file-list="fileList"
               style="width:100%"
             >
-              <el-input v-model="addFormInfo.indexVersionMethod" placeholder="请上传文件" autocomplete="off" :disabled="!canUploadFile" style="width:100%"></el-input>
+              <!-- <el-input v-model="addFormInfo.indexVersionMethod" placeholder="请上传文件" autocomplete="off" :disabled="!canUploadFile" style="width:100%"></el-input> -->
+             <el-button size="small" type="primary">点击上传</el-button>
             </el-upload>
 
         </el-form-item>
@@ -90,14 +91,15 @@
             value-format="YYYY-MM-DD"
             :disabled-date="pickerOptions"
             placeholder="请选选择日期"
+            style="width:100%"
             >
           </el-date-picker>
         </el-form-item>
       </el-form>
     <template #footer>
       <span class="dialog-footer">
-        <el-button @click="btnItemFloatClear">取 消</el-button>
-        <el-button type="primary" @click="btnItemFloatConfirm" :disabled="!fileUploadFinish">确 定</el-button>
+        <el-button size="small" class="topic-button" icon="el-icon-circle-close" @click="btnItemFloatClear">取 消</el-button>
+        <el-button size="small" class="topic-button" icon="el-icon-circle-check" type="primary" @click="btnItemFloatConfirm" :disabled="!fileUploadFinish">确 定</el-button>
       </span>
     </template>
   </el-dialog>
@@ -144,6 +146,7 @@ interface TopicMainData{
   indexVersionMethod: string
   inspectIndexMaterialId: string
   inspectMaterialTypeName: string
+  isCurrentFocusRow: boolean
 }
 interface ControlForm{
   filterText: string;
@@ -247,13 +250,20 @@ export default defineComponent({
       console.log('获取指标版本管理数据')
       console.log(res.data.data)
       state.topicMainData = res.data.data.records
+      // 默认第一条数据
+      state.topicMainData.forEach((item, index) => {
+        if (index === 0) {
+          item.isCurrentFocusRow = true
+        } else {
+          item.isCurrentFocusRow = false
+        }
+      })
+
       state.totalItems = res.data.data.total
       state.currentPage = res.data.data.current
       state.pageSize = res.data.data.size
       state.isDialogShow = true
-
-      // 默认第一条数据
-      handleDbclick(state.topicMainData[0])
+      handleDbclickOfTopicMainData(state.topicMainData[0])
     }
 
     // [BTN:新增] 新增 item
@@ -284,10 +294,8 @@ export default defineComponent({
     }
 
     // [table] 选框选择
-    const handleSelectionChange = (val: TopicMainData[]) => {
+    const handleSelectionChangeOfTopicMainData = (val: TopicMainData[]) => {
       state.selectedListOfTopicMainData = val
-      console.log(state.selectedListOfTopicMainData)
-      // multipleSelection.value = val.map((item: TargetInfo) => item.id)
     }
 
     // [BTN:批次删除]
@@ -335,7 +343,13 @@ export default defineComponent({
         proxy.$errorToast('必须选择今天以后的日期')
         return
       }
-      state.addFormInfo.beginDate = state.addFormInfo.beginDate.substring(0, 10)
+      if (state.addFormInfo.beginDate !== '') {
+        console.log('state.addFormInfo.beginDate')
+        console.log(state.addFormInfo.beginDate)
+        const temp:string = formatDateTransfer(state.addFormInfo.beginDate)
+        state.addFormInfo.beginDate = temp
+      }
+
       if (state.addFormInfo.title === '版本明细-新增') { // 新增
         await INSPECT_INDEX_VERSION_ADD_API({
           inspectIndexMaterialId: state.inspectIndexMaterialId,
@@ -367,9 +381,10 @@ export default defineComponent({
     }
 
     // [Table:Row][dbclick]
-    const handleDbclick = (val:TopicMainData) => {
-      console.log(val)
-      state.versionObj = val
+    const handleDbclickOfTopicMainData = (row:TopicMainData) => {
+      state.topicMainData.forEach((item:TopicMainData) => { item.isCurrentFocusRow = false })
+      row.isCurrentFocusRow = true
+      state.versionObj = row
       state.isDialogShow = true
     }
 
@@ -458,6 +473,17 @@ export default defineComponent({
       return [year, month, day].join('-')
     }
 
+    const formatDateTransfer = (date:any) => {
+      var d = new Date(date)
+      var month = '' + (d.getMonth() + 1)
+      var day = '' + d.getDate()
+      var year = d.getFullYear()
+
+      if (month.length < 2) { month = '0' + month }
+      if (day.length < 2) { day = '0' + day }
+      return [year, month, day].join('-')
+    }
+
     const checkDate = (row:TopicMainData) => {
       if ((new Date(row.beginDate).getTime() - new Date(formatDate()).getTime()) <= 0) {
         return false
@@ -480,6 +506,12 @@ export default defineComponent({
       return time.getTime() < Date.now()
     }
 
+    const tableRowFocusStyle = (object: any) => {
+      if (state.topicMainData[object.rowIndex].isCurrentFocusRow === true) {
+        return 'background-color: #ecf5ff' // --el-color-primary-light-9
+      }
+    }
+
     onMounted(async () => {
       if (store.state.common.inspectIndexMaterialId === '') {
         store.commit('common/updateInspectIndexMaterialId', router.currentRoute.value.query.versionID as string)
@@ -498,19 +530,21 @@ export default defineComponent({
       refIndexValueDetail,
       upload,
       btnGetMainData,
-      handleSelectionChange,
+      handleSelectionChangeOfTopicMainData,
       actBatchDelete,
       btnAddItemData,
       btnItemFloatConfirm,
       btnItemFloatClear,
       dataRule,
-      handleDbclick,
+      handleDbclickOfTopicMainData,
       seeVersion,
       handleSizeChange,
       handleCurrentChange,
       checkDate,
       btnEditItemOfTopicMainData,
-      pickerOptions
+      pickerOptions,
+      formatDateTransfer,
+      tableRowFocusStyle
     }
   }
 })
@@ -554,10 +588,13 @@ export default defineComponent({
       }
     }
 }
-
+::v-deep(.el-upload.el-upload--text){
+  width:100%
+}
 </style>
 <style scoped>
-.el-form-item__content >>> .el-upload--text{
+.el-form-item__content ::v-deep(.el-upload--text){
   width: 100%;
 }
+
 </style>
