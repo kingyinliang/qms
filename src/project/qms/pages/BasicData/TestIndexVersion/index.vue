@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-07-30 11:24:46
  * @LastEditors: Telliex
- * @LastEditTime: 2021-09-07 18:18:29
+ * @LastEditTime: 2021-09-07 19:12:29
 -->
 <template>
   <mds-card class="test_method" title="版本明细" :pack-up="false" style="margin-bottom: 0; background: #fff;">
@@ -29,7 +29,7 @@
       <el-table-column label="版本执行方法" min-width="260" prop="indexVersionMethod" >
         <template #default="scope">
           <ul style="text-align:left">
-            <li v-for="item in scope.row.indexVersionMethodRemoveRouteList"
+            <li v-for="(item,myIndex) in scope.row.indexVersionMethodRemoveRouteList"
             :key="item" style="margin-bottom: 5px;">
               <el-tooltip
                 effect="dark"
@@ -39,7 +39,7 @@
                 <el-button
                   size="mini"
                   type="text"
-                  @click="seeVersion(scope.row,scope.$index)">{{item.name}}</el-button>
+                  @click="seeVersion(scope.row,myIndex)">{{item.name}}</el-button>
               </el-tooltip>
             </li>
           </ul>
@@ -402,15 +402,18 @@ export default defineComponent({
 
       if (state.addFormInfo.title === '版本明细-新增') { // 新增
         state.addFormInfo.indexVersionMethod = state.uploadFileList.map(item => item.name).join(',')
-        console.log('state.addFormInfo')
-        console.log(state.addFormInfo)
-
+        state.addFormInfo.indexVersionMethodList = [] // 复原
+        state.addFormInfo.indexVersionMethodRemoveRoute = '' // 复原
+        state.addFormInfo.indexVersionMethodRemoveRouteList = [] // 复原
         await INSPECT_INDEX_VERSION_ADD_API({
           inspectIndexMaterialId: state.inspectIndexMaterialId,
           ...state.addFormInfo
         })
       } else { // 编辑
         state.addFormInfo.indexVersionMethod = state.uploadFileList.map(item => item.name).join(',')
+        state.addFormInfo.indexVersionMethodList = [] // 复原
+        state.addFormInfo.indexVersionMethodRemoveRoute = '' // 复原
+        state.addFormInfo.indexVersionMethodRemoveRouteList = [] // 复原
 
         await INSPECT_INDEX_VERSION_UPDATE_API({
           inspectIndexMaterialId: state.inspectIndexMaterialId,
