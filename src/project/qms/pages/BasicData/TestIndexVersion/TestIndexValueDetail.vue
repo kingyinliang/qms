@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-07-30 11:24:46
  * @LastEditors: Telliex
- * @LastEditTime: 2021-09-08 14:39:43
+ * @LastEditTime: 2021-09-08 16:26:21
 -->
 <template>
   <div style="padding-top:10px">
@@ -303,16 +303,19 @@ export default defineComponent({
       proxy.$confirm('确认删除选中的数据？', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
-        type: 'warning'
-      }).then(() => {
-        if (val.id === '') {
-          // val.delFlag = 1
-          state.topicMainData.splice(mainIndex, 1)
-          proxy.$successToast('操作成功')
-        } else {
-          INSPECT_INDEX_VERSION_VALUE_DELETE_API({ id: val.id })
-          proxy.$successToast('操作成功')
-          btnGetMainData()
+        type: 'warning',
+        callback: (action:string) => {
+          if (action === 'confirm') {
+            if (val.id === '') {
+              // val.delFlag = 1
+              state.topicMainData.splice(mainIndex, 1)
+              proxy.$successToast('操作成功')
+            } else {
+              INSPECT_INDEX_VERSION_VALUE_DELETE_API({ id: val.id })
+              proxy.$successToast('操作成功')
+              btnGetMainData()
+            }
+          }
         }
       })
     }
