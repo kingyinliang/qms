@@ -15,8 +15,10 @@
       <el-table-column type="index" label="序号" :index="(index) => index + 1 + (currentPage - 1) * pageSize" width="50" />
       <el-table-column label="编码" prop="additionalCode" />
       <el-table-column label="名称" prop="additionalName" />
-      <el-table-column label="操作人员" prop="changer" />
-      <el-table-column label="操作时间" prop="changed" />
+      <el-table-column label="获取方式" prop="additionalObtainWay" />
+      <el-table-column label="URL" prop="additionalUrl" />
+      <el-table-column label="类" prop="additionalClass" />
+      <el-table-column label="方法" prop="additionalMethod" />
       <el-table-column label="操作" width="80" fixed="right">
         <template #default="scope">
           <el-button type="text" icon="el-icon-edit" class="role__btn" @click="btnEditItemOfTopicMainData(scope.row)">
@@ -40,11 +42,23 @@
 
   <el-dialog v-model="isAddItemDialogShow" :title="dialogTitle" width="30%">
       <el-form ref="refAddAndEditItemDialog" :model="addAndEditItemForm" :rules="dataRule">
-        <el-form-item label="编码：" prop="additionalCode" :label-width="cssForformLabelWidth">
-          <el-input v-model="addAndEditItemForm.additionalCode" class="inputWidth" placeholder="请输入" autocomplete="off"></el-input>
+        <el-form-item v-if="dialogTitle === '检验频次附加项-编辑'" label="编码：" prop="additionalCode" :label-width="cssForformLabelWidth">
+          <el-input v-model="addAndEditItemForm.additionalCode" class="inputWidth" placeholder="请输入" autocomplete="off" :disabled="true"></el-input>
         </el-form-item>
         <el-form-item label="名称：" prop="additionalName" :label-width="cssForformLabelWidth">
           <el-input v-model="addAndEditItemForm.additionalName" class="inputWidth" placeholder="请输入" autocomplete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="获取方式：" prop="additionalObtainWay" :label-width="cssForformLabelWidth">
+          <el-input v-model="addAndEditItemForm.additionalObtainWay" class="inputWidth" placeholder="请输入" autocomplete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="URL：" prop="additionalUrl" :label-width="cssForformLabelWidth">
+          <el-input v-model="addAndEditItemForm.additionalUrl" class="inputWidth" placeholder="请输入" autocomplete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="类：" prop="additionalClass" :label-width="cssForformLabelWidth">
+          <el-input v-model="addAndEditItemForm.additionalClass" class="inputWidth" placeholder="请输入" autocomplete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="方法：" prop="additionalMethod" :label-width="cssForformLabelWidth">
+          <el-input v-model="addAndEditItemForm.additionalMethod" class="inputWidth" placeholder="请输入" autocomplete="off"></el-input>
         </el-form-item>
       </el-form>
       <span class="dialog-footer">
@@ -71,6 +85,10 @@ interface TopicMainData {
     id: string
     additionalCode: string
     additionalName: string
+    additionalObtainWay: string
+    additionalUrl: string
+    additionalClass: string
+    additionalMethod: string
 }
 
 interface PlantList{
@@ -80,6 +98,10 @@ interface AddItemForma{
     id: string
     additionalCode: string
     additionalName: string
+    additionalObtainWay: string
+    additionalUrl: string
+    additionalClass: string
+    additionalMethod: string
 }
 // interface Props {}
 
@@ -122,19 +144,16 @@ export default defineComponent({
       addAndEditItemForm: {
         id: '',
         additionalCode: '',
-        additionalName: ''
+        additionalName: '',
+        additionalObtainWay: '',
+        additionalUrl: '',
+        additionalClass: '',
+        additionalMethod: ''
       },
       multipleSelection: []
     })
     const refAddAndEditItemDialog = ref()
     const dataRule = {
-      additionalCode: [
-        {
-          required: true,
-          message: '请输入编码',
-          trigger: 'blur'
-        }
-      ],
       additionalName: [
         {
           required: true,
@@ -200,15 +219,13 @@ export default defineComponent({
       // }, 0)
       // code++
       state.addAndEditItemForm = {
-        // id: '',
-        // inspectMethodCode: `M${code < 10 ? '0' + code : code}`,
-        // inspectMethodName: '',
-        // inspectPropertyName: '',
-        // inspectProperty: ''
-
         id: '',
         additionalCode: '',
-        additionalName: ''
+        additionalName: '',
+        additionalObtainWay: '',
+        additionalUrl: '',
+        additionalClass: '',
+        additionalMethod: ''
       }
     }
     // [弹窗][BTN:确定]

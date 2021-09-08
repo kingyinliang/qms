@@ -6,6 +6,20 @@
   "description": "味达美工厂后台管理系统",
   "glyphs": [
     {
+      "icon_id": "24192193",
+      "name": "计算器删除",
+      "font_class": "jisuanqishanchu",
+      "unicode": "e661",
+      "unicode_decimal": 58977
+    },
+    {
+      "icon_id": "17045674",
+      "name": "系统",
+      "font_class": "xitong",
+      "unicode": "e660",
+      "unicode_decimal": 58976
+    },
+    {
       "icon_id": "58834",
       "name": "包装",
       "font_class": "baozhuang1",

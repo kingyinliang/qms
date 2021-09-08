@@ -710,12 +710,12 @@ export default defineComponent({
         title: '参数配置'
       }
 
-      if (state.parameterTreeData.length === 0) {
-        INSPECT_INDEX_PARAMETER_RELATIVE_ITEM_API(
-        ).then((res) => {
-          state.parameterTreeData = parameterTreeDataTranslater(JSON.parse(JSON.stringify(res.data.data)), 'id', 'parentId')
-        })
-      }
+      // if (state.parameterTreeData.length === 0) {
+      INSPECT_INDEX_PARAMETER_RELATIVE_ITEM_API(
+      ).then((res) => {
+        state.parameterTreeData = parameterTreeDataTranslater(JSON.parse(JSON.stringify(res.data.data)), 'id', 'parentId')
+      })
+      // }
     }
 
     // [参数明细][关联项] filter
