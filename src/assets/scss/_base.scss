@@ -3,6 +3,13 @@
   background: $--color-primary!important;
 }
 
+.icon {
+  width: 1em; height: 1em;
+  vertical-align: -0.15em;
+  fill: currentColor;
+  overflow: hidden;
+}
+
 
 body{
   .el-button--text {
@@ -125,9 +132,10 @@ body{
     display: none;
 }
 
+// global button's style  -- important!!
 body{
   .el-button--small{
-    padding: 9px 9px;
+    padding: 9px 11px;
   }
   .el-button [class*=el-icon-]+span{
     margin-left: 4px;
@@ -163,7 +171,7 @@ body{
 }
 
 .el-button--small.topic-button{
-    height:32px; 
+    height:32px;
     margin-left:5px;
     padding:0 11px;
     margin-left: 5px;
