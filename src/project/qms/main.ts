@@ -10,6 +10,8 @@ import Mds from '@/components'
 
 import '@/assets/scss/index.scss'
 import '@/assets/icon/iconfont.css'
+import '@/assets/icon/qms-iconfont.css'
+import '@/assets/icon/qms-iconfont.js'
 import 'element-plus/lib/theme-chalk/index.css'
 
 if (process.env.NODE_ENV === 'local') {
