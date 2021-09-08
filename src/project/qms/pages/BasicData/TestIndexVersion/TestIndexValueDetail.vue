@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-07-30 11:24:46
  * @LastEditors: Telliex
- * @LastEditTime: 2021-09-08 17:53:04
+ * @LastEditTime: 2021-09-08 18:23:46
 -->
 <template>
   <div style="padding-top:10px">
@@ -338,7 +338,9 @@ export default defineComponent({
               await INSPECT_INDEX_VERSION_VALUE_DELETE_API({ id: val.id })
               proxy.$successToast('操作成功')
               btnGetMainData()
-              instance.doClose()
+              setTimeout(() => {
+                instance.doClose()
+              }, 2000)
             }
           }
         }
