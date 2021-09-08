@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-07-30 11:24:46
  * @LastEditors: Telliex
- * @LastEditTime: 2021-09-07 17:58:20
+ * @LastEditTime: 2021-09-08 15:26:01
 -->
 <template>
   <mds-card class="test_method" :title="title" :pack-up="false" style="margin-bottom: 0; background: #fff;">
@@ -143,7 +143,6 @@
          <el-table-column label="关联参数" min-width="110" show-overflow-tooltip>
         <template #default="scope">
           <el-select v-model="scope.row.parentParamSubscriptCodeWithParentParamSubscript" size="small" :disabled="!isRedact ||  scope.row.paramType === 'SHOW' || scope.row.paramType === 'RESULT'" clearable @change="val=>changeParentParamSubscriptOptions(val,scope.row)" @focus="val=>focusParentParamSubscriptOptions(val,scope.row)">
-                <!-- v-for="item in excludeItemFromMyRow(parentParamSubscriptOptions,scope.row)" -->
                 <el-option
                   v-for="item in parentParamSubscriptOptions"
                   :key="item.paramSubscriptCode"
@@ -189,7 +188,7 @@
         <h3>公式</h3>
         <el-button-group>
           <el-button size="small" class="topic-button" type="primary" v-for="item in ['+','-','*','/','(',')']" :key="item" @click="spellFormula('operator',item)">{{item}}</el-button>
-          <el-button size="small" class="topic-button" type="primary" @click="spellFormula('del','Del')">Del</el-button>
+          <el-button size="small" class="topic-button" type="primary" @click="spellFormula('del','Del')"><em class="iconfont factory-jisuanqishanchu" /></el-button>
         </el-button-group>
       </template>
     </dialogDevice>
@@ -475,7 +474,8 @@ export default defineComponent({
         // 关联参数下拉选单附值
         state.paramSubscriptOptions.forEach((subItem:ParamSubscriptOptions) => {
           subItem.disabled = false
-          if (item.paramCode === subItem.paramCode) {
+          // 需排除已维护参数类型为“结果”的过程参数
+          if (item.paramCode === subItem.paramCode && item.paramType !== 'RESULT') {
             state.parentParamSubscriptOptions.push(subItem)
           }
         })
@@ -938,13 +938,22 @@ export default defineComponent({
       return target
     }
 
+    // rule: 1.需排除已维护参数类型为“结果”的过程参数
+    //       2.排除自己
     const focusParentParamSubscriptOptions = (val:any, row:ImportData) => {
       state.parentParamSubscriptOptions.map(subItem => {
+        // 排除自己
         if (subItem.paramCode !== row.paramCode) {
           subItem.disabled = false
         } else {
           subItem.disabled = true
         }
+        // 需排除已维护参数类型为“结果”的过程参数
+        state.topicMainData.forEach(item => {
+          if (subItem.paramCode === item.paramCode && item.paramType === 'RESULT') {
+            subItem.disabled = true
+          }
+        })
       })
     }
 
@@ -954,6 +963,8 @@ export default defineComponent({
         if (newValue !== null) {
           console.log('importObj')
           console.log(newValue)
+          state.controlBtnCanDo = false
+          state.isRedact = false
           state.targetId = newValue.id
           // btnGetMainData()
           initVariable()

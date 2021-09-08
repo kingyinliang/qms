@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-07-30 11:24:46
  * @LastEditors: Telliex
- * @LastEditTime: 2021-09-07 18:10:55
+ * @LastEditTime: 2021-09-08 14:39:43
 -->
 <template>
   <div style="padding-top:10px">
@@ -304,17 +304,15 @@ export default defineComponent({
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
-      }).then(async () => {
+      }).then(() => {
         if (val.id === '') {
           // val.delFlag = 1
           state.topicMainData.splice(mainIndex, 1)
           proxy.$successToast('操作成功')
         } else {
-          const res = await INSPECT_INDEX_VERSION_VALUE_DELETE_API({ id: val.id })
-          if (res.data.code === 200) {
-            proxy.$successToast('操作成功')
-            await btnGetMainData()
-          }
+          INSPECT_INDEX_VERSION_VALUE_DELETE_API({ id: val.id })
+          proxy.$successToast('操作成功')
+          btnGetMainData()
         }
       })
     }
