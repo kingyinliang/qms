@@ -38,7 +38,7 @@
   </mds-card>
   <el-dialog v-model="addMethodBtn" title="检验方法" width="30%">
       <el-form ref="addRef" :model="addMethodInfo" :rules="dataRule">
-        <el-form-item label="编码：" :label-width="formLabelWidth">
+        <el-form-item v-if="addMethodInfo.id" label="编码：" :label-width="formLabelWidth">
           <el-input v-model="addMethodInfo.inspectMethodCode" class="inputWidth" :disabled="true" autocomplete="off"></el-input>
         </el-form-item>
         <el-form-item label="检验方法：" prop="inspectMethodName" :label-width="formLabelWidth">
