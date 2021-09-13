@@ -4,7 +4,7 @@
       <h3> <em class="title-icon" :style="{ background: iconBg }" />{{ title }} </h3>
       <slot name="titleBtn" />
     </div>
-    <div :class="name + 'Box'">
+    <div class="clearfix" :class="name + 'Box'">
       <slot />
     </div>
     <div v-if="packUp" class="k-box-card-show-hidden">

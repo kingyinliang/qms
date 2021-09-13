@@ -6,8 +6,8 @@
     @mouseleave="closeMenu"
   >
     <div class="SystemLayout__sidebar__logo">
-      <img v-if="sidebarFold" class="SystemLayout__sidebar__logo--small" src="~@/assets/img/layout/logoHead2.png" alt="logo">
-      <img v-else class="SystemLayout__sidebar__logo--big" src="~@/assets/img/layout/logoHead1.png" alt="logo">
+      <img v-if="sidebarFold" class="SystemLayout__sidebar__logo--small" src="~@/assets/img/layout/logoHead2.png" alt="logo" style="width: 28px">
+      <img v-else class="SystemLayout__sidebar__logo--big" src="~@/assets/img/layout/logoHead1.png" alt="logo" >
     </div>
     <el-menu
       :class="{'SystemLayout__sidebar--flold': !sidebarFold}"

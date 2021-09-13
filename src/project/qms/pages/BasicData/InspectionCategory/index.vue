@@ -111,7 +111,7 @@
     </tree-page>
     <el-dialog v-model="addLevelBtn" title="检验类别-新增" width="50%">
       <el-form ref="addRef" :model="addLevelInfo" :rules="rules">
-        <el-form-item label="类别编码：" :label-width="formLabelWidth">
+        <el-form-item v-if="addLevelInfo.id" label="类别编码：" :label-width="formLabelWidth">
           <el-input v-model="addLevelInfo.inspectTypeCode" class="inputWidth" :disabled="true" autocomplete="off"></el-input>
         </el-form-item>
         <el-form-item label="类别名称：" prop="inspectTypeName" :label-width="formLabelWidth">
