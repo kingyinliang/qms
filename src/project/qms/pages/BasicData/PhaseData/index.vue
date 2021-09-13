@@ -11,21 +11,21 @@
     </template>
     <el-table border :cell-style="{'text-align':'center'}" :data="tableData" tooltip-effect="dark" style="width: 100%">
       <el-table-column type="index" :index="(index) => index + 1 + (queryForm.current - 1) * queryForm.size" label="序号" width="50" />
-      <el-table-column label="品项编码" prop="itemCode" />
-      <el-table-column label="品项名称" prop="itemName" />
-      <el-table-column label="创建人员" prop="creator" />
-      <el-table-column label="创建时间" prop="created" />
-      <el-table-column label="修改人员" prop="changer" />
-      <el-table-column label="修改时间" prop="changed" />
+      <el-table-column label="品项编码" prop="itemCode" :show-overflow-tooltip="true" />
+      <el-table-column label="品项名称" prop="itemName" min-width="120" :show-overflow-tooltip="true" />
+      <el-table-column label="创建人员" prop="creator" min-width="150" :show-overflow-tooltip="true" />
+      <el-table-column label="创建时间" prop="created" min-width="165" :show-overflow-tooltip="true" />
+      <el-table-column label="修改人员" prop="changer" min-width="150" :show-overflow-tooltip="true" />
+      <el-table-column label="修改时间" prop="changed" min-width="165" :show-overflow-tooltip="true" />
       <el-table-column label="操作" width="250" fixed="right">
         <template #default="scope">
-          <el-button type="text" icon="el-icon-edit" class="role__btn" @click="updateMaterial(scope.row)">
+          <el-button type="text" icon="qmsIconfont qms-guanlian" class="role__btn" @click="updateMaterial(scope.row)">
             关联物料
           </el-button>
           <el-button type="text" icon="iconfont factory-luru" class="role__btn" @click="editItem(scope.row)">
             编辑
           </el-button>
-          <el-button type="text" icon="el-icon-edit" class="role__btn" @click="selectDelete(scope.row)">
+          <el-button type="text" icon="el-icon-delete" class="role__btn" @click="selectDelete(scope.row)">
             删除
           </el-button>
         </template>
@@ -45,7 +45,7 @@
   </mds-card>
   <el-dialog v-model="addOrUpdateDialog" title="品项主数据" width="30%">
     <el-form ref="addOrUpdateRef" :model="addOrUpdateForm" :rules="addOrUpdateFormRule" label-width="120px">
-      <el-form-item label="品项编码：">
+      <el-form-item v-if="addOrUpdateForm.id" label="品项编码：">
         <el-input v-model="addOrUpdateForm.itemCode" disabled autocomplete="off"></el-input>
       </el-form-item>
       <el-form-item label="品项名称：" prop="itemName">
@@ -59,6 +59,7 @@
   </el-dialog>
   <el-dialog v-model="materialDialog" title="关联物料" width="536px">
     <el-transfer
+      v-if="transfer"
       v-model="itemPhaseData"
       :data="materialData"
       :props="{ key: 'inspectMaterialCode', label: 'inspectMaterialName' }"
@@ -119,6 +120,7 @@ export default defineComponent({
     const ctx = getCurrentInstance() as ComponentInternalInstance
     const proxy = ctx.proxy as any
 
+    const transfer = ref(false) // 穿梭框
     const addOrUpdateRef = ref() // 新增修改表单节点
     const queryForm = reactive({
       itemCodeOrName: '',
@@ -201,6 +203,10 @@ export default defineComponent({
       itemPhaseData.value = row.inspectMaterialCodeLists
       await getMaterial()
       materialDialog.value = true
+      await nextTick()
+      transfer.value = false
+      await nextTick()
+      transfer.value = true
     }
     const updateFormSubmit = async () => {
       tmp.inspectMaterialCodeLists = itemPhaseData.value
@@ -231,6 +237,7 @@ export default defineComponent({
     })
 
     return {
+      transfer,
       addOrUpdateRef,
       queryForm,
       tableData,

@@ -44,7 +44,7 @@
   </mds-card>
   <el-dialog v-model="addOrUpdateDialog" title="时间单位" width="30%">
     <el-form ref="addOrUpdateRef" :model="addOrUpdateForm" :rules="addOrUpdateFormRule" label-width="120px">
-      <el-form-item label="编码：">
+      <el-form-item v-if="addOrUpdateForm.id" label="编码：">
         <el-input v-model="addOrUpdateForm.cycleCode" :disabled="true" autocomplete="off"></el-input>
       </el-form-item>
       <el-form-item label="时间单位：" prop="dateUnit">
@@ -268,6 +268,12 @@ export default defineComponent({
             proxy.$warningToast('请输入开始时间')
             return
           }
+        }
+        const arr = addOrUpdateForm.value.calculateStarts
+        const newArr = [...new Set(arr)]
+        if (arr.length !== newArr.length) {
+          proxy.$warningToast('开始时间不可重复')
+          return
         }
         if (valid) {
           const form: any = { ...addOrUpdateForm.value }
