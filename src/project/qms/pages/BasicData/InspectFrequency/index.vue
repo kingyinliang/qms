@@ -13,13 +13,13 @@
     <el-table border ref="multipleTable" :cell-style="{'text-align':'center'}" :data="dataTopicMainData" tooltip-effect="dark" style="width: 100%" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" />
       <el-table-column type="index" label="序号" :index="(index) => index + 1 + (currentPage - 1) * pageSize" width="50" />
-      <el-table-column label="检测频率名称" prop="frequencyName" />
-      <el-table-column label="执行次数" prop="frequency" />
-      <el-table-column label="执行周期" prop="dateUnit" />
-      <el-table-column label="频次附加项" prop="additionalName" />
-      <el-table-column label="操作人员" prop="changer" />
-      <el-table-column label="操作时间" prop="changed" />
-      <el-table-column label="操作" width="80" fixed="right">
+      <el-table-column label="检测频率名称" show-overflow-tooltip prop="frequencyName" min-width="200" />
+      <el-table-column label="执行次数" show-overflow-tooltip prop="frequency" width="100" />
+      <el-table-column label="执行周期" show-overflow-tooltip prop="dateUnit" width="100" />
+      <el-table-column label="频次附加项" show-overflow-tooltip prop="additionalName" width="100" />
+      <el-table-column label="操作人员" show-overflow-tooltip prop="changer" min-width="200" />
+      <el-table-column label="操作时间" show-overflow-tooltip prop="changed" min-width="200" />
+      <el-table-column label="操作" show-overflow-tooltip width="80" fixed="right">
         <template #default="scope">
           <el-button type="text" icon="el-icon-edit" class="role__btn" @click="btnEditItemOfTopicMainData(scope.row)">
             <em>编辑</em>
@@ -371,6 +371,7 @@ export default defineComponent({
 
 <style lang="scss" scoped>
 .test_method{
+  min-height: 550px;
   height: calc(100vh - 117px);
 }
 

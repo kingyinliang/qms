@@ -3,15 +3,15 @@
  * @Anthor: Telliex
  * @Date: 2021-07-30 11:24:46
  * @LastEditors: Telliex
- * @LastEditTime: 2021-09-07 19:12:29
+ * @LastEditTime: 2021-09-17 09:59:26
 -->
 <template>
   <mds-card class="test_method" title="版本明细" :pack-up="false" style="margin-bottom: 0; background: #fff;">
     <template #titleBtn>
       <div style="float: right;display: flex;">
-        <el-input size="small" style="margin-bottom:10px; width:200px; height:35px;margin-right:10px" v-model="controlForm.filterText" placeholder="版本号" clearable @keyup.enter="btnGetMainData"  />
+        <el-input size="small" style="margin-bottom:10px; width:200px; height:35px;margin-right:10px" v-model="controlForm.filterText" placeholder="版本号" clearable @keyup.enter="btnGetMainData('init')"  />
         <div style="float: right;">
-          <el-button icon="el-icon-search" size="small" class="topic-button" @click="btnGetMainData">查询</el-button>
+          <el-button icon="el-icon-search" size="small" class="topic-button" @click="btnGetMainData('init')">查询</el-button>
           <el-button icon="el-icon-plus" type="primary" size="small" class="topic-button" @click="btnAddItemData">新增</el-button>
           <el-button icon="el-icon-delete" type="danger" size="small" class="topic-button" @click="actBatchDelete">批量删除</el-button>
         </div>
@@ -136,7 +136,7 @@ import {
   DOWNLOAD_FILE_API // 文件下载
   // UPLOAD_FILE_API
 } from '../../../../../api/api/index'
-
+import layoutTs from '@/components/layout/layoutTs'
 interface FileList{
   name: string
   url: string
@@ -209,6 +209,7 @@ export default defineComponent({
   setup () {
     const ctx = getCurrentInstance() as ComponentInternalInstance
     const proxy = ctx.proxy as any
+    const { gotoPage, tabsCloseCurrentHandle } = layoutTs()
     const refIndexValueDetail = ref()
     const upload = ref()
     const router = useRouter()
@@ -264,7 +265,12 @@ export default defineComponent({
     // 函数
 
     // [ACTION:load][BTN:查询] 获取指标版本管理数据
-    const btnGetMainData = async () => {
+    const btnGetMainData = async (type = '') => {
+      if (type === 'init') {
+        state.currentPage = 1
+        state.pageSize = 10
+      }
+
       const res = await INSPECT_INDEX_VERSION_QUERY_API({
         inspectIndexMaterialId: state.inspectIndexMaterialId,
         indexVersion: state.controlForm.filterText,
@@ -360,17 +366,10 @@ export default defineComponent({
         cancelButtonText: '取消',
         type: 'warning'
       }).then(async () => {
-        const tempDeleteList: string[] = []
-        state.selectedListOfTopicMainData.forEach(item => {
-          tempDeleteList.push(item.id)
-        })
-        console.log(tempDeleteList)
-
-        const res = await INSPECT_INDEX_VERSION_DELETE_API(tempDeleteList)
+        const res = await INSPECT_INDEX_VERSION_DELETE_API(
+          state.selectedListOfTopicMainData.map(item => item.id)
+        )
         if (res.data.code === 200) {
-          state.currentPage = 1
-          state.pageSize = 10
-          state.totalItems = 0
           proxy.$successToast('操作成功')
           await btnGetMainData()
         }
@@ -592,6 +591,16 @@ export default defineComponent({
     }
 
     onMounted(async () => {
+      console.log('我的版本号是？')
+      console.log(router.currentRoute.value.query.versionID)
+      if (!router.currentRoute.value.query.versionID) {
+        tabsCloseCurrentHandle()
+        proxy.$warningToast('版本号无法识别，请重新选择！')
+        gotoPage({
+          path: 'qms-pages-BasicData-TestIndex-index'
+        })
+        return
+      }
       if (store.state.common.inspectIndexMaterialId === '') {
         store.commit('common/updateInspectIndexMaterialId', router.currentRoute.value.query.versionID as string)
       }

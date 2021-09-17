@@ -9,9 +9,9 @@
             v-model="controlForm.filterText"
             placeholder="指标类描述/代码、指标名称/代码"
             clearable
-            @keyup.enter="getMainData" />
+            @keyup.enter="getMainData('init')" />
         <div style="float: right;">
-          <el-button icon="el-icon-search" size="small" class="topic-button" @click="getMainData">查询</el-button>
+          <el-button icon="el-icon-search" size="small" class="topic-button" @click="getMainData('init')">查询</el-button>
         </div>
       </div>
     </template>
@@ -150,8 +150,12 @@ export default defineComponent({
 
     // 函数
 
-    // [ACTION:load] 获取检验指标库数据
-    const getMainData = async () => {
+    // [ACTION:load][BTN:查询] 获取检验指标库数据
+    const getMainData = async (type = '') => {
+      if (type === 'init') {
+        state.currentPage = 1
+        state.pageSize = 10
+      }
       const res = await INSPECT_INDEX_LIBRARY_QUERY_API({
         indexCodeOrName: state.controlForm.filterText,
         current: state.currentPage,
@@ -223,6 +227,7 @@ export default defineComponent({
 
 <style lang="scss" scoped>
 .test_method{
+  min-height: 550px;
   height: calc(100vh - 60px);
 }
 .topforms {
