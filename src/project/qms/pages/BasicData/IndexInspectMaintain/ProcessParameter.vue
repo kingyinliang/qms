@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-07-30 11:24:46
  * @LastEditors: Telliex
- * @LastEditTime: 2021-09-08 15:26:01
+ * @LastEditTime: 2021-09-17 14:36:45
 -->
 <template>
   <mds-card class="test_method" :title="title" :pack-up="false" style="margin-bottom: 0; background: #fff;">
@@ -59,7 +59,7 @@
       </el-table-column>
       <el-table-column label="数据类型" min-width="110" show-overflow-tooltip>
         <template #default="scope">
-          <el-select v-model="scope.row.paramDataType" size="small" :disabled="!isRedact" clearable>
+          <el-select v-model="scope.row.paramDataType" size="small" :disabled="!isRedact" :placeholder="!isRedact?'':'请选择'" clearable>
               <el-option
                 v-for="item in paramDataTypeOptions"
                 :key="item.dictCode"
@@ -72,12 +72,12 @@
       <el-table-column label="数据标准">
         <el-table-column  min-width="120" show-overflow-tooltip>
           <template #default="scope">
-            <el-input v-model.number="scope.row.paramStandard" size="small" placeholder="请输入" :disabled="!isRedact" />
+            <el-input v-model.number="scope.row.paramStandard" size="small" :placeholder="!isRedact?'':'请输入'" :disabled="!isRedact" />
           </template>
         </el-table-column>
         <el-table-column  min-width="110" show-overflow-tooltip>
           <template #default="scope">
-            <el-select v-model="scope.row.paramStandardType" size="small" :disabled="!isRedact" clearable>
+            <el-select v-model="scope.row.paramStandardType" size="small" :disabled="!isRedact" :placeholder="!isRedact?'':'请选择'" clearable>
               <el-option
                 v-for="item in paramStandardTypeOptions"
                 :key="item.dictCode"
@@ -90,12 +90,12 @@
       </el-table-column>
       <el-table-column label="上限" min-width="110" show-overflow-tooltip>
         <template #default="scope">
-          <el-input v-model="scope.row.paramUp" size="small" maxlength="5" placeholder="请输入" :disabled="!isRedact" oninput="value=value.replace(/[^\d.]/g, '')" />
+          <el-input v-model="scope.row.paramUp" size="small" maxlength="5" :placeholder="!isRedact?'':'请输入'" :disabled="!isRedact" oninput="value=value.replace(/[^\d.]/g, '')" />
         </template>
       </el-table-column>
       <el-table-column label="下限" min-width="110" show-overflow-tooltip>
         <template #default="scope">
-          <el-input v-model="scope.row.paramDown" size="small" maxlength="5"  placeholder="请输入" :disabled="!isRedact" oninput="value=value.replace(/[^\d.]/g, '')"  />
+          <el-input v-model="scope.row.paramDown" size="small" maxlength="5"  :placeholder="!isRedact?'':'请输入'" :disabled="!isRedact" oninput="value=value.replace(/[^\d.]/g, '')"  />
         </template>
       </el-table-column>
       <el-table-column label="参数类型" min-width="110" show-overflow-tooltip>
@@ -103,7 +103,7 @@
           <span class="required">参数类型</span>
         </template>
         <template #default="scope">
-          <el-select v-model="scope.row.paramType" size="small" :disabled="!isRedact||scope.row.paramType === 'RESULT'" clearable @change="val=>changeParamTypeOptions(val,scope.row)" @focus="val=>focusParamTypeOptions(val,scope.row)">
+          <el-select v-model="scope.row.paramType" size="small" :disabled="!isRedact||scope.row.paramType === 'RESULT'" :placeholder="!isRedact?'':'请选择'" clearable @change="val=>changeParamTypeOptions(val,scope.row)" @focus="val=>focusParamTypeOptions(val,scope.row)">
             <el-option
               v-for="item in paramTypeOptions"
               :key="item.dictCode"
@@ -121,7 +121,7 @@
           show-overflow-tooltip
         >
           <template #default="scope">
-            <el-select v-model="scope.row.defaultType" size="small" :disabled="!isRedact" clearable>
+            <el-select v-model="scope.row.defaultType" size="small" :disabled="!isRedact" :placeholder="!isRedact?'':'请选择'" clearable>
               <el-option
                 v-for="item in defaultTypeOptions"
                 :key="item.dictCode"
@@ -136,13 +136,13 @@
           show-overflow-tooltip
         >
           <template #default="scope">
-            <el-input v-model.number="scope.row.defaultValue" size="small" placeholder="请输入" :disabled="!isRedact||scope.row.defaultType===''||scope.row.defaultType==='CURRENT'" />
+            <el-input v-model.number="scope.row.defaultValue" size="small" :placeholder="!isRedact?'':'请输入'" :disabled="!isRedact||scope.row.defaultType===''||scope.row.defaultType==='CURRENT'" />
           </template>
          </el-table-column>
       </el-table-column>
          <el-table-column label="关联参数" min-width="110" show-overflow-tooltip>
         <template #default="scope">
-          <el-select v-model="scope.row.parentParamSubscriptCodeWithParentParamSubscript" size="small" :disabled="!isRedact ||  scope.row.paramType === 'SHOW' || scope.row.paramType === 'RESULT'" clearable @change="val=>changeParentParamSubscriptOptions(val,scope.row)" @focus="val=>focusParentParamSubscriptOptions(val,scope.row)">
+          <el-select v-model="scope.row.parentParamSubscriptCodeWithParentParamSubscript" size="small" :disabled="!isRedact ||  scope.row.paramType === 'SHOW' || scope.row.paramType === 'RESULT'" :placeholder="!isRedact?'':'请选择'" clearable @change="val=>changeParentParamSubscriptOptions(val,scope.row)" @focus="val=>focusParentParamSubscriptOptions(val,scope.row)">
                 <el-option
                   v-for="item in parentParamSubscriptOptions"
                   :key="item.paramSubscriptCode"
@@ -686,11 +686,12 @@ export default defineComponent({
             return false
           }
         }
+        if (item.paramType === 'HIDDEN' && item.parentParamSubscriptCodeWithParentParamSubscript === '') {
+          proxy.$warningToast('请选择关联参数')
+          return false
+        }
       }
-      // if (tempList.length !== state.topicMainData.length) {
-      //   proxy.$warningToast('有重复过程参数')
-      //   return false
-      // }
+
       return true
     }
 
@@ -725,6 +726,7 @@ export default defineComponent({
 
     // [BTN:关闭][关联公式]
     const onRelatedFormulaClose = () => {
+      state.relatedeFormulaData = []
       state.isRelatedeFormulaDialogShow = false
     }
 
@@ -759,7 +761,17 @@ export default defineComponent({
         // }
         state.isRelatedeFormulaDialogShow = true
         state.inspectParameterIdOfRelatedParameter = row.id as string
-        getRelatedParameter(state.inspectParameterIdOfRelatedParameter)
+        if (state.inspectParameterIdOfRelatedParameter) {
+          getRelatedParameter(state.inspectParameterIdOfRelatedParameter)
+        } else {
+          console.log('hohohohohoh')
+          if (row.relatedFormulaForNoId) { // 可能是未建任何 data ,relatedFormulaForNoId 参数未于一开始建立
+            state.relatedeFormulaData = JSON.parse(JSON.stringify(row.relatedFormulaForNoId))
+          } else {
+            state.relatedeFormulaData = []
+          }
+        }
+
         onResultFormulaClose()
       } else if (row.paramType === 'RESULT') {
         state.fomulaList = state.topicMainData.filter(item => item.paramCode !== state.tempItemObj.paramCode)
@@ -813,16 +825,14 @@ export default defineComponent({
     // [关联公式]dialog 获取 data
     const getRelatedParameter = (id:string) => {
       // PO 不合常理需求，修改时请小心
-      if (id !== '') {
-        INSPECT_INDEX_RELATED_PARAMETER_QUERY_API({
-          inspectParameterId: id
-        }).then((res) => {
-          console.log('关联公式')
-          console.log(res.data.data)
 
-          state.relatedeFormulaData = res.data.data
-        })
-      }
+      INSPECT_INDEX_RELATED_PARAMETER_QUERY_API({
+        inspectParameterId: id
+      }).then((res) => {
+        console.log('关联公式')
+        console.log(res.data.data)
+        state.relatedeFormulaData = res.data.data
+      })
     }
 
     // [BTN:新增][关联公式]dialog 新增 data
@@ -1012,6 +1022,7 @@ export default defineComponent({
 
 <style lang="scss" scoped>
 .test_method{
+  min-height: 550px;
   min-height: calc(100vh - 117px);
 }
 

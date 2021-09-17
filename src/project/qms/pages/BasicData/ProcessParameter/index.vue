@@ -13,9 +13,9 @@
     <el-table border ref="multipleTable" :cell-style="{'text-align':'center'}" :data="dataTopicMainData" tooltip-effect="dark" style="width: 100%" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="45" />
       <el-table-column type="index" label="序号" :index="(index) => index + 1 + (currentPage - 1) * pageSize" width="50" />
-      <el-table-column label="参数名称" prop="paramSubscriptCode" />
-      <el-table-column label="下标" prop="paramSubscript" />
-      <el-table-column label="过程参数" >
+      <el-table-column label="参数名称" show-overflow-tooltip prop="paramSubscriptCode" />
+      <el-table-column label="下标" show-overflow-tooltip prop="paramSubscript" />
+      <el-table-column label="过程参数" show-overflow-tooltip >
         <template #default="scope">
           <span>{{scope.row.paramCode.split('[')[0]}}<sub v-if="scope.row.paramCode.paramSubscript!==''">{{scope.row.paramCode.split('[')[1].replace(']','')}}</sub></span>
         </template>
@@ -263,6 +263,7 @@ export default defineComponent({
 
 <style lang="scss" scoped>
 .test_method{
+  min-height: 550px;
   height: calc(100vh - 117px);
 }
 .topforms {

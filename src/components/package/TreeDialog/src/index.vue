@@ -67,12 +67,13 @@ import {
   nextTick,
   onMounted
 } from 'vue'
-
 interface Props{
   modelValue: undefined|string|any[];
   treeProps?: any;
   disabled?: boolean;
   leafOnly?: boolean;
+  multiChecked?: boolean;
+  returnObj?: boolean;
   treeData: any[];
 }
 
@@ -106,6 +107,14 @@ export default defineComponent({
       default: function () {
         return []
       }
+    },
+    multiChecked: { // 单选 or 多选
+      type: Boolean,
+      default: true
+    },
+    returnObj: { // 回传 id or obj
+      type: Boolean,
+      default: false
     },
     treeProps: {
       type: Object,
@@ -149,8 +158,15 @@ export default defineComponent({
       return data[treeProps.value.label].indexOf(value) !== -1
     }
     const handleCheckedChange = () => {
-      const checkNodes = treeRef.value.getCheckedNodes(leafOnly?.value)
-      const ids = checkNodes.map((it: any) => it.id)
+      let checkNodes = treeRef.value.getCheckedNodes(leafOnly?.value)
+      let ids = checkNodes.map((it: any) => it.id)
+      if (!props.multiChecked) { // 单选
+        console.log(checkNodes.length)
+        if (checkNodes.length > 1) {
+          checkNodes = JSON.parse(JSON.stringify(checkNodes.slice(1, 2)))
+        }
+        ids = checkNodes.map((it: any) => it.id)
+      }
       checkedValue.value = checkNodes
       selectOption.value = checkNodes
       emit('update:modelValue', ids)
@@ -158,6 +174,7 @@ export default defineComponent({
     const getCheckedNodes = () => {
       return treeRef.value.getCheckedNodes(leafOnly?.value)
     }
+
     const removeTag = (tag: any) => {
       treeRef.value.setChecked(tag.id, false)
     }

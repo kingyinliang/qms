@@ -13,12 +13,12 @@
     <el-table border ref="multipleTable" :cell-style="{'text-align':'center'}" :data="dataTopicMainData" tooltip-effect="dark" style="width: 100%" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="45" />
       <el-table-column type="index" label="序号" :index="(index) => index + 1 + (currentPage - 1) * pageSize" width="50" />
-      <el-table-column label="编码" prop="additionalCode" />
-      <el-table-column label="名称" prop="additionalName" />
-      <el-table-column label="获取方式" prop="additionalObtainWay" />
-      <el-table-column label="URL" prop="additionalUrl" />
-      <el-table-column label="类" prop="additionalClass" />
-      <el-table-column label="方法" prop="additionalMethod" />
+      <el-table-column label="编码" show-overflow-tooltip prop="additionalCode" />
+      <el-table-column label="名称" show-overflow-tooltip prop="additionalName" />
+      <el-table-column label="获取方式" show-overflow-tooltip prop="additionalObtainWay" />
+      <el-table-column label="URL" show-overflow-tooltip prop="additionalUrl" />
+      <el-table-column label="类" show-overflow-tooltip prop="additionalClass" />
+      <el-table-column label="方法" show-overflow-tooltip prop="additionalMethod" />
       <el-table-column label="操作" width="80" fixed="right">
         <template #default="scope">
           <el-button type="text" icon="el-icon-edit" class="role__btn" @click="btnEditItemOfTopicMainData(scope.row)">
@@ -279,6 +279,7 @@ export default defineComponent({
 
 <style lang="scss" scoped>
 .test_method{
+  min-height: 550px;
   height: calc(100vh - 117px);
 }
 .topforms {
