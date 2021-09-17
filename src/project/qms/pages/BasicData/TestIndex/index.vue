@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-07-30 11:24:46
  * @LastEditors: Telliex
- * @LastEditTime: 2021-09-03 14:47:07
+ * @LastEditTime: 2021-09-17 09:20:46
 -->
 <template>
   <mds-card class="test_method" title="检验指标标准" :pack-up="false" style="margin-bottom: 0; background: #fff;">
@@ -332,23 +332,18 @@ export default defineComponent({
 
     // [BTN:批次删除]
     const btnBatchDelete = () => {
-      if (state.selectedListOfTopicMainData.length === 0) {
+      if (!state.selectedListOfTopicMainData.length) {
         return
       }
       proxy.$confirm('是否删除选中检验指标？', '提示', {
-        confirmButtonText: '确定',
+        confirmButtonText: '确定1',
         cancelButtonText: '取消',
         type: 'warning'
       }).then(async () => {
-        const tempDeleteList: string[] = []
-        state.selectedListOfTopicMainData.forEach(item => {
-          tempDeleteList.push(item.id)
-        })
-        const res = await INSPECT_INDEX_STANDARD_BATCH_DELETE_API(tempDeleteList)
+        const res = await INSPECT_INDEX_STANDARD_BATCH_DELETE_API(
+          state.selectedListOfTopicMainData.map(item => item.id)
+        )
         if (res.data.code === 200) {
-          state.currentPage = 1
-          state.pageSize = 10
-          state.totalItems = 0
           proxy.$successToast('操作成功')
           await btnGetMainData()
         }
@@ -524,6 +519,7 @@ export default defineComponent({
 
 <style lang="scss" scoped>
 .test_method{
+  min-height: 550px;
   height: calc(100vh - 117px);
 }
 .topforms {

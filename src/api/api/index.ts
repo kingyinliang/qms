@@ -280,6 +280,7 @@ export function INSPECT_INDEX_PROCESS_PARAMETER_QUERY_API (params = {}):Promise<
 export function INSPECT_INDEX_PROCESS_PARAMETER_DELETE_API (params = {}):Promise<AxiosResponse> {
   return Http.get('/inspectParameter/deleteInspectParameter', params, { baseURL: (process.env.VUE_APP_QMS_API as string) + (process.env.VUE_APP_API_V as string) })
 }
+
 // 基础数据-[指标检验方法明细][过程参数]- 新增&编辑
 export function INSPECT_INDEX_PROCESS_PARAMETER_MODIFY_API (params = {}):Promise<AxiosResponse> {
   return Http.post('/inspectParameter/modifyInspectParameter', params, { baseURL: (process.env.VUE_APP_QMS_API as string) + (process.env.VUE_APP_API_V as string) })
@@ -340,6 +341,11 @@ export function INSPECT_INSPECT_FREQUENCY_INSERT_API (params = {}):Promise<Axios
   return Http.post('/inspectFrequency/insertInspectFrequency', params, { baseURL: (process.env.VUE_APP_QMS_API as string) + (process.env.VUE_APP_API_V as string) })
 }
 
+// 基础数据-[检验频次]- 下拉
+export function INSPECT_INSPECT_FREQUENCY_QUERY_DROPDOWN_API (params = {}):Promise<AxiosResponse> {
+  return Http.get('/inspectFrequency/queryInspectFrequencyDropDown', params, { baseURL: (process.env.VUE_APP_QMS_API as string) + (process.env.VUE_APP_API_V as string) })
+}
+
 // 基础数据-[检验频次]- 编辑
 export function INSPECT_INSPECT_FREQUENCY_UPDATE_API (params = {}):Promise<AxiosResponse> {
   return Http.post('/inspectFrequency/updateInspectFrequency', params, { baseURL: (process.env.VUE_APP_QMS_API as string) + (process.env.VUE_APP_API_V as string) })
@@ -378,4 +384,59 @@ export function INSPECT_INSPECT_ADDITION_DELETE_API (params = {}):Promise<AxiosR
 // 基础数据-[检验时间单位]- 查询 下拉
 export function INSPECT_CYCLE_QUERY_DROPDOWN_API (params = {}):Promise<AxiosResponse> {
   return Http.get('/inspectCycle/queryInspectCycleDropDown', params, { baseURL: (process.env.VUE_APP_QMS_API as string) + (process.env.VUE_APP_API_V as string) })
+}
+
+// 计划管理-[检验计划]- 查询
+export function MANAGEMENT_INSPECTION_PLAN_QUERY_API (params = {}):Promise<AxiosResponse> {
+  return Http.post('/planVersion/queryPlanVersion', params, { baseURL: (process.env.VUE_APP_QMS_API as string) + (process.env.VUE_APP_API_V as string) })
+}
+
+// 计划管理-[检验计划]- 新增
+export function MANAGEMENT_INSPECTION_PLAN_INSERT_API (params = {}):Promise<AxiosResponse> {
+  return Http.post('/planVersion/insertPlanVersion', params, { baseURL: (process.env.VUE_APP_QMS_API as string) + (process.env.VUE_APP_API_V as string) })
+}
+
+// 计划管理-[检验计划]- 编辑
+export function MANAGEMENT_INSPECTION_PLAN_UPDATE_API (params = {}):Promise<AxiosResponse> {
+  return Http.post('/planVersion/updatePlanVersion', params, { baseURL: (process.env.VUE_APP_QMS_API as string) + (process.env.VUE_APP_API_V as string) })
+}
+
+// 计划管理-[检验计划]- 删除
+export function MANAGEMENT_INSPECTION_PLAN_DELETE_API (params = {}):Promise<AxiosResponse> {
+  return Http.get('/planVersion/deletePlanVersion', params, { baseURL: (process.env.VUE_APP_QMS_API as string) + (process.env.VUE_APP_API_V as string) })
+}
+
+// 计划管理-[检验计划配置]- 查询
+export function MANAGEMENT_INSPECTION_PLAN_CONFIGURATION_QUERY_API (params = {}):Promise<AxiosResponse> {
+  return Http.post('/planConfigure/queryPlanConfigure', params, { baseURL: (process.env.VUE_APP_QMS_API as string) + (process.env.VUE_APP_API_V as string) })
+}
+
+// 计划管理-[检验计划配置]- 新增
+export function MANAGEMENT_INSPECTION_PLAN_CONFIGURATION_INSERT_API (params = {}):Promise<AxiosResponse> {
+  return Http.post('/planConfigure/insertPlanConfigure', params, { baseURL: (process.env.VUE_APP_QMS_API as string) + (process.env.VUE_APP_API_V as string) })
+}
+
+// 计划管理-[检验计划配置]- 编辑
+export function MANAGEMENT_INSPECTION_PLAN_CONFIGURATION_PLAN_UPDATE_API (params = {}):Promise<AxiosResponse> {
+  return Http.post('/planConfigure/updatePlanConfigure', params, { baseURL: (process.env.VUE_APP_QMS_API as string) + (process.env.VUE_APP_API_V as string) })
+}
+
+// 计划管理-[检验计划配置]- 删除
+export function MANAGEMENT_INSPECTION_PLAN_CONFIGURATION_PLAN_DELETE_API (params = {}):Promise<AxiosResponse> {
+  return Http.post('/planConfigure/deletePlanConfigure', params, { baseURL: (process.env.VUE_APP_QMS_API as string) + (process.env.VUE_APP_API_V as string) })
+}
+
+// 计划管理-[检验计划配置]- 生成
+export function MANAGEMENT_INSPECTION_PLAN_CONFIGURATION_PLAN_GENERATE_API (params = {}):Promise<AxiosResponse> {
+  return Http.post('/planConfigure/generatePlanConfigure', params, { baseURL: (process.env.VUE_APP_QMS_API as string) + (process.env.VUE_APP_API_V as string) })
+}
+
+// 计划管理-[检验计划配置]- 物料指标数据-下拉
+export function MANAGEMENT_INSPECTION_PLAN_CONFIGURATION_PLAN_INDEX_MATERIAL_QUERY_API (params = {}):Promise<AxiosResponse> {
+  return Http.post('/inspectIndexMaterial/queryInspectIndexMaterialDropDown', params, { baseURL: (process.env.VUE_APP_QMS_API as string) + (process.env.VUE_APP_API_V as string) })
+}
+
+// 计划管理-[检验计划配置]- 检验计划配置-检验类信息查询
+export function MANAGEMENT_INSPECTION_PLAN_CONFIGURATION_PLAN_INDEX_RELATION_TYPE_QUERY_API (params = {}):Promise<AxiosResponse> {
+  return Http.get('/planConfigure/queryPlanConfigureRelationType', params, { baseURL: (process.env.VUE_APP_QMS_API as string) + (process.env.VUE_APP_API_V as string) })
 }

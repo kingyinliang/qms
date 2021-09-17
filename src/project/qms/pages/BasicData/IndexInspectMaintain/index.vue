@@ -73,7 +73,6 @@
         </el-pagination>
       </div>
       <process-parameter v-if="isImportTableDataShow" ref="refFunctionDialog" :title="'过程参数'" :importObj="importObj"  />
-    <!-- <process-parameter v-model:dialogVisible="isImportTableDataShow" ref="refFunctionDialog" :title="'过程参数'" :importObj="importObj"  @reset="reset" /> -->
     </template>
   </tree-page>
 
@@ -97,7 +96,7 @@
         <el-form-item label="过程参数组：" prop="parameterGroupName" :label-width="'140px'" class="required">
           <el-input v-model="addParameterGroupform.parameterGroupName" class="140px" autocomplete="off" placeholder="请输入"></el-input>
         </el-form-item>
-        <el-form-item label="关联项：" :label-width="'140px'" class="required" style="position:relative;">
+        <el-form-item label="关联项：" :label-width="'140px'" style="position:relative;">
               <div class="selfStyleFormItem">
                 <el-popover
                   placement="bottom-start"
@@ -533,7 +532,7 @@ export default defineComponent({
 
     // [BTN:确定][参数明细] 新增+编辑 function dialog
     const btnAddItemFloatConfirm = () => {
-      if (state.addParameterGroupform.parameterGroupName === '' || state.parameterTreeSelectedString === '') {
+      if (state.addParameterGroupform.parameterGroupName === '') {
         proxy.$errorToast('请录入必填栏位')
         return
       }
