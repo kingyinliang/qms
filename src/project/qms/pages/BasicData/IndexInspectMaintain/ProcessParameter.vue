@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-07-30 11:24:46
  * @LastEditors: Telliex
- * @LastEditTime: 2021-09-17 14:36:45
+ * @LastEditTime: 2021-09-17 16:15:21
 -->
 <template>
   <mds-card class="test_method" :title="title" :pack-up="false" style="margin-bottom: 0; background: #fff;">
@@ -29,7 +29,7 @@
           <span class="required">过程参数</span>
         </template>
         <template #default="scope">
-            <el-select v-model="scope.row.paramSubscriptCodeWithParamSubscript" size="small" :disabled="!isRedact" clearable @change="val=>changeParamSubscriptOptions(val,scope.row)">
+            <el-select v-model="scope.row.paramSubscriptCodeWithParamSubscript" size="small" :disabled="!isRedact" :placeholder="!isRedact?'':'请选择'" clearable @change="val=>changeParamSubscriptOptions(val,scope.row)">
               <el-option
                 v-for="item in paramSubscriptOptions"
                 :key="item.paramSubscriptCode"
@@ -47,7 +47,7 @@
           <span class="required">单位</span>
         </template>
         <template #default="scope">
-          <el-select v-model="scope.row.paramUnit" size="small" :disabled="!isRedact" clearable>
+          <el-select v-model="scope.row.paramUnit" size="small" :disabled="!isRedact" :placeholder="!isRedact?'':'请选择'" clearable>
                 <el-option
                 v-for="item in paramUnitOptions"
                 :key="item.dictCode"
@@ -72,7 +72,7 @@
       <el-table-column label="数据标准">
         <el-table-column  min-width="120" show-overflow-tooltip>
           <template #default="scope">
-            <el-input v-model.number="scope.row.paramStandard" size="small" :placeholder="!isRedact?'':'请输入'" :disabled="!isRedact" />
+            <el-input v-model.number="scope.row.paramStandard" size="small" :placeholder="!isRedact?'':'请输入'" :disabled="!isRedact" clearable />
           </template>
         </el-table-column>
         <el-table-column  min-width="110" show-overflow-tooltip>
@@ -188,7 +188,7 @@
         <h3>公式</h3>
         <el-button-group>
           <el-button size="small" class="topic-button" type="primary" v-for="item in ['+','-','*','/','(',')']" :key="item" @click="spellFormula('operator',item)">{{item}}</el-button>
-          <el-button size="small" class="topic-button" type="primary" @click="spellFormula('del','Del')"><em class="iconfont factory-jisuanqishanchu" /></el-button>
+          <el-button size="small" class="topic-button" type="primary" @click="spellFormula('del','Del')"><em class="qmsIconfont qms-jisuanqishanchu" style="font-size:20px" /></el-button>
         </el-button-group>
       </template>
     </dialogDevice>
@@ -673,7 +673,7 @@ export default defineComponent({
             return false
           }
         }
-        if (item.paramSubscriptCode === '' || item.paramUnit === '' || item.paramType === '' || (item.paramDataType === 'FLOAT_POINT' && item.paramStandard === null)) {
+        if (item.paramSubscriptCode === '' || item.paramUnit === '' || item.paramType === '') {
           proxy.$warningToast('请完整录入栏位')
           return false
         }
@@ -688,6 +688,11 @@ export default defineComponent({
         }
         if (item.paramType === 'HIDDEN' && item.parentParamSubscriptCodeWithParentParamSubscript === '') {
           proxy.$warningToast('请选择关联参数')
+          return false
+        }
+
+        if (item.paramDataType === 'FLOAT_POINT' && (!item.paramStandard || item.paramStandardType === '')) {
+          proxy.$warningToast('请录入数据标准')
           return false
         }
       }
@@ -764,7 +769,6 @@ export default defineComponent({
         if (state.inspectParameterIdOfRelatedParameter) {
           getRelatedParameter(state.inspectParameterIdOfRelatedParameter)
         } else {
-          console.log('hohohohohoh')
           if (row.relatedFormulaForNoId) { // 可能是未建任何 data ,relatedFormulaForNoId 参数未于一开始建立
             state.relatedeFormulaData = JSON.parse(JSON.stringify(row.relatedFormulaForNoId))
           } else {
@@ -958,9 +962,11 @@ export default defineComponent({
         } else {
           subItem.disabled = true
         }
+        console.log('state.topicMainData')
+        console.log(state.topicMainData)
         // 需排除已维护参数类型为“结果”的过程参数
         state.topicMainData.forEach(item => {
-          if (subItem.paramCode === item.paramCode && item.paramType === 'RESULT') {
+          if (item.paramType === 'RESULT' && subItem.paramCode === item.paramCode) {
             subItem.disabled = true
           }
         })
