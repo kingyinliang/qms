@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-07-30 11:24:46
  * @LastEditors: Telliex
- * @LastEditTime: 2021-09-17 09:20:46
+ * @LastEditTime: 2021-09-17 17:18:07
 -->
 <template>
   <mds-card class="test_method" title="检验指标标准" :pack-up="false" style="margin-bottom: 0; background: #fff;">
@@ -336,7 +336,7 @@ export default defineComponent({
         return
       }
       proxy.$confirm('是否删除选中检验指标？', '提示', {
-        confirmButtonText: '确定1',
+        confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
       }).then(async () => {
