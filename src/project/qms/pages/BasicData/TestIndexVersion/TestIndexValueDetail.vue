@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-07-30 11:24:46
  * @LastEditors: Telliex
- * @LastEditTime: 2021-09-17 14:46:37
+ * @LastEditTime: 2021-09-17 15:10:34
 -->
 <template>
   <div style="padding-top:10px">
@@ -20,7 +20,7 @@
       <el-table-column type="index" label="序号" width="50" />
       <el-table-column label="标定标准值" min-width="200" show-overflow-tooltip class="">
         <template #default="scope">
-            <el-input v-model="scope.row.indexStandard" size="small" maxlength="10" placeholder="请输入" :disabled="!isRedact" />
+            <el-input v-model="scope.row.indexStandard" size="small" maxlength="10" :placeholder="!isRedact?'':'请输入'" :disabled="!isRedact" />
         </template>
       </el-table-column>
       <el-table-column label="标定上限">
@@ -29,7 +29,7 @@
           show-overflow-tooltip
         >
           <template #default="scope">
-            <el-select v-model="scope.row.upSymbol" size="small" :disabled="!isRedact" clearable>
+            <el-select v-model="scope.row.upSymbol" size="small" :disabled="!isRedact" :placeholder="!isRedact?'':'请选择'" clearable>
               <el-option :label="'<'" :value="'<'" />
               <el-option :label="'<='" :value="'<='" />
             </el-select>
@@ -40,7 +40,7 @@
           show-overflow-tooltip
         >
           <template #default="scope">
-              <el-input v-model="scope.row.indexUp"  maxlength="5" size="small" placeholder="请输入" :disabled="!isRedact||scope.row.upSymbol===''" oninput="value=value.replace(/[^\d.]/g, '').replace(/\.{2,}/g, '.').replace('.', '$#$').replace(/\./g, '').replace('$#$', '.').replace(/^(\-)*(\d+)\.(\d\d).*$/, '$1$2.$3').replace(/^\./g, '')" @change="val=>checkOnlyNumber(val,scope.row,'indexUp')" />
+              <el-input v-model="scope.row.indexUp"  maxlength="5" size="small" :placeholder="!isRedact?'':'请输入'" :disabled="!isRedact||scope.row.upSymbol===''" oninput="value=value.replace(/[^\d.]/g, '').replace(/\.{2,}/g, '.').replace('.', '$#$').replace(/\./g, '').replace('$#$', '.').replace(/^(\-)*(\d+)\.(\d\d).*$/, '$1$2.$3').replace(/^\./g, '')" @change="val=>checkOnlyNumber(val,scope.row,'indexUp')" />
           </template>
         </el-table-column>
       </el-table-column>
@@ -50,7 +50,7 @@
           show-overflow-tooltip
         >
           <template #default="scope">
-            <el-select v-model="scope.row.downSymbol" size="small" :disabled="!isRedact" clearable>
+            <el-select v-model="scope.row.downSymbol" size="small" :disabled="!isRedact" :placeholder="!isRedact?'':'请选择'" clearable>
               <el-option :label="'>'" :value="'>'" />
               <el-option :label="'>='" :value="'>='" />
             </el-select>
@@ -61,13 +61,13 @@
           show-overflow-tooltip
         >
           <template #default="scope">
-            <el-input v-model="scope.row.indexDown"  maxlength="5" size="small" placeholder="请输入" :disabled="!isRedact||scope.row.downSymbol===''" oninput="value=value.replace(/[^\d.]/g, '').replace(/\.{2,}/g, '.').replace('.', '$#$').replace(/\./g, '').replace('$#$', '.').replace(/^(\-)*(\d+)\.(\d\d).*$/, '$1$2.$3').replace(/^\./g, '')" @change="val=>checkOnlyNumber(val,scope.row,'indexDown')" />
+            <el-input v-model="scope.row.indexDown"  maxlength="5" size="small" :placeholder="!isRedact?'':'请输入'" :disabled="!isRedact||scope.row.downSymbol===''" oninput="value=value.replace(/[^\d.]/g, '').replace(/\.{2,}/g, '.').replace('.', '$#$').replace(/\./g, '').replace('$#$', '.').replace(/^(\-)*(\d+)\.(\d\d).*$/, '$1$2.$3').replace(/^\./g, '')" @change="val=>checkOnlyNumber(val,scope.row,'indexDown')" />
           </template>
          </el-table-column>
       </el-table-column>
       <el-table-column label="内控标准值" min-width="200" show-overflow-tooltip>
         <template #default="scope">
-          <el-input v-model="scope.row.indexInnerStandard" maxlength="10" size="small" placeholder="请输入" :disabled="!isRedact" />
+          <el-input v-model="scope.row.indexInnerStandard" maxlength="10" size="small" :placeholder="!isRedact?'':'请输入'" :disabled="!isRedact" />
         </template>
       </el-table-column>
       <el-table-column label="内控上限">
@@ -76,7 +76,7 @@
           show-overflow-tooltip
         >
           <template #default="scope">
-            <el-select v-model="scope.row.innerUpSymbol" size="small" :disabled="!isRedact" clearable>
+            <el-select v-model="scope.row.innerUpSymbol" size="small" :placeholder="!isRedact?'':'请选择'" :disabled="!isRedact" clearable>
                 <el-option :label="'<'" :value="'<'" />
                 <el-option :label="'<='" :value="'<='" />
             </el-select>
@@ -87,7 +87,7 @@
           show-overflow-tooltip
         >
           <template #default="scope">
-            <el-input v-model="scope.row.indexInnerUp"  maxlength="5" size="small" placeholder="请输入" :disabled="!isRedact||scope.row.innerUpSymbol===''" oninput="value=value.replace(/[^\d.]/g, '').replace(/\.{2,}/g, '.').replace('.', '$#$').replace(/\./g, '').replace('$#$', '.').replace(/^(\-)*(\d+)\.(\d\d).*$/, '$1$2.$3').replace(/^\./g, '')" @change="val=>checkOnlyNumber(val,scope.row,'indexInnerUp')"  />
+            <el-input v-model="scope.row.indexInnerUp"  maxlength="5" size="small" :placeholder="!isRedact?'':'请输入'" :disabled="!isRedact||scope.row.innerUpSymbol===''" oninput="value=value.replace(/[^\d.]/g, '').replace(/\.{2,}/g, '.').replace('.', '$#$').replace(/\./g, '').replace('$#$', '.').replace(/^(\-)*(\d+)\.(\d\d).*$/, '$1$2.$3').replace(/^\./g, '')" @change="val=>checkOnlyNumber(val,scope.row,'indexInnerUp')"  />
           </template>
          </el-table-column>
       </el-table-column>
@@ -97,7 +97,7 @@
           show-overflow-tooltip
         >
           <template #default="scope">
-            <el-select v-model="scope.row.innerDownSymbol" size="small" :disabled="!isRedact" clearable>
+            <el-select v-model="scope.row.innerDownSymbol" size="small" :placeholder="!isRedact?'':'请选择'" :disabled="!isRedact" clearable>
                 <el-option :label="'>'" :value="'>'" />
                 <el-option :label="'>='" :value="'>='" />
             </el-select>
@@ -109,14 +109,14 @@
         >
           <template #default="scope">
             <!-- <el-tooltip effect="dark" :disabled="scope.row.indexInnerDown===''" :content="scope.row.indexInnerDown" placement="top-start"> -->
-                <el-input v-model="scope.row.indexInnerDown"  maxlength="5" size="small" placeholder="请输入" :disabled="!isRedact||scope.row.innerDownSymbol===''" oninput="value=value.replace(/[^\d.]/g, '').replace(/\.{2,}/g, '.').replace('.', '$#$').replace(/\./g, '').replace('$#$', '.').replace(/^(\-)*(\d+)\.(\d\d).*$/, '$1$2.$3').replace(/^\./g, '')" @change="val=>checkOnlyNumber(val,scope.row,'indexInnerDown')" />
+                <el-input v-model="scope.row.indexInnerDown"  maxlength="5" size="small" :placeholder="!isRedact?'':'请输入'" :disabled="!isRedact||scope.row.innerDownSymbol===''" oninput="value=value.replace(/[^\d.]/g, '').replace(/\.{2,}/g, '.').replace('.', '$#$').replace(/\./g, '').replace('$#$', '.').replace(/^(\-)*(\d+)\.(\d\d).*$/, '$1$2.$3').replace(/^\./g, '')" @change="val=>checkOnlyNumber(val,scope.row,'indexInnerDown')" />
             <!-- </el-tooltip> -->
           </template>
         </el-table-column>
       </el-table-column>
-      <el-table-column label="执行月份" width="160" prop="standardMonth" show-overflow-tooltip>
+      <el-table-column label="执行月份" width="160"  prop="standardMonth" show-overflow-tooltip>
         <template #default="scope">
-            <el-select v-model="scope.row.standardMonthList" size="small" :disabled="!isRedact" multiple clearable>
+            <el-select v-model="scope.row.standardMonthList" size="small" :disabled="!isRedact" :placeholder="!isRedact?'':'请选择'" multiple clearable>
                 <el-option v-for="item in ['1','2','3','4','5','6','7','8','9','10','11','12']" :key="item" :label="item" :value="item" />
             </el-select>
           </template>
