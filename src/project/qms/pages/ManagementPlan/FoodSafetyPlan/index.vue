@@ -10,16 +10,16 @@
     </template>
     <el-table border ref="multipleTable" :cell-style="{'text-align':'center'}" :data="dataTopicMainData" tooltip-effect="dark" style="width: 100%">
       <el-table-column type="index" label="序号" :index="(index) => index + 1 + (currentPage - 1) * pageSize" width="50" />
-      <el-table-column label="版本号" prop="planVersion" >
+      <el-table-column label="版本号" show-overflow-tooltip prop="planVersion" >
         <template #default="scope">
          <el-button type="text" class="role__btn" @click="btnConfigulationReadOnly(scope.row)">
             <em>{{scope.row.planVersion}}</em>
           </el-button>
         </template>
       </el-table-column>
-      <el-table-column label="执行开始日期" prop="beginDate" />
-      <el-table-column label="操作人员" prop="changer" />
-      <el-table-column label="操作时间" prop="changed" />
+      <el-table-column label="执行开始日期" show-overflow-tooltip prop="beginDate" />
+      <el-table-column label="操作人员" show-overflow-tooltip prop="changer" />
+      <el-table-column label="操作时间" show-overflow-tooltip prop="changed" />
       <el-table-column label="操作" width="180" fixed="right">
         <template #default="scope">
           <el-button type="text" icon="el-icon-edit" class="role__btn" @click="btnEditItemOfTopicMainData(scope.row)" :disabled="scope.row.isDisabled">
@@ -349,7 +349,7 @@ export default defineComponent({
 
 <style lang="scss" scoped>
 .test_method{
-  min-height: 500px;
+  min-height: 550px;
   height: calc(100vh - 117px);
 }
 .topforms {

@@ -237,6 +237,7 @@ export default defineComponent({
 
 <style lang="scss" scoped>
 .test_method{
+  min-height: 550px;
   min-height: calc(100vh - 117px);
 }
 .topforms {

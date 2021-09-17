@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-07-30 11:24:46
  * @LastEditors: Telliex
- * @LastEditTime: 2021-09-08 18:23:46
+ * @LastEditTime: 2021-09-17 14:46:37
 -->
 <template>
   <div style="padding-top:10px">
@@ -19,17 +19,11 @@
     <el-table border ref="multipleTable"  :cell-style="{'text-align':'center'}" :data="topicMainData"  tooltip-effect="dark" style="width: 100%" :header-cell-style="headerMerge" max-height="300">
       <el-table-column type="index" label="序号" width="50" />
       <el-table-column label="标定标准值" min-width="200" show-overflow-tooltip class="">
-        <template #header>
-          <span class="required">标定标准值</span>
-        </template>
         <template #default="scope">
             <el-input v-model="scope.row.indexStandard" size="small" maxlength="10" placeholder="请输入" :disabled="!isRedact" />
         </template>
       </el-table-column>
       <el-table-column label="标定上限">
-        <template #header>
-          <span class="required">标定上限</span>
-        </template>
         <el-table-column
           width="120"
           show-overflow-tooltip
@@ -51,9 +45,6 @@
         </el-table-column>
       </el-table-column>
       <el-table-column label="标定下限">
-        <template #header>
-          <span class="required">标定下限</span>
-        </template>
         <el-table-column
           width="120"
           show-overflow-tooltip
@@ -75,17 +66,11 @@
          </el-table-column>
       </el-table-column>
       <el-table-column label="内控标准值" min-width="200" show-overflow-tooltip>
-        <template #header>
-          <span class="required">内控标准值</span>
-        </template>
         <template #default="scope">
           <el-input v-model="scope.row.indexInnerStandard" maxlength="10" size="small" placeholder="请输入" :disabled="!isRedact" />
         </template>
       </el-table-column>
       <el-table-column label="内控上限">
-        <template #header>
-          <span class="required">内控上限</span>
-        </template>
         <el-table-column
           width="120"
           show-overflow-tooltip
@@ -107,9 +92,6 @@
          </el-table-column>
       </el-table-column>
       <el-table-column label="内控下限">
-        <template #header>
-          <span class="required">内控下限</span>
-        </template>
         <el-table-column
           width="120"
           show-overflow-tooltip
@@ -451,8 +433,24 @@ export default defineComponent({
 
     const ruleSubmit = () => {
       for (const item of state.topicMainData) {
-        if (item.indexStandard === null || item.upSymbol === '' || item.downSymbol === '' || item.indexInnerStandard === null || item.innerUpSymbol === '' || item.innerDownSymbol === '' || item.indexInnerDown === null || item.indexInnerUp === null || item.indexUp === null || item.indexDown === null) {
-          proxy.$warningToast('请完整录入栏位')
+        // if (item.indexStandard === null || item.upSymbol === '' || item.downSymbol === '' || item.indexInnerStandard === null || item.innerUpSymbol === '' || item.innerDownSymbol === '' || item.indexInnerDown === null || item.indexInnerUp === null || item.indexUp === null || item.indexDown === null) {
+        //   proxy.$warningToast('请完整录入栏位')
+        //   return false
+        // }
+        if (item.upSymbol !== '' && item.indexUp === null) {
+          proxy.$warningToast('请填写标定上限栏位')
+          return false
+        }
+        if (item.downSymbol !== '' && item.indexDown === null) {
+          proxy.$warningToast('请填写标定下限栏位')
+          return false
+        }
+        if (item.innerUpSymbol !== '' && item.indexInnerUp === null) {
+          proxy.$warningToast('请填写内控上限栏位')
+          return false
+        }
+        if (item.innerDownSymbol !== '' && item.indexInnerDown === null) {
+          proxy.$warningToast('请填写内控下限栏位')
           return false
         }
       }
@@ -533,6 +531,7 @@ export default defineComponent({
 
 <style lang="scss" scoped>
 .test_method{
+  min-height: 550px;
   height: calc(100vh - 117px);
 }
 
