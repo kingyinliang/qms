@@ -107,8 +107,16 @@
                   @hide="popperHide"
                 >
                   <template #reference>
+
                     <div class="el-input el-input--suffix">
+                      <el-tooltip
+                      effect="dark"
+                      :content="parameterTreeSelectedString"
+                      :disabled="parameterTreeSelectedString===''"
+                      placement="top"
+                    >
                       <input class="el-input__inner" type="botton" readonly="" autocomplete="off" placeholder="请选择" v-model="parameterTreeSelectedString"  >
+                      </el-tooltip>
                       <span class="el-input__suffix">
                         <span class="el-input__suffix-inner">
                           <i v-if="!visible" class="el-select__caret el-input__icon el-icon-arrow-up"></i>
@@ -116,6 +124,7 @@
                         </span>
                       </span>
                     </div>
+
                   </template>
                   <div class="selfStyleFormItem-content">
                     <div class="filter-input" style="margin-bottom:5px;">
@@ -205,6 +214,8 @@ interface ParameterTreeData {
     inspectMaterialCode: string;
     inspectMaterialName: string;
     inspectTypeName: string;
+    location: string
+    isEndNode: boolean
 }
 
 interface InspectTypeform{
@@ -395,8 +406,6 @@ export default defineComponent({
       INSPECT_INDEX_METHOD_QUERY_API({
       }).then((res) => {
         state.textParameterGroupSearch = ''
-        console.log('res.data.data')
-        console.log(res.data.data)
         state.treeData = treeDataTranslater(res.data.data) // 转换结构
 
         console.log('指标检验方法明细 treeData')
@@ -530,6 +539,7 @@ export default defineComponent({
       state.isDialogVisibleForItemControl = false
     }
 
+    // TODO
     // [BTN:确定][参数明细] 新增+编辑 function dialog
     const btnAddItemFloatConfirm = () => {
       if (state.addParameterGroupform.parameterGroupName === '') {
@@ -550,12 +560,20 @@ export default defineComponent({
       }
 
       if (!state.addParameterGroupform.id) { // 新增
+        const tempParameterTreeCheckNodes:ParameterTreeData[] = []
+        state.parameterTreeCheckNodes.forEach(item => {
+          if (item.isEndNode) {
+            item.inspectTypeName = item.location
+            tempParameterTreeCheckNodes.push(item)
+          }
+        })
+
         INSPECT_INDEX_PARAMETER_GROUP_INSERT_API({
           inspectIndexMethodId: state.globalMainObj.id,
           inspectMethodCode: state.globalMainObj.inspectMethodCode,
           parameterGroupCode: state.addParameterGroupform.parameterGroupCode,
           parameterGroupName: state.addParameterGroupform.parameterGroupName,
-          inspectMaterialNames: state.parameterTreeCheckNodes,
+          inspectMaterialNames: tempParameterTreeCheckNodes,
           parameterDetails: tempStr
         }).then(() => {
           proxy.$successToast('操作成功')
@@ -564,13 +582,20 @@ export default defineComponent({
           getMaterialDetail('', { id: state.globalMainObj.id, _level: state.globalMainObj._level }, state.textParameterGroupSearch)
         })
       } else { // 编辑
+        const tempParameterTreeCheckNodes:ParameterTreeData[] = []
+        state.parameterTreeCheckNodes.forEach(item => {
+          if (item.isEndNode) {
+            item.inspectTypeName = item.location
+            tempParameterTreeCheckNodes.push(item)
+          }
+        })
         INSPECT_INDEX_PARAMETER_GROUP_EDIT_API({ // 编辑
           id: state.addParameterGroupform.id,
           inspectMethodCode: state.globalMainObj.inspectMethodCode,
           inspectIndexMethodId: state.globalMainObj.id,
           parameterGroupCode: state.addParameterGroupform.parameterGroupCode,
           parameterGroupName: state.addParameterGroupform.parameterGroupName,
-          inspectMaterialNames: state.parameterTreeCheckNodes,
+          inspectMaterialNames: tempParameterTreeCheckNodes,
           parameterDetails: tempStr
         }).then(() => {
           proxy.$successToast('操作成功')
@@ -604,6 +629,7 @@ export default defineComponent({
       parameterTreeRef.value.filter(val)
     })
 
+    // TODO
     // [参数明细] 关联项 tree-data 处理
     const parameterTreeDataTranslater = (data: any[], id: string, pid: string) => {
       const res: any[] = []
@@ -612,10 +638,15 @@ export default defineComponent({
         data[i].children = []
         data[i].inspectMaterialAlls.forEach((item:ParameterTreeData) => {
           // data[i].children.push({ inspectTypeName: item })
-          data[i].children.push(item)
+          data[i].children.push({
+            ...item,
+            location: '',
+            isEndNode: true
+          })
         })
         data[i].inspectMaterialCode = data[i].inspectTypeCode
         data[i].inspectMaterialName = data[i].inspectTypeName
+        data[i].location = ''
         temp[data[i][id]] = data[i]
       }
       for (let k = 0; k < data.length; k++) {
@@ -626,7 +657,19 @@ export default defineComponent({
           if (!temp[data[k][pid]]._level) {
             temp[data[k][pid]]._level = 1
           }
+          if (temp[data[k][pid]]._level === 1) {
+            temp[data[k][pid]].location = temp[data[k][pid]].inspectTypeName
+          }
+          data[k].location = temp[data[k][pid]].location + '-' + data[k].inspectTypeName
           data[k]._level = temp[data[k][pid]]._level + 1
+
+          if (data[k].inspectMaterialAlls.length !== 0) {
+            data[k].inspectMaterialAlls.forEach((item:ParameterTreeData, index:number) => {
+              item.location = data[k].location
+              data[k].children[index].location = data[k].location
+            })
+          }
+
           temp[data[k][pid]].children.push(data[k])
         } else {
           res.push(data[k])
@@ -636,7 +679,9 @@ export default defineComponent({
     }
 
     const parameterTreeNodeClick = () => {
-      state.parameterTreeCheckNodes = parameterTreeRef.value.getCheckedNodes(true)
+      state.parameterTreeCheckNodes = parameterTreeRef.value.getCheckedNodes(false)
+      console.log('state.parameterTreeCheckNodes')
+      console.log(state.parameterTreeCheckNodes)
       state.parameterTreeSslected = state.parameterTreeCheckNodes.map((it: any) => it.id)
     }
 
@@ -712,7 +757,11 @@ export default defineComponent({
       // if (state.parameterTreeData.length === 0) {
       INSPECT_INDEX_PARAMETER_RELATIVE_ITEM_API(
       ).then((res) => {
+        console.log('弹窗 res.data.data')
+        console.log(res.data.data)
         state.parameterTreeData = parameterTreeDataTranslater(JSON.parse(JSON.stringify(res.data.data)), 'id', 'parentId')
+        console.log('state.parameterTreeData')
+        console.log(state.parameterTreeData)
       })
       // }
     }
@@ -723,10 +772,15 @@ export default defineComponent({
       return data.inspectTypeName.indexOf(value) !== -1
     }
 
-    // [参数明细][关联项] 弹出
+    // TODO
+    // [参数明细][关联项] 下拉弹窗缩回消失
     const popperHide = () => {
       if (state.parameterTreeCheckNodes.length !== 0) {
-        state.parameterTreeSelectedString = state.parameterTreeCheckNodes.map((it: any) => it.inspectMaterialName).join(',')
+        console.log('final')
+        console.log(state.parameterTreeCheckNodes)
+        const temp:string[] = [...new Set(state.parameterTreeCheckNodes.map((it: any) => it.location))]
+
+        state.parameterTreeSelectedString = [...new Set(temp)].join(',')
       } else {
         state.parameterTreeSelectedString = ''
       }
