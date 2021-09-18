@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-07-30 11:24:46
  * @LastEditors: Telliex
- * @LastEditTime: 2021-09-17 09:59:26
+ * @LastEditTime: 2021-09-18 17:32:04
 -->
 <template>
   <mds-card class="test_method" title="版本明细" :pack-up="false" style="margin-bottom: 0; background: #fff;">
@@ -279,20 +279,23 @@ export default defineComponent({
       })
       state.topicMainData = res.data.data.records
       state.topicMainData.forEach(item => {
-        const temp:string[] = item.indexVersionMethod.split(',')
         item.indexVersionMethodRemoveRouteList = []
         item.indexVersionMethodList = []
-        temp.forEach(subItem => {
-          item.indexVersionMethodRemoveRouteList.push({
-            name: subItem.substring(subItem.lastIndexOf('/') + 1, subItem.length),
-            url: ''
+        item.indexVersionMethodRemoveRoute = ''
+        if (item.indexVersionMethod) {
+          const temp:string[] = item.indexVersionMethod.split(',')
+          temp.forEach(subItem => {
+            item.indexVersionMethodRemoveRouteList.push({
+              name: subItem.substring(subItem.lastIndexOf('/') + 1, subItem.length),
+              url: ''
+            })
+            item.indexVersionMethodList.push({
+              name: subItem,
+              url: ''
+            })
           })
-          item.indexVersionMethodList.push({
-            name: subItem,
-            url: ''
-          })
-        })
-        item.indexVersionMethodRemoveRoute = temp.map(subItem => subItem.substring(subItem.lastIndexOf('/') + 1, subItem.length)).join(',')
+          item.indexVersionMethodRemoveRoute = temp.map(subItem => subItem.substring(subItem.lastIndexOf('/') + 1, subItem.length)).join(',')
+        }
       })
       console.log('获取指标版本管理数据')
       console.log(state.topicMainData)
