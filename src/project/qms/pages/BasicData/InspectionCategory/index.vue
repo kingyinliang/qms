@@ -55,7 +55,7 @@
               </el-form-item>
             </el-col>
             <el-col :span="12">
-              <el-form-item label="取样单位：">
+              <el-form-item label="取样部门：">
                 <tree-dialog
                   ref="detailCooperateRef"
                   v-model="detailInfo.cooperate"
@@ -136,7 +136,7 @@
             :tree-props="{ label: 'deptName', children: 'children' }"
           />
         </el-form-item>
-        <el-form-item label="取样单位：" :label-width="formLabelWidth">
+        <el-form-item label="取样部门：" :label-width="formLabelWidth">
           <tree-dialog
             ref="cooperateRef"
             v-model="addLevelInfo.cooperate"
@@ -201,7 +201,7 @@ interface AddLevelInfo {
   manualFlag?: string; // 手动执行
   relation?: any[]; // 关联组织列表;
   sample?: any[]; // 配合取样;
-  cooperate?: any[]; // 取样单位
+  cooperate?: any[]; // 取样部门
 }
 interface TreeData {
   id: string; // 主键
