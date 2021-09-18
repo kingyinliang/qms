@@ -2,13 +2,13 @@
   <mds-card class="test_method" title="计划版本管理" :pack-up="false" style="margin-bottom: 0; background: #fff; over-flow:scroll">
     <template #titleBtn>
       <div style="display: flex; justify-content: flex-end;">
-        <el-input size="small" style="margin-bottom:10px; width:200px; height:35px;margin-right:10px" clearable  v-model="plantList.textSearch" placeholder="版本号" @keyup.enter="btnGetTopicMainData" />
+        <el-input size="small" style="margin-bottom:10px; width:200px; height:35px;margin-right:10px" clearable  v-model="plantList.textSearch" placeholder="版本号" @keyup.enter="btnGetTopicMainData('init')" />
         <div>
-          <el-button icon="el-icon-search" size="small" class="topic-button" @click="btnGetTopicMainData">查询</el-button>
+          <el-button icon="el-icon-search" size="small" class="topic-button" @click="btnGetTopicMainData('init')">查询</el-button>
           <el-button icon="el-icon-plus" type="primary" class="topic-button" size="small" @click="btnAddItemOfTopicMainData">新增</el-button>        </div>
       </div>
     </template>
-    <el-table border ref="multipleTable" :cell-style="{'text-align':'center'}" :data="dataTopicMainData" tooltip-effect="dark" style="width: 100%">
+    <el-table border ref="multipleTable" :cell-style="{'text-align':'center'}" :data="dataTopicMainData" tooltip-effect="dark" style="width: 100%" max-height="500">
       <el-table-column type="index" label="序号" :index="(index) => index + 1 + (currentPage - 1) * pageSize" width="50" />
       <el-table-column label="版本号" show-overflow-tooltip prop="planVersion" >
         <template #default="scope">
@@ -58,7 +58,7 @@
             type="date"
             format="YYYY-MM-DD"
             value-format="YYYY-MM-DD"
-            placeholder="请选选择日期"
+            placeholder="请选择"
             :disabled-date="pickerOptions"
             style="width:100%"
             >
@@ -182,7 +182,11 @@ export default defineComponent({
 
     /**  == 函数 ==  **/
     // 检验计划列表数据
-    const btnGetTopicMainData = async () => {
+    const btnGetTopicMainData = async (type = '') => {
+      if (type === 'init') {
+        state.currentPage = 1
+        state.pageSize = 10
+      }
       const res = await MANAGEMENT_INSPECTION_PLAN_QUERY_API({
         current: state.currentPage,
         planVersion: state.plantList.textSearch,
@@ -268,6 +272,15 @@ export default defineComponent({
     }
     // [弹窗][BTN:确定]
     const btnAddItemToConfirm = () => {
+      if (!state.addAndEditItemForm.planVersion) {
+        proxy.$errorToast('版本号必填字段未填写，请填写完整')
+        return
+      }
+      if (!state.addAndEditItemForm.beginDate) {
+        proxy.$errorToast('执行开始日必填字段未填写，请填写完整')
+        return
+      }
+
       refAddAndEditItemDialog.value.validate(async (valid: boolean) => {
         if (valid) {
           if (state.addAndEditItemForm.id) {

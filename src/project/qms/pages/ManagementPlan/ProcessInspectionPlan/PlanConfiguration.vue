@@ -364,7 +364,7 @@ interface State {
     topicMainData: TopicMainData[] // 右边 table
     treeData: TreeData[]
     materialTreeData: MaterialTreeData[]
-    globleItem: TopicMainDataItem
+    globleItem: any // TopicMainDataItem
     isShowSearchBar: boolean
     inspectTypeIds: string[]
     initFocusNode: string
@@ -531,6 +531,7 @@ export default defineComponent({
           id: '',
           inspectIndexMaterialIds: '',
           inspectMaterialCodes: '',
+          // inspectMaterialCodes: state.currentFocusTargetObj.inspectMaterialAlls.length ? '' : state.currentFocusTargetObj.inspectMaterialCode,
           planVersionId: state.currentVersion,
           projectLocation: state.currentFocusTargetObj.projectLocation, // 1项目位置
           indexCode: row.indexCode, // 指标编码
@@ -556,7 +557,8 @@ export default defineComponent({
             deptName: ''
           },
           inspectList: [],
-          inspectMaterialAlls: state.currentFocusTargetObj.inspectMaterialAlls
+          // inspectMaterialAlls: state.currentFocusTargetObj.inspectMaterialAlls
+          inspectMaterialAlls: state.currentFocusTargetObj.inspectMaterialAlls.length ? state.currentFocusTargetObj.inspectMaterialAlls : [state.currentFocusTargetObj]
         }
       } else {
         console.log('编辑')
@@ -586,7 +588,8 @@ export default defineComponent({
           coInspectList: setOrGetData([row.coInspect], 'set'),
           inspect: row.inspect,
           inspectList: setOrGetData([row.inspect], 'set'),
-          inspectMaterialAlls: state.currentFocusTargetObj.inspectMaterialAlls
+          // inspectMaterialAlls: state.currentFocusTargetObj.inspectMaterialAlls
+          inspectMaterialAlls: state.currentFocusTargetObj.inspectMaterialAlls.length ? state.currentFocusTargetObj.inspectMaterialAlls : [state.currentFocusTargetObj]
         }
         // refInspect.value.setSelectValue([row.inspect])
         // refCoInspect.value.setSelectValue([row.coInspect])
@@ -658,7 +661,7 @@ export default defineComponent({
       MANAGEMENT_INSPECTION_PLAN_CONFIGURATION_QUERY_API({
         indexCodeOrName: searchString,
         planVersionId: state.currentVersion,
-        inspectMaterialIds: state.currentFocusTargetObj ? state.currentFocusTargetObj.inspectMaterialAlls.map(item => item.id) : [],
+        inspectMaterialIds: state.currentFocusTargetObj.inspectMaterialAlls.length !== 0 ? state.currentFocusTargetObj.inspectMaterialAlls.map(item => item.id) : [currentCategoryId],
         current: currentPage,
         size: pageSize
       }).then((res) => {
@@ -879,6 +882,25 @@ export default defineComponent({
     // TODO
     // [BTN:确认][float]
     const btnItemFloatConfirm = async () => {
+      if (state.globleItem.indexCode === '') {
+        proxy.$errorToast('指标编码必填字段未填写，请填写完整')
+        return
+      }
+
+      if (state.globleItem.inspectList.length === 0) {
+        proxy.$errorToast('检验单位必填字段未填写，请填写完整')
+        return
+      }
+
+      // if (state.globleItem.cooperate === '') {
+      //   proxy.$errorToast('取样单位必填字段未填写，请填写完整')
+      //   return
+      // }
+
+      if (state.globleItem.frequencyName === '') {
+        proxy.$errorToast('检验频次必填字段未填写，请填写完整')
+        return
+      }
       refGlobleItem.value.validate(async (valid: boolean) => {
         if (valid) {
           console.log('state.globleItem')
@@ -904,17 +926,17 @@ export default defineComponent({
             })
           } else { // 编辑
             const tempCoInspectObj = refCoInspect.value.getCheckedNodes()
-            // state.globleItem.coInspect = {
-            //   deptId: tempCoInspectObj[0].id,
-            //   deptName: tempCoInspectObj[0].deptName
-            // }
-            state.globleItem.coInspect = tempCoInspectObj[0]
+            state.globleItem.coInspect = {
+              deptId: tempCoInspectObj[0].id,
+              deptName: tempCoInspectObj[0].deptName
+            }
+            // state.globleItem.coInspect = tempCoInspectObj[0]
             const tempinspectObj = refInspect.value.getCheckedNodes()
-            // state.globleItem.inspect = {
-            //   deptId: tempinspectObj[0].id,
-            //   deptName: tempinspectObj[0].deptName
-            // }
-            state.globleItem.inspect = tempinspectObj[0]
+            state.globleItem.inspect = {
+              deptId: tempinspectObj[0].id,
+              deptName: tempinspectObj[0].deptName
+            }
+            // state.globleItem.inspect = tempinspectObj[0]
             await MANAGEMENT_INSPECTION_PLAN_CONFIGURATION_PLAN_UPDATE_API({
               ...state.globleItem
             })
@@ -925,25 +947,6 @@ export default defineComponent({
           btnItemFloatClear()
         }
       })
-      // if (state.globleItem.indexCode === '') {
-      //   proxy.$errorToast('请选择指标编码')
-      //   return
-      // }
-
-      // if (state.globleItem.inspectList.length === 0) {
-      //   proxy.$errorToast('请选择检验单位')
-      //   return
-      // }
-
-      // if (state.globleItem.cooperate === '') {
-      //   proxy.$errorToast('请选择取样单位单位')
-      //   return
-      // }
-
-      // if (state.globleItem.frequencyName === '') {
-      //   proxy.$errorToast('请选择检验频次')
-      //   return
-      // }
     }
 
     // [EVENT:change] 检验频次
