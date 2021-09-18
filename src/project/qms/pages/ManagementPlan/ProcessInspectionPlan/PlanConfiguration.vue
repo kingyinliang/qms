@@ -236,6 +236,7 @@ interface TreeData {
   canClick: boolean
   projectLocation: string
   isFinalNode: boolean
+  markParentId: string
 }
 
 interface CoInspect {
@@ -465,8 +466,8 @@ export default defineComponent({
         canGenerate: false,
         canClick: true,
         projectLocation: '',
-        isFinalNode: false
-
+        isFinalNode: false,
+        markParentId: ''
       },
       frequencyIdOptions: [],
       orgTreeDataOptions: []
@@ -843,9 +844,17 @@ export default defineComponent({
       })
 
       // 获取取样单位下拉
-      await INSPECT_TYPE_DETAIL_API({ id: state.currentFocusTargetObj.id }).then((res) => {
+      // 622735010883416064state.currentFocusTargetObj.id
+      console.log(state.currentFocusTargetObj)
+      let tempId = state.currentFocusTargetObj.id
+      if (state.currentFocusTargetObj.isFinalNode) {
+        tempId = state.currentFocusTargetObj.markParentId
+      }
+      await INSPECT_TYPE_DETAIL_API({ id: tempId }).then((res) => {
         console.log('取样单位下拉')
         console.log(res.data.data)
+        state.globleItem.cooperate = res.data.data.cooperate.map((item:any) => item.deptName).join(',')
+        state.globleItem.sample = res.data.data.sample.map((item:any) => item.deptName).join(',')
       })
 
       // 检验类信息查询
@@ -876,17 +885,17 @@ export default defineComponent({
           console.log(JSON.parse(JSON.stringify(state.globleItem)))
           if (state.globleItem.title === '计划明细-新增') { // 新增
             const tempCoInspectObj = refCoInspect.value.getCheckedNodes()
-            console.log(tempCoInspectObj)
             state.globleItem.coInspect = {
               deptId: tempCoInspectObj[0].id,
               deptName: tempCoInspectObj[0].deptName
             }
+            // state.globleItem.coInspect = tempCoInspectObj[0]
             const tempinspectObj = refInspect.value.getCheckedNodes()
-            console.log(tempinspectObj)
             state.globleItem.inspect = {
               deptId: tempinspectObj[0].id,
               deptName: tempinspectObj[0].deptName
             }
+            // state.globleItem.inspect = tempinspectObj[0]
 
             console.log('计划明细-新增')
             console.log(state.globleItem)
@@ -894,6 +903,18 @@ export default defineComponent({
               ...state.globleItem
             })
           } else { // 编辑
+            const tempCoInspectObj = refCoInspect.value.getCheckedNodes()
+            // state.globleItem.coInspect = {
+            //   deptId: tempCoInspectObj[0].id,
+            //   deptName: tempCoInspectObj[0].deptName
+            // }
+            state.globleItem.coInspect = tempCoInspectObj[0]
+            const tempinspectObj = refInspect.value.getCheckedNodes()
+            // state.globleItem.inspect = {
+            //   deptId: tempinspectObj[0].id,
+            //   deptName: tempinspectObj[0].deptName
+            // }
+            state.globleItem.inspect = tempinspectObj[0]
             await MANAGEMENT_INSPECTION_PLAN_CONFIGURATION_PLAN_UPDATE_API({
               ...state.globleItem
             })
