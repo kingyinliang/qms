@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-07-30 11:24:46
  * @LastEditors: Telliex
- * @LastEditTime: 2021-09-17 16:15:21
+ * @LastEditTime: 2021-09-18 15:35:07
 -->
 <template>
   <mds-card class="test_method" :title="title" :pack-up="false" style="margin-bottom: 0; background: #fff;">
@@ -239,6 +239,7 @@ interface RelatedeFormulaData{
   id: string
   inspectParameterId: string
   value: string
+  indexNum: number | null
 }
 interface RelatedeFormulaDataNoId{
   insertList?: RelatedeFormulaData[]
@@ -835,7 +836,11 @@ export default defineComponent({
       }).then((res) => {
         console.log('关联公式')
         console.log(res.data.data)
+
         state.relatedeFormulaData = res.data.data
+        state.relatedeFormulaData.forEach((item, index) => {
+          item.indexNum = index
+        })
       })
     }
 
@@ -845,7 +850,8 @@ export default defineComponent({
         associate: null,
         id: '',
         inspectParameterId: state.inspectParameterIdOfRelatedParameter,
-        value: ''
+        value: '',
+        indexNum: state.relatedeFormulaData.length
       })
     }
 
@@ -856,6 +862,11 @@ export default defineComponent({
 
     // [BTN:批次删除][关联公式]
     const deleteItemOfrelatedeFormula = () => {
+      console.log('state.selectedListOfRelatedeFormulaData')
+      console.log(state.selectedListOfRelatedeFormulaData)
+      console.log('state.relatedeFormulaData')
+      console.log(state.relatedeFormulaData)
+
       if (state.selectedListOfRelatedeFormulaData.length === 0) {
         return
       }
@@ -865,17 +876,19 @@ export default defineComponent({
         type: 'warning'
       }).then(async () => {
         const tempDeleteList: string[] = []
-        state.selectedListOfRelatedeFormulaData.forEach((item, index) => {
+        state.selectedListOfRelatedeFormulaData.forEach((item) => {
           if (item.id !== '') {
             tempDeleteList.push(item.id)
           } else {
-            state.selectedListOfRelatedeFormulaData.slice(index)
+            state.relatedeFormulaData.splice(item.indexNum as number, 1)
           }
         })
-        const res = await INSPECT_INDEX_RELATED_PARAMETER_DELETE_API(tempDeleteList)
-        if (res.data.code === 200) {
-          proxy.$successToast('操作成功')
-          await getRelatedParameter(state.inspectParameterIdOfRelatedParameter)
+        if (tempDeleteList.length) {
+          const res = await INSPECT_INDEX_RELATED_PARAMETER_DELETE_API(tempDeleteList)
+          if (res.data.code === 200) {
+            proxy.$successToast('操作成功')
+            await getRelatedParameter(state.inspectParameterIdOfRelatedParameter)
+          }
         }
       })
     }
