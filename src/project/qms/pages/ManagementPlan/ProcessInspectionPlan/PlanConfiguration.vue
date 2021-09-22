@@ -128,7 +128,7 @@
           />
       </el-form-item>
 
-      <el-form-item label="配合检验：" prop="cooperate" :label-width="cssForformLabelWidth">
+      <el-form-item label="配合检验：" prop="coInspectList" :label-width="cssForformLabelWidth">
           <tree-dialog
             ref="refCoInspect"
             v-model="formGlobleItem.coInspectList"
@@ -562,8 +562,8 @@ export default defineComponent({
         }
       } else {
         console.log('编辑')
-        console.log(row.coInspect)
-        console.log(row.inspect)
+        console.log(row)
+
         state.formGlobleItem = {
           title: '计划明细-编辑',
           id: row.id,
@@ -585,9 +585,9 @@ export default defineComponent({
           mergeFlag: row.mergeFlag, // 合并属性 // v
           loopFlag: row.loopFlag, // 轮循否
           coInspect: row.coInspect,
-          coInspectList: setOrGetData([row.coInspect], 'set'),
+          coInspectList: row.coInspect ? setOrGetData([row.coInspect], 'set') : [],
           inspect: row.inspect,
-          inspectList: setOrGetData([row.inspect], 'set'),
+          inspectList: row.inspect ? setOrGetData([row.inspect], 'set') : [],
           // inspectMaterialAlls: state.currentFocusTargetObj.inspectMaterialAlls
           inspectMaterialAlls: state.currentFocusTargetObj.inspectMaterialAlls.length ? state.currentFocusTargetObj.inspectMaterialAlls : [state.currentFocusTargetObj]
         }
