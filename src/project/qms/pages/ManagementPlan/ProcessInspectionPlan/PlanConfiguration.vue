@@ -102,7 +102,7 @@
       </el-form-item>
       <el-form-item label="指标编码：" :label-width="cssForformLabelWidth" prop="indexCode">
         <el-select v-model="formGlobleItem.indexCode" placeholder="请选择" style="width:100%" filterable @change="handleSelectInspectMaterialChange" clearable>
-          <el-option v-for="(opt, optIndex) in indexCodeOptions" :key="optIndex" :label="opt.indexCode" :value="opt.indexCode" />
+          <el-option v-for="(opt, optIndex) in indexCodeOptions" :key="optIndex" :label="opt.indexName+' '+opt.indexUnit+' '+opt.indexNameUnitMethod" :value="opt.indexCode" />
         </el-select>
       </el-form-item>
       <el-form-item label="指标名称：" prop="indexName" :label-width="cssForformLabelWidth">
@@ -200,7 +200,7 @@ import {
   MANAGEMENT_INSPECTION_PLAN_CONFIGURATION_PLAN_DELETE_API,
   MANAGEMENT_INSPECTION_PLAN_CONFIGURATION_PLAN_GENERATE_API,
   INSPECT_TYPE_DETAIL_API,
-  MANAGEMENT_INSPECTION_PLAN_CONFIGURATION_PLAN_INDEX_RELATION_TYPE_QUERY_API, // 检验计划配置-检验类信息查询
+  // MANAGEMENT_INSPECTION_PLAN_CONFIGURATION_PLAN_INDEX_RELATION_TYPE_QUERY_API, // 检验计划配置-检验类信息查询
   ORG_TREE_API
 } from '@/api/api'
 import layoutTs from '@/components/layout/layoutTs'
@@ -585,6 +585,7 @@ export default defineComponent({
           mergeFlag: row.mergeFlag, // 合并属性 // v
           loopFlag: row.loopFlag, // 轮循否
           coInspect: row.coInspect,
+          inspectMaterialId: row.inspectMaterialId,
           coInspectList: row.coInspect ? setOrGetData([row.coInspect], 'set') : [],
           inspect: row.inspect,
           inspectList: row.inspect ? setOrGetData([row.inspect], 'set') : [],
@@ -897,20 +898,20 @@ export default defineComponent({
         console.log(res.data.data)
         state.formGlobleItem.cooperate = res.data.data.cooperate.map((item:any) => item.deptName).join(',')
         state.formGlobleItem.sample = res.data.data.sample.map((item:any) => item.deptName).join(',')
+        state.formGlobleItem.sampleAmount = res.data.data.sampleAmount
       })
 
       // 检验类信息查询
-      await MANAGEMENT_INSPECTION_PLAN_CONFIGURATION_PLAN_INDEX_RELATION_TYPE_QUERY_API({
-        inspectTypeId: state.currentFocusTargetObj.id
-      }).then((res) => {
-        console.log('检验类信息 data')
-        console.log(res.data.data)
-        // state.formGlobleItem.cooperate = res.data.data.cooperate ? res.data.data.cooperate : ''
-        // state.formGlobleItem.sample = res.data.data.sample ? res.data.data.sample : ''
-        state.formGlobleItem.inspect = res.data.data.inspect !== null ? res.data.data.inspect : { deptId: '', deptName: '' }
-        state.formGlobleItem.coInspect = res.data.data.coInspect !== null ? res.data.data.coInspect : { deptId: '', deptName: '' }
-        state.formGlobleItem.sampleAmount = res.data.data.sampleAmount
-      })
+      // await MANAGEMENT_INSPECTION_PLAN_CONFIGURATION_PLAN_INDEX_RELATION_TYPE_QUERY_API({
+      //   inspectTypeId: state.currentFocusTargetObj.id
+      // }).then((res) => {
+      //   console.log('检验类信息 data')
+      //   console.log(res.data.data)
+
+      //   state.formGlobleItem.inspect = res.data.data.inspect !== null ? res.data.data.inspect : { deptId: '', deptName: '' }
+      //   state.formGlobleItem.coInspect = res.data.data.coInspect !== null ? res.data.data.coInspect : { deptId: '', deptName: '' }
+      //   state.formGlobleItem.sampleAmount = res.data.data.sampleAmount
+      // })
     }
 
     // [BTN:取消][float]
@@ -947,13 +948,17 @@ export default defineComponent({
           console.log('state.formGlobleItem')
           console.log(JSON.parse(JSON.stringify(state.formGlobleItem)))
           if (state.formGlobleItem.title === '计划明细-新增') { // 新增
-            const tempCoInspectObj = refCoInspect.value.getCheckedNodes()
+            const tempCoInspectObj = await refCoInspect.value.getCheckedNodes()
+            console.log('tempCoInspectObj')
+            console.log(tempCoInspectObj)
             state.formGlobleItem.coInspect = {
               deptId: tempCoInspectObj[0].id,
               deptName: tempCoInspectObj[0].deptName
             }
             // state.formGlobleItem.coInspect = tempCoInspectObj[0]
-            const tempinspectObj = refInspect.value.getCheckedNodes()
+            const tempinspectObj = await refInspect.value.getCheckedNodes()
+            console.log('tempinspectObj')
+            console.log(tempinspectObj)
             state.formGlobleItem.inspect = {
               deptId: tempinspectObj[0].id,
               deptName: tempinspectObj[0].deptName
@@ -966,13 +971,17 @@ export default defineComponent({
               ...state.formGlobleItem
             })
           } else { // 编辑
-            const tempCoInspectObj = refCoInspect.value.getCheckedNodes()
+            const tempCoInspectObj = await refCoInspect.value.getCheckedNodes()
+            console.log('tempCoInspectObj')
+            console.log(tempCoInspectObj)
             state.formGlobleItem.coInspect = {
               deptId: tempCoInspectObj[0].id,
               deptName: tempCoInspectObj[0].deptName
             }
             // state.formGlobleItem.coInspect = tempCoInspectObj[0]
-            const tempinspectObj = refInspect.value.getCheckedNodes()
+            const tempinspectObj = await refInspect.value.getCheckedNodes()
+            console.log('tempinspectObj')
+            console.log(tempinspectObj)
             state.formGlobleItem.inspect = {
               deptId: tempinspectObj[0].id,
               deptName: tempinspectObj[0].deptName
