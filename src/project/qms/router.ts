@@ -1,10 +1,3 @@
-/*
- * @Description:
- * @Anthor: Telliex
- * @Date: 2021-07-16 11:16:04
- * @LastEditors: Telliex
- * @LastEditTime: 2021-07-23 15:05:30
- */
 import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router'
 import { GET_NAV_API } from '@/api/api/index'
 import { fnAddDynamicMenuRoutes, MenuList } from '@/utils/index'
@@ -12,14 +5,14 @@ import store from './store'
 import SSOLogin from '@/utils/SSOLogin'
 
 const globalMenu: Array<MenuList> = [
-  {
-    id: '10000',
-    menuType: 'C',
-    menuIcon: 'factory-luru',
-    menuName: '打印',
-    menuUrl: 'qms/pages/common/print',
-    list: []
-  }
+  // {
+  //   id: '10000',
+  //   menuType: 'C',
+  //   menuIcon: 'factory-luru',
+  //   menuName: '打印',
+  //   menuUrl: 'qms/pages/common/print',
+  //   list: []
+  // }
 ]
 const globalRoutes: Array<RouteRecordRaw> = []
 

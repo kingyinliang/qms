@@ -25,7 +25,7 @@
           <el-button type="text" icon="iconfont factory-luru" class="role__btn" @click="editItem(scope.row)">
             编辑
           </el-button>
-          <el-button type="text" icon="el-icon-delete" class="role__btn" @click="selectDelete(scope.row)">
+          <el-button style="color: #EF4632" type="text" icon="el-icon-delete" class="role__btn" @click="selectDelete(scope.row)">
             删除
           </el-button>
         </template>
