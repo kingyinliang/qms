@@ -525,6 +525,7 @@ export default defineComponent({
       refGlobleItem.value.resetFields()
 
       if (act === 'add') {
+        console.log('444444')
         console.log('新增')
         state.formGlobleItem = {
           title: '计划明细-新增',
@@ -870,7 +871,7 @@ export default defineComponent({
     const getDropDownOptions = async () => {
       // 获取指标编码下拉
       await MANAGEMENT_INSPECTION_PLAN_CONFIGURATION_PLAN_INDEX_MATERIAL_QUERY_API({
-        inspectMaterialAlls: !state.currentFocusTargetObj.isFinalNode ? state.currentFocusTargetObj.inspectMaterialAlls : [state.currentFocusTargetObj],
+        inspectMaterialAlls: !state.currentFocusTargetObj.isFinalNode && state.currentFocusTargetObj.assistFlag !== 'Y' ? state.currentFocusTargetObj.inspectMaterialAlls : [state.currentFocusTargetObj],
         inspectScene: state.currentInspectScene
       }).then((res) => {
         console.log('指标编码下拉')
@@ -952,18 +953,16 @@ export default defineComponent({
             console.log('tempCoInspectObj')
             console.log(tempCoInspectObj)
             state.formGlobleItem.coInspect = {
-              deptId: tempCoInspectObj[0].id,
-              deptName: tempCoInspectObj[0].deptName
+              deptId: tempCoInspectObj.length ? tempCoInspectObj[0].id : '',
+              deptName: tempCoInspectObj.length ? tempCoInspectObj[0].deptName : ''
             }
-            // state.formGlobleItem.coInspect = tempCoInspectObj[0]
             const tempinspectObj = await refInspect.value.getCheckedNodes()
             console.log('tempinspectObj')
             console.log(tempinspectObj)
             state.formGlobleItem.inspect = {
-              deptId: tempinspectObj[0].id,
-              deptName: tempinspectObj[0].deptName
+              deptId: tempinspectObj.length ? tempinspectObj[0].id : '',
+              deptName: tempinspectObj.length ? tempinspectObj[0].deptName : ''
             }
-            // state.formGlobleItem.inspect = tempinspectObj[0]
 
             console.log('计划明细-新增')
             console.log(state.formGlobleItem)
@@ -975,16 +974,16 @@ export default defineComponent({
             console.log('tempCoInspectObj')
             console.log(tempCoInspectObj)
             state.formGlobleItem.coInspect = {
-              deptId: tempCoInspectObj[0].id,
-              deptName: tempCoInspectObj[0].deptName
+              deptId: tempCoInspectObj.length ? tempCoInspectObj[0].id : '',
+              deptName: tempCoInspectObj.length ? tempCoInspectObj[0].deptName : ''
             }
             // state.formGlobleItem.coInspect = tempCoInspectObj[0]
             const tempinspectObj = await refInspect.value.getCheckedNodes()
             console.log('tempinspectObj')
             console.log(tempinspectObj)
             state.formGlobleItem.inspect = {
-              deptId: tempinspectObj[0].id,
-              deptName: tempinspectObj[0].deptName
+              deptId: tempinspectObj.length ? tempinspectObj[0].id : '',
+              deptName: tempinspectObj.length ? tempinspectObj[0].deptName : ''
             }
             // state.formGlobleItem.inspect = tempinspectObj[0]
             await MANAGEMENT_INSPECTION_PLAN_CONFIGURATION_PLAN_UPDATE_API({
