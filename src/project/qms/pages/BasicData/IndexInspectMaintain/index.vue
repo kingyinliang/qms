@@ -216,6 +216,7 @@ interface ParameterTreeData {
     inspectTypeName: string;
     location: string
     isEndNode: boolean
+    assistFlag: string
 }
 
 interface InspectTypeform{
@@ -542,6 +543,9 @@ export default defineComponent({
     // TODO
     // [BTN:确定][参数明细] 新增+编辑 function dialog
     const btnAddItemFloatConfirm = () => {
+      console.log('state.addParameterGroupform')
+      console.log(state.addParameterGroupform)
+
       if (state.addParameterGroupform.parameterGroupName === '') {
         proxy.$errorToast('请录入必填栏位')
         return
@@ -583,8 +587,10 @@ export default defineComponent({
         })
       } else { // 编辑
         const tempParameterTreeCheckNodes:ParameterTreeData[] = []
+        console.log('state.parameterTreeCheckNodes')
+        console.log(state.parameterTreeCheckNodes)
         state.parameterTreeCheckNodes.forEach(item => {
-          if (item.isEndNode) {
+          if (item.isEndNode || item.assistFlag === 'Y') {
             item.inspectTypeName = item.location
             tempParameterTreeCheckNodes.push(item)
           }

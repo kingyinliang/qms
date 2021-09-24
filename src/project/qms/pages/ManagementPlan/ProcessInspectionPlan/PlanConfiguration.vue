@@ -101,6 +101,7 @@
           <el-input v-model="formGlobleItem.projectLocation" class="140px" autocomplete="off" maxlength="10" :disabled="true"></el-input>
       </el-form-item>
       <el-form-item label="指标编码：" :label-width="cssForformLabelWidth" prop="indexCode">
+        <!-- <el-input v-model="formGlobleItem.indexCode" class="140px" autocomplete="off" maxlength="10" readonly></el-input> -->
         <el-select v-model="formGlobleItem.indexCode" placeholder="请选择" style="width:100%" filterable @change="handleSelectInspectMaterialChange" clearable>
           <el-option v-for="(opt, optIndex) in indexCodeOptions" :key="optIndex" :label="opt.indexName+' '+opt.indexUnit+' '+opt.indexNameUnitMethod" :value="opt.indexCode" />
         </el-select>
@@ -373,7 +374,8 @@ interface State {
     currentCategoryId: string
     canEditCurrentPage: string
     indexCodeOptions: IndexCodeOptions[]
-    currentFocusTargetObj:TreeData
+    currentFocusTargetObj:any
+    currentFocusItem: any
     frequencyIdOptions: FrequencyIdOptions[]
     orgTreeDataOptions: any[]
 }
@@ -469,6 +471,7 @@ export default defineComponent({
         isFinalNode: false,
         markParentId: ''
       },
+      currentFocusItem: {},
       frequencyIdOptions: [],
       orgTreeDataOptions: []
     })
@@ -512,27 +515,30 @@ export default defineComponent({
       ]
     }
     // TODO
-    // [BTN:新增&编辑] 新增
+    // [BTN:新增|编辑] 新增
     const btnClickItemAddOrEditForTopicMainData = async (act:string, row:any) => {
-      console.log('点击')
-      console.log(row)
-
+      console.log('点击新增|编辑')
+      if (act === 'add') {
+        state.currentFocusItem = {}
+      } else {
+        state.currentFocusItem = row
+      }
+      console.log('state.currentFocusItem')
+      console.log(state.currentFocusItem)
       console.log('state.currentFocusTargetObj')
       console.log(state.currentFocusTargetObj)
       state.isDialogShow = true
-      await getDropDownOptions()
+      await getDropDownOptions() // 获取下拉
       await nextTick()
       refGlobleItem.value.resetFields()
 
       if (act === 'add') {
-        console.log('444444')
         console.log('新增')
         state.formGlobleItem = {
           title: '计划明细-新增',
           id: '',
           inspectIndexMaterialIds: '',
           inspectMaterialCodes: '',
-          // inspectMaterialCodes: state.currentFocusTargetObj.inspectMaterialAlls.length ? '' : state.currentFocusTargetObj.inspectMaterialCode,
           planVersionId: state.currentVersion,
           projectLocation: state.currentFocusTargetObj.projectLocation, // 1项目位置
           indexCode: row.indexCode, // 指标编码
@@ -558,7 +564,6 @@ export default defineComponent({
             deptName: ''
           },
           inspectList: [],
-          // inspectMaterialAlls: state.currentFocusTargetObj.inspectMaterialAlls
           inspectMaterialAlls: state.currentFocusTargetObj.inspectMaterialAlls.length ? state.currentFocusTargetObj.inspectMaterialAlls : [state.currentFocusTargetObj]
         }
       } else {
@@ -590,15 +595,10 @@ export default defineComponent({
           coInspectList: row.coInspect ? setOrGetData([row.coInspect], 'set') : [],
           inspect: row.inspect,
           inspectList: row.inspect ? setOrGetData([row.inspect], 'set') : [],
-          // inspectMaterialAlls: state.currentFocusTargetObj.inspectMaterialAlls
           inspectMaterialAlls: state.currentFocusTargetObj.inspectMaterialAlls.length ? state.currentFocusTargetObj.inspectMaterialAlls : [state.currentFocusTargetObj]
         }
-        // refInspect.value.setSelectValue([row.inspect])
-        // refCoInspect.value.setSelectValue([row.coInspect])
-        console.log('state.formGlobleItem')
-        console.log(state.formGlobleItem)
       }
-      await rewriteFormData()
+      await rewriteFormData(act) // 获取下拉与改值
     }
 
     const reset = () => {
@@ -664,7 +664,7 @@ export default defineComponent({
       MANAGEMENT_INSPECTION_PLAN_CONFIGURATION_QUERY_API({
         indexCodeOrName: searchString,
         planVersionId: state.currentVersion,
-        inspectMaterialIds: state.currentFocusTargetObj.inspectMaterialAlls.length !== 0 ? state.currentFocusTargetObj.inspectMaterialAlls.map(item => item.id) : [currentCategoryId],
+        inspectMaterialIds: state.currentFocusTargetObj.inspectMaterialAlls.length !== 0 ? state.currentFocusTargetObj.inspectMaterialAlls.map((item:any) => item.id) : [currentCategoryId],
         current: currentPage,
         size: pageSize
       }).then((res) => {
@@ -693,10 +693,10 @@ export default defineComponent({
       }).then((res) => {
         state.textForSearch = ''
         state.isShowSearchBar = true
-        console.log('res.data.data')
+        console.log('原始 API 数据')
         console.log(res.data.data)
         state.treeData = treeDataTranslater(JSON.parse(JSON.stringify(res.data.data)), 'id', 'parentId')
-        console.log('state.treeData')
+        console.log('加工过的 API 数据state.treeData')
         console.log(state.treeData)
         // 一进页面默认跑第一笔
         if (state.currentCategoryId === '') {
@@ -825,12 +825,9 @@ export default defineComponent({
     // [BTN:生成]
     const btnClickGenerateForTopicMainData = async () => {
       // hint: 生产辅助的格式特例
-      console.log('state.currentFocusTargetObj')
-      console.log(state.currentFocusTargetObj)
       let tempInspectMaterialAlls:any[] = []
       let tempInspectTypeId = state.currentFocusTargetObj.id
       if (state.currentFocusTargetObj.assistFlag === 'Y' && state.currentFocusTargetObj._level === 1) { // 生產輔助 非子節點
-        console.log('生產輔助 非子節點')
         state.currentFocusTargetObj.children.forEach((item:any) => {
           tempInspectMaterialAlls.push({
             id: item.id,
@@ -840,7 +837,6 @@ export default defineComponent({
           })
         })
       } else if (state.currentFocusTargetObj.assistFlag === 'Y' && state.currentFocusTargetObj._level === 2) { // 生產輔助 子節點
-        console.log('生產輔助 子節點')
         tempInspectMaterialAlls = [{
           id: state.currentFocusTargetObj.id,
           inspectMaterialCode: state.currentFocusTargetObj.inspectTypeCode,
@@ -848,10 +844,8 @@ export default defineComponent({
           inspectTypeName: `${state.currentFocusTargetObj.inspectTypeName} ${state.currentFocusTargetObj.inspectTypeCode}`
         }]
       } else if (!state.currentFocusTargetObj.isFinalNode) { // 生產輔助外 非子節點
-        console.log('生產輔助外 非子節點')
         tempInspectMaterialAlls = state.currentFocusTargetObj.inspectMaterialAlls
       } else { // 生產輔助外 子節點
-        console.log('生產輔助外 子節點')
         tempInspectMaterialAlls.push(state.currentFocusTargetObj)
         tempInspectTypeId = state.currentFocusTargetObj.markParentId
       }
@@ -866,19 +860,9 @@ export default defineComponent({
       proxy.$successToast('操作成功')
       getPlanDetail(state.currentFocusTargetObj)
     }
-
+    // TODO
     // [ACT:define] 获取指标编码下拉
     const getDropDownOptions = async () => {
-      // 获取指标编码下拉
-      await MANAGEMENT_INSPECTION_PLAN_CONFIGURATION_PLAN_INDEX_MATERIAL_QUERY_API({
-        inspectMaterialAlls: !state.currentFocusTargetObj.isFinalNode && state.currentFocusTargetObj.assistFlag !== 'Y' ? state.currentFocusTargetObj.inspectMaterialAlls : [state.currentFocusTargetObj],
-        inspectScene: state.currentInspectScene
-      }).then((res) => {
-        console.log('指标编码下拉')
-        console.log(res.data.data)
-        state.indexCodeOptions = res.data.data
-      })
-
       // 获取检验频次下拉
       state.frequencyIdOptions = []
       await INSPECT_INSPECT_FREQUENCY_QUERY_DROPDOWN_API().then((res) => {
@@ -888,7 +872,7 @@ export default defineComponent({
       })
     }
 
-    const rewriteFormData = async () => {
+    const rewriteFormData = async (act:string) => {
       // 获取取样单位下拉
       let tempId = state.currentFocusTargetObj.id
       if (state.currentFocusTargetObj.isFinalNode) {
@@ -902,17 +886,34 @@ export default defineComponent({
         state.formGlobleItem.sampleAmount = res.data.data.sampleAmount
       })
 
-      // 检验类信息查询
-      // await MANAGEMENT_INSPECTION_PLAN_CONFIGURATION_PLAN_INDEX_RELATION_TYPE_QUERY_API({
-      //   inspectTypeId: state.currentFocusTargetObj.id
-      // }).then((res) => {
-      //   console.log('检验类信息 data')
-      //   console.log(res.data.data)
+      // 获取指标编码下拉
+      let temp:any[] = []
+      if (act === 'add') {
+        if (!state.currentFocusTargetObj.isFinalNode && state.currentFocusTargetObj.assistFlag !== 'Y') {
+          temp = state.currentFocusTargetObj.inspectMaterialAlls
+        } else {
+          // 生产辅料新增时处理
+          if (state.currentFocusTargetObj.assistFlag === 'Y') {
+            state.currentFocusTargetObj.inspectMaterialCode = state.currentFocusTargetObj.inspectTypeCode
+          }
+          temp = [state.currentFocusTargetObj]
+        }
+      } else {
+        // 生产辅料新增时处理
+        if (!state.currentFocusItem.inspectMaterialCode) {
+          state.currentFocusItem.inspectMaterialCode = state.currentFocusItem.inspectMaterialTypeCode
+        }
+        temp = [state.currentFocusItem]
+      }
 
-      //   state.formGlobleItem.inspect = res.data.data.inspect !== null ? res.data.data.inspect : { deptId: '', deptName: '' }
-      //   state.formGlobleItem.coInspect = res.data.data.coInspect !== null ? res.data.data.coInspect : { deptId: '', deptName: '' }
-      //   state.formGlobleItem.sampleAmount = res.data.data.sampleAmount
-      // })
+      await MANAGEMENT_INSPECTION_PLAN_CONFIGURATION_PLAN_INDEX_MATERIAL_QUERY_API({
+        inspectMaterialAlls: temp,
+        inspectScene: state.currentInspectScene
+      }).then((res) => {
+        console.log('指标编码下拉')
+        console.log(res.data.data)
+        state.indexCodeOptions = res.data.data
+      })
     }
 
     // [BTN:取消][float]
@@ -950,18 +951,18 @@ export default defineComponent({
           console.log(JSON.parse(JSON.stringify(state.formGlobleItem)))
           if (state.formGlobleItem.title === '计划明细-新增') { // 新增
             const tempCoInspectObj = await refCoInspect.value.getCheckedNodes()
-            console.log('tempCoInspectObj')
-            console.log(tempCoInspectObj)
             state.formGlobleItem.coInspect = {
               deptId: tempCoInspectObj.length ? tempCoInspectObj[0].id : '',
               deptName: tempCoInspectObj.length ? tempCoInspectObj[0].deptName : ''
             }
             const tempinspectObj = await refInspect.value.getCheckedNodes()
-            console.log('tempinspectObj')
-            console.log(tempinspectObj)
             state.formGlobleItem.inspect = {
               deptId: tempinspectObj.length ? tempinspectObj[0].id : '',
               deptName: tempinspectObj.length ? tempinspectObj[0].deptName : ''
+            }
+            // 生产辅料新增时处理
+            if (state.formGlobleItem.assistFlag === 'Y' && !state.formGlobleItem.inspectMaterialCode) {
+              state.formGlobleItem.inspectMaterialCode = state.formGlobleItem.inspectTypeCode
             }
 
             console.log('计划明细-新增')
