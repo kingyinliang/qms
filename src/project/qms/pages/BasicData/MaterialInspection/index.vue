@@ -25,13 +25,17 @@
         @keyup.enter="apiMaterialDetail(currentMaterialString,currentMaterialGroupString,materialDetailText,'searchBar')">
       </el-input>
       <el-button icon="el-icon-search" size="small" class="topic-button" @click="apiMaterialDetail(currentMaterialString,currentMaterialGroupString,materialDetailText,'searchBar')">查询</el-button>
+      <el-button icon="el-icon-tickets" size="small" class="topic-button" @click="handleSelectedAsign">分配</el-button>
       </div>
-     <el-table :data="topicMainData"
+     <el-table
+        :data="topicMainData"
         style="width: 100%"
         max-height="500"
         border
         tooltip-effect="dark"
+        @selection-change="handleSelectionChange"
         >
+        <el-table-column type="selection" width="55" />
         <el-table-column type="index" :index="index => index + 1 + (Number(currentPage) - 1) * (Number(pageSize))" label="序号" width="55" fixed align="center" size="small" />
         <el-table-column label="物料编码" prop="inspectMaterialCode" :show-overflow-tooltip="true" min-width="100" />
         <el-table-column label="物料描述" prop="inspectMaterialName" :show-overflow-tooltip="true" min-width="100" />
@@ -111,6 +115,7 @@ interface State {
     globleItemGroup: TopicMainData[]
     globleSearchString: string
     whoAsign: string
+    multipleSelection: TopicMainData[]
 }
 
 export default defineComponent({
@@ -147,7 +152,8 @@ export default defineComponent({
       },
       globleSearchString: '',
       globleItemGroup: [],
-      whoAsign: ''
+      whoAsign: '',
+      multipleSelection: []
     })
     const refFunctionDialog = ref()
     const treeModule = ref()
@@ -178,6 +184,17 @@ export default defineComponent({
       }
     }
 
+    // [BTN:分配] single action to go
+    const handleSelectedAsign = () => {
+      state.whoAsign = 'selected'
+      if (state.topicMainData.length !== 0) {
+        state.isDialogShow = true
+        apiAsignMaterial()
+      } else {
+        proxy.$infoToast('请先选取欲分配物料')
+      }
+    }
+
     const reset = () => {
       if (state.whoAsign === 'single') {
         state.globleItem = {
@@ -195,11 +212,8 @@ export default defineComponent({
     const treeNodeContextMenuHandle = (val:TreeItemData) => {
       getMaterialDetail(val)
       INSPECT_MATERIAL_QUERY_SYS_MATERIAL_API({
-        // inspectMaterialType: '欣和无估价的物料 ZUNB',
         inspectMaterialType: val.inspectGroup,
         inspectGroup: val.inspectMaterialType,
-        // inspectMaterialType: val.inspectMaterialType,
-        // inspectGroup: val.inspectGroup,
         inspectMaterialNameOrCode: ''
       }).then((res) => {
         console.log('state.globleItemGroup')
@@ -310,6 +324,8 @@ export default defineComponent({
         dataTemp.push(state.globleItem)
       } else if (state.whoAsign === 'multi') { // 左边 column 批量分配
         dataTemp = state.globleItemGroup
+      } else { // 勾选分配
+        dataTemp = state.multipleSelection
       }
 
       INSPECT_MATERIAL_DISTRIBUTION_INSPECT_MATERIAL_API({
@@ -340,6 +356,11 @@ export default defineComponent({
         state.currentMaterialString = ''
         getMaterialCatagoryData()
       })
+    }
+    //  [物料明细] 分配勾选
+    const handleSelectionChange = (val:TopicMainData[]) => {
+      state.multipleSelection = [...val]
+      console.log(state.multipleSelection)
     }
 
     const treeDataTranslater = (data: any[], id: string, pid: string): any[] => {
@@ -389,8 +410,10 @@ export default defineComponent({
       inspectCategoryListAsignToGo,
       reset,
       handleMultiAsign,
+      handleSelectedAsign,
       treeModule,
-      treeDataTranslater
+      treeDataTranslater,
+      handleSelectionChange
     }
   }
 })

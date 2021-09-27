@@ -143,7 +143,26 @@ body{
   .el-button{
     .qmsIconfont{
       font-size: 12px;
+      & + span{
+            padding-left: 5px;
+        }
     }
+    .el-icon-delete{
+        color: var(--el-color-mark-delete);
+    }
+    &.delete-btn span{
+        color: var(--el-color-mark-delete);
+    }
+    &.delete-btn span:hover{
+        color: var(--el-color-error);
+    }
+    &.is-disabled.delete-btn span{
+        color: var(--el-button-disabled-font-color);
+    }
+    &.is-disabled .el-icon-delete{
+        color: var(--el-button-disabled-font-color);
+    }
+    
     .iconfont{
       font-size: 12px;
     }

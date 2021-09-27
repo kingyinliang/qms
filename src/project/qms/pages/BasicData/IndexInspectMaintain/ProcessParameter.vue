@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-07-30 11:24:46
  * @LastEditors: Telliex
- * @LastEditTime: 2021-09-18 15:41:33
+ * @LastEditTime: 2021-09-27 09:21:40
 -->
 <template>
   <mds-card class="test_method" :title="title" :pack-up="false" style="margin-bottom: 0; background: #fff;">
@@ -442,6 +442,9 @@ export default defineComponent({
 
     // [ACTION:load] 获取标准值明细数据
     const btnGetMainData = async () => {
+      state.topicMainData = []
+      state.isRedact = true
+
       const res = await INSPECT_INDEX_PROCESS_PARAMETER_QUERY_API({
         inspectParameterGroupId: state.targetId
       })
@@ -487,6 +490,11 @@ export default defineComponent({
       state.topicMainData = res.data.data
 
       state.orgTopicMainData = JSON.parse(JSON.stringify(res.data.data))
+      // [BUG] Code Smell 處理
+      // 让变数控制表单的表现行为，最后触发
+      setTimeout(() => {
+        state.isRedact = false
+      }, 1000)
     }
 
     // [BTN:删除][过程参数] 删除 item
