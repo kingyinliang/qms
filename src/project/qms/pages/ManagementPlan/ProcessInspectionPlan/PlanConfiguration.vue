@@ -32,7 +32,7 @@
         border
         tooltip-effect="dark"
         class="bueatyScroll"
-        style="width: 100%"
+        style="width: 100%;"
         @selection-change="handleSelectionChange">
         <el-table-column type="selection" width="55" />
         <el-table-column type="index" :index="index => index + 1 + (Number(currentPage) - 1) * (Number(pageSize))" label="序号"  width="55" fixed align="center" size="small" />
@@ -103,7 +103,7 @@
       <el-form-item label="指标编码：" :label-width="cssForformLabelWidth" prop="indexCode">
         <!-- <el-input v-model="formGlobleItem.indexCode" class="140px" autocomplete="off" maxlength="10" readonly></el-input> -->
         <el-select v-model="formGlobleItem.indexCode" placeholder="请选择" style="width:100%" filterable @change="handleSelectInspectMaterialChange" clearable>
-          <el-option v-for="(opt, optIndex) in indexCodeOptions" :key="optIndex" :label="opt.indexName+' '+opt.indexUnit+' '+opt.indexNameUnitMethod" :value="opt.indexCode" />
+          <el-option v-for="(opt, optIndex) in indexCodeOptions" :key="optIndex" :label="opt.indexNameUnitMethod" :value="opt.indexCode" />
         </el-select>
       </el-form-item>
       <el-form-item label="指标名称：" prop="indexName" :label-width="cssForformLabelWidth">
@@ -886,7 +886,7 @@ export default defineComponent({
     const rewriteFormData = async (act:string) => {
       // 获取取样单位下拉
       let tempId = state.currentFocusTargetObj.id
-      if (state.currentFocusTargetObj.isFinalNode) {
+      if (state.currentFocusTargetObj.isFinalNode && state.currentFocusTargetObj.assistFlag !== 'Y') {
         tempId = state.currentFocusTargetObj.markParentId
       }
       await INSPECT_TYPE_DETAIL_API({ id: tempId }).then((res) => {
