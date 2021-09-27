@@ -708,7 +708,7 @@ export default defineComponent({
         }
       })
     }
-
+    // TODO
     // [BTN:编辑][BTN:新增][参数明细]
     const handleParameterItem = (row:TopicMainData) => {
       if (row) { // 编辑
@@ -785,12 +785,13 @@ export default defineComponent({
         console.log('final')
         console.log(state.parameterTreeCheckNodes)
         const temp:string[] = [...new Set(state.parameterTreeCheckNodes.map((it: any) => it.location))]
-
+        // const temp:string[] = [...new Set(parameterTreeCheckTranslater(state.parameterTreeCheckNodes, 'id', 'parentId').map((it: any) => it.location))]
         state.parameterTreeSelectedString = [...new Set(temp)].join(',')
       } else {
         state.parameterTreeSelectedString = ''
       }
     }
+
     //  [参数明细] 删除勾选
     const handleSelectionChange = (val:TopicMainData[]) => {
       state.multipleSelection = []
