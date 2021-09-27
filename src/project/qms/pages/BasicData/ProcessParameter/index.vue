@@ -20,6 +20,9 @@
           <span>{{scope.row.paramCode.split('[')[0]}}<sub v-if="scope.row.paramCode.paramSubscript!==''">{{scope.row.paramCode.split('[')[1].replace(']','')}}</sub></span>
         </template>
       </el-table-column>
+      <el-table-column label="参数类型" show-overflow-tooltip prop="paramType" />
+      <el-table-column label="数据类型" show-overflow-tooltip prop="paramStandardType" />
+      <el-table-column label="数据标准" show-overflow-tooltip prop="paramStandard" />
       <el-table-column label="操作" width="80" fixed="right">
         <template #default="scope">
           <el-button type="text" icon="el-icon-edit" class="role__btn" @click="btnEditItemOfTopicMainData(scope.row)">
@@ -43,6 +46,9 @@
 
   <el-dialog v-model="isAddItemDialogShow" :title="dialogTitle" width="30%">
       <el-form ref="refAddAndEditItemDialog" :model="addAndEditItemForm" :rules="dataRule">
+        <!-- <el-form-item label="编码：" prop="paramSubscript" :label-width="cssForformLabelWidth">
+          <el-input v-model="addAndEditItemForm.paramSubscript" maxlength="5" class="inputWidth" placeholder="请输入" autocomplete="off" @change="addAndEditItemForm.paramCode=addAndEditItemForm.paramSubscriptCode+'['+addAndEditItemForm.paramSubscript+']'"></el-input>
+        </el-form-item> -->
         <el-form-item label="参数名称："  prop="paramSubscriptCode" :label-width="cssForformLabelWidth">
           <el-input v-model="addAndEditItemForm.paramSubscriptCode" maxlength="10" class="inputWidth" placeholder="请输入" autocomplete="off" @change="addAndEditItemForm.paramCode=addAndEditItemForm.paramSubscriptCode+'['+addAndEditItemForm.paramSubscript+']'"></el-input>
         </el-form-item>
@@ -53,6 +59,37 @@
            <div class="fake-input-disabled">
             <span>{{addAndEditItemForm.paramCode===''?'':addAndEditItemForm.paramCode.split('[')[0]}}<sub>{{addAndEditItemForm.paramCode===''?'':addAndEditItemForm.paramCode.split('[')[1].replace(']','')}}</sub></span>
           </div>
+        </el-form-item>
+        <el-form-item label="参数类型：" prop="paramType"  :label-width="cssForformLabelWidth">
+          <el-select  v-model="addAndEditItemForm.paramType" placeholder="请选择" style="width:100%" filterable clearable @change="changeParamTypeOptions">
+            <el-option  v-for="item in paramTypeOptions"
+              :key="item.dictCode"
+              :label="item.dictValue"
+              :value="item.dictCode" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="数据类型：" prop="paramDataType"  :label-width="cssForformLabelWidth">
+          <el-select  v-model="addAndEditItemForm.paramDataType" placeholder="请选择" style="width:100%" filterable clearable @change="changeParamDataTypeOptions">
+            <el-option
+                v-for="item in paramDataTypeOptions"
+                :key="item.dictCode"
+                :label="item.dictValue"
+                :value="item.dictCode">
+              </el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="数据标准：" prop="paramStandard"  :label-width="cssForformLabelWidth">
+          <div style="display:flex">
+
+          <el-input v-model="addAndEditItemForm.paramStandard" maxlength="5" placeholder="请输入" style="margin-right:10px;" autocomplete="off" @change="addAndEditItemForm.paramCode=addAndEditItemForm.paramSubscriptCode+'['+addAndEditItemForm.paramSubscript+']'"></el-input>
+
+          <el-select  v-model="addAndEditItemForm.paramStandardType" placeholder="请选择"  filterable clearable>
+            <el-option v-for="(item) in paramStandardTypeOptions" :key="item.dictCode"
+                :label="item.dictValue"
+                :value="item.dictCode" />
+          </el-select>
+          </div>
+
         </el-form-item>
       </el-form>
       <span class="dialog-footer">
@@ -71,15 +108,20 @@ import {
   INSPECT_PROCESS_PARAMETER_QUERY_API, // 查询
   INSPECT_PROCESS_PARAMETER_INSERT_API, // 新增
   INSPECT_PROCESS_PARAMETER_DELETE_API, // 删除
-  INSPECT_PROCESS_PARAMETER_UPDATE_API // 编辑
+  INSPECT_PROCESS_PARAMETER_UPDATE_API, // 编辑
+  DICTIONARY_QUERY_API
 } from '@/api/api'
 
 interface TopicMainData {
-  id: string;
-  paramCode: string;
-  paramName: string;
-  paramSubscript: string;
-  paramSubscriptCode: string;
+  id: string
+  paramCode: string
+  paramName: string
+  paramSubscript: string
+  paramSubscriptCode: string
+  paramDataType: string
+  paramStandard: number | null
+  paramStandardType: string
+
 }
 
 interface PlantList{
@@ -87,6 +129,16 @@ interface PlantList{
 }
 
 // interface Props {}
+
+interface DictionaryReturnOptions {
+    dictCode: string
+    dictId: string
+    dictOrder: string
+    dictValue: string
+    factoryName: string
+    id: string
+    disabled?: boolean
+}
 
 interface State {
   dialogTitle: string
@@ -99,6 +151,9 @@ interface State {
   cssForformLabelWidth: string
   addAndEditItemForm: TopicMainData
   multipleSelection: string[]
+  paramStandardTypeOptions: DictionaryReturnOptions[]
+  paramDataTypeOptions: DictionaryReturnOptions[]
+  paramTypeOptions: DictionaryReturnOptions[]
 }
 
 export default defineComponent({
@@ -129,9 +184,15 @@ export default defineComponent({
         paramCode: '',
         paramName: '',
         paramSubscript: '',
-        paramSubscriptCode: ''
+        paramSubscriptCode: '',
+        paramDataType: '',
+        paramStandard: null,
+        paramStandardType: ''
       },
-      multipleSelection: []
+      multipleSelection: [],
+      paramStandardTypeOptions: [],
+      paramDataTypeOptions: [],
+      paramTypeOptions: []
     })
     const refAddAndEditItemDialog = ref()
     const dataRule = {
@@ -139,6 +200,13 @@ export default defineComponent({
         {
           required: true,
           message: '请输入参数名称',
+          trigger: 'blur'
+        }
+      ],
+      paramType: [
+        {
+          required: true,
+          message: '请选择参数类型',
           trigger: 'blur'
         }
       ]
@@ -193,6 +261,7 @@ export default defineComponent({
       state.isAddItemDialogShow = true
       await nextTick()
       refAddAndEditItemDialog.value.resetFields()
+      await initVariable()
 
       // let code = state.dataTopicMainData.reduce((previousValue: number, currentValue: TopicMainData) => {
       //   const currentCode = Number(currentValue.inspectMethodCode.replace(/M/g, ''))
@@ -200,17 +269,14 @@ export default defineComponent({
       // }, 0)
       // code++
       state.addAndEditItemForm = {
-        // id: '',
-        // inspectMethodCode: `M${code < 10 ? '0' + code : code}`,
-        // inspectMethodName: '',
-        // inspectPropertyName: '',
-        // inspectProperty: ''
-
         id: '',
         paramCode: '',
         paramName: '',
         paramSubscript: '',
-        paramSubscriptCode: ''
+        paramSubscriptCode: '',
+        paramDataType: '',
+        paramStandard: null,
+        paramStandardType: ''
       }
     }
     // [弹窗][BTN:确定]
@@ -238,6 +304,57 @@ export default defineComponent({
       state.currentPage = currentPage
       btnGetTopicMainData()
     }
+
+    const initVariable = async () => {
+      // 数据类型
+      await DICTIONARY_QUERY_API({ dictType: 'PROC_PARAM_DATA_TYPE' }).then((res) => {
+        state.paramDataTypeOptions = res.data.data
+        console.log('3数据类型下拉')
+        console.log(state.paramDataTypeOptions)
+      })
+
+      // 数据标准单位
+      await DICTIONARY_QUERY_API({ dictType: 'PROC_PARAM_STANDARD' }).then((res) => {
+        state.paramStandardTypeOptions = res.data.data
+        console.log('4数据标准单位下拉')
+        console.log(state.paramStandardTypeOptions)
+      })
+
+      // 过程参数类型
+      await DICTIONARY_QUERY_API({ dictType: 'PROC_PARAM_TYPE' }).then((res) => {
+        state.paramTypeOptions = res.data.data
+        console.log('6过程参数类型')
+        console.log(state.paramTypeOptions)
+      })
+    }
+    // [SELECT:参数类型][Event:change]
+    const changeParamTypeOptions = (val:string) => {
+      console.log(val)
+    }
+
+    // [SELECT:参数类型][Event:change]
+    const changeParamDataTypeOptions = (val:string) => {
+      console.log(val)
+      if (val === 'FLOAT_POINT') {
+        state.paramStandardTypeOptions.forEach((item:any) => {
+          console.log(item)
+          if (item.dictCode === 'DIGIT') {
+            item.disabled = false
+          } else {
+            item.disabled = true
+          }
+        })
+      } else if (val === 'INTEGER') {
+        state.paramStandardTypeOptions.forEach((item:any) => {
+          if (item.dictCode === 'DIGIT') {
+            item.disabled = false
+          } else {
+            item.disabled = true
+          }
+        })
+      }
+    }
+
     /**  == 生命周期 ==  **/
     onMounted(async () => {
       btnGetTopicMainData()
@@ -255,7 +372,10 @@ export default defineComponent({
       dataRule,
       props,
       handleSizeChange,
-      handleCurrentChange
+      handleCurrentChange,
+      initVariable,
+      changeParamTypeOptions,
+      changeParamDataTypeOptions
     }
   }
 })

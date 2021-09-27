@@ -25,10 +25,11 @@
           <el-button type="text" icon="el-icon-edit" class="role__btn" @click="btnEditItemOfTopicMainData(scope.row)" :disabled="scope.row.isDisabled">
             <em>编辑</em>
           </el-button>
-          <el-button type="text" icon="el-icon-setting" class="role__btn" @click="btnConfigulation(scope.row)" :disabled="scope.row.isDisabled">
+          <el-button type="text" icon="qmsIconfont qms-peizhi" class="role__btn" @click="btnConfigulation(scope.row)" :disabled="scope.row.isDisabled">
             <em>配置</em>
+
           </el-button>
-          <el-button type="text" icon="el-icon-remove-outline" class="role__btn" @click="btnDeleteItemData(scope.row)" :disabled="scope.row.isDisabled">
+          <el-button type="text" icon="el-icon-delete" class="delete-btn" @click="btnDeleteItemData(scope.row)" :disabled="scope.row.isDisabled">
             <em>删除</em>
           </el-button>
         </template>

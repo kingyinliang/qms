@@ -661,10 +661,16 @@ export default defineComponent({
 
     // [ACT] 计划明细
     const doPlanDetailGet = (currentCategoryId:string, searchString = '', currentPage:number, pageSize:number) => {
+      const tempList:any[] = []
+      if (!state.currentFocusTargetObj.isFinalNode && state.currentFocusTargetObj.children.length !== 0) {
+        getEndNodeItems(state.currentFocusTargetObj.children, tempList)
+      }
+
       MANAGEMENT_INSPECTION_PLAN_CONFIGURATION_QUERY_API({
         indexCodeOrName: searchString,
         planVersionId: state.currentVersion,
-        inspectMaterialIds: state.currentFocusTargetObj.inspectMaterialAlls.length !== 0 ? state.currentFocusTargetObj.inspectMaterialAlls.map((item:any) => item.id) : [currentCategoryId],
+        inspectMaterialIds: !state.currentFocusTargetObj.isFinalNode ? tempList.map((item:any) => item.id) : [currentCategoryId],
+        // inspectMaterialIds: tempList,
         current: currentPage,
         size: pageSize
       }).then((res) => {
@@ -738,7 +744,12 @@ export default defineComponent({
             })
           })
         } else {
-          data[i].isFinalNode = false
+          // 生产辅助 smell
+          if (data[i].assistFlag === 'Y' && data[i].parentId !== '0') {
+            data[i].isFinalNode = true
+          } else {
+            data[i].isFinalNode = false
+          }
         }
 
         if (data[i].parentId === '0') { // 第一级
@@ -1046,6 +1057,17 @@ export default defineComponent({
         return data.map((it: any) => it.deptId)
       }
     }
+
+    const getEndNodeItems = (menuTreeList:any, container:any) => {
+      for (const item of menuTreeList) {
+        if (item.isFinalNode === true) {
+          container.push(item)
+        } else if (item.children.length > 0) {
+          getEndNodeItems(item.children, container)
+        }
+      }
+    }
+
     onMounted(() => {
       console.log('我的版本号是？')
       console.log(router.currentRoute.value.query.versionID)
@@ -1095,7 +1117,8 @@ export default defineComponent({
       refTreeModule,
       ruleGlobleItem,
       refGlobleItem,
-      setOrGetData
+      setOrGetData,
+      getEndNodeItems
     }
   }
 })
