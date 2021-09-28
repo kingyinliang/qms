@@ -161,6 +161,16 @@ export function INSPECT_INDEX_MATERIAL_ITEM_ADD_API (params = {}):Promise<AxiosR
   return Http.post('/inspectIndexMaterial/insertInspectIndexMaterial', params, { baseURL: (process.env.VUE_APP_QMS_API as string) + (process.env.VUE_APP_API_V as string) })
 }
 
+// 基础数据-[检验指标标准]- 物料指标数据 - 复制
+export function INSPECT_INDEX_MATERIAL_ITEM_COPY_API (params = {}):Promise<AxiosResponse> {
+  return Http.post('/inspectIndexMaterial/copyInspectIndexMaterial', params, { baseURL: (process.env.VUE_APP_QMS_API as string) + (process.env.VUE_APP_API_V as string) })
+}
+
+// 基础数据-[检验指标标准]- 物料指标数据 - 复制项下拉
+export function INSPECT_INDEX_MATERIAL_ITEM_COPY_DROPDOWN_API (params = {}):Promise<AxiosResponse> {
+  return Http.get('/inspectIndexMaterial/queryInspectIndexMaterialCodeDropDown', params, { baseURL: (process.env.VUE_APP_QMS_API as string) + (process.env.VUE_APP_API_V as string) })
+}
+
 // 基础数据-[检验指标标准]- 物料指标数据 - 编辑
 export function INSPECT_INDEX_MATERIAL_ITEM_UPDATE_API (params = {}):Promise<AxiosResponse> {
   return Http.post('/inspectIndexMaterial/updateInspectIndexMaterial', params, { baseURL: (process.env.VUE_APP_QMS_API as string) + (process.env.VUE_APP_API_V as string) })
