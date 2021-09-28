@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-07-30 11:24:46
  * @LastEditors: Telliex
- * @LastEditTime: 2021-09-24 19:07:22
+ * @LastEditTime: 2021-09-28 08:48:42
 -->
 <template>
   <mds-card class="test_method" :title="title" :pack-up="false" style="margin-bottom: 0; background: #fff;">
@@ -57,37 +57,6 @@
             </el-select>
         </template>
       </el-table-column>
-      <el-table-column label="数据类型" min-width="110" show-overflow-tooltip>
-        <template #default="scope">
-          <el-select v-model="scope.row.paramDataType" size="small" :disabled="!isRedact" :placeholder="!isRedact?'':'请选择'" clearable>
-              <el-option
-                v-for="item in paramDataTypeOptions"
-                :key="item.dictCode"
-                :label="item.dictValue"
-                :value="item.dictCode">
-              </el-option>
-            </el-select>
-        </template>
-      </el-table-column>
-      <el-table-column label="数据标准">
-        <el-table-column  min-width="120" show-overflow-tooltip>
-          <template #default="scope">
-            <el-input v-model.number="scope.row.paramStandard" size="small" :placeholder="!isRedact?'':'请输入'" :disabled="!isRedact" clearable />
-          </template>
-        </el-table-column>
-        <el-table-column  min-width="110" show-overflow-tooltip>
-          <template #default="scope">
-            <el-select v-model="scope.row.paramStandardType" size="small" :disabled="!isRedact" :placeholder="!isRedact?'':'请选择'" clearable>
-              <el-option
-                v-for="item in paramStandardTypeOptions"
-                :key="item.dictCode"
-                :label="item.dictValue"
-                :value="item.dictCode">
-              </el-option>
-              </el-select>
-          </template>
-        </el-table-column>
-      </el-table-column>
       <el-table-column label="上限" min-width="110" show-overflow-tooltip>
         <template #default="scope">
           <el-input v-model="scope.row.paramUp" size="small" maxlength="5" :placeholder="!isRedact?'':'请输入'" :disabled="!isRedact" oninput="value=value.replace(/[^\d.]/g, '')" />
@@ -96,23 +65,6 @@
       <el-table-column label="下限" min-width="110" show-overflow-tooltip>
         <template #default="scope">
           <el-input v-model="scope.row.paramDown" size="small" maxlength="5"  :placeholder="!isRedact?'':'请输入'" :disabled="!isRedact" oninput="value=value.replace(/[^\d.]/g, '')"  />
-        </template>
-      </el-table-column>
-      <el-table-column label="参数类型" min-width="110" show-overflow-tooltip>
-        <template #header>
-          <span class="required">参数类型</span>
-        </template>
-        <template #default="scope">
-          <el-select v-model="scope.row.paramType" size="small" :disabled="!isRedact||scope.row.paramType === 'RESULT'" :placeholder="!isRedact?'':'请选择'" clearable @change="val=>changeParamTypeOptions(val,scope.row)" @focus="val=>focusParamTypeOptions(val,scope.row)">
-            <el-option
-              v-for="item in paramTypeOptions"
-              :key="item.dictCode"
-              :label="item.dictValue"
-              :value="item.dictCode"
-              :disabled="item.disabled"
-              >
-            </el-option>
-          </el-select>
         </template>
       </el-table-column>
       <el-table-column label="默认值">
@@ -179,7 +131,7 @@
         <h3>变量</h3>
           <el-button-group>
             <template v-for="item in fomulaList" :key="item.paramSubscriptCode">
-            <el-button size="small" class="topic-button"  v-if="item.paramSubscriptCode!==''&item.id!==''" type="primary" @click="spellFormula('variable',item.paramSubscriptCode,item.paramSubscript)">{{ item.paramSubscriptCode }}<sub v-if="item.paramSubscript!==''">{{item.paramSubscript}}</sub></el-button>
+            <el-button size="small" class="topic-button"  v-if="item.paramSubscriptCode!==''&&item.id!==''" type="primary" @click="spellFormula('variable',item.paramSubscriptCode,item.paramSubscript)">{{ item.paramSubscriptCode }}<sub v-if="item.paramSubscript!==''">{{item.paramSubscript}}</sub></el-button>
             </template>
           </el-button-group>
            <el-button-group>
@@ -328,9 +280,6 @@ interface State {
   paramSubscriptOptions: ParamSubscriptOptions[]
   parentParamSubscriptOptions: ParamSubscriptOptions[]
   paramUnitOptions: DictionaryReturnOptions[]
-  paramDataTypeOptions: DictionaryReturnOptions[]
-  paramStandardTypeOptions: DictionaryReturnOptions[]
-  paramTypeOptions: DictionaryReturnOptions[]
   defaultTypeOptions: DictionaryReturnOptions[]
   relatedeFormulaData: RelatedeFormulaData[]
   selectedListOfRelatedeFormulaData: RelatedeFormulaData[]
@@ -378,9 +327,6 @@ export default defineComponent({
       paramSubscriptOptions: [],
       parentParamSubscriptOptions: [],
       paramUnitOptions: [],
-      paramDataTypeOptions: [],
-      paramStandardTypeOptions: [],
-      paramTypeOptions: [],
       defaultTypeOptions: [],
       relatedeFormulaData: [],
       selectedListOfRelatedeFormulaData: [],
@@ -409,32 +355,11 @@ export default defineComponent({
         console.log(state.paramUnitOptions)
       })
 
-      // 数据类型
-      await DICTIONARY_QUERY_API({ dictType: 'PROC_PARAM_DATA_TYPE' }).then((res) => {
-        state.paramDataTypeOptions = res.data.data
-        console.log('3数据类型下拉')
-        console.log(state.paramDataTypeOptions)
-      })
-
-      // 数据标准单位
-      await DICTIONARY_QUERY_API({ dictType: 'PROC_PARAM_STANDARD' }).then((res) => {
-        state.paramStandardTypeOptions = res.data.data
-        console.log('4数据标准单位下拉')
-        console.log(state.paramStandardTypeOptions)
-      })
-
       // 过程参数默认值类型
       await DICTIONARY_QUERY_API({ dictType: 'PROC_DEFAULT_TYPE' }).then((res) => {
         state.defaultTypeOptions = res.data.data
         console.log('5过程参数默认值类型下拉')
         console.log(state.defaultTypeOptions)
-      })
-
-      // 过程参数类型
-      await DICTIONARY_QUERY_API({ dictType: 'PROC_PARAM_TYPE' }).then((res) => {
-        state.paramTypeOptions = res.data.data
-        console.log('6过程参数类型')
-        console.log(state.paramTypeOptions)
       })
 
       btnGetMainData()
@@ -452,28 +377,13 @@ export default defineComponent({
       console.log('获取过程参数数据')
       console.log(res.data.data)
       state.parentParamSubscriptOptions = []
-      // 对 paramTypeOptions 重置
-      state.paramTypeOptions.forEach(subItem => {
-        subItem.disabled = false
-      })
+
       res.data.data.forEach((item:ImportData) => {
         // modify
         item.paramSubscriptCodeWithParamSubscript = item.paramSubscriptCode + ' ' + item.paramSubscript
         item.parentParamSubscriptCodeWithParentParamSubscript = item.parentParamSubscriptCode + ' ' + item.parentParamSubscript
         item.formulaDisplay = escape2Html(item.formulaDisplay as string) // 编码还原
         item.relatedFormulaForNoId = []
-
-        // 参数类型选单重置
-        // 参数类型已有结果下，不可再选
-        if (item.paramType === 'RESULT') {
-          state.paramTypeOptions.forEach(subItem => {
-            if (subItem.dictCode === 'RESULT') {
-              subItem.disabled = true
-            } else {
-              subItem.disabled = false
-            }
-          })
-        }
 
         // 关联参数下拉选单附值
         state.paramSubscriptOptions.forEach((subItem:ParamSubscriptOptions) => {
@@ -920,47 +830,6 @@ export default defineComponent({
       return str.replace(/(&lt|&gt|&nbsp|&amp|&quot);/ig, (c:string) => { return arrEntiries[c] as string })
     }
 
-    // [SELECT:参数类型][Event:change]
-    const changeParamTypeOptions = (val:string, row:ImportData) => {
-      // 离开 HIDDEN 时的判断
-      if (row.id !== '' && state.tempValueForOptions === 'HIDDEN') {
-        proxy.$confirm('确认是否切换参数类型？关联公式将会清空', '提示', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          type: 'warning'
-        }).then(async () => {
-          const target = await INSPECT_INDEX_RELATED_PARAMETER_QUERY_API({
-            inspectParameterId: row.id
-          })
-          const temp:string[] = []
-          target.data.data.forEach((item:RelatedeFormulaData) => {
-            temp.push(item.id)
-          })
-          if (temp.length !== 0) {
-            await INSPECT_INDEX_RELATED_PARAMETER_DELETE_API(temp)
-          }
-        }).catch(() => {
-          row.paramType = state.tempValueForOptions
-        })
-      }
-
-      // 选择 RESULT 时行动
-      if (val === 'RESULT') {
-        state.paramTypeOptions.forEach(item => {
-          if (item.dictCode === 'RESULT') {
-            item.disabled = true
-          } else {
-            item.disabled = false
-          }
-        })
-      }
-    }
-
-    // [SELECT:参数类型][Event:focus]
-    const focusParamTypeOptions = (val:any, row:ImportData) => {
-      state.tempValueForOptions = row.paramType as string
-    }
-
     // [function] 下拉选单排除该过程参数
     const excludeItemFromMyRow = (target:ParamSubscriptOptions[], row:ImportData) => {
       target.map(subItem => {
@@ -1037,8 +906,6 @@ export default defineComponent({
       handleSelectionChange,
       deleteItemOfrelatedeFormula,
       headerMerge,
-      changeParamTypeOptions,
-      focusParamTypeOptions,
       initVariable,
       excludeItemFromMyRow,
       focusParentParamSubscriptOptions

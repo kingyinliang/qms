@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-07-30 11:24:46
  * @LastEditors: Telliex
- * @LastEditTime: 2021-09-17 15:10:34
+ * @LastEditTime: 2021-09-28 09:08:00
 -->
 <template>
   <div style="padding-top:10px">
@@ -239,6 +239,7 @@ export default defineComponent({
 
     // [ACTION:load] 获取标准值明细数据
     const btnGetMainData = async () => {
+      state.isRedact = true
       const res = await INSPECT_INDEX_VERSION_VALUE_QUERY_API({
         inspectVersionId: state.targetObj.id
       })
@@ -260,6 +261,10 @@ export default defineComponent({
       state.topicMainData = res.data.data
 
       state.orgTopicMainData = JSON.parse(JSON.stringify(res.data.data))
+      // [smell] fixed element ui bug
+      setTimeout(() => {
+        state.isRedact = false
+      }, 1000)
     }
 
     // [BTN:删除] 删除 item
