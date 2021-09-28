@@ -181,7 +181,7 @@
     <template #footer>
       <span class="dialog-footer">
         <el-button size="small" class="topic-button" icon="el-icon-circle-close" @click="btnClickItemClearForDialog">取消</el-button>
-        <el-button size="small" class="topic-button" icon="el-icon-circle-check" type="primary" @click="btnClickItemConfirmForDialog(formGlobleItem.title)">确定</el-button>
+        <el-button size="small" class="topic-button" icon="el-icon-circle-check" type="primary" @click="btnClickItemConfirmForDialog">确定</el-button>
       </span>
     </template>
   </el-dialog>
@@ -381,7 +381,7 @@ interface State {
 }
 
 export default defineComponent({
-  name: 'ProcessInspectionPlanPlanConfigurationOnlyRead',
+  name: 'ProcessInspectionPlanPlanConfiguration',
   components: {
   },
   props: {
