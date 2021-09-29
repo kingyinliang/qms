@@ -546,7 +546,7 @@ export default defineComponent({
     // TODO
     // [BTN:确定][参数明细] 新增+编辑 function dialog
     const btnAddItemFloatConfirm = () => {
-      console.log('state.addParameterGroupform')
+      console.log('state.addParameterGroupform11111')
       console.log(state.addParameterGroupform)
 
       if (state.addParameterGroupform.parameterGroupName === '') {
@@ -568,12 +568,17 @@ export default defineComponent({
 
       if (!state.addParameterGroupform.id) { // 新增
         const tempParameterTreeCheckNodes:ParameterTreeData[] = []
+        console.log('state.parameterTreeCheckNodes')
+        console.log(state.parameterTreeCheckNodes)
         state.parameterTreeCheckNodes.forEach(item => {
-          if (item.isEndNode) {
+          if (item.isEndNode || item.assistFlag === 'Y') {
             item.inspectTypeName = item.location
             tempParameterTreeCheckNodes.push(item)
           }
         })
+
+        console.log('tempParameterTreeCheckNodes')
+        console.log(tempParameterTreeCheckNodes)
 
         INSPECT_INDEX_PARAMETER_GROUP_INSERT_API({
           inspectIndexMethodId: state.globalMainObj.id,
