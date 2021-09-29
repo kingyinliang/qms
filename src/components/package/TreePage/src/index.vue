@@ -14,7 +14,24 @@
             </el-input>
           </div>
           <div class="tree-main SelfScrollbar">
-            <el-tree ref="treeRef" :data="treeData" :node-key="nodeKey" :default-expanded-keys="expandedKeys" :current-node-key="focusCurrentNodeNumber" :props="treeProps" highlight-current :filter-node-method="filterNode" @node-click="treeNodeClick" @node-contextmenu="treeNodeContextMenu" />
+            <el-tree
+            ref="treeRef"
+            :data="treeData"
+            :node-key="nodeKey"
+            :default-expanded-keys="expandedKeys"
+            :current-node-key="focusCurrentNodeNumber"
+            :props="treeProps" highlight-current
+            :filter-node-method="filterNode"
+            @node-click="treeNodeClick"
+            @node-contextmenu="treeNodeContextMenu">
+              <template #default="{ node, data }">
+                <span class="custom-tree-node">
+                  <el-tooltip effect="dark" :content="data.tooltip" :disabled="!data.isTooltip" placement="right">
+                    <span>{{ node.label }}</span>
+                  </el-tooltip>
+                </span>
+              </template>
+            </el-tree>
           </div>
         </div>
       </el-col>
