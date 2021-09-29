@@ -130,7 +130,7 @@ interface TopicMainData {
   paramDataType: string
   paramStandard: number | null
   paramStandardType: string
-
+  paramType: string
 }
 
 interface PlantList{
@@ -198,7 +198,8 @@ export default defineComponent({
         paramSubscriptCode: '',
         paramDataType: '',
         paramStandard: null,
-        paramStandardType: ''
+        paramStandardType: '',
+        paramType: ''
       },
       multipleSelection: [],
       paramStandardTypeOptions: [],
@@ -290,11 +291,27 @@ export default defineComponent({
         paramSubscriptCode: '',
         paramDataType: '',
         paramStandard: null,
-        paramStandardType: ''
+        paramStandardType: '',
+        paramType: ''
       }
     }
     // [弹窗][BTN:确定]
     const btnAddItemToConfirm = () => {
+      if (!state.addAndEditItemForm.paramSubscriptCode) {
+        proxy.$warningToast('请输入参数名称')
+        return false
+      }
+
+      if (!state.addAndEditItemForm.paramType) {
+        proxy.$warningToast('请选择参数类型')
+        return false
+      }
+
+      if (state.addAndEditItemForm.paramDataType && (!state.addAndEditItemForm.paramStandard || !state.addAndEditItemForm.paramStandardType)) {
+        proxy.$warningToast('请输入数据标准')
+        return false
+      }
+
       refAddAndEditItemDialog.value.validate(async (valid: boolean) => {
         if (valid) {
           if (state.addAndEditItemForm.id) {

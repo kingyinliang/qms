@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-07-30 11:24:46
  * @LastEditors: Telliex
- * @LastEditTime: 2021-09-28 12:44:37
+ * @LastEditTime: 2021-09-29 09:11:31
 -->
 <template>
   <mds-card class="test_method" :title="title" :pack-up="false" style="margin-bottom: 0; background: #fff;">
@@ -92,7 +92,7 @@
           </template>
          </el-table-column>
       </el-table-column>
-         <el-table-column label="关联参数" min-width="110" show-overflow-tooltip>
+      <el-table-column label="关联参数" min-width="110" show-overflow-tooltip>
         <template #default="scope">
           <el-select v-model="scope.row.parentParamSubscriptCodeWithParentParamSubscript" size="small" :disabled="!isRedact ||  scope.row.paramType === 'SHOW' || scope.row.paramType === 'RESULT'" :placeholder="!isRedact?'':'请选择'" clearable @change="val=>changeParentParamSubscriptOptions(val,scope.row)" @focus="val=>focusParentParamSubscriptOptions(val,scope.row)">
                 <el-option
@@ -253,6 +253,7 @@ interface ParamSubscriptOptions{
   paramSubscript: string;
   paramSubscriptCode: string;
   disabled?: boolean
+  paramType: string;
 }
 
 interface DictionaryReturnOptions {
@@ -533,11 +534,6 @@ export default defineComponent({
         }
       })
 
-      console.log('tempAdd')
-      console.log(tempAdd)
-      console.log('tempEdit')
-      console.log(tempEdit)
-
       if (!(tempAdd.length === 0 && tempEdit.length === 0)) {
         INSPECT_INDEX_PROCESS_PARAMETER_MODIFY_API(
           {
@@ -573,7 +569,7 @@ export default defineComponent({
     // [ATC] 关闭标准值明细 card
     const closeStandardValueInfoArea = () => {
       state.controlBtnCanDo = false
-      state.isRedact = false
+      // state.isRedact = false
       parent.emit('update:dialogVisible', false)
     }
 
@@ -592,7 +588,7 @@ export default defineComponent({
             return false
           }
         }
-        if (item.paramSubscriptCode === '' || item.paramUnit === '' || item.paramType === '') {
+        if (item.paramSubscriptCode === '' || item.paramUnit === '') {
           proxy.$warningToast('请完整录入栏位')
           return false
         }
@@ -607,11 +603,6 @@ export default defineComponent({
         }
         if (item.paramType === 'HIDDEN' && item.parentParamSubscriptCodeWithParentParamSubscript === '') {
           proxy.$warningToast('请选择关联参数')
-          return false
-        }
-
-        if (item.paramDataType === 'FLOAT_POINT' && (!item.paramStandard || item.paramStandardType === '')) {
-          proxy.$warningToast('请录入数据标准')
           return false
         }
       }
@@ -722,6 +713,12 @@ export default defineComponent({
       row.paramSubscriptCode = temp[0]
       row.paramSubscript = temp[1]
       row.paramCode = temp[0] + '[' + temp[1] + ']'
+      state.paramSubscriptOptions.forEach(item => {
+        if (item.paramCode === row.paramCode) {
+          row.paramType = item.paramType
+        }
+      })
+      console.log(row)
     }
 
     // [SELECT:关联参数][Event:change]
