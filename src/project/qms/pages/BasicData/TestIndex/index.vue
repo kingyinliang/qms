@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-07-30 11:24:46
  * @LastEditors: Telliex
- * @LastEditTime: 2021-09-28 16:54:59
+ * @LastEditTime: 2021-09-29 13:11:41
 -->
 <template>
   <mds-card class="test_method" title="检验指标标准" :pack-up="false" style="margin-bottom: 0; background: #fff;">
@@ -380,6 +380,11 @@ export default defineComponent({
     // [BTN:复制]
     const btnCopyItemData = () => {
       state.isDialogVisibleForItemCopy = true
+      state.copyItemform = {
+        inspectMaterialCode: '',
+        relationType: '',
+        inspectMaterialCodeCopy: ''
+      }
       apiGetInspectMaterialOptions(true)
       apiGetInspectMaterialCopyOptions()
     }
@@ -484,7 +489,7 @@ export default defineComponent({
       await INSPECT_INDEX_MATERIAL_ITEM_COPY_API(state.copyItemform)
       proxy.$successToast('操作成功')
       state.searchSortByOrder = true
-      btnGetMainData('') // reload
+      btnGetMainData('init') // reload
 
       state.isDialogVisibleForItemCopy = false
     }
