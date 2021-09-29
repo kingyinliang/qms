@@ -27,7 +27,7 @@
               <template #default="{ node, data }">
                 <span class="custom-tree-node">
                   <el-tooltip effect="dark" :content="data.tooltip" :disabled="!data.isTooltip" placement="right">
-                    <span>{{ node.label }}</span>
+                    <span style="font-size:14px">{{ node.label }}</span>
                   </el-tooltip>
                 </span>
               </template>
