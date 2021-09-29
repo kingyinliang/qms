@@ -429,8 +429,11 @@ export default defineComponent({
         // data[i].inspect = data[i].inspect === 'CHEMISTRY' ? '理化类' : data[i].inspect === 'MICROORGANISM' ? '微生物类' : '不分类'
         data[i].canEdit = false
         data[i]._level = 1
+        data[i].isTooltip = false
         for (let j = 0; j < data[i].inspectGroups.length; j++) {
           data[i].inspectGroups[j]._level = 2
+          data[i].inspectGroups[j].isTooltip = true
+          data[i].inspectGroups[j].tooltip = data[i].inspectGroups[j].indexMethod
           data[i].inspectGroups[j].canEdit = true
           // 数据缺省 id , 前端赋予 id , 避免 tree 高亮问题
           if (data[i].inspectGroups[j].inspectMethodId === '') {
