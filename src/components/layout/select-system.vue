@@ -31,6 +31,8 @@ import {
   toRefs,
   ref
 } from 'vue'
+import SSOLogin from '@/utils/SSOLogin'
+import VueCookies from '@/components/cookie/vue-cookies'
 // import { GET_TENANT_BY_USER_ID, UPDATE_TENANT } from '@/api/api'
 
 export default defineComponent({
@@ -46,13 +48,13 @@ export default defineComponent({
     const system = ref([])
 
     const goSystem = (system) => {
-      // UPDATE_TENANT({
-      //   systemCode: system.systemCode
-      // }).then(() => {
-      localStorage.setItem('vuex', '')
-      sessionStorage.setItem('system', JSON.stringify(system || ''))
-      window.location.href = '/qms'
-      // })
+      if (system.deptCode === '9999-xn') {
+        window.location.href = `${process.env.VUE_APP_MSS_HOST}?clientId=${SSOLogin.option.clientId}&responseType=client&token=${VueCookies.get('token')}&tenant=QMS`
+      } else {
+        localStorage.setItem('vuex', '')
+        sessionStorage.setItem('system', JSON.stringify(system || ''))
+        window.location.href = '/qms'
+      }
     }
 
     const closeDialog = () => {
