@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-07-30 11:24:46
  * @LastEditors: Telliex
- * @LastEditTime: 2021-09-29 13:11:41
+ * @LastEditTime: 2021-09-29 15:51:14
 -->
 <template>
   <mds-card class="test_method" title="检验指标标准" :pack-up="false" style="margin-bottom: 0; background: #fff;">
@@ -313,6 +313,9 @@ export default defineComponent({
         state.currentPage = 1
         state.pageSize = 10
         state.searchSortByOrder = false
+      } else if (type === 'act') {
+        state.currentPage = 1
+        state.pageSize = 10
       }
 
       const res = await INSPECT_INDEX_STANDARD_QUERY_API({
@@ -392,6 +395,7 @@ export default defineComponent({
     // [BTN:批次删除]
     const btnBatchDelete = () => {
       if (!state.selectedListOfTopicMainData.length) {
+        proxy.$warningToast('请选择数据')
         return
       }
       proxy.$confirm('是否删除选中检验指标？', '提示', {
@@ -453,8 +457,9 @@ export default defineComponent({
         })
         await INSPECT_INDEX_MATERIAL_ITEM_ADD_API(tempItemform)
         proxy.$successToast('操作成功')
+        state.controlForm.filterText = ''
         state.searchSortByOrder = true
-        btnGetMainData('') // reload
+        btnGetMainData('act') // reload
       } else { // 编辑指标
         if (state.singleItemform.inspectMaterialId === '') {
           proxy.$errorToast('检验类别\\物料字段未填写')
@@ -466,8 +471,9 @@ export default defineComponent({
         }
         await INSPECT_INDEX_MATERIAL_ITEM_UPDATE_API(state.singleItemform)
         proxy.$successToast('操作成功')
+        state.controlForm.filterText = ''
         state.searchSortByOrder = false
-        btnGetMainData('') // reload
+        btnGetMainData('act') // reload
       }
       state.isDialogVisibleForItemControl = false
     }
@@ -489,8 +495,8 @@ export default defineComponent({
       await INSPECT_INDEX_MATERIAL_ITEM_COPY_API(state.copyItemform)
       proxy.$successToast('操作成功')
       state.searchSortByOrder = true
-      btnGetMainData('init') // reload
-
+      state.controlForm.filterText = ''
+      btnGetMainData('act') // reload
       state.isDialogVisibleForItemCopy = false
     }
 
