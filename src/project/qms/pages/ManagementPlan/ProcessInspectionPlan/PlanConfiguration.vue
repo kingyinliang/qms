@@ -24,7 +24,7 @@
           <el-button icon="el-icon-plus" class="topic-button" type="primary" size="small" @click="btnClickItemAddOrEditForTopicMainData('add',{})" :disabled="!currentFocusTargetObj.canAdd" >新增</el-button>
           <el-button icon="el-icon-delete" class="topic-button" type="danger" size="small"  @click="btnClickItemsDeleteForTopicMainData" :disabled="!currentFocusTargetObj.canDelete">批量删除</el-button>
           <el-button icon="el-icon-news" class="topic-button" type="primary" size="small" @click="btnClickGenerateForTopicMainData" :disabled="!currentFocusTargetObj.canGenerate">生成</el-button>
-          <el-button icon="el-icon-edit" class="topic-button" type="primary" size="small" @click="btnClickItemBatchEditForTopicMainData" :disabled="!currentFocusTargetObj.canGenerate">编辑</el-button>
+          <el-button icon="el-icon-edit" class="topic-button" type="primary" size="small" @click="btnClickItemBatchEditForTopicMainData">编辑</el-button>
         </template>
       </div>
      <el-table
@@ -194,7 +194,7 @@
       </el-form-item>
 
       <el-form-item label="检验单位：" prop="inspectList" :label-width="cssForformLabelWidth">
-        <el-checkbox v-model="formBatchEditItems.inspectListChecked" label="" class="checkbox-position"></el-checkbox>
+        <el-checkbox v-model="formBatchEditItems.inspectListChecked" label="" class="checkbox-position" @change="val=>changeChechBox(val,'inspectList')"></el-checkbox>
         <tree-dialog
           ref="refInspectOfBatchEdit"
           v-model="formBatchEditItems.inspectList"
@@ -208,7 +208,7 @@
         />
       </el-form-item>
       <el-form-item label="配合检验：" prop="coInspectList" :label-width="cssForformLabelWidth">
-          <el-checkbox v-model="formBatchEditItems.coInspectListIdChecked" label="" class="checkbox-position"></el-checkbox>
+          <el-checkbox v-model="formBatchEditItems.coInspectListChecked" label="" class="checkbox-position" @change="val=>changeChechBox(val,'coInspectList')"></el-checkbox>
           <tree-dialog
             ref="refCoInspectOfBatchEdit"
             v-model="formBatchEditItems.coInspectList"
@@ -218,39 +218,39 @@
             :returnObj="true"
             :multiChecked="false"
             :tree-props="{ label: 'deptName', children: 'children' }"
-            :disabled="!formBatchEditItems.coInspectListIdChecked"
+            :disabled="!formBatchEditItems.coInspectListChecked"
           />
       </el-form-item>
 
       <el-form-item label="检验频次：" prop="frequencyId" :label-width="cssForformLabelWidth">
-        <el-checkbox v-model="formBatchEditItems.frequencyIdChecked" label="" class="checkbox-position"></el-checkbox>
+        <el-checkbox v-model="formBatchEditItems.frequencyIdChecked" label="" class="checkbox-position" @change="val=>changeChechBox(val,'frequencyId')"></el-checkbox>
         <el-select v-model="formBatchEditItems.frequencyId" placeholder="请选择" style="width:100%" filterable @change="handleSelectFrequencyChange" clearable :disabled="!formBatchEditItems.frequencyIdChecked">
           <el-option v-for="(opt, optIndex) in frequencyIdOptions" :key="optIndex" :label="opt.frequencyName" :value="opt.id" />
         </el-select>
       </el-form-item>
        <el-form-item label="定时触发：" prop="timingFlag"  :label-width="cssForformLabelWidth">
-          <el-checkbox v-model="formBatchEditItems.timingFlagChecked" label="" class="checkbox-position"></el-checkbox>
+          <el-checkbox v-model="formBatchEditItems.timingFlagChecked" label="" class="checkbox-position" @change="val=>changeChechBox(val,'timingFlag')"></el-checkbox>
           <div>
             <el-radio v-model="formBatchEditItems.timingFlag" :disabled="!formBatchEditItems.timingFlagChecked" label="Y">是</el-radio>
             <el-radio v-model="formBatchEditItems.timingFlag" :disabled="!formBatchEditItems.timingFlagChecked" label="N">否</el-radio>
           </div>
       </el-form-item>
       <el-form-item label="关键指标：" prop="keyIndexFlag"  :label-width="cssForformLabelWidth">
-          <el-checkbox v-model="formBatchEditItems.keyIndexFlagChecked" label="" class="checkbox-position"></el-checkbox>
+          <el-checkbox v-model="formBatchEditItems.keyIndexFlagChecked" label="" class="checkbox-position" @change="val=>changeChechBox(val,'keyIndexFlag')"></el-checkbox>
           <div>
             <el-radio v-model="formBatchEditItems.keyIndexFlag" :disabled="!formBatchEditItems.keyIndexFlagChecked" label="Y">是</el-radio>
             <el-radio v-model="formBatchEditItems.keyIndexFlag" :disabled="!formBatchEditItems.keyIndexFlagChecked" label="N">否</el-radio>
           </div>
       </el-form-item>
       <el-form-item label="合并属性：" prop="mergeFlag"  :label-width="cssForformLabelWidth">
-        <el-checkbox v-model="formBatchEditItems.mergeFlagChecked" label="" class="checkbox-position"  @change="changeChechBox"></el-checkbox>
+        <el-checkbox v-model="formBatchEditItems.mergeFlagChecked" label="" class="checkbox-position"  @change="val=>changeChechBox(val,'mergeFlag')"></el-checkbox>
         <div>
           <el-radio v-model="formBatchEditItems.mergeFlag" :disabled="!formBatchEditItems.mergeFlagChecked" label="Y">是</el-radio>
           <el-radio v-model="formBatchEditItems.mergeFlag" :disabled="!formBatchEditItems.mergeFlagChecked" label="N">否</el-radio>
         </div>
       </el-form-item>
       <el-form-item label="轮循：" prop="loopFlag"  :label-width="cssForformLabelWidth">
-        <el-checkbox v-model="formBatchEditItems.loopFlagChecked" label="" class="checkbox-position" @change="changeChechBox"></el-checkbox>
+        <el-checkbox v-model="formBatchEditItems.loopFlagChecked" label="" class="checkbox-position" @change="val=>changeChechBox(val,'loopFlag')"></el-checkbox>
         <div>
           <el-radio v-model="formBatchEditItems.loopFlag" :disabled="!formBatchEditItems.loopFlagChecked" label="Y">是</el-radio>
           <el-radio v-model="formBatchEditItems.loopFlag" :disabled="!formBatchEditItems.loopFlagChecked" label="N">否</el-radio>
@@ -431,6 +431,34 @@ interface FrequencyIdOptions{
   inspectCycleId: string
 }
 
+// interface FormBatchEditItems{
+//         title: string
+//         projectLocation: string
+//         frequencyIdChecked: boolean
+//         frequencyId: string
+//         keyIndexFlagChecked: boolean
+//         keyIndexFlag: string
+//         mergeFlagChecked: boolean
+//         mergeFlag: string
+//         loopFlagChecked: boolean
+//         loopFlag: string
+//         timingFlagChecked: boolean
+//         timingFlag: string
+//         coInspectListChecked: boolean
+//         coInspectList: [],
+//         coInspect: {
+//           deptId: string
+//           deptName: string
+//         },
+//         inspectListChecked: boolean
+//         inspectList: [],
+//         inspect: {
+//           deptId: string
+//           deptName: string
+//         },
+//         planConfigureIds: string[]
+// }
+
 interface State {
     cssForformLabelWidth: string
     isDialogShow: boolean
@@ -447,7 +475,7 @@ interface State {
     treeData: TreeData[]
     materialTreeData: MaterialTreeData[]
     formGlobleItem: any // TopicMainDataItem
-    formBatchEditItems: any
+    formBatchEditItems:any
     isShowSearchBar: boolean
     inspectTypeIds: string[]
     initFocusNode: string
@@ -531,7 +559,33 @@ export default defineComponent({
         inspectList: [],
         inspectMaterialAlls: []
       },
-      formBatchEditItems: {},
+      formBatchEditItems: {
+        title: '',
+        projectLocation: '', // 项目位置
+        frequencyIdChecked: false,
+        frequencyId: '',
+        keyIndexFlagChecked: false,
+        keyIndexFlag: '',
+        mergeFlagChecked: false,
+        mergeFlag: '',
+        loopFlagChecked: false,
+        loopFlag: '',
+        timingFlagChecked: false,
+        timingFlag: '',
+        coInspectListChecked: false,
+        coInspectList: [],
+        coInspect: {
+          deptId: '',
+          deptName: ''
+        },
+        inspectListChecked: false,
+        inspectList: [],
+        inspect: {
+          deptId: '',
+          deptName: ''
+        },
+        planConfigureIds: []
+      },
       isShowSearchBar: true,
       inspectTypeIds: [],
       initFocusNode: '',
@@ -601,7 +655,6 @@ export default defineComponent({
         }
       ]
     }
-    // TODO
     // [BTN:新增|编辑] 新增
     const btnClickItemAddOrEditForTopicMainData = async (act:string, row:any) => {
       console.log('点击新增|编辑')
@@ -964,6 +1017,11 @@ export default defineComponent({
       console.log('点击批次编辑')
       console.log('state.currentFocusTargetObj')
       console.log(state.currentFocusTargetObj)
+      if (!state.multipleSelection.length) {
+        proxy.$warningToast('请选择数据')
+        return
+      }
+
       state.isBatchEditDialogShow = true
       await getDropDownOptions() // 获取下拉
       await nextTick()
@@ -982,21 +1040,23 @@ export default defineComponent({
         loopFlag: '',
         timingFlagChecked: false,
         timingFlag: '',
-        coInspectChecked: false,
+        coInspectListChecked: false,
+        coInspectList: [],
         coInspect: {
           deptId: '',
           deptName: ''
         },
-        inspectChecked: false,
+        inspectListChecked: false,
+        inspectList: [],
         inspect: {
           deptId: '',
           deptName: ''
         },
-        planConfigureIds: []
+        planConfigureIds: state.multipleSelection
       }
       // await rewriteFormData(act) // 获取下拉与改值
     }
-    // TODO
+
     // [ACT:define] 获取指标编码下拉
     const getDropDownOptions = async () => {
       // 获取检验频次下拉
@@ -1007,13 +1067,18 @@ export default defineComponent({
         state.frequencyIdOptions = res.data.data
       })
     }
-
+    // TODO-下拉
     const rewriteFormData = async (act:string) => {
       // 获取取样单位下拉
       let tempId = state.currentFocusTargetObj.id
-      if (state.currentFocusTargetObj.isFinalNode && state.currentFocusTargetObj.assistFlag !== 'Y') {
-        tempId = state.currentFocusTargetObj.markParentId
+      if (act === 'add') {
+        if (state.currentFocusTargetObj.isFinalNode && state.currentFocusTargetObj.assistFlag !== 'Y') {
+          tempId = state.currentFocusTargetObj.markParentId
+        }
+      } else {
+        tempId = state.currentFocusItem.inspectTypeIds
       }
+      console.log(tempId)
       await INSPECT_TYPE_DETAIL_API({ id: tempId }).then((res) => {
         console.log('取样单位 data')
         console.log(res.data.data)
@@ -1058,7 +1123,7 @@ export default defineComponent({
       if (who === 'refGlobleItem') {
         reset()
         state.isDialogShow = false
-      } else if (who === 'refBatchEditItems') {
+      } else if (who === 'refBatchEditItems') { // 批次编辑初始化
         state.formBatchEditItems = {
           title: '批次编辑',
           projectLocation: state.currentFocusTargetObj.projectLocation, // 项目位置
@@ -1072,12 +1137,14 @@ export default defineComponent({
           loopFlag: '',
           timingFlagChecked: false,
           timingFlag: 'N',
-          coInspectChecked: false,
+          coInspectListChecked: false,
+          coInspectList: [],
           coInspect: {
             deptId: '',
             deptName: ''
           },
-          inspectChecked: false,
+          inspectListChecked: false,
+          inspectList: [],
           inspect: {
             deptId: '',
             deptName: ''
@@ -1088,7 +1155,6 @@ export default defineComponent({
       }
     }
 
-    // TODO
     // [BTN:确认][float] 新增&编辑
     const btnClickItemConfirmForDialog = async () => {
       if (state.formGlobleItem.indexCode === '') {
@@ -1164,31 +1230,9 @@ export default defineComponent({
       })
     }
 
+    // TODO
     // [BTN:确认][float] 批次编辑
     const btnClickBatchCopyItemConfirmForDialog = async () => {
-      // title: '批次编辑',
-      //   projectLocation: state.currentFocusTargetObj.projectLocation, // 项目位置
-      //   frequencyIdChecked: false,
-      //   frequencyId: '',
-      //   keyIndexFlagChecked: false,
-      //   keyIndexFlag: '',
-      //   mergeFlagChecked: false,
-      //   mergeFlag: '',
-      //   loopFlagChecked: false,
-      //   loopFlag: '',
-      //   timingFlagChecked: false,
-      //   timingFlag: 'N',
-      //   coInspectChecked: false,
-      //   coInspect: {
-      //     deptId: '',
-      //     deptName: ''
-      //   },
-      //   inspectChecked: false,
-      //   inspect: {
-      //     deptId: '',
-      //     deptName: ''
-      //   },
-      //   planConfigureIds: []
       if (!state.formBatchEditItems.frequencyIdChecked) {
         state.formBatchEditItems.frequencyId = ''
       }
@@ -1204,33 +1248,46 @@ export default defineComponent({
       if (!state.formBatchEditItems.timingFlagChecked) {
         state.formBatchEditItems.timingFlag = ''
       }
-      if (!state.formBatchEditItems.coInspectChecked) {
-        state.formBatchEditItems.keyIndexFlag = ''
+      if (!state.formBatchEditItems.inspectListChecked) {
+        state.formBatchEditItems.inspectList = []
+        state.formBatchEditItems.inspect = {
+          deptId: '',
+          deptName: ''
+        }
       }
-      if (!state.formBatchEditItems.coInspectChecked) {
-        state.formBatchEditItems.keyIndexFlag = ''
-      }
-
-      console.log('state.formGlobleItem')
-      console.log(JSON.parse(JSON.stringify(state.formGlobleItem)))
-
-      const tempCoInspectObj = await refCoInspectOfBatchEdit.value.value.getCheckedNodes()
-      console.log('tempCoInspectObj')
-      console.log(tempCoInspectObj)
-      state.formBatchEditItems.coInspect = {
-        deptId: tempCoInspectObj.length ? tempCoInspectObj[0].id : '',
-        deptName: tempCoInspectObj.length ? tempCoInspectObj[0].deptName : ''
-      }
-      // state.formGlobleItem.coInspect = tempCoInspectObj[0]
-      const tempinspectObj = await refInspectOfBatchEdit.value.value.getCheckedNodes()
-      console.log('tempinspectObj')
-      console.log(tempinspectObj)
-      state.formBatchEditItems.inspect = {
-        deptId: tempinspectObj.length ? tempinspectObj[0].id : '',
-        deptName: tempinspectObj.length ? tempinspectObj[0].deptName : ''
+      if (!state.formBatchEditItems.coInspectListChecked) {
+        state.formBatchEditItems.coInspectList = []
+        state.formBatchEditItems.coInspect = {
+          deptId: '',
+          deptName: ''
+        }
       }
 
-      // state.formGlobleItem.inspect = tempinspectObj[0]
+      console.log('state.formBatchEditItems')
+      console.log(state.formBatchEditItems)
+
+      if (state.formBatchEditItems.coInspectListChecked) {
+        const tempCoInspectObj = await refCoInspectOfBatchEdit.value.getCheckedNodes()
+        console.log('tempCoInspectObj')
+        console.log(tempCoInspectObj)
+        state.formBatchEditItems.coInspect = {
+          deptId: tempCoInspectObj.length ? tempCoInspectObj[0].id : '',
+          deptName: tempCoInspectObj.length ? tempCoInspectObj[0].deptName : ''
+        }
+      }
+
+      if (state.formBatchEditItems.inspectListChecked) {
+        const tempinspectObj = await refInspectOfBatchEdit.value.getCheckedNodes()
+        console.log('tempinspectObj')
+        console.log(tempinspectObj)
+        state.formBatchEditItems.inspect = {
+          deptId: tempinspectObj.length ? tempinspectObj[0].id : '',
+          deptName: tempinspectObj.length ? tempinspectObj[0].deptName : ''
+        }
+      }
+
+      console.log('state.formBatchEditItems')
+      console.log(state.formBatchEditItems)
       await MANAGEMENT_INSPECTION_PLAN_CONFIGURATION_PLAN_BATCH_UPDATE_API({
         ...state.formBatchEditItems
       })
@@ -1298,9 +1355,15 @@ export default defineComponent({
       }
     }
 
-    const changeChechBox = (val:boolean) => {
-      console.log('222222')
+    const changeChechBox = (val:boolean, target:string) => {
       console.log(val)
+      if (!val) {
+        if (target === 'inspectList' || target === 'coInspectList') {
+          state.formBatchEditItems[target] = []
+        } else {
+          state.formBatchEditItems[target] = ''
+        }
+      }
     }
 
     onMounted(() => {

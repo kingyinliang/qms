@@ -307,7 +307,7 @@ export default defineComponent({
         return false
       }
 
-      if (state.addAndEditItemForm.paramDataType && (!state.addAndEditItemForm.paramStandard || !state.addAndEditItemForm.paramStandardType)) {
+      if (state.addAndEditItemForm.paramDataType === 'FLOAT_POINT' && (!state.addAndEditItemForm.paramStandard || !state.addAndEditItemForm.paramStandardType)) {
         proxy.$warningToast('请输入数据标准')
         return false
       }
@@ -376,7 +376,7 @@ export default defineComponent({
       if (val === 'FLOAT_POINT') {
         state.paramStandardTypeOptions.forEach((item:any) => {
           console.log(item)
-          if (item.dictCode === 'DIGIT') {
+          if (item.dictCode !== 'DIGIT') {
             item.disabled = false
           } else {
             item.disabled = true
