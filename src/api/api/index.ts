@@ -433,7 +433,7 @@ export function MANAGEMENT_INSPECTION_PLAN_CONFIGURATION_PLAN_UPDATE_API (params
 
 // 计划管理-[检验计划配置]- 批次编辑
 export function MANAGEMENT_INSPECTION_PLAN_CONFIGURATION_PLAN_BATCH_UPDATE_API (params = {}):Promise<AxiosResponse> {
-  return Http.post('/planConfigure/insertPlanConfigures', params, { baseURL: (process.env.VUE_APP_QMS_API as string) + (process.env.VUE_APP_API_V as string) })
+  return Http.post('/planConfigure/updatePlanConfigures', params, { baseURL: (process.env.VUE_APP_QMS_API as string) + (process.env.VUE_APP_API_V as string) })
 }
 
 // 计划管理-[检验计划配置]- 删除

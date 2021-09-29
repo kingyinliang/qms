@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-07-30 11:24:46
  * @LastEditors: Telliex
- * @LastEditTime: 2021-09-29 09:11:31
+ * @LastEditTime: 2021-09-29 13:19:30
 -->
 <template>
   <mds-card class="test_method" :title="title" :pack-up="false" style="margin-bottom: 0; background: #fff;">
@@ -114,7 +114,7 @@
 
       <el-table-column label="操作" width="100" fixed="right">
         <template #default="scope" >
-          <el-button type="text" icon="el-icon-remove-outline" class="role__btn" @click="btnDeleteItemData(scope.$index,scope.row)" :disabled="!isRedact">
+          <el-button type="text" icon="el-icon-delete" class="delete-btn" @click="btnDeleteItemData(scope.$index,scope.row)" :disabled="!isRedact">
            <span>删除</span>
           </el-button>
         </template>
