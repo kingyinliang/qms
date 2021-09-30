@@ -29,20 +29,20 @@
       </div>
      <el-table
         :data="topicMainData"
-        max-height="500"
+        height="500"
         border
         tooltip-effect="dark"
         class="bueatyScroll"
         style="width: 100%;"
         @selection-change="handleSelectionChange">
         <el-table-column type="selection" width="55" />
-        <el-table-column type="index" :index="index => index + 1 + (Number(currentPage) - 1) * (Number(pageSize))" label="序号"  width="55" fixed align="center" size="small" />
+        <el-table-column type="index" :index="index => index + 1 + (Number(currentPage) - 1) * (Number(pageSize))" label="序号"  width="55"  align="center" size="small" fixed />
         <el-table-column label="物料/类别" prop="inspectMaterialTypeName" :show-overflow-tooltip="true" min-width="180" />
         <el-table-column label="指标编码" prop="indexCode" :show-overflow-tooltip="true" min-width="100" />
         <el-table-column label="指标名称" prop="indexName" :show-overflow-tooltip="true" min-width="180" />
         <el-table-column label="单位" prop="indexUnit" :show-overflow-tooltip="true" min-width="100" />
-        <el-table-column label="方法" prop="indexMethod" :show-overflow-tooltip="true" min-width="220" />
-        <el-table-column label="取样单位" prop="cooperate" :show-overflow-tooltip="true" min-width="108" >
+        <el-table-column label="方法" prop="indexMe thod" :show-overflow-tooltip="true" min-width="220" />
+        <el-table-column label="取样部门" prop="cooperate" :show-overflow-tooltip="true" min-width="108" >
           <template #default="scope">
             {{scope.row.cooperate}}
           </template>
@@ -52,7 +52,7 @@
             {{scope.row.sample}}
           </template>
         </el-table-column>
-        <el-table-column label="检验单位" prop="inspect.deptName" :show-overflow-tooltip="true" min-width="100" />
+        <el-table-column label="检验部门" prop="inspect.deptName" :show-overflow-tooltip="true" min-width="100" />
         <el-table-column label="配合检验" prop="coInspect.deptName" :show-overflow-tooltip="true" min-width="100" />
         <el-table-column label="留样数量" prop="sampleAmount" :show-overflow-tooltip="true" min-width="100" />
         <el-table-column label="关键指标" prop="keyIndexFlag" :show-overflow-tooltip="true" min-width="100" >
@@ -188,7 +188,7 @@
   </el-dialog>
   <!--批次编辑-->
    <el-dialog :title="formBatchEditItems.title" v-model="isBatchEditDialogShow" width="40%" >
-    <el-form ref="refBatchEditItems" :model="formBatchEditItems" >
+    <el-form ref="refBatchEditItems" :model="formBatchEditItems" class="batch-edit-form" >
       <el-form-item label="项目位置：" prop="projectLocation" :label-width="cssForformLabelWidth">
           <el-input v-model="formBatchEditItems.projectLocation" class="140px" autocomplete="off" maxlength="10" :disabled="true"></el-input>
       </el-form-item>
@@ -552,7 +552,7 @@ export default defineComponent({
           deptName: ''
         },
         coInspectList: [],
-        inspect: { // 检验单位
+        inspect: { // 检验部门
           deptId: '',
           deptName: ''
         },
@@ -1028,7 +1028,7 @@ export default defineComponent({
       refBatchEditItems.value.resetFields()
 
       state.formBatchEditItems = {
-        title: '批次编辑',
+        title: '批量编辑',
         projectLocation: state.currentFocusTargetObj.projectLocation, // 项目位置
         frequencyIdChecked: false,
         frequencyId: '',
@@ -1080,7 +1080,7 @@ export default defineComponent({
       }
       console.log(tempId)
       await INSPECT_TYPE_DETAIL_API({ id: tempId }).then((res) => {
-        console.log('取样单位 data')
+        console.log('取样部门 data')
         console.log(res.data.data)
         state.formGlobleItem.cooperate = res.data.data.cooperate.map((item:any) => item.deptName).join(',')
         state.formGlobleItem.sample = res.data.data.sample.map((item:any) => item.deptName).join(',')
@@ -1432,5 +1432,10 @@ export default defineComponent({
 .checkbox-position{
   position: absolute;
   left: -110px;
+}
+
+.batch-edit-form ::v-deep(.el-checkbox .el-checkbox__label){
+  display:none
+
 }
 </style>
