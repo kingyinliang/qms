@@ -450,6 +450,7 @@ export default defineComponent({
     // [ACT:define] 获取 tree-data
     const getBaseData = () => {
       INSPECT_INDEX_PARAMETER_RELATIVE_ITEM_API({
+        planVersionId: state.currentVersion
       }).then((res) => {
         state.textForSearch = ''
         state.isShowSearchBar = true
