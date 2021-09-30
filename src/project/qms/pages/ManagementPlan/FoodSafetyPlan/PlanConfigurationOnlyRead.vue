@@ -312,7 +312,7 @@ export default defineComponent({
         indexUnit: '', // 单位
         indexMethod: '', // 方法
         sample: '', // x配合取样
-        cooperate: '', // x取样单位
+        cooperate: '', // x取样部门
         sampleAmount: null, // 留样数量 // v
         frequencyName: '', // 检验频次
         frequencyId: '',
@@ -376,7 +376,7 @@ export default defineComponent({
         indexUnit: '', // 单位
         indexMethod: '', // 方法
         sample: '', // x配合取样
-        cooperate: '', // x取样单位
+        cooperate: '', // x取样部门
         sampleAmount: 0, // 留样数量 // v
         frequencyName: '', // 检验频次
         frequencyId: '',

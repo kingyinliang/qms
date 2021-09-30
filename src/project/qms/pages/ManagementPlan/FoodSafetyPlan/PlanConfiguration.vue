@@ -115,7 +115,7 @@
           <el-input v-model="globleItem.indexMethod" class="140px" autocomplete="off" maxlength="10" :disabled="true"></el-input>
       </el-form-item>
 
-      <el-form-item label="检验单位：" prop="inspectList" :label-width="cssForformLabelWidth">
+      <el-form-item label="检验部门：" prop="inspectList" :label-width="cssForformLabelWidth">
           <tree-dialog
             ref="refInspect"
             v-model="globleItem.inspectList"
@@ -140,7 +140,7 @@
             :tree-props="{ label: 'deptName', children: 'children' }"
           />
       </el-form-item>
-      <el-form-item label="取样单位：" prop="cooperate" :label-width="cssForformLabelWidth">
+      <el-form-item label="取样部门：" prop="cooperate" :label-width="cssForformLabelWidth">
           <el-input v-model="globleItem.cooperate" class="140px" autocomplete="off" maxlength="10" :disabled="true" placeholder="暂无内容"></el-input>
       </el-form-item>
       <el-form-item label="配合取样：" prop="sample" :label-width="cssForformLabelWidth">
@@ -423,7 +423,7 @@ export default defineComponent({
         indexUnit: '', // 单位
         indexMethod: '', // 方法
         sample: '', // x配合取样
-        cooperate: '', // x取样单位
+        cooperate: '', // x取样部门
         sampleAmount: null, // 留样数量 // v
         frequencyName: '', // 检验频次
         frequencyId: '',
@@ -484,17 +484,10 @@ export default defineComponent({
       inspectList: [
         {
           required: true,
-          message: '请选择检验单位',
+          message: '请选择检验部门',
           trigger: 'blur'
         }
       ],
-      // cooperate: [
-      //   {
-      //     required: true,
-      //     message: '请选择取样单位',
-      //     trigger: 'blur'
-      //   }
-      // ],
       frequencyId: [
         {
           required: true,
@@ -537,7 +530,7 @@ export default defineComponent({
           indexUnit: '', // 单位
           indexMethod: '', // 方法
           sample: '', // x配合取样
-          cooperate: '', // x取样单位
+          cooperate: '', // x取样部门
           sampleAmount: 0, // 留样数量 // v
           frequencyName: '', // 检验频次
           frequencyId: '',
@@ -573,7 +566,7 @@ export default defineComponent({
           indexUnit: row.indexUnit, // 单位
           indexMethod: row.indexMethod, // 方法
           sample: row.sample, // x配合取样
-          cooperate: row.cooperate, // x取样单位
+          cooperate: row.cooperate, // x取样部门
           sampleAmount: 0, // 留样数量 // v
           frequencyName: row.frequencyName, // 检验频次
           frequencyId: row.frequencyId,
@@ -609,7 +602,7 @@ export default defineComponent({
         indexUnit: '', // 单位
         indexMethod: '', // 方法
         sample: '', // x配合取样
-        cooperate: '', // x取样单位
+        cooperate: '', // x取样部门
         sampleAmount: 0, // 留样数量 // v
         frequencyName: '', // 检验频次
         frequencyId: '',
@@ -842,9 +835,9 @@ export default defineComponent({
         state.frequencyIdOptions = res.data.data
       })
 
-      // 获取取样单位下拉
+      // 获取取样部门下拉
       await INSPECT_TYPE_DETAIL_API({ id: state.currentFocusTargetObj.id }).then((res) => {
-        console.log('取样单位下拉')
+        console.log('取样部门下拉')
         console.log(res.data.data)
       })
 
@@ -904,25 +897,6 @@ export default defineComponent({
           btnItemFloatClear()
         }
       })
-      // if (state.globleItem.indexCode === '') {
-      //   proxy.$errorToast('请选择指标编码')
-      //   return
-      // }
-
-      // if (state.globleItem.inspectList.length === 0) {
-      //   proxy.$errorToast('请选择检验单位')
-      //   return
-      // }
-
-      // if (state.globleItem.cooperate === '') {
-      //   proxy.$errorToast('请选择取样单位单位')
-      //   return
-      // }
-
-      // if (state.globleItem.frequencyName === '') {
-      //   proxy.$errorToast('请选择检验频次')
-      //   return
-      // }
     }
 
     // [EVENT:change] 检验频次
