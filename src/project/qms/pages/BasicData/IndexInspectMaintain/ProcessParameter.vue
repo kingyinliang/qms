@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-07-30 11:24:46
  * @LastEditors: Telliex
- * @LastEditTime: 2021-09-29 15:50:28
+ * @LastEditTime: 2021-09-30 08:49:16
 -->
 <template>
   <mds-card class="test_method" :title="title" :pack-up="false" style="margin-bottom: 0; background: #fff;">
@@ -367,7 +367,7 @@ export default defineComponent({
     }
 
     // [ACTION:load] 获取标准值明细数据
-    const btnGetMainData = async () => {
+    const btnGetMainData = async (stillCanEdit = false) => {
       state.topicMainData = []
       state.isRedact = true
 
@@ -404,8 +404,10 @@ export default defineComponent({
       // [BUG] Code Smell 處理
       // 让变数控制表单的表现行为，最后触发
       setTimeout(() => {
-        state.isRedact = false
-      }, 1000)
+        if (!stillCanEdit) {
+          state.isRedact = false
+        }
+      }, 500)
     }
 
     // [BTN:删除][过程参数] 删除 item
@@ -441,7 +443,7 @@ export default defineComponent({
           const res = await INSPECT_INDEX_PROCESS_PARAMETER_DELETE_API({ id: val.id })
           if (res.data.code === 200) {
             proxy.$successToast('操作成功')
-            await btnGetMainData()
+            await btnGetMainData(true)
           }
         }
       })
@@ -545,19 +547,19 @@ export default defineComponent({
           // reload
           btnGetMainData()
           // 关闭标准值明细 card
-          closeStandardValueInfoArea()
+          closeStandardValueInfoArea(false)
         })
       } else {
         // reload
         btnGetMainData()
         // 关闭标准值明细 card
-        closeStandardValueInfoArea()
+        closeStandardValueInfoArea(true)
       }
     }
 
     // [BTN:取消][过程参数]
     const btnLeaveItemData = () => {
-      closeStandardValueInfoArea()
+      closeStandardValueInfoArea(false)
     }
 
     // [BTN:编辑][过程参数]
@@ -567,9 +569,15 @@ export default defineComponent({
     }
 
     // [ATC] 关闭标准值明细 card
-    const closeStandardValueInfoArea = () => {
+    const closeStandardValueInfoArea = (stillCanEdit:boolean) => {
       state.controlBtnCanDo = false
-      // state.isRedact = false
+      // [BUG] Code Smell 處理
+      // 让变数控制表单的表现行为，最后触发
+      setTimeout(() => {
+        if (!stillCanEdit) {
+          state.isRedact = false
+        }
+      }, 100)
       parent.emit('update:dialogVisible', false)
     }
 
@@ -772,6 +780,7 @@ export default defineComponent({
 
     // [关联公式]dialog table 选框选择
     const handleSelectionChange = (val: RelatedeFormulaData[]) => {
+      console.log(val)
       state.selectedListOfRelatedeFormulaData = val
     }
 
