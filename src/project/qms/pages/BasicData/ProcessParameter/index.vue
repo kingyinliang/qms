@@ -89,7 +89,7 @@
         <el-form-item label="数据标准：" prop="paramStandard"  :label-width="cssForformLabelWidth">
           <div style="display:flex">
 
-          <el-input v-model="addAndEditItemForm.paramStandard" maxlength="5" placeholder="请输入" style="margin-right:10px;" autocomplete="off" oninput="value=value.replace(/[^\d]/g,'')" @change="addAndEditItemForm.paramCode=addAndEditItemForm.paramSubscriptCode+'['+addAndEditItemForm.paramSubscript+']'"></el-input>
+          <el-input v-model="addAndEditItemForm.paramStandard" maxlength="2" placeholder="请输入" style="margin-right:10px;" autocomplete="off" oninput="value=value.replace(/[^\d]/g,'')" @change="addAndEditItemForm.paramCode=addAndEditItemForm.paramSubscriptCode+'['+addAndEditItemForm.paramSubscript+']'"></el-input>
 
           <el-select  v-model="addAndEditItemForm.paramStandardType" placeholder="请选择"  clearable>
             <el-option v-for="(item) in paramStandardTypeOptions" :key="item.dictCode"
