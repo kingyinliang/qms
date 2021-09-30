@@ -209,7 +209,7 @@ export default defineComponent({
     }
     // [BTN:编辑] 编辑 item
     const btnEditItemOfTopicMainData = async (row: TopicMainData) => {
-      state.dialogTitle = '过程参数-编辑'
+      state.dialogTitle = '编辑版本'
       state.isAddItemDialogShow = true
       await nextTick()
       refAddAndEditItemDialog.value.resetFields()
@@ -254,7 +254,7 @@ export default defineComponent({
 
     // [BTN:新增] 新增
     const btnAddItemOfTopicMainData = async () => {
-      state.dialogTitle = '过程参数-新增'
+      state.dialogTitle = '新增版本'
       state.isAddItemDialogShow = true
       await nextTick()
       refAddAndEditItemDialog.value.resetFields()
