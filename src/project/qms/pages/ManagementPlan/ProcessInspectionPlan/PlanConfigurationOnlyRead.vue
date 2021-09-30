@@ -38,7 +38,7 @@
         <el-table-column label="指标名称" prop="indexName" :show-overflow-tooltip="true" min-width="180" />
         <el-table-column label="单位" prop="indexUnit" :show-overflow-tooltip="true" min-width="100" />
         <el-table-column label="方法" prop="indexMethod" :show-overflow-tooltip="true" min-width="220" />
-        <el-table-column label="取样单位" prop="cooperate" :show-overflow-tooltip="true" min-width="108" >
+        <el-table-column label="取样部门" prop="cooperate" :show-overflow-tooltip="true" min-width="108" >
           <template #default="scope">
             {{scope.row.cooperate}}
           </template>
@@ -48,7 +48,7 @@
             {{scope.row.sample}}
           </template>
         </el-table-column>
-        <el-table-column label="检验单位" prop="inspect.deptName" :show-overflow-tooltip="true" min-width="100" />
+        <el-table-column label="检验部门" prop="inspect.deptName" :show-overflow-tooltip="true" min-width="100" />
         <el-table-column label="配合检验" prop="coInspect.deptName" :show-overflow-tooltip="true" min-width="100" />
         <el-table-column label="留样数量" prop="sampleAmount" :show-overflow-tooltip="true" min-width="100" />
         <el-table-column label="关键指标" prop="keyIndexFlag" :show-overflow-tooltip="true" min-width="100" >
@@ -319,7 +319,7 @@ export default defineComponent({
         indexUnit: '', // 单位
         indexMethod: '', // 方法
         sample: '', // x配合取样
-        cooperate: '', // x取样单位
+        cooperate: '', // x取样部门
         sampleAmount: null, // 留样数量
         frequencyName: '', // 检验频次
         frequencyId: '',
@@ -332,7 +332,7 @@ export default defineComponent({
           deptName: ''
         },
         coInspectList: [],
-        inspect: { // 检验单位
+        inspect: { // 检验部门
           deptId: '',
           deptName: ''
         },
@@ -381,14 +381,14 @@ export default defineComponent({
       inspectList: [
         {
           required: true,
-          message: '请选择检验单位',
+          message: '请选择检验部门',
           trigger: 'blur'
         }
       ],
       cooperate: [
         {
           required: true,
-          message: '请选择取样单位',
+          message: '请选择取样部门',
           trigger: 'blur'
         }
       ],
@@ -422,7 +422,7 @@ export default defineComponent({
         indexUnit: '', // 单位
         indexMethod: '', // 方法
         sample: '', // x配合取样
-        cooperate: '', // x取样单位
+        cooperate: '', // x取样部门
         sampleAmount: 0, // 留样数量 // v
         frequencyName: '', // 检验频次
         frequencyId: '',
