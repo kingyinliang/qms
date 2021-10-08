@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-07-08 11:25:52
  * @LastEditors: Telliex
- * @LastEditTime: 2021-09-06 17:16:45
+ * @LastEditTime: 2021-10-08 17:31:09
 -->
 <template>
     <dialogDevice :dialogVisible="dialogVisible" :title="title" @on-confirm="onConfirm" @on-close="onClose" width="70%">
@@ -171,8 +171,6 @@ export default defineComponent({
         res.data.data.forEach((item:any) => {
           state.inspectPropertyOptions[item.dictCode] = item.dictValue
         })
-        console.log('检验属性下拉')
-        console.log(state.inspectPropertyOptions)
       })
     })
 
@@ -199,22 +197,12 @@ export default defineComponent({
     watch(
       dialogData,
       newValue => {
-        console.log('newValue')
-        console.log(newValue)
         state.materialTreeData = newValue
         state.treeValueSelected = [] // 进页面 elected items init
         state.treeFrameworkData = [] // 进页面 data structure init
-        // if (Object.keys(state.mainData).length === 0) {
-        // state.mainData = {}
+
         state.materialTreeData.forEach((item:TreeData) => {
           item.inspectPropertyName = state.inspectPropertyOptions[item.inspectProperty]
-          // if (item.inspectProperty === 'CHEMISTRY') {
-          //   item.inspectPropertyName = '理化类'
-          // }
-          // if (item.inspectProperty === 'MICROORGANISM') {
-          //   item.inspectPropertyName = '微生物类'
-          // }
-
           state.mainData[item.inspectProperty] = JSON.parse(JSON.stringify(item.inspectGroups))
         })
         // }
@@ -222,22 +210,9 @@ export default defineComponent({
         if (state.materialTreeData.length >= 1) {
           clickGategoryToChangeData(state.materialTreeData[0].inspectProperty)
         }
-        console.log('data 架构')
-        console.log(state.mainData)
       },
       { immediate: true }
     )
-
-    // const addTransferTooltip = (e:any) => {
-    //   if (e.target.nodeName === 'SPAN' && e.target.className === 'el-checkbox__label') {
-    //     console.log(e)
-    //     console.log('e.target')
-    //     console.log(e.target)
-    //     const target = e.target
-    //     // target.innerHTML = '<el-tooltip class="item" effect="dark" content="Top Left 提示文字" placement="top-start"><span>' + target.innerText + '</span></el-tooltip>'
-    //     target.title = target.innerText
-    //   }
-    // }
 
     return {
       ...toRefs(state),

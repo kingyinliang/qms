@@ -149,7 +149,6 @@ export default defineComponent({
     })
 
     // 函数
-
     // [ACTION:load][BTN:查询] 获取检验指标库数据
     const getMainData = async (type = '') => {
       if (type === 'init') {
@@ -161,8 +160,7 @@ export default defineComponent({
         current: state.currentPage,
         size: state.pageSize
       })
-      console.log('获取检验指标库数据')
-      console.log(res.data.data)
+
       state.topicMainData = res.data.data.records
       state.totalItems = res.data.data.total
       state.currentPage = res.data.data.current
