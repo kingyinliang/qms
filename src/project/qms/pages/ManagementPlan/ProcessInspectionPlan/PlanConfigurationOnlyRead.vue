@@ -6,6 +6,7 @@
     :rightTitle="pageRightColumnTitle"
     :treeData="treeData"
     :treeProps="{ label: 'inspectTypeName',children:'children' }"
+    :defaultFilterNodeProps="{ prop: 'existConfiguration',value:'Y' }"
     @treeNodeClick="getPlanDetail"
     :floatMenu="false"
   >
@@ -111,6 +112,7 @@ interface TreeDataItem {
   inspectMaterialName: string
   inspectTypeName: string
   projectLocation: string
+  existConfiguration: string
 }
 
 interface TreeData {
@@ -532,7 +534,6 @@ export default defineComponent({
         if (data[i].inspectMaterialAlls.length !== 0) {
           data[i].children = []
           data[i].inspectMaterialAlls.forEach((item:TreeDataItem) => {
-            // data[i].children.push({ inspectTypeName: item, isFinalNode: true, markParentId: data[i].id, itemId: item.slice(item.lastIndexOf(' ') + 1), id: data[i].id + index })
             data[i].children.push({
               inspectTypeName: item.inspectTypeName,
               isFinalNode: true,
@@ -541,14 +542,11 @@ export default defineComponent({
               inspectMaterialCode: item.inspectMaterialCode,
               inspectMaterialName: item.inspectMaterialName,
               inspectMaterialAlls: [],
-              projectLocation: '',
-              canClick: data[i].assistFlag !== 'Y',
-              canEdit: true,
-              canDelete: true,
-              canAdd: true,
-              canGenerate: true,
-              disabled: data[i].assistFlag !== 'Y'
+              existConfiguration: item.existConfiguration
             })
+            if (item.existConfiguration === 'Y') {
+              data[i].existConfiguration = 'Y'
+            }
           })
         } else {
           // 生产辅助 smell
@@ -560,23 +558,8 @@ export default defineComponent({
         }
 
         if (data[i].parentId === '0') { // 第一级
-          data[i].canEdit = true // 是否可编辑
-          data[i].canDelete = false // 是否可删除
-          data[i].canAdd = false // 是否可新增
-          data[i].canGenerate = false // 是否可生成
-          data[i].disabled = true
           data[i]._level = 1
-          data[i].projectLocation = data[i].inspectTypeName
-        } else { // 第一级以外
-          data[i].canEdit = true
-          data[i].canDelete = true
-          data[i].canAdd = true
-          data[i].canGenerate = true
-          data[i].disabled = false
-          data[i].projectLocation = ''
         }
-
-        data[i].canClick = true
         temp[data[i][id]] = data[i]
       }
 
@@ -585,32 +568,16 @@ export default defineComponent({
           if (!temp[data[k][pid]].children) {
             temp[data[k][pid]].children = []
           }
+          if (data[k].existConfiguration === 'Y') {
+            temp[data[k][pid]].existConfiguration = 'Y'
+          }
 
           if (!data[k]._level) {
             data[k]._level = temp[data[k][pid]]._level + 1
           }
 
-          // if (temp[data[k][pid]]._level === 1) {
-          //   temp[data[k][pid]].projectLocation = temp[data[k][pid]].inspectTypeName
-          // }
-          if (data[k]._level !== 1) {
-            data[k].projectLocation = temp[data[k][pid]].projectLocation + '-' + data[k].inspectTypeName
-          }
-
-          if (data[k].inspectMaterialAlls.length) {
-            data[k].inspectMaterialAlls.forEach((subItem:TreeDataItem, index:number) => {
-              subItem.projectLocation = data[k].projectLocation + '-' + subItem.inspectMaterialName
-              data[k].children[index].projectLocation = data[k].projectLocation + '-' + subItem.inspectMaterialName
-            })
-          }
           temp[data[k][pid]].children.push(data[k])
         } else {
-          if (data[k].inspectMaterialAlls.length) {
-            data[k].inspectMaterialAlls.forEach((subItem:TreeDataItem, index:number) => {
-              subItem.projectLocation = data[k].projectLocation + '-' + subItem.inspectMaterialName
-              data[k].children[index].projectLocation = data[k].projectLocation + '-' + subItem.inspectMaterialName
-            })
-          }
           res.push(data[k])
         }
       }
