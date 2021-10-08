@@ -157,7 +157,6 @@ export default defineComponent({
 
     // single action to go
     const handleSingleEdit = (row:TopicMainData) => {
-      console.log(row)
       state.globleItem = {
         id: row.id,
         inspectGroupCode: row.inspectGroupCode,
@@ -216,8 +215,6 @@ export default defineComponent({
         current: currentPage,
         size: pageSize
       }).then((res) => {
-        console.log('物料明细')
-        console.log(res.data.data)
         state.topicMainData = res.data.data.records
         state.currentPage = res.data.data.current
         state.pageSize = res.data.data.size
@@ -242,8 +239,6 @@ export default defineComponent({
         state.materialDetailText = ''
         state.isShowSearchBar = true
         state.treeData = treeDataTranslater('category', JSON.parse(JSON.stringify(res.data.data)), 'id', 'parentId')
-        console.log('state.treeData')
-        console.log(state.treeData)
         // 一进页面默认跑第一笔
         if (state.currentCategoryId === '') {
           state.currentCategoryId = state.treeData[0].id
@@ -251,12 +246,7 @@ export default defineComponent({
           treeModule.value.focusCurrentNodeNumber = state.treeData[0].id
           apiMaterialDetail(state.currentCategoryId, '', state.currentPage, state.pageSize)
         } else {
-          console.log('state.currentCategoryId')
-          console.log(state.currentCategoryId)
-
           treeModule.value.focusCurrentNodeNumber = state.currentCategoryId
-
-          // apiMaterialDetail(state.currentCategoryId, state.globleSearchString, state.currentPage, state.pageSize)
         }
       })
     }
@@ -264,9 +254,6 @@ export default defineComponent({
     const updateInspectCategoryList = (val:string[]) => {
       const dataTemp:TopicMainData[] = []
       dataTemp.push(state.globleItem)
-      console.log('=========state.globleItem=========')
-      console.log(state.globleItem)
-
       INSPECT_MATERIAL_CHECKED_INSPECT_TYPE_UPDATE_API({
         inspectMaterialDetails: dataTemp,
         inspectTypeIdList: val // 检验类id数组

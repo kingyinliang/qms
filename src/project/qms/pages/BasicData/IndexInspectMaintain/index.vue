@@ -358,15 +358,11 @@ export default defineComponent({
     }
     // [ACT: ][参数组] get data
     const getMaterialDetail = (who:string, val:TreeItemData, searchString:string) => {
-      console.log('点击物件')
-      console.log(val)
-
       // 仅 方法 可以触发
       if (val.id !== '' && val._level === 3) {
         if (who === 'default') {
           state.globalMainObj = val
         }
-
         state.textParameterGroupSearch = searchString
         INSPECT_INDEX_PARAMETER_GROUP_QUERY_API({
           inspectIndexMethodId: state.globalMainObj.id,
@@ -374,8 +370,6 @@ export default defineComponent({
           current: state.currentPage,
           size: state.pageSize
         }).then((res) => {
-          console.log('获取参数组')
-          console.log(res.data.data)
           state.topicMainData = res.data.data.records
           state.topicMainData.forEach((item:TopicMainData) => { item.isCurrentFocusRow = false })
           state.currentPage = res.data.data.current
@@ -408,9 +402,6 @@ export default defineComponent({
       }).then((res) => {
         state.textParameterGroupSearch = ''
         state.treeData = treeDataTranslater(res.data.data) // 转换结构
-
-        console.log('指标检验方法明细 treeData')
-        console.log(state.treeData)
         state.topicMainData = []
         // 默认 Tree-Data 第一笔 给 id
         state.treeData[0].inspectGroups[0].inspectMethodId = 'b'
@@ -543,12 +534,8 @@ export default defineComponent({
       state.isDialogVisibleForItemControl = false
     }
 
-    // TODO
     // [BTN:确定][参数明细] 新增+编辑 function dialog
     const btnAddItemFloatConfirm = () => {
-      console.log('state.addParameterGroupform11111')
-      console.log(state.addParameterGroupform)
-
       if (state.addParameterGroupform.parameterGroupName === '') {
         proxy.$errorToast('请录入必填栏位')
         return
@@ -568,18 +555,12 @@ export default defineComponent({
 
       if (!state.addParameterGroupform.id) { // 新增
         const tempParameterTreeCheckNodes:ParameterTreeData[] = []
-        console.log('state.parameterTreeCheckNodes')
-        console.log(state.parameterTreeCheckNodes)
         state.parameterTreeCheckNodes.forEach(item => {
           if (item.isEndNode || item.assistFlag === 'Y') {
             item.inspectTypeName = item.location
             tempParameterTreeCheckNodes.push(item)
           }
         })
-
-        console.log('tempParameterTreeCheckNodes')
-        console.log(tempParameterTreeCheckNodes)
-
         INSPECT_INDEX_PARAMETER_GROUP_INSERT_API({
           inspectIndexMethodId: state.globalMainObj.id,
           inspectMethodCode: state.globalMainObj.inspectMethodCode,
@@ -595,8 +576,6 @@ export default defineComponent({
         })
       } else { // 编辑
         const tempParameterTreeCheckNodes:ParameterTreeData[] = []
-        console.log('state.parameterTreeCheckNodes')
-        console.log(state.parameterTreeCheckNodes)
         state.parameterTreeCheckNodes.forEach(item => {
           if (item.isEndNode || item.assistFlag === 'Y') {
             item.inspectTypeName = item.location
@@ -643,7 +622,6 @@ export default defineComponent({
       parameterTreeRef.value.filter(val)
     })
 
-    // TODO
     // [参数明细] 关联项 tree-data 处理
     const parameterTreeDataTranslater = (data: any[], id: string, pid: string) => {
       const res: any[] = []
@@ -694,8 +672,6 @@ export default defineComponent({
 
     const parameterTreeNodeClick = () => {
       state.parameterTreeCheckNodes = parameterTreeRef.value.getCheckedNodes(false)
-      console.log('state.parameterTreeCheckNodes')
-      console.log(state.parameterTreeCheckNodes)
       state.parameterTreeSslected = state.parameterTreeCheckNodes.map((it: any) => it.id)
     }
 
@@ -716,18 +692,15 @@ export default defineComponent({
         }
       })
     }
-    // TODO
     // [BTN:编辑][BTN:新增][参数明细]
     const handleParameterItem = (row:TopicMainData) => {
       if (row) { // 编辑
-        console.log('编辑')
         state.addParameterGroupform.id = row.id
         state.parameterTreeSelectedString = row.groupMaterialName
         state.parameterTreeSslected = row.inspectMaterialIds
         state.addParameterGroupform.parameterGroupCode = row.parameterGroupCode
         state.addParameterGroupform.parameterGroupName = row.parameterGroupName
-        console.log('state.globalMainObj')
-        console.log(state.globalMainObj)
+
         if (state.globalMainObj.inspectPropertyName === '微生物类') { // 微生物类
           state.addParameterGroupform.parameterDetails = row.parameterDetails
           state.addParameterGroupform.parameterDetailsList = row.parameterDetails.split(',')
@@ -736,7 +709,6 @@ export default defineComponent({
           state.addParameterGroupform.parameterDetailsList = []
         }
       } else { // 新增
-        console.log('新增')
         if (state.globalMainObj.inspectPropertyName === '微生物类') { // 微生物类
           state.addParameterGroupform = { // [form]参数配置
             id: '',
@@ -767,17 +739,10 @@ export default defineComponent({
       state.mainDialog = {
         title: '参数配置'
       }
-
-      // if (state.parameterTreeData.length === 0) {
       INSPECT_INDEX_PARAMETER_RELATIVE_ITEM_API(
       ).then((res) => {
-        console.log('弹窗 res.data.data')
-        console.log(res.data.data)
         state.parameterTreeData = parameterTreeDataTranslater(JSON.parse(JSON.stringify(res.data.data)), 'id', 'parentId')
-        console.log('state.parameterTreeData')
-        console.log(state.parameterTreeData)
       })
-      // }
     }
 
     // [参数明细][关联项] filter
@@ -786,12 +751,9 @@ export default defineComponent({
       return data.inspectTypeName.indexOf(value) !== -1
     }
 
-    // TODO
     // [参数明细][关联项] 下拉弹窗缩回消失
     const popperHide = () => {
       if (state.parameterTreeCheckNodes.length !== 0) {
-        console.log('final')
-        console.log(state.parameterTreeCheckNodes)
         const temp:string[] = [...new Set(state.parameterTreeCheckNodes.map((it: any) => it.location))]
         // const temp:string[] = [...new Set(parameterTreeCheckTranslater(state.parameterTreeCheckNodes, 'id', 'parentId').map((it: any) => it.location))]
         state.parameterTreeSelectedString = [...new Set(temp)].join(',')
@@ -836,8 +798,6 @@ export default defineComponent({
         res.data.data.forEach((item:any) => {
           state.inspectPropertyOptions[item.dictCode] = item.dictValue
         })
-        console.log('检验属性下拉')
-        console.log(state.inspectPropertyOptions)
       })
       // 获取
       await getMainTreeData()

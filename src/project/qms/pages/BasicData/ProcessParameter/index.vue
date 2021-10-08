@@ -69,7 +69,7 @@
           </div>
         </el-form-item>
         <el-form-item label="参数类型：" prop="paramType"  :label-width="cssForformLabelWidth">
-          <el-select  v-model="addAndEditItemForm.paramType" placeholder="请选择" style="width:100%" clearable @change="changeParamTypeOptions">
+          <el-select  v-model="addAndEditItemForm.paramType" placeholder="请选择" style="width:100%" clearable>
             <el-option  v-for="item in paramTypeOptions"
               :key="item.dictCode"
               :label="item.dictValue"
@@ -236,10 +236,7 @@ export default defineComponent({
         paramCodeOrName: state.plantList.textSearch,
         size: state.pageSize
       })
-      console.log('过程参数列表数据')
-      console.log(res.data.data)
       state.dataTopicMainData = res.data.data.records
-      // state.totalItems = res.data.data.records.length
       state.totalItems = res.data.data.total
     }
     // [BTN:编辑] 编辑 item
@@ -343,15 +340,11 @@ export default defineComponent({
         state.paramDataTypeOptions.forEach(item => {
           state.paramDataTypeObj[item.dictCode] = item.dictValue
         })
-        console.log('3数据类型下拉')
-        console.log(state.paramDataTypeOptions)
       })
 
       // 数据标准单位
       await DICTIONARY_QUERY_API({ dictType: 'PROC_PARAM_STANDARD' }).then((res) => {
         state.paramStandardTypeOptions = res.data.data
-        console.log('4数据标准单位下拉')
-        console.log(state.paramStandardTypeOptions)
       })
 
       // 过程参数类型
@@ -360,22 +353,14 @@ export default defineComponent({
         state.paramTypeOptions.forEach(item => {
           state.paramTypeObj[item.dictCode] = item.dictValue
         })
-        console.log('6过程参数类型')
-        console.log(state.paramTypeOptions)
       })
-    }
-    // [SELECT:参数类型][Event:change]
-    const changeParamTypeOptions = (val:string) => {
-      console.log(val)
     }
 
     // [SELECT:参数类型][Event:change]
     const changeParamDataTypeOptions = (val:string) => {
-      console.log(val)
       state.addAndEditItemForm.paramStandardType = ''
       if (val === 'FLOAT_POINT') {
         state.paramStandardTypeOptions.forEach((item:any) => {
-          console.log(item)
           if (item.dictCode !== 'DIGIT') {
             item.disabled = false
           } else {
@@ -391,8 +376,6 @@ export default defineComponent({
           }
         })
       }
-      console.log('state.paramStandardTypeOptions')
-      console.log(state.paramStandardTypeOptions)
     }
 
     /**  == 生命周期 ==  **/
@@ -414,7 +397,6 @@ export default defineComponent({
       handleSizeChange,
       handleCurrentChange,
       initVariable,
-      changeParamTypeOptions,
       changeParamDataTypeOptions
     }
   }

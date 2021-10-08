@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-07-30 11:24:46
  * @LastEditors: Telliex
- * @LastEditTime: 2021-09-28 09:08:00
+ * @LastEditTime: 2021-10-08 15:06:12
 -->
 <template>
   <div style="padding-top:10px">
@@ -243,8 +243,6 @@ export default defineComponent({
       const res = await INSPECT_INDEX_VERSION_VALUE_QUERY_API({
         inspectVersionId: state.targetObj.id
       })
-      console.log('获取标准值明细数据')
-      console.log(res.data.data)
       res.data.data.forEach((item:TopicMainData) => {
         if (item.standardMonth !== '') {
           item.standardMonthList = item.standardMonth.split(',')
@@ -287,6 +285,7 @@ export default defineComponent({
         return
       }
 
+      // TODO issue
       proxy.$confirm('确认删除选中的数据？', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
@@ -312,8 +311,6 @@ export default defineComponent({
         //   }
         // },
         callback: async (action:string, instance:any) => {
-          console.log('2-instance')
-          console.log(instance)
           if (action === 'confirm') {
             if (val.id === '') {
               // val.delFlag = 1
@@ -496,14 +493,6 @@ export default defineComponent({
     const checkOnlyNumber = (val:string|number, node:any, target:string) => {
       console.log(val)
       let targetStr:string | number = '' + val
-      // targetStr = targetStr
-      //   .replace(/[^\d.]/g, '') // 清除“数字”和“.”以外的字符
-      //   .replace(/\.{2,}/g, '.') // 只保留第一个. 清除多余的
-      //   .replace('.', '$#$')
-      //   .replace(/\./g, '')
-      //   .replace('$#$', '.')
-      //   .replace(/^(-)*(\d+)\.(\d\d).*$/, '$1$2.$3') // 只能输入两个小数
-      // console.log(targetStr)
       if (targetStr.indexOf('.') < 0 && targetStr !== '') {
         // 以上已经过滤，此处控制的是如果没有小数点，首位不能为类似于 01、02的金额
         targetStr = parseFloat(targetStr)

@@ -172,8 +172,6 @@ export default defineComponent({
         additionalCodeOrName: state.plantList.textSearch,
         size: state.pageSize
       })
-      console.log('检验频次附加项列表数据')
-      console.log(res.data.data)
       state.dataTopicMainData = res.data.data.records
       // state.totalItems = res.data.data.records.length
       state.totalItems = res.data.data.total
