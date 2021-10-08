@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-07-30 11:24:46
  * @LastEditors: Telliex
- * @LastEditTime: 2021-09-29 15:51:14
+ * @LastEditTime: 2021-10-08 17:31:31
 -->
 <template>
   <mds-card class="test_method" title="检验指标标准" :pack-up="false" style="margin-bottom: 0; background: #fff;">
@@ -324,8 +324,6 @@ export default defineComponent({
         current: state.currentPage,
         size: state.pageSize
       })
-      console.log('获取检验指标数据')
-      console.log(res.data.data)
       state.topicMainData = res.data.data.records
       state.totalItems = res.data.data.total
       state.currentPage = res.data.data.current
@@ -425,8 +423,6 @@ export default defineComponent({
       state.dialogMainDataImport = JSON.parse(JSON.stringify(res.data.data))
 
       state.multiSelected = JSON.parse(JSON.stringify(state.tempMultiSelected))
-      console.log('指标弹窗架构:state.dialogMainDataImport')
-      console.log(state.dialogMainDataImport)
       state.isDialogShow = true
     }
 
@@ -489,9 +485,6 @@ export default defineComponent({
         proxy.$errorToast('请选择复制项')
         return
       }
-
-      console.log(state.copyItemform)
-
       await INSPECT_INDEX_MATERIAL_ITEM_COPY_API(state.copyItemform)
       proxy.$successToast('操作成功')
       state.searchSortByOrder = true
@@ -526,23 +519,17 @@ export default defineComponent({
     const apiGetInspectMaterialOptions = async (isCopy = false) => {
       const tempIsCopy = isCopy ? { copy: 1 } : {}
       const res = await INSPECT_INDEX_MATERIAL_ASSIST_TYPE_DROPDOWN_API(tempIsCopy)
-      console.log('检验类及物料下拉数据')
-      console.log(res.data.data)
       state.inspectMaterialOptions = res.data.data
     }
 
     // 检验类别\物料下拉选单
     const apiGetInspectMaterialCopyOptions = async () => {
       const res = await INSPECT_INDEX_MATERIAL_ITEM_COPY_DROPDOWN_API()
-      console.log('检验类及物料复制项下拉数据')
-      console.log(res.data.data)
       state.inspectMaterialCopyOptions = res.data.data
     }
 
     // [弹窗:指标分配]确认
     const actConfirm = async (data:TransferAreaData[]) => {
-      console.log('已选 selectedItems')
-      console.log(data)
       state.multiSelected = []
       state.tempMultiSelected = JSON.parse(JSON.stringify(data))
     }
@@ -573,7 +560,6 @@ export default defineComponent({
     }
 
     const selectCopyInspectIndexChange = (val:string) => {
-      console.log(val)
       state.inspectMaterialOptions.forEach((item) => {
         if (item.inspectMaterialCode === val) {
           if (item.assistFlag === 'Y') {

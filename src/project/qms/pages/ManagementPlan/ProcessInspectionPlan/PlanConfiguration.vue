@@ -657,23 +657,17 @@ export default defineComponent({
     }
     // [BTN:新增|编辑] 新增
     const btnClickItemAddOrEditForTopicMainData = async (act:string, row:any) => {
-      console.log('点击新增|编辑')
       if (act === 'add') {
         state.currentFocusItem = {}
       } else {
         state.currentFocusItem = row
       }
-      console.log('state.currentFocusItem')
-      console.log(state.currentFocusItem)
-      console.log('state.currentFocusTargetObj')
-      console.log(state.currentFocusTargetObj)
       state.isDialogShow = true
       await getDropDownOptions() // 获取下拉
       await nextTick()
       refGlobleItem.value.resetFields()
 
       if (act === 'add') {
-        console.log('新增')
         state.formGlobleItem = {
           title: '计划明细-新增',
           id: '',
@@ -707,9 +701,6 @@ export default defineComponent({
           inspectMaterialAlls: state.currentFocusTargetObj.inspectMaterialAlls.length ? state.currentFocusTargetObj.inspectMaterialAlls : [state.currentFocusTargetObj]
         }
       } else {
-        console.log('编辑')
-        console.log(row)
-
         state.formGlobleItem = {
           title: '计划明细-编辑',
           id: row.id,
@@ -778,25 +769,14 @@ export default defineComponent({
       }
     }
     const getPlanDetail = (val:TreeData) => {
-      console.log('点击节点')
-      console.log(val)
       state.currentFocusTargetObj = JSON.parse(JSON.stringify(val))
       state.textForSearch = ''
       state.currentPage = 1
       state.pageSize = 10
       state.totalItems = 0
-
-      // if (val.isFinalNode === true) {
-      //   console.log('物料')
-      //   state.currentCategoryId = val.markParentId
-      //   state.isShowSearchBar = false
-      //   doPlanDetailGet(val.markParentId, val.itemId, state.currentPage, state.pageSize)
-      // } else {
-      // console.log('类')
       state.currentCategoryId = val.id
       state.isShowSearchBar = true
       doPlanDetailGet(val.id, '', state.currentPage, state.pageSize)
-      // }
     }
 
     // [ACT] 计划明细
@@ -814,8 +794,6 @@ export default defineComponent({
         current: currentPage,
         size: pageSize
       }).then((res) => {
-        console.log('计划明细明细')
-        console.log(res.data.data)
         state.topicMainData = res.data.data.records
         state.currentPage = res.data.data.current
         state.pageSize = res.data.data.size
@@ -839,11 +817,7 @@ export default defineComponent({
       }).then((res) => {
         state.textForSearch = ''
         state.isShowSearchBar = true
-        console.log('原始 API 数据')
-        console.log(res.data.data)
         state.treeData = treeDataTranslater(JSON.parse(JSON.stringify(res.data.data)), 'id', 'parentId')
-        console.log('加工过的 API 数据state.treeData')
-        console.log(state.treeData)
         // 一进页面默认跑第一笔
         if (state.currentCategoryId === '') {
           state.initFocusNode = state.treeData[0].id
@@ -1014,9 +988,6 @@ export default defineComponent({
 
     // [BTN:批次编辑]
     const btnClickItemBatchEditForTopicMainData = async () => {
-      console.log('点击批次编辑')
-      console.log('state.currentFocusTargetObj')
-      console.log(state.currentFocusTargetObj)
       if (!state.multipleSelection.length) {
         proxy.$warningToast('请选择数据')
         return
@@ -1062,12 +1033,9 @@ export default defineComponent({
       // 获取检验频次下拉
       state.frequencyIdOptions = []
       await INSPECT_INSPECT_FREQUENCY_QUERY_DROPDOWN_API().then((res) => {
-        console.log('检验频次下拉')
-        console.log(res.data.data)
         state.frequencyIdOptions = res.data.data
       })
     }
-    // TODO-下拉
     const rewriteFormData = async (act:string) => {
       // 获取取样部门下拉
       let tempId = state.currentFocusTargetObj.id
@@ -1078,10 +1046,7 @@ export default defineComponent({
       } else {
         tempId = state.currentFocusItem.inspectTypeIds
       }
-      console.log(tempId)
       await INSPECT_TYPE_DETAIL_API({ id: tempId }).then((res) => {
-        console.log('取样部门 data')
-        console.log(res.data.data)
         state.formGlobleItem.cooperate = res.data.data.cooperate.map((item:any) => item.deptName).join(',')
         state.formGlobleItem.sample = res.data.data.sample.map((item:any) => item.deptName).join(',')
         state.formGlobleItem.sampleAmount = res.data.data.sampleAmount
@@ -1111,8 +1076,6 @@ export default defineComponent({
         inspectMaterialAlls: temp,
         inspectScene: state.currentInspectScene
       }).then((res) => {
-        console.log('指标编码下拉')
-        console.log(res.data.data)
         state.indexCodeOptions = res.data.data
       })
     }
@@ -1178,8 +1141,6 @@ export default defineComponent({
       }
       refGlobleItem.value.validate(async (valid: boolean) => {
         if (valid) {
-          console.log('state.formGlobleItem')
-          console.log(JSON.parse(JSON.stringify(state.formGlobleItem)))
           if (state.formGlobleItem.title === '计划明细-新增') { // 新增
             const tempCoInspectObj = await refCoInspect.value.getCheckedNodes()
             state.formGlobleItem.coInspect = {
@@ -1195,29 +1156,20 @@ export default defineComponent({
             if (state.formGlobleItem.assistFlag === 'Y' && !state.formGlobleItem.inspectMaterialCode) {
               state.formGlobleItem.inspectMaterialCode = state.formGlobleItem.inspectTypeCode
             }
-
-            console.log('计划明细-新增')
-            console.log(state.formGlobleItem)
             await MANAGEMENT_INSPECTION_PLAN_CONFIGURATION_INSERT_API({
               ...state.formGlobleItem
             })
           } else { // 编辑
             const tempCoInspectObj = await refCoInspect.value.getCheckedNodes()
-            console.log('tempCoInspectObj')
-            console.log(tempCoInspectObj)
             state.formGlobleItem.coInspect = {
               deptId: tempCoInspectObj.length ? tempCoInspectObj[0].id : '',
               deptName: tempCoInspectObj.length ? tempCoInspectObj[0].deptName : ''
             }
-            // state.formGlobleItem.coInspect = tempCoInspectObj[0]
             const tempinspectObj = await refInspect.value.getCheckedNodes()
-            console.log('tempinspectObj')
-            console.log(tempinspectObj)
             state.formGlobleItem.inspect = {
               deptId: tempinspectObj.length ? tempinspectObj[0].id : '',
               deptName: tempinspectObj.length ? tempinspectObj[0].deptName : ''
             }
-            // state.formGlobleItem.inspect = tempinspectObj[0]
             await MANAGEMENT_INSPECTION_PLAN_CONFIGURATION_PLAN_UPDATE_API({
               ...state.formGlobleItem
             })
@@ -1230,7 +1182,6 @@ export default defineComponent({
       })
     }
 
-    // TODO
     // [BTN:确认][float] 批次编辑
     const btnClickBatchCopyItemConfirmForDialog = async () => {
       if (!state.formBatchEditItems.frequencyIdChecked) {
@@ -1263,13 +1214,8 @@ export default defineComponent({
         }
       }
 
-      console.log('state.formBatchEditItems')
-      console.log(state.formBatchEditItems)
-
       if (state.formBatchEditItems.coInspectListChecked) {
         const tempCoInspectObj = await refCoInspectOfBatchEdit.value.getCheckedNodes()
-        console.log('tempCoInspectObj')
-        console.log(tempCoInspectObj)
         state.formBatchEditItems.coInspect = {
           deptId: tempCoInspectObj.length ? tempCoInspectObj[0].id : '',
           deptName: tempCoInspectObj.length ? tempCoInspectObj[0].deptName : ''
@@ -1278,16 +1224,11 @@ export default defineComponent({
 
       if (state.formBatchEditItems.inspectListChecked) {
         const tempinspectObj = await refInspectOfBatchEdit.value.getCheckedNodes()
-        console.log('tempinspectObj')
-        console.log(tempinspectObj)
         state.formBatchEditItems.inspect = {
           deptId: tempinspectObj.length ? tempinspectObj[0].id : '',
           deptName: tempinspectObj.length ? tempinspectObj[0].deptName : ''
         }
       }
-
-      console.log('state.formBatchEditItems')
-      console.log(state.formBatchEditItems)
       await MANAGEMENT_INSPECTION_PLAN_CONFIGURATION_PLAN_BATCH_UPDATE_API({
         ...state.formBatchEditItems
       })
@@ -1329,11 +1270,8 @@ export default defineComponent({
     // [ACT:define] 获取组织架构
     const getOrgStructure = async () => {
       const res = await ORG_TREE_API({ factory: JSON.parse(sessionStorage.getItem('system') || '{}').id || '' })
-
       cascaderTranslate(res.data.data)
       state.orgTreeDataOptions = res.data.data
-      console.log('获取组织架构(处理过)')
-      console.log(state.orgTreeDataOptions)
     }
 
     // 下拉框数据变换
@@ -1356,7 +1294,6 @@ export default defineComponent({
     }
 
     const changeChechBox = (val:boolean, target:string) => {
-      console.log(val)
       if (!val) {
         if (target === 'inspectList' || target === 'coInspectList') {
           state.formBatchEditItems[target] = []
@@ -1367,8 +1304,6 @@ export default defineComponent({
     }
 
     onMounted(() => {
-      console.log('我的版本号是？')
-      console.log(router.currentRoute.value.query.versionID)
       if (!router.currentRoute.value.query.versionID) {
         tabsCloseCurrentHandle()
         proxy.$warningToast('版本号无法识别，请重新选择！')
