@@ -200,10 +200,7 @@ export default defineComponent({
         frequencyCodeOrName: state.plantList.textSearch,
         size: state.pageSize
       })
-      console.log('检测频率列表数据')
-      console.log(res.data.data)
       state.dataTopicMainData = res.data.data.records
-      // state.totalItems = res.data.data.records.length
       state.totalItems = res.data.data.total
     }
     // [BTN:编辑] 编辑 item
@@ -337,14 +334,10 @@ export default defineComponent({
     const getOptions = () => {
       // 执行周期下拉
       INSPECT_CYCLE_QUERY_DROPDOWN_API().then((res) => {
-        console.log('执行周期下拉')
-        console.log(res.data.data)
         state.dateUnitOptions = res.data.data
       })
       // 频次附加项下拉
       INSPECT_INSPECT_ADDITION_QUERY_DROPDOWN_API().then((res) => {
-        console.log('频次附加项下拉')
-        console.log(res.data.data)
         state.inspectAdditionalIdsOptions = res.data.data
       })
     }

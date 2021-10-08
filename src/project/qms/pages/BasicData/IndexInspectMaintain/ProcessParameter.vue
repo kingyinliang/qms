@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-07-30 11:24:46
  * @LastEditors: Telliex
- * @LastEditTime: 2021-10-08 14:42:11
+ * @LastEditTime: 2021-10-08 15:00:10
 -->
 <template>
   <mds-card class="test_method" :title="title" :pack-up="false" style="margin-bottom: 0; background: #fff;">
@@ -346,22 +346,16 @@ export default defineComponent({
       // 过程参数下拉
       await INSPECT_INDEX_PROCESS_PARAMETER_DROPDOWN_API().then((res) => {
         state.paramSubscriptOptions = res.data.data
-        console.log('1过程参数下拉')
-        console.log(state.paramSubscriptOptions)
       })
 
       // 单位下拉
       await DICTIONARY_QUERY_API({ dictType: 'INDEX_UNIT' }).then((res) => {
         state.paramUnitOptions = res.data.data
-        console.log('2单位下拉')
-        console.log(state.paramUnitOptions)
       })
 
       // 过程参数默认值类型
       await DICTIONARY_QUERY_API({ dictType: 'PROC_DEFAULT_TYPE' }).then((res) => {
         state.defaultTypeOptions = res.data.data
-        console.log('5过程参数默认值类型下拉')
-        console.log(state.defaultTypeOptions)
       })
 
       btnGetMainData()
@@ -375,9 +369,6 @@ export default defineComponent({
       const res = await INSPECT_INDEX_PROCESS_PARAMETER_QUERY_API({
         inspectParameterGroupId: state.targetId
       })
-
-      console.log('获取过程参数数据')
-      console.log(res.data.data)
       state.parentParamSubscriptOptions = []
 
       res.data.data.forEach((item:ImportData) => {
@@ -760,8 +751,6 @@ export default defineComponent({
       INSPECT_INDEX_RELATED_PARAMETER_QUERY_API({
         inspectParameterId: id
       }).then((res) => {
-        console.log('关联公式')
-        console.log(res.data.data)
         state.relatedeFormulaData = res.data.data
         state.relatedeFormulaData.forEach((item, index) => {
           item.indexNum = index
@@ -783,7 +772,6 @@ export default defineComponent({
 
     // [关联公式]dialog table 选框选择
     const handleSelectionChange = (val: RelatedeFormulaData[]) => {
-      console.log(val)
       state.selectedListOfRelatedeFormulaData = val
     }
     // [BTN:批次删除][关联公式]

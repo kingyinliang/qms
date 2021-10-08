@@ -216,8 +216,6 @@ export default defineComponent({
         inspectGroup: val.inspectMaterialType,
         inspectMaterialNameOrCode: ''
       }).then((res) => {
-        console.log('state.globleItemGroup')
-        console.log(state.globleItemGroup)
         state.globleItemGroup = JSON.parse(JSON.stringify(res.data.data))
       })
     }
@@ -248,8 +246,6 @@ export default defineComponent({
         inspectGroup: currentMaterialGroupString,
         inspectMaterialNameOrCode: searchString
       }).then((res) => {
-        console.log('物料明细')
-        console.log(res.data.data)
         state.totalItems = res.data.data.length
         state.tableDataW = JSON.parse(JSON.stringify(res.data.data))
         currentChangePage(state.tableDataW, 1)
@@ -299,8 +295,6 @@ export default defineComponent({
 
       INSPECT_MATERIAL_QUERY_SYS_MATERIAL_ITEM_API({
       }).then((res) => {
-        console.log('tree-data')
-        console.log(res.data.data)
         res.data.data.forEach((item:TreeData) => {
           item.notShowContextMenuOnThisNode = true
           item.id = item.inspectMaterialType
@@ -360,7 +354,6 @@ export default defineComponent({
     //  [物料明细] 分配勾选
     const handleSelectionChange = (val:TopicMainData[]) => {
       state.multipleSelection = [...val]
-      console.log(state.multipleSelection)
     }
 
     const treeDataTranslater = (data: any[], id: string, pid: string): any[] => {
