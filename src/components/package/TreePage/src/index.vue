@@ -104,6 +104,12 @@ export default defineComponent({
     nodeKey: {
       type: String,
       default: 'id'
+    },
+    defaultFilterNodeProps: {
+      type: Object,
+      default: function () {
+        return { prop: '', value: '' }
+      }
     }
   },
   setup (props, { emit }) {
@@ -146,9 +152,15 @@ export default defineComponent({
     // 搜索
     // eslint-disable-next-line
     const filterNode = (value: string, data: any) => {
-      if (!value) return true
+      let defaultFilter = true
+      if (data[(props as any).defaultFilterNodeProps.prop]) {
+        defaultFilter = data[(props as any).defaultFilterNodeProps.prop] === (props as any).defaultFilterNodeProps.value
+      }
+
+      if (!value) return defaultFilter
+
       // eslint-disable-next-line
-      return data[(props as any).treeProps.label].indexOf(value) !== -1;
+      return defaultFilter && data[(props as any).treeProps.label].indexOf(value) !== -1;
     }
 
     // 树点击
