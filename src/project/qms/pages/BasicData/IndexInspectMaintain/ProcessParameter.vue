@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-07-30 11:24:46
  * @LastEditors: Telliex
- * @LastEditTime: 2021-09-30 09:53:09
+ * @LastEditTime: 2021-10-08 09:12:19
 -->
 <template>
   <mds-card class="test_method" :title="title" :pack-up="false" style="margin-bottom: 0; background: #fff;">
@@ -29,7 +29,7 @@
           <span class="required">过程参数</span>
         </template>
         <template #default="scope">
-            <el-select v-model="scope.row.paramSubscriptCodeWithParamSubscript" size="small" :disabled="!isRedact" :placeholder="!isRedact?'':'请选择'" clearable @change="val=>changeParamSubscriptOptions(val,scope.row)">
+            <el-select v-model="scope.row.paramSubscriptCodeWithParamSubscript" size="small" :disabled="!isRedact||scope.row.paramType=== 'RESULT'" :placeholder="!isRedact?'':'请选择'" clearable @change="val=>changeParamSubscriptOptions(val,scope.row)" @focus="val=>focusParamSubscriptOptions(val,scope.row)">
               <el-option
                 v-for="item in paramSubscriptOptions"
                 :key="item.paramSubscriptCode"
@@ -47,7 +47,7 @@
           <span class="required">单位</span>
         </template>
         <template #default="scope">
-          <el-select v-model="scope.row.paramUnit" size="small" :disabled="!isRedact" :placeholder="!isRedact?'':'请选择'" clearable>
+          <el-select v-model="scope.row.paramUnit" size="small" :disabled="!isRedact||scope.row.paramType=== 'RESULT'" :placeholder="!isRedact?'':'请选择'" clearable>
                 <el-option
                 v-for="item in paramUnitOptions"
                 :key="item.dictCode"
@@ -59,12 +59,12 @@
       </el-table-column>
       <el-table-column label="上限" min-width="110" show-overflow-tooltip>
         <template #default="scope">
-          <el-input v-model="scope.row.paramUp" size="small" maxlength="5" :placeholder="!isRedact?'':'请输入'" :disabled="!isRedact" oninput="value=value.replace(/[^\d.]/g, '')" />
+          <el-input v-model="scope.row.paramUp" size="small" maxlength="5" :placeholder="!isRedact?'':'请输入'" :disabled="!isRedact||scope.row.paramType=== 'RESULT'" oninput="value=value.replace(/[^\d.]/g, '')" />
         </template>
       </el-table-column>
       <el-table-column label="下限" min-width="110" show-overflow-tooltip>
         <template #default="scope">
-          <el-input v-model="scope.row.paramDown" size="small" maxlength="5"  :placeholder="!isRedact?'':'请输入'" :disabled="!isRedact" oninput="value=value.replace(/[^\d.]/g, '')"  />
+          <el-input v-model="scope.row.paramDown" size="small" maxlength="5"  :placeholder="!isRedact?'':'请输入'" :disabled="!isRedact||scope.row.paramType=== 'RESULT'" oninput="value=value.replace(/[^\d.]/g, '')"  />
         </template>
       </el-table-column>
       <el-table-column label="默认值">
@@ -73,7 +73,7 @@
           show-overflow-tooltip
         >
           <template #default="scope">
-            <el-select v-model="scope.row.defaultType" size="small" :disabled="!isRedact" :placeholder="!isRedact?'':'请选择'" clearable>
+            <el-select v-model="scope.row.defaultType" size="small" :disabled="!isRedact||scope.row.paramType=== 'RESULT'" :placeholder="!isRedact?'':'请选择'" clearable>
               <el-option
                 v-for="item in defaultTypeOptions"
                 :key="item.dictCode"
@@ -88,7 +88,7 @@
           show-overflow-tooltip
         >
           <template #default="scope">
-            <el-input v-model.number="scope.row.defaultValue" size="small" :placeholder="!isRedact?'':'请输入'" :disabled="!isRedact||scope.row.defaultType===''||scope.row.defaultType==='CURRENT'" />
+            <el-input v-model.number="scope.row.defaultValue" size="small" :placeholder="!isRedact?'':'请输入'" :disabled="!isRedact||scope.row.paramType=== 'RESULT'||scope.row.defaultType===''||scope.row.defaultType==='CURRENT'" />
           </template>
          </el-table-column>
       </el-table-column>
@@ -108,7 +108,7 @@
       </el-table-column>
       <el-table-column label="公式" min-width="80" show-overflow-tooltip>
         <template #default="scope">
-          <el-button size="mini"  icon="el-icon-aim" v-if="scope.row.paramType === 'HIDDEN' || scope.row.paramType === 'RESULT'" @click="editFormula(scope.row)" :disabled="!isRedact"></el-button>
+          <el-button size="mini"  icon="el-icon-aim" v-if="scope.row.paramType === 'HIDDEN' || scope.row.paramType === 'RESULT'" @click="editFormula(scope.row)" :disabled="!isRedact || scope.row.paramType=== 'RESULT'"></el-button>
         </template>
       </el-table-column>
 
@@ -148,9 +148,9 @@
       <template #default>
         <div style="display:flex; justify-content: flex-end;margin-bottom:5px;">
           <el-button  type="primary" size="small" icon="el-icon-plus" class="topic-button" @click="addItemOfrelatedeFormula">新增</el-button>
-          <el-button  type="danger" size="small" icon="el-icon-delete"  class="topic-button" @click="deleteItemOfrelatedeFormula">批量删除</el-button>
+          <el-button  type="danger" size="small" icon="el-icon-delete"  class="topic-button" @click="tempDeleteItemOfrelatedeFormula">批量删除</el-button>
         </div>
-        <el-table ref="multipleTable" type="mini"  :cell-style="{'text-align':'center'}" :data="relatedeFormulaData"  tooltip-effect="dark" style="width: 100%" @selection-change="handleSelectionChange">
+        <el-table ref="multipleTable" type="mini"  :cell-style="{'text-align':'center'}" :row-class-name="markRowWithDelFlag" :data="relatedeFormulaData"  tooltip-effect="dark" style="width: 100%" @selection-change="handleSelectionChange">
           <el-table-column type="selection" width="55" />
           <el-table-column type="index" label="序号" width="50" />
           <el-table-column label="关联参数" min-width="110" show-overflow-tooltip>
@@ -192,6 +192,7 @@ interface RelatedeFormulaData{
   inspectParameterId: string
   value: string
   indexNum: number | null
+  delFlag: number
 }
 interface RelatedeFormulaDataNoId{
   insertList?: RelatedeFormulaData[]
@@ -366,6 +367,7 @@ export default defineComponent({
       btnGetMainData()
     }
 
+    // TODO [ACTION:load] 获取标准值明细数据
     // [ACTION:load] 获取标准值明细数据
     const btnGetMainData = async (stillCanEdit = false) => {
       state.topicMainData = []
@@ -630,8 +632,10 @@ export default defineComponent({
       state.isResultFormulaDialogShow = false
     }
 
+    // TODO [BTN:确认][关联公式]
     // [BTN:确认][关联公式]
     const onRelatedFormulaConfirm = () => {
+      deleteItemOfrelatedeFormula()
       console.log('state.tempItemObj')
       console.log(state.tempItemObj)
       if (state.tempItemObj.id !== '') { // 有 id
@@ -749,6 +753,22 @@ export default defineComponent({
         row.parentInspectParameterId = ''
       }
     }
+    // TODO [SELECT:过程参数][Event:change]
+    // [SELECT:过程参数][Event:change]
+    const focusParamSubscriptOptions = (val:string) => {
+      if (val !== '') {
+        console.log(state.paramSubscriptOptions)
+        console.log(state.topicMainData)
+        // disable 有过程参数里有结果 type 的
+        state.topicMainData.forEach(item => {
+          state.paramSubscriptOptions.forEach(subItem => {
+            if (item.paramType === 'RESULT' && subItem.paramCode === item.paramCode) {
+              subItem.disabled = true
+            }
+          })
+        })
+      }
+    }
 
     // [关联公式]dialog 获取 data
     const getRelatedParameter = (id:string) => {
@@ -774,7 +794,8 @@ export default defineComponent({
         id: '',
         inspectParameterId: state.inspectParameterIdOfRelatedParameter,
         value: '',
-        indexNum: state.relatedeFormulaData.length
+        indexNum: state.relatedeFormulaData.length,
+        delFlag: 0
       })
     }
 
@@ -783,38 +804,52 @@ export default defineComponent({
       console.log(val)
       state.selectedListOfRelatedeFormulaData = val
     }
-
-    // [BTN:批次删除][关联公式]
-    const deleteItemOfrelatedeFormula = () => {
-      console.log('state.selectedListOfRelatedeFormulaData')
-      console.log(state.selectedListOfRelatedeFormulaData)
-      console.log('state.relatedeFormulaData')
-      console.log(state.relatedeFormulaData)
-
+    // TODO [BTN:批次删除][关联公式]
+    const tempDeleteItemOfrelatedeFormula = () => {
       if (state.selectedListOfRelatedeFormulaData.length === 0) {
+        proxy.$errorToast('请选择数据')
         return
       }
+
       proxy.$confirm('确认删除选中的数据？', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
       }).then(async () => {
-        const tempDeleteList: string[] = []
-        state.selectedListOfRelatedeFormulaData.forEach((item) => {
-          if (item.id !== '') {
-            tempDeleteList.push(item.id)
-          } else {
-            state.relatedeFormulaData.splice(item.indexNum as number, 1)
-          }
+        state.selectedListOfRelatedeFormulaData.forEach(item => {
+          item.delFlag = 1
         })
-        if (tempDeleteList.length) {
-          const res = await INSPECT_INDEX_RELATED_PARAMETER_DELETE_API(tempDeleteList)
-          if (res.data.code === 200) {
-            proxy.$successToast('操作成功')
-            await getRelatedParameter(state.inspectParameterIdOfRelatedParameter)
-          }
+        console.log('state.relatedeFormulaData')
+        console.log(state.relatedeFormulaData)
+        console.log('state.selectedListOfRelatedeFormulaData')
+        console.log(state.selectedListOfRelatedeFormulaData)
+      })
+    }
+    // [BTN:批次删除][关联公式]
+    const deleteItemOfrelatedeFormula = async () => {
+      const tempDeleteAliveList: string[] = []
+      // const tempDeleteNewList: any[] = []
+      state.selectedListOfRelatedeFormulaData.forEach((item) => {
+        if (item.id !== '') {
+          tempDeleteAliveList.push(item.id)
         }
       })
+
+      if (tempDeleteAliveList.length) {
+        const res = await INSPECT_INDEX_RELATED_PARAMETER_DELETE_API(tempDeleteAliveList)
+        if (res.data.code === 200) {
+          proxy.$successToast('操作成功')
+          // await getRelatedParameter(state.inspectParameterIdOfRelatedParameter)
+        }
+      }
+    }
+
+    const markRowWithDelFlag = (obj:any) => {
+      console.log(obj)
+      if (obj.row.delFlag === 1) {
+        return 'rowDel'
+      }
+      return ''
     }
 
     // [过程参数]表格 header 合并
@@ -851,7 +886,23 @@ export default defineComponent({
     // rule: 1.需排除已维护参数类型为“结果”的过程参数
     //       2.排除自己
     const focusParentParamSubscriptOptions = (val:any, row:ImportData) => {
-      state.parentParamSubscriptOptions.map(subItem => {
+      // state.parentParamSubscriptOptions.forEach(subItem => {
+      //   // 排除自己
+      //   if (subItem.paramCode !== row.paramCode) {
+      //     subItem.disabled = false
+      //   } else {
+      //     subItem.disabled = true
+      //   }
+      //   console.log('state.topicMainData')
+      //   console.log(state.topicMainData)
+      //   // 需排除已维护参数类型为“结果”的过程参数
+      //   state.topicMainData.forEach(item => {
+      //     if (item.paramType === 'RESULT' && subItem.paramCode === item.paramCode) {
+      //       subItem.disabled = true
+      //     }
+      //   })
+      // })
+      state.parentParamSubscriptOptions.forEach(subItem => {
         // 排除自己
         if (subItem.paramCode !== row.paramCode) {
           subItem.disabled = false
@@ -905,6 +956,7 @@ export default defineComponent({
       editFormula,
       changeParamSubscriptOptions,
       changeParentParamSubscriptOptions,
+      focusParamSubscriptOptions,
       onRelatedFormulaClose,
       onRelatedFormulaConfirm,
       getRelatedParameter,
@@ -914,7 +966,9 @@ export default defineComponent({
       headerMerge,
       initVariable,
       excludeItemFromMyRow,
-      focusParentParamSubscriptOptions
+      focusParentParamSubscriptOptions,
+      tempDeleteItemOfrelatedeFormula,
+      markRowWithDelFlag
     }
   }
 })
