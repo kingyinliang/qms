@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-07-30 11:24:46
  * @LastEditors: Telliex
- * @LastEditTime: 2021-09-30 18:39:26
+ * @LastEditTime: 2021-10-08 15:00:10
 -->
 <template>
   <mds-card class="test_method" :title="title" :pack-up="false" style="margin-bottom: 0; background: #fff;">
@@ -346,28 +346,21 @@ export default defineComponent({
       // 过程参数下拉
       await INSPECT_INDEX_PROCESS_PARAMETER_DROPDOWN_API().then((res) => {
         state.paramSubscriptOptions = res.data.data
-        console.log('1过程参数下拉')
-        console.log(state.paramSubscriptOptions)
       })
 
       // 单位下拉
       await DICTIONARY_QUERY_API({ dictType: 'INDEX_UNIT' }).then((res) => {
         state.paramUnitOptions = res.data.data
-        console.log('2单位下拉')
-        console.log(state.paramUnitOptions)
       })
 
       // 过程参数默认值类型
       await DICTIONARY_QUERY_API({ dictType: 'PROC_DEFAULT_TYPE' }).then((res) => {
         state.defaultTypeOptions = res.data.data
-        console.log('5过程参数默认值类型下拉')
-        console.log(state.defaultTypeOptions)
       })
 
       btnGetMainData()
     }
 
-    // TODO [ACTION:load] 获取标准值明细数据
     // [ACTION:load] 获取标准值明细数据
     const btnGetMainData = async (stillCanEdit = false) => {
       state.topicMainData = []
@@ -376,9 +369,6 @@ export default defineComponent({
       const res = await INSPECT_INDEX_PROCESS_PARAMETER_QUERY_API({
         inspectParameterGroupId: state.targetId
       })
-
-      console.log('获取过程参数数据')
-      console.log(res.data.data)
       state.parentParamSubscriptOptions = []
 
       res.data.data.forEach((item:ImportData) => {
@@ -585,8 +575,6 @@ export default defineComponent({
 
     // [Rule] 验证标准值明细 data
     const ruleSubmit = () => {
-      console.log('state.topicMainData')
-      console.log(state.topicMainData)
       const tempParentParamSubscriptList:any = []
       const tempParamSubscriptList:any = []
       for (const item of state.topicMainData) {
@@ -632,27 +620,27 @@ export default defineComponent({
       state.isResultFormulaDialogShow = false
     }
 
-    // TODO [BTN:确认][关联公式]
     // [BTN:确认][关联公式]
-    const onRelatedFormulaConfirm = () => {
-      deleteItemOfrelatedeFormula()
-      console.log('state.tempItemObj')
-      console.log(state.tempItemObj)
-      if (state.tempItemObj.id !== '') { // 有 id
+    const onRelatedFormulaConfirm = async () => {
+      await deleteItemOfrelatedeFormula()
+      if (state.tempItemObj.id !== '') { // 有 id ，已有 item
         INSPECT_INDEX_RELATED_PARAMETER_UPDATE_API({
-          insertList: state.relatedeFormulaData.filter(item => item.id === ''),
+          insertList: state.relatedeFormulaData.filter(item => item.id === '' && item.delFlag === 0),
           updateList: state.relatedeFormulaData.filter(item => item.id !== '')
         }).then(() => {
-          onRelatedFormulaClose()
+          state.relatedeFormulaData = []
+          state.isRelatedeFormulaDialogShow = false
         })
-      } else { // 无 id
+      } else { // 无 id 新建 item
         state.tempItemObj.relatedFormulaForNoId = JSON.parse(JSON.stringify(state.relatedeFormulaData))
-        onRelatedFormulaClose()
+        state.relatedeFormulaData = []
+        state.isRelatedeFormulaDialogShow = false
       }
     }
 
     // [BTN:关闭][关联公式]
     const onRelatedFormulaClose = () => {
+      deleteItemOfrelatedeFormula()
       state.relatedeFormulaData = []
       state.isRelatedeFormulaDialogShow = false
     }
@@ -679,13 +667,7 @@ export default defineComponent({
     // [Click]结果公式按钮后动作
     const editFormula = (row:ImportData) => {
       state.tempItemObj = row
-      console.log('state.tempItemObj')
-      console.log(state.tempItemObj)
       if (row.paramType === 'HIDDEN') {
-        // if (row.id === '') {
-        //   proxy.$infoToast('请先保存数据')
-        //   return
-        // }
         state.isRelatedeFormulaDialogShow = true
         state.inspectParameterIdOfRelatedParameter = row.id as string
         if (state.inspectParameterIdOfRelatedParameter) {
@@ -697,13 +679,9 @@ export default defineComponent({
             state.relatedeFormulaData = []
           }
         }
-
         onResultFormulaClose()
       } else if (row.paramType === 'RESULT') {
         state.fomulaList = state.topicMainData.filter(item => item.paramCode !== state.tempItemObj.paramCode)
-        console.log('state.fomulaList')
-        console.log(state.fomulaList)
-
         state.isResultFormulaDialogShow = true
         onRelatedFormulaClose()
 
@@ -730,7 +708,6 @@ export default defineComponent({
           row.paramType = item.paramType
         }
       })
-      console.log(row)
     }
 
     // [SELECT:关联参数][Event:change]
@@ -753,12 +730,9 @@ export default defineComponent({
         row.parentInspectParameterId = ''
       }
     }
-    // TODO [SELECT:过程参数][Event:change]
     // [SELECT:过程参数][Event:change]
     const focusParamSubscriptOptions = (val:string) => {
       if (val !== '') {
-        console.log(state.paramSubscriptOptions)
-        console.log(state.topicMainData)
         // disable 有过程参数里有结果 type 的
         state.topicMainData.forEach(item => {
           state.paramSubscriptOptions.forEach(subItem => {
@@ -777,9 +751,6 @@ export default defineComponent({
       INSPECT_INDEX_RELATED_PARAMETER_QUERY_API({
         inspectParameterId: id
       }).then((res) => {
-        console.log('关联公式')
-        console.log(res.data.data)
-
         state.relatedeFormulaData = res.data.data
         state.relatedeFormulaData.forEach((item, index) => {
           item.indexNum = index
@@ -801,16 +772,14 @@ export default defineComponent({
 
     // [关联公式]dialog table 选框选择
     const handleSelectionChange = (val: RelatedeFormulaData[]) => {
-      console.log(val)
       state.selectedListOfRelatedeFormulaData = val
     }
-    // TODO [BTN:批次删除][关联公式]
+    // [BTN:批次删除][关联公式]
     const tempDeleteItemOfrelatedeFormula = () => {
       if (state.selectedListOfRelatedeFormulaData.length === 0) {
         proxy.$errorToast('请选择数据')
         return
       }
-
       proxy.$confirm('确认删除选中的数据？', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
@@ -819,13 +788,10 @@ export default defineComponent({
         state.selectedListOfRelatedeFormulaData.forEach(item => {
           item.delFlag = 1
         })
-        console.log('state.relatedeFormulaData')
-        console.log(state.relatedeFormulaData)
-        console.log('state.selectedListOfRelatedeFormulaData')
-        console.log(state.selectedListOfRelatedeFormulaData)
+        proxy.$successToast('操作成功') // 假删除，但提示操作成功
       })
     }
-    // [BTN:批次删除][关联公式]
+    // [BTN:批次删除][关联公式] ation
     const deleteItemOfrelatedeFormula = async () => {
       const tempDeleteAliveList: string[] = []
       // const tempDeleteNewList: any[] = []
@@ -838,14 +804,12 @@ export default defineComponent({
       if (tempDeleteAliveList.length) {
         const res = await INSPECT_INDEX_RELATED_PARAMETER_DELETE_API(tempDeleteAliveList)
         if (res.data.code === 200) {
-          proxy.$successToast('操作成功')
           // await getRelatedParameter(state.inspectParameterIdOfRelatedParameter)
         }
       }
     }
 
     const markRowWithDelFlag = (obj:any) => {
-      console.log(obj)
       if (obj.row.delFlag === 1) {
         return 'rowDel'
       }
@@ -886,35 +850,16 @@ export default defineComponent({
     // rule: 1.需排除已维护参数类型为“结果”的过程参数
     //       2.排除自己
     const focusParentParamSubscriptOptions = (val:any, row:ImportData) => {
-      // state.parentParamSubscriptOptions.forEach(subItem => {
-      //   // 排除自己
-      //   if (subItem.paramCode !== row.paramCode) {
-      //     subItem.disabled = false
-      //   } else {
-      //     subItem.disabled = true
-      //   }
-      //   console.log('state.topicMainData')
-      //   console.log(state.topicMainData)
-      //   // 需排除已维护参数类型为“结果”的过程参数
-      //   state.topicMainData.forEach(item => {
-      //     if (item.paramType === 'RESULT' && subItem.paramCode === item.paramCode) {
-      //       subItem.disabled = true
-      //     }
-      //   })
-      // })
-      state.parentParamSubscriptOptions.forEach(subItem => {
-        // 排除自己
-        if (subItem.paramCode !== row.paramCode) {
-          subItem.disabled = false
-        } else {
-          subItem.disabled = true
-        }
-        console.log('state.topicMainData')
-        console.log(state.topicMainData)
-        // 需排除已维护参数类型为“结果”的过程参数
-        state.topicMainData.forEach(item => {
-          if (item.paramType === 'RESULT' && subItem.paramCode === item.paramCode) {
-            subItem.disabled = true
+      state.parentParamSubscriptOptions = []
+      state.topicMainData.forEach(item => {
+        state.paramSubscriptOptions.forEach((subItem:ParamSubscriptOptions) => {
+          if (item.paramType === 'SHOW' && item.paramCode === subItem.paramCode) {
+            if (item.paramCode !== row.paramCode) {
+              subItem.disabled = false
+            } else {
+              subItem.disabled = true
+            }
+            state.parentParamSubscriptOptions.push(subItem)
           }
         })
       })
@@ -924,8 +869,6 @@ export default defineComponent({
       importObj,
       newValue => {
         if (newValue !== null) {
-          console.log('importObj')
-          console.log(newValue)
           state.controlBtnCanDo = false
           state.isRedact = false
           state.targetId = newValue.id

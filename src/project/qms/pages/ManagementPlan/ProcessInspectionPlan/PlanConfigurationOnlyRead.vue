@@ -446,21 +446,11 @@ export default defineComponent({
       }
     }
     const getPlanDetail = (val:TreeData) => {
-      console.log('点击节点')
-      console.log(val)
       state.currentFocusTargetObj = JSON.parse(JSON.stringify(val))
       state.textForSearch = ''
       state.currentPage = 1
       state.pageSize = 10
       state.totalItems = 0
-
-      // if (val.isFinalNode === true) {
-      //   console.log('物料')
-      //   state.currentCategoryId = val.markParentId
-      //   state.isShowSearchBar = false
-      //   doPlanDetailGet(val.markParentId, val.itemId, state.currentPage, state.pageSize)
-      // } else {
-      // console.log('类')
       state.currentCategoryId = val.id
       state.isShowSearchBar = true
       doPlanDetailGet(val.id, '', state.currentPage, state.pageSize)
@@ -478,12 +468,9 @@ export default defineComponent({
         indexCodeOrName: searchString,
         planVersionId: state.currentVersion,
         inspectMaterialIds: !state.currentFocusTargetObj.isFinalNode ? tempList.map((item:any) => item.id) : [currentCategoryId],
-        // inspectMaterialIds: tempList,
         current: currentPage,
         size: pageSize
       }).then((res) => {
-        console.log('计划明细明细')
-        console.log(res.data.data)
         state.topicMainData = res.data.data.records
         state.currentPage = res.data.data.current
         state.pageSize = res.data.data.size
@@ -508,11 +495,7 @@ export default defineComponent({
       }).then((res) => {
         state.textForSearch = ''
         state.isShowSearchBar = true
-        console.log('原始 API 数据')
-        console.log(res.data.data)
         state.treeData = treeDataTranslater(JSON.parse(JSON.stringify(res.data.data)), 'id', 'parentId')
-        console.log('加工过的 API 数据state.treeData')
-        console.log(state.treeData)
         // 一进页面默认跑第一笔
         if (state.currentCategoryId === '') {
           state.initFocusNode = state.treeData[0].id
@@ -623,11 +606,8 @@ export default defineComponent({
     // [ACT:define] 获取组织架构
     const getOrgStructure = async () => {
       const res = await ORG_TREE_API({ factory: JSON.parse(sessionStorage.getItem('system') || '{}').id || '' })
-
       cascaderTranslate(res.data.data)
       state.orgTreeDataOptions = res.data.data
-      console.log('获取组织架构(处理过)')
-      console.log(state.orgTreeDataOptions)
     }
 
     // 下拉框数据变换
@@ -650,8 +630,6 @@ export default defineComponent({
     }
 
     onMounted(() => {
-      console.log('我的版本号是？')
-      console.log(router.currentRoute.value.query.versionID)
       if (!router.currentRoute.value.query.versionID) {
         tabsCloseCurrentHandle()
         proxy.$warningToast('版本号无法识别，请重新选择！')

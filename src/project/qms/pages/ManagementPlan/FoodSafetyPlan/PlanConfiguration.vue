@@ -503,21 +503,14 @@ export default defineComponent({
         }
       ]
     }
-    // TODO
     // [BTN:新增&编辑] 新增
     const btnAddOrEditItemOfTopicMainData = async (act:string, row:any) => {
-      console.log('点击')
-      console.log(row)
-
-      console.log('state.currentFocusTargetObj')
-      console.log(state.currentFocusTargetObj)
       state.isDialogShow = true
       await getDropDownOptions()
       await nextTick()
       refGlobleItem.value.resetFields()
 
       if (act === 'add') {
-        console.log('新增')
         state.globleItem = {
           title: '计划明细-新增',
           id: '',
@@ -551,9 +544,6 @@ export default defineComponent({
           inspectMaterialAlls: state.currentFocusTargetObj.inspectMaterialAlls
         }
       } else {
-        console.log('编辑')
-        console.log(row.coInspect)
-        console.log(row.inspect)
         state.globleItem = {
           title: '计划明细-编辑',
           id: row.id,
@@ -580,10 +570,6 @@ export default defineComponent({
           inspectList: setOrGetData([row.inspect], 'set'),
           inspectMaterialAlls: state.currentFocusTargetObj.inspectMaterialAlls
         }
-        // refInspect.value.setSelectValue([row.inspect])
-        // refCoInspect.value.setSelectValue([row.coInspect])
-        console.log('state.globleItem')
-        console.log(state.globleItem)
       }
     }
 
@@ -631,14 +617,6 @@ export default defineComponent({
       state.currentPage = 1
       state.pageSize = 10
       state.totalItems = 0
-
-      // if (val.isFinalNode === true) {
-      //   console.log('物料')
-      //   state.currentCategoryId = val.markParentId
-      //   state.isShowSearchBar = false
-      //   apiPlanDetail(val.markParentId, val.itemId, state.currentPage, state.pageSize)
-      // } else {
-      // console.log('类')
       state.currentCategoryId = val.id
       state.isShowSearchBar = true
       apiPlanDetail(val.id, '', state.currentPage, state.pageSize)
@@ -679,11 +657,7 @@ export default defineComponent({
       }).then((res) => {
         state.textForSearch = ''
         state.isShowSearchBar = true
-        console.log('res.data.data')
-        console.log(res.data.data)
         state.treeData = treeDataTranslater(JSON.parse(JSON.stringify(res.data.data)), 'id', 'parentId')
-        console.log('state.treeData')
-        console.log(state.treeData)
         // 一进页面默认跑第一笔
         if (state.currentCategoryId === '') {
           state.initFocusNode = state.treeData[0].id
@@ -860,29 +834,21 @@ export default defineComponent({
       state.isDialogShow = false
     }
 
-    // TODO
     // [BTN:确认][float]
     const btnItemFloatConfirm = async () => {
       refGlobleItem.value.validate(async (valid: boolean) => {
         if (valid) {
-          console.log('state.globleItem')
-          console.log(JSON.parse(JSON.stringify(state.globleItem)))
           if (state.globleItem.title === '计划明细-新增') { // 新增
             const tempCoInspectObj = refCoInspect.value.getCheckedNodes()
-            console.log(tempCoInspectObj)
             state.globleItem.coInspect = {
               deptId: tempCoInspectObj[0].id,
               deptName: tempCoInspectObj[0].deptName
             }
             const tempinspectObj = refInspect.value.getCheckedNodes()
-            console.log(tempinspectObj)
             state.globleItem.inspect = {
               deptId: tempinspectObj[0].id,
               deptName: tempinspectObj[0].deptName
             }
-
-            console.log('计划明细-新增')
-            console.log(state.globleItem)
             await MANAGEMENT_INSPECTION_PLAN_CONFIGURATION_INSERT_API({
               ...state.globleItem
             })

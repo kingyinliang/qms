@@ -194,8 +194,6 @@ export default defineComponent({
         inspectScene: state.currentInspectScene,
         size: state.pageSize
       })
-      console.log('检验计划列表数据')
-      console.log(res.data.data)
       state.dataTopicMainData = res.data.data.records
       state.dataTopicMainData.forEach((item:TopicMainData) => {
         item.copyVersion = '0'
@@ -218,7 +216,6 @@ export default defineComponent({
 
     // [BTN:配置]
     const btnConfigulation = async (row:TopicMainData) => {
-      console.log(row)
       gotoPage({
         path: 'qms-pages-ManagementPlan-ProcessInspectionPlan-PlanConfiguration',
         query: {
@@ -228,7 +225,6 @@ export default defineComponent({
     }
     // [BTN:只读]
     const btnConfigulationReadOnly = async (row:TopicMainData) => {
-      console.log(row)
       gotoPage({
         path: 'qms-pages-ManagementPlan-ProcessInspectionPlan-PlanConfigurationOnlyRead',
         query: {

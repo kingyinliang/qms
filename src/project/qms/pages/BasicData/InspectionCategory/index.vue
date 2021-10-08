@@ -271,7 +271,6 @@ export default defineComponent({
     // 逻辑函数
     // 列表变树结构
     const setTreeData = async (id = '') => {
-      console.log(id)
       const res = await INSPECT_TYPE_LIST_API()
       treeDataOrg = res.data.data
       treeData.value = treeDataTranslate(res.data.data, 'id', 'parentId')
@@ -363,7 +362,6 @@ export default defineComponent({
       await nextTick()
       addRef.value.resetFields()
       clearForm()
-      // generateCode(temp.inspectTypeCode)
       addLevelInfo.assistFlag = temp.assistFlag
       addLevelInfo.parentId = temp.id
       addLevelInfo.parentName = temp.inspectTypeName

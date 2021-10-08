@@ -25,7 +25,7 @@
         @keyup.enter="apiMaterialDetail(currentMaterialString,currentMaterialGroupString,materialDetailText,'searchBar')">
       </el-input>
       <el-button icon="el-icon-search" size="small" class="topic-button" @click="apiMaterialDetail(currentMaterialString,currentMaterialGroupString,materialDetailText,'searchBar')">查询</el-button>
-      <el-button icon="el-icon-tickets" size="small" class="topic-button" @click="handleSelectedAsign">分配</el-button>
+      <el-button icon="el-icon-tickets" size="small" class="topic-button" @click="handleSelectedAsign" :disabled="!multipleSelection.length">分配</el-button>
       </div>
      <el-table
         :data="topicMainData"
@@ -70,6 +70,7 @@ import { INSPECT_MATERIAL_QUERY_SYS_MATERIAL_ITEM_API, INSPECT_MATERIAL_QUERY_SY
 import MaterialInspectionAsign from './MaterialInspectionAsign.vue'
 
 interface TreeItemData { // 物料分类 API
+  id: string
   inspectMaterialType: string
   inspectGroup: string
   inspectGroups: TreeItemData[]
@@ -116,6 +117,8 @@ interface State {
     globleSearchString: string
     whoAsign: string
     multipleSelection: TopicMainData[]
+    targetNode: string
+    targetLeaf: string
 }
 
 export default defineComponent({
@@ -153,11 +156,13 @@ export default defineComponent({
       globleSearchString: '',
       globleItemGroup: [],
       whoAsign: '',
-      multipleSelection: []
+      multipleSelection: [],
+      targetNode: '',
+      targetLeaf: ''
     })
     const refFunctionDialog = ref()
     const treeModule = ref()
-
+    // TODO
     // [BTN:分配] single action to go
     const handleSingleAsign = (row:TopicMainData) => {
       state.whoAsign = 'single'
@@ -216,8 +221,6 @@ export default defineComponent({
         inspectGroup: val.inspectMaterialType,
         inspectMaterialNameOrCode: ''
       }).then((res) => {
-        console.log('state.globleItemGroup')
-        console.log(state.globleItemGroup)
         state.globleItemGroup = JSON.parse(JSON.stringify(res.data.data))
       })
     }
@@ -231,9 +234,13 @@ export default defineComponent({
 
       // 此处命名有些问题, 需留意
       if (val.inspectGroups.length === 0) {
+        state.targetNode = val.inspectGroup
+        state.targetLeaf = val.inspectMaterialType
         state.currentMaterialGroupString = val.inspectMaterialType
         state.currentMaterialString = val.inspectGroup
       } else {
+        state.targetNode = val.inspectMaterialType
+        state.targetLeaf = ''
         state.currentMaterialGroupString = ''
         state.currentMaterialString = val.inspectMaterialType
       }
@@ -248,13 +255,16 @@ export default defineComponent({
         inspectGroup: currentMaterialGroupString,
         inspectMaterialNameOrCode: searchString
       }).then((res) => {
-        console.log('物料明细')
-        console.log(res.data.data)
         state.totalItems = res.data.data.length
         state.tableDataW = JSON.parse(JSON.stringify(res.data.data))
         currentChangePage(state.tableDataW, 1)
         if (where === 'searchBar' && res.data.data.length === 0) {
           proxy.$infoToast('暂无数据')
+        }
+        // 如物料明细操作后为空，跳转至第一个分类
+        if (res.data.data.length === 0) {
+          state.currentMaterialString = ''
+          getMaterialCatagoryData()
         }
       })
     }
@@ -289,6 +299,7 @@ export default defineComponent({
       }
     }
 
+    // TODO
     // get material detail data
     const getMaterialCatagoryData = () => {
       state.materialDetailText = ''
@@ -299,21 +310,28 @@ export default defineComponent({
 
       INSPECT_MATERIAL_QUERY_SYS_MATERIAL_ITEM_API({
       }).then((res) => {
-        console.log('tree-data')
-        console.log(res.data.data)
         res.data.data.forEach((item:TreeData) => {
           item.notShowContextMenuOnThisNode = true
           item.id = item.inspectMaterialType
           item.inspectGroups.forEach((subItem:TreeItemData) => {
             subItem.inspectGroup = item.inspectMaterialType
+            subItem.id = subItem.inspectMaterialType
           })
         })
         state.treeData = res.data.data
         // 一进页面默认跑第一笔
         if (state.currentMaterialString === '') {
           state.currentMaterialString = state.treeData[0].inspectMaterialType
-          treeModule.value.focusCurrentNodeNumber = state.treeData[0].inspectMaterialType
+          treeModule.value.focusCurrentNodeNumber = state.currentMaterialString
+          state.targetNode = state.treeData[0].inspectMaterialType
+          state.targetLeaf = ''
           apiMaterialDetail(state.currentMaterialString, '', '')
+        } else {
+          treeModule.value.focusCurrentNodeNumber = ''
+          setTimeout(() => {
+            treeModule.value.focusCurrentNodeNumber = state.targetLeaf === '' ? state.targetNode : state.targetLeaf
+          }, 1000)
+          apiMaterialDetail(state.currentMaterialString, state.currentMaterialGroupString, '')
         }
       })
     }
@@ -333,34 +351,13 @@ export default defineComponent({
         inspectTypeIdList: val // 检验类id数组
       }).then(() => {
         proxy.$successToast('操作成功')
-        // reload page
-        // if (state.whoAsign === 'single') {
-        //   INSPECT_MATERIAL_QUERY_SYS_MATERIAL_API({
-        //     inspectMaterialType: state.currentMaterialString,
-        //     inspectGroup: state.currentMaterialGroupString,
-        //     inspectMaterialNameOrCode: state.globleSearchString
-        //   }).then((res) => {
-        //     state.totalItems = res.data.data.length
-        //     if (res.data.data.length === 0) {
-        //       state.currentMaterialString = ''
-        //       getMaterialCatagoryData()
-        //     } else {
-        //       state.tableDataW = JSON.parse(JSON.stringify(res.data.data))
-        //       currentChangePage(state.tableDataW, 1)
-        //     }
-        //   })
-        // } else if (state.whoAsign === 'multi') {
-        //   state.currentMaterialString = ''
-        //   getMaterialCatagoryData()
-        // }
-        state.currentMaterialString = ''
+        // state.currentMaterialString = ''
         getMaterialCatagoryData()
       })
     }
     //  [物料明细] 分配勾选
     const handleSelectionChange = (val:TopicMainData[]) => {
       state.multipleSelection = [...val]
-      console.log(state.multipleSelection)
     }
 
     const treeDataTranslater = (data: any[], id: string, pid: string): any[] => {
