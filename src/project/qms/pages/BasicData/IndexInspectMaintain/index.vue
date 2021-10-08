@@ -115,7 +115,7 @@
                       :disabled="parameterTreeSelectedString===''"
                       placement="top"
                     >
-                      <input class="el-input__inner" type="botton" readonly="" autocomplete="off" placeholder="请选择" v-model="parameterTreeSelectedString"  >
+                      <input class="el-input__inner" type="botton" readonly autocomplete="off" placeholder="请选择" v-model="parameterTreeSelectedString"  >
                       </el-tooltip>
                       <span class="el-input__suffix">
                         <span class="el-input__suffix-inner">
