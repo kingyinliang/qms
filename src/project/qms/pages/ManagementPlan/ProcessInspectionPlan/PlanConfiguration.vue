@@ -24,7 +24,7 @@
           <el-button icon="el-icon-plus" class="topic-button" type="primary" size="small" @click="btnClickItemAddOrEditForTopicMainData('add',{})" :disabled="!currentFocusTargetObj.canAdd" >新增</el-button>
           <el-button icon="el-icon-delete" class="topic-button" type="danger" size="small"  @click="btnClickItemsDeleteForTopicMainData" :disabled="!currentFocusTargetObj.canDelete">批量删除</el-button>
           <el-button icon="el-icon-news" class="topic-button" type="primary" size="small" @click="btnClickGenerateForTopicMainData" :disabled="!currentFocusTargetObj.canGenerate">生成</el-button>
-          <el-button icon="el-icon-edit" class="topic-button" type="primary" size="small" @click="btnClickItemBatchEditForTopicMainData">编辑</el-button>
+          <el-button icon="el-icon-edit" class="topic-button" type="primary" size="small" @click="btnClickItemBatchEditForTopicMainData" :disabled="!currentFocusTargetObj.canEdit">编辑</el-button>
         </template>
       </div>
      <el-table
@@ -867,7 +867,7 @@ export default defineComponent({
         }
 
         if (data[i].parentId === '0') { // 第一级
-          data[i].canEdit = true // 是否可编辑
+          data[i].canEdit = false // 是否可编辑
           data[i].canDelete = false // 是否可删除
           data[i].canAdd = false // 是否可新增
           data[i].canGenerate = false // 是否可生成
