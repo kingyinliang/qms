@@ -41,7 +41,7 @@
         <el-table-column label="指标编码" prop="indexCode" :show-overflow-tooltip="true" min-width="100" />
         <el-table-column label="指标名称" prop="indexName" :show-overflow-tooltip="true" min-width="180" />
         <el-table-column label="单位" prop="indexUnit" :show-overflow-tooltip="true" min-width="100" />
-        <el-table-column label="方法" prop="indexMe thod" :show-overflow-tooltip="true" min-width="220" />
+        <el-table-column label="方法" prop="indexMethod" :show-overflow-tooltip="true" min-width="220" />
         <el-table-column label="取样部门" prop="cooperate" :show-overflow-tooltip="true" min-width="108" >
           <template #default="scope">
             {{scope.row.cooperate}}

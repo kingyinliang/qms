@@ -639,6 +639,10 @@ export default defineComponent({
         data[i].inspectMaterialCode = data[i].inspectTypeCode
         data[i].inspectMaterialName = data[i].inspectTypeName
         data[i].location = ''
+        if (data[i].parentId === '0') {
+          data[i]._level = 1
+          data[i].location = data[i].inspectTypeName
+        }
         temp[data[i][id]] = data[i]
       }
       for (let k = 0; k < data.length; k++) {
@@ -664,12 +668,19 @@ export default defineComponent({
 
           temp[data[k][pid]].children.push(data[k])
         } else {
+          if (data[k].inspectMaterialAlls.length !== 0) {
+            data[k].inspectMaterialAlls.forEach((item:ParameterTreeData, index:number) => {
+              item.location = data[k].location
+              data[k].children[index].location = data[k].location
+            })
+          }
           res.push(data[k])
         }
       }
       return res
     }
 
+    // TODO
     const parameterTreeNodeClick = () => {
       state.parameterTreeCheckNodes = parameterTreeRef.value.getCheckedNodes(false)
       state.parameterTreeSslected = state.parameterTreeCheckNodes.map((it: any) => it.id)
@@ -692,6 +703,7 @@ export default defineComponent({
         }
       })
     }
+    // TODO
     // [BTN:编辑][BTN:新增][参数明细]
     const handleParameterItem = (row:TopicMainData) => {
       if (row) { // 编辑
@@ -751,6 +763,7 @@ export default defineComponent({
       return data.inspectTypeName.indexOf(value) !== -1
     }
 
+    // TODO
     // [参数明细][关联项] 下拉弹窗缩回消失
     const popperHide = () => {
       if (state.parameterTreeCheckNodes.length !== 0) {
@@ -758,6 +771,7 @@ export default defineComponent({
         // const temp:string[] = [...new Set(parameterTreeCheckTranslater(state.parameterTreeCheckNodes, 'id', 'parentId').map((it: any) => it.location))]
         state.parameterTreeSelectedString = [...new Set(temp)].join(',')
       } else {
+        console.log('bbbbbb')
         state.parameterTreeSelectedString = ''
       }
     }
