@@ -44,7 +44,7 @@
             @row-dblclick="setProcessParameter"
             :row-style="tableRowFocusStyle"
             >
-            <el-table-column type="selection" width="45" />
+            <el-table-column type="selection" width="55" align="center"/>
             <el-table-column type="index" :index="index => index + 1 + (Number(currentPage) - 1) * (Number(pageSize))" label="序号"  width="55" fixed align="center" size="small" />
             <el-table-column label="编码" prop="parameterGroupCode" :show-overflow-tooltip="true" min-width="100" />
             <el-table-column label="过程参数组" prop="parameterGroupName" :show-overflow-tooltip="true" min-width="100" />
