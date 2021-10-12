@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-07-30 11:24:46
  * @LastEditors: Telliex
- * @LastEditTime: 2021-10-08 15:00:10
+ * @LastEditTime: 2021-10-12 08:58:16
 -->
 <template>
   <mds-card class="test_method" :title="title" :pack-up="false" style="margin-bottom: 0; background: #fff;">
@@ -29,17 +29,22 @@
           <span class="required">过程参数</span>
         </template>
         <template #default="scope">
-            <el-select v-model="scope.row.paramSubscriptCodeWithParamSubscript" size="small" :disabled="!isRedact||scope.row.paramType=== 'RESULT'" :placeholder="!isRedact?'':'请选择'" clearable @change="val=>changeParamSubscriptOptions(val,scope.row)" @focus="val=>focusParamSubscriptOptions(val,scope.row)">
-              <el-option
-                v-for="item in paramSubscriptOptions"
-                :key="item.paramSubscriptCode"
-                :label="item.paramSubscriptCode+' '+item.paramSubscript"
-                :value="item.paramSubscriptCode+' '+item.paramSubscript"
-                :disabled="item.disabled"
-                >
-                <span >{{ item.paramSubscriptCode }}<sub>{{item.paramSubscript}}</sub></span>
-              </el-option>
-            </el-select>
+          <div style="position:relative">
+              <el-select  v-model="scope.row.paramSubscriptCodeWithParamSubscript" size="small" :disabled="!isRedact||scope.row.paramType=== 'RESULT'" :placeholder="!isRedact?'':'请选择'" @change="val=>changeParamSubscriptOptions(val,scope.row)" @focus="val=>focusParamSubscriptOptions(val,scope.row)">
+                <el-option
+                  v-for="item in paramSubscriptOptions"
+                  :key="item.paramSubscriptCode"
+                  :label="item.paramSubscriptCode+' '+item.paramSubscript"
+                  :value="item.paramSubscriptCode+' '+item.paramSubscript"
+                  :disabled="item.disabled"
+                  >
+                  <span >{{ item.paramSubscriptCode }}<sub>{{item.paramSubscript}}</sub></span>
+                </el-option>
+              </el-select>
+              <div class="op" :class="{isRedact:!isRedact||scope.row.paramType=== 'RESULT'}" >
+                <span >{{ scope.row.paramSubscriptCode }}<sub>{{ scope.row.paramSubscript}}</sub></span>
+              </div>
+            </div>
         </template>
       </el-table-column>
       <el-table-column label="单位" min-width="110" show-overflow-tooltip>
@@ -47,7 +52,7 @@
           <span class="required">单位</span>
         </template>
         <template #default="scope">
-          <el-select v-model="scope.row.paramUnit" size="small" :disabled="!isRedact||scope.row.paramType=== 'RESULT'" :placeholder="!isRedact?'':'请选择'" clearable>
+          <el-select v-model="scope.row.paramUnit" size="small" :disabled="!isRedact" :placeholder="!isRedact?'':'请选择'" clearable>
                 <el-option
                 v-for="item in paramUnitOptions"
                 :key="item.dictCode"
@@ -59,12 +64,12 @@
       </el-table-column>
       <el-table-column label="上限" min-width="110" show-overflow-tooltip>
         <template #default="scope">
-          <el-input v-model="scope.row.paramUp" size="small" maxlength="5" :placeholder="!isRedact?'':'请输入'" :disabled="!isRedact||scope.row.paramType=== 'RESULT'" oninput="value=value.replace(/[^\d.]/g, '')" />
+          <el-input v-model="scope.row.paramUp" size="small" maxlength="5" :placeholder="!isRedact?'':'请输入'" :disabled="!isRedact" oninput="value=value.replace(/[^\d.]/g, '')" />
         </template>
       </el-table-column>
       <el-table-column label="下限" min-width="110" show-overflow-tooltip>
         <template #default="scope">
-          <el-input v-model="scope.row.paramDown" size="small" maxlength="5"  :placeholder="!isRedact?'':'请输入'" :disabled="!isRedact||scope.row.paramType=== 'RESULT'" oninput="value=value.replace(/[^\d.]/g, '')"  />
+          <el-input v-model="scope.row.paramDown" size="small" maxlength="5"  :placeholder="!isRedact?'':'请输入'" :disabled="!isRedact" oninput="value=value.replace(/[^\d.]/g, '')"  />
         </template>
       </el-table-column>
       <el-table-column label="默认值">
@@ -73,7 +78,7 @@
           show-overflow-tooltip
         >
           <template #default="scope">
-            <el-select v-model="scope.row.defaultType" size="small" :disabled="!isRedact||scope.row.paramType=== 'RESULT'" :placeholder="!isRedact?'':'请选择'" clearable>
+            <el-select v-model="scope.row.defaultType" size="small" :disabled="!isRedact" :placeholder="!isRedact?'':'请选择'" clearable>
               <el-option
                 v-for="item in defaultTypeOptions"
                 :key="item.dictCode"
@@ -88,33 +93,38 @@
           show-overflow-tooltip
         >
           <template #default="scope">
-            <el-input v-model.number="scope.row.defaultValue" size="small" :placeholder="!isRedact?'':'请输入'" :disabled="!isRedact||scope.row.paramType=== 'RESULT'||scope.row.defaultType===''||scope.row.defaultType==='CURRENT'" />
+            <el-input v-model.number="scope.row.defaultValue" size="small" :placeholder="!isRedact?'':'请输入'" :disabled="!isRedact||scope.row.defaultType===''||scope.row.defaultType==='CURRENT'" />
           </template>
          </el-table-column>
       </el-table-column>
       <el-table-column label="关联参数" min-width="110" show-overflow-tooltip>
         <template #default="scope">
-          <el-select v-model="scope.row.parentParamSubscriptCodeWithParentParamSubscript" size="small" :disabled="!isRedact ||  scope.row.paramType === 'SHOW' || scope.row.paramType === 'RESULT'" :placeholder="!isRedact?'':'请选择'" clearable @change="val=>changeParentParamSubscriptOptions(val,scope.row)" @focus="val=>focusParentParamSubscriptOptions(val,scope.row)">
-                <el-option
-                  v-for="item in parentParamSubscriptOptions"
-                  :key="item.paramSubscriptCode"
-                  :label="item.paramSubscriptCode+' '+item.paramSubscript"
-                  :value="item.paramSubscriptCode+' '+item.paramSubscript"
-                  :disabled="item.disabled">
-                <span >{{ item.paramSubscriptCode }}<sub>{{item.paramSubscript}}</sub></span>
-              </el-option>
-            </el-select>
+          <div style="position:relative">
+          <el-select v-model="scope.row.parentParamSubscriptCodeWithParentParamSubscript" size="small" :disabled="!isRedact ||  scope.row.paramType === 'SHOW'" :placeholder="!isRedact?'':'请选择'"  @change="val=>changeParentParamSubscriptOptions(val,scope.row)" @focus="val=>focusParentParamSubscriptOptions(val,scope.row)">
+              <el-option
+                    v-for="item in parentParamSubscriptOptions"
+                    :key="item.paramSubscriptCode"
+                    :label="item.paramSubscriptCode+' '+item.paramSubscript"
+                    :value="item.paramSubscriptCode+' '+item.paramSubscript"
+                    :disabled="item.disabled">
+                  <span >{{ item.paramSubscriptCode }}<sub>{{item.paramSubscript}}</sub></span>
+                </el-option>
+              </el-select>
+              <div class="op" :class="{isRedact:!isRedact ||  scope.row.paramType === 'SHOW'}" >
+                <span >{{ scope.row.parentParamSubscriptCode }}<sub>{{ scope.row.parentParamSubscript}}</sub></span>
+              </div>
+            </div>
         </template>
       </el-table-column>
       <el-table-column label="公式" min-width="80" show-overflow-tooltip>
         <template #default="scope">
-          <el-button size="mini"  icon="el-icon-aim" v-if="scope.row.paramType === 'HIDDEN' || scope.row.paramType === 'RESULT'" @click="editFormula(scope.row)" :disabled="!isRedact || scope.row.paramType=== 'RESULT'"></el-button>
+          <el-button size="mini"  icon="el-icon-aim" v-if="scope.row.paramType === 'HIDDEN' || scope.row.paramType === 'RESULT'" @click="editFormula(scope.row)" :disabled="!isRedact"></el-button>
         </template>
       </el-table-column>
 
       <el-table-column label="操作" width="100" fixed="right">
         <template #default="scope" >
-          <el-button type="text" icon="el-icon-delete" class="delete-btn" @click="btnDeleteItemData(scope.$index,scope.row)" :disabled="!isRedact">
+          <el-button type="text" icon="el-icon-delete" class="delete-btn" @click="btnDeleteItemData(scope.$index,scope.row)" :disabled="!isRedact || !scope.row.canDelete">
            <span>删除</span>
           </el-button>
         </template>
@@ -150,9 +160,13 @@
           <el-button  type="primary" size="small" icon="el-icon-plus" class="topic-button" @click="addItemOfrelatedeFormula">新增</el-button>
           <el-button  type="danger" size="small" icon="el-icon-delete"  class="topic-button" @click="tempDeleteItemOfrelatedeFormula">批量删除</el-button>
         </div>
-        <el-table ref="multipleTable" type="mini"  :cell-style="{'text-align':'center'}" :row-class-name="markRowWithDelFlag" :data="relatedeFormulaData"  tooltip-effect="dark" style="width: 100%" @selection-change="handleSelectionChange">
+          <el-table ref="multipleTable" type="mini"  :cell-style="{'text-align':'center'}" :row-class-name="markRowWithDelFlag" :data="relatedeFormulaData"  tooltip-effect="dark" style="width: 100%" @selection-change="handleSelectionChange">
           <el-table-column type="selection" width="55" />
-          <el-table-column type="index" label="序号" width="50" />
+          <!-- <el-table-column type="index" label="序号" width="50" >
+            <template #default="scope" >
+              {{scope.row.delFlag!==1 ?scope.$index+1:false}}
+            </template>
+          </el-table-column> -->
           <el-table-column label="关联参数" min-width="110" show-overflow-tooltip>
             <template #default="scope">
               <el-input v-model="scope.row.associate" size="small"  placeholder="请输入" oninput="value=value.replace(/[^\d]/g,'')"  />
@@ -229,6 +243,7 @@ interface ImportData {
   unHtmlFormula?: string
   relatedFormulaForNoId?: RelatedeFormulaData[]
   inspectAssciateAll?: RelatedeFormulaDataNoId
+  canDelete?: boolean
 }
 
 interface ImportObj { // 参数组 API
@@ -377,7 +392,7 @@ export default defineComponent({
         item.parentParamSubscriptCodeWithParentParamSubscript = item.parentParamSubscriptCode + ' ' + item.parentParamSubscript
         item.formulaDisplay = escape2Html(item.formulaDisplay as string) // 编码还原
         item.relatedFormulaForNoId = []
-
+        item.canDelete = true
         // 关联参数下拉选单附值
         state.paramSubscriptOptions.forEach((subItem:ParamSubscriptOptions) => {
           subItem.disabled = false
@@ -399,7 +414,7 @@ export default defineComponent({
         if (!stillCanEdit) {
           state.isRedact = false
         }
-      }, 500)
+      }, 800)
     }
 
     // [BTN:删除][过程参数] 删除 item
@@ -470,7 +485,8 @@ export default defineComponent({
         unHtmlFormula: '',
         inspectAssciateAll: {
           insertList: []
-        }
+        },
+        canDelete: true
         // isRedact: true
       })
     }
@@ -569,7 +585,7 @@ export default defineComponent({
         if (!stillCanEdit) {
           state.isRedact = false
         }
-      }, 100)
+      }, 800)
       parent.emit('update:dialogVisible', false)
     }
 
@@ -729,19 +745,33 @@ export default defineComponent({
         row.parentParamSubscript = ''
         row.parentInspectParameterId = ''
       }
-    }
-    // [SELECT:过程参数][Event:change]
-    const focusParamSubscriptOptions = (val:string) => {
-      if (val !== '') {
-        // disable 有过程参数里有结果 type 的
-        state.topicMainData.forEach(item => {
-          state.paramSubscriptOptions.forEach(subItem => {
-            if (item.paramType === 'RESULT' && subItem.paramCode === item.paramCode) {
-              subItem.disabled = true
+      state.topicMainData.forEach(item => { item.canDelete = true }) // 将删除 but 复原
+      state.topicMainData.forEach(item => { // 将删除 but 设置
+        if (item.paramType === 'HIDDEN' || item.paramType === 'RESULT') {
+          state.topicMainData.forEach(subItem => {
+            if (subItem.paramCode === item.parentParamCode) {
+              subItem.canDelete = false
             }
           })
+        }
+      })
+    }
+    // [SELECT:过程参数][Event:change]
+    const focusParamSubscriptOptions = (val:string, row:any) => {
+      console.log(row)
+      // if (val !== '') {
+      // disable 有过程参数里有结果 type 的
+      state.topicMainData.forEach(item => {
+        state.paramSubscriptOptions.forEach(subItem => {
+          // if (row.paramCode !== '' && subItem.paramCode === item.paramCode) {
+          //   subItem.disabled = true
+          // }
+          if (item.paramType === 'RESULT' || subItem.paramCode === item.paramCode) {
+            subItem.disabled = true
+          }
         })
-      }
+      })
+      // }
     }
 
     // [关联公式]dialog 获取 data
@@ -958,4 +988,24 @@ h3 {
     height: 100px;
     overflow: scroll;
 }
+.op{
+    height: 28px;
+    color: var(--el-text-color-regular);
+    background-color: var(--el-color-white);
+    position: absolute;
+    padding: 3px 15px;
+    top: 2px;
+    left: 4px;
+    width: calc(100% - 30px);
+}
+.op.isRedact{
+    height: 28px;
+    background-color: var(--el-disabled-fill-base);
+    color: var(--el-disabled-color-base);
+    top: 2px;
+    left: 4px;
+    cursor: not-allowed;
+    padding: 3px 15px;
+}
+
 </style>
