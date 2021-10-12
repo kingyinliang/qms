@@ -35,7 +35,7 @@
         class="bueatyScroll"
         style="width: 100%;"
         @selection-change="handleSelectionChange">
-        <el-table-column type="selection" width="55" />
+        <el-table-column type="selection" width="55" align="center" />
         <el-table-column type="index" :index="index => index + 1 + (Number(currentPage) - 1) * (Number(pageSize))" label="序号"  width="55"  align="center" size="small" fixed />
         <el-table-column label="物料/类别" prop="inspectMaterialTypeName" :show-overflow-tooltip="true" min-width="180" />
         <el-table-column label="指标编码" prop="indexCode" :show-overflow-tooltip="true" min-width="100" />
@@ -1201,17 +1201,19 @@ export default defineComponent({
       }
       if (!state.formBatchEditItems.inspectListChecked) {
         state.formBatchEditItems.inspectList = []
-        state.formBatchEditItems.inspect = {
-          deptId: '',
-          deptName: ''
-        }
+        // state.formBatchEditItems.inspect = {
+        //   deptId: '',
+        //   deptName: ''
+        // }
+        state.formBatchEditItems.inspect = null
       }
       if (!state.formBatchEditItems.coInspectListChecked) {
         state.formBatchEditItems.coInspectList = []
-        state.formBatchEditItems.coInspect = {
-          deptId: '',
-          deptName: ''
-        }
+        // state.formBatchEditItems.coInspect = {
+        //   deptId: '',
+        //   deptName: ''
+        // }
+        state.formBatchEditItems.coInspect = null
       }
 
       if (state.formBatchEditItems.coInspectListChecked) {
@@ -1229,12 +1231,14 @@ export default defineComponent({
           deptName: tempinspectObj.length ? tempinspectObj[0].deptName : ''
         }
       }
-      await MANAGEMENT_INSPECTION_PLAN_CONFIGURATION_PLAN_BATCH_UPDATE_API({
-        ...state.formBatchEditItems
-      })
+      if (state.formBatchEditItems.frequencyIdChecked || state.formBatchEditItems.keyIndexFlagChecked || state.formBatchEditItems.mergeFlagChecked || state.formBatchEditItems.loopFlagChecked || state.formBatchEditItems.timingFlagChecked || state.formBatchEditItems.inspectListChecked || state.formBatchEditItems.coInspectListChecked) {
+        await MANAGEMENT_INSPECTION_PLAN_CONFIGURATION_PLAN_BATCH_UPDATE_API({
+          ...state.formBatchEditItems
+        })
 
-      proxy.$successToast('操作成功')
-      getBaseData() // reload
+        proxy.$successToast('操作成功')
+        getBaseData() // reload
+      }
       btnClickItemClearForDialog('refBatchEditItems')
     }
 

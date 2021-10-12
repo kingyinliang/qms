@@ -11,7 +11,7 @@
       </div>
     </template>
     <el-table border ref="multipleTable" :cell-style="{'text-align':'center'}" :data="dataTopicMainData" tooltip-effect="dark" style="width: 100%" @selection-change="handleSelectionChange" max-height="400">
-      <el-table-column type="selection" width="55" />
+      <el-table-column type="selection" width="55" align="center" />
       <el-table-column type="index" label="序号" :index="(index) => index + 1 + (currentPage - 1) * pageSize" width="50" />
       <el-table-column label="检测频率名称" show-overflow-tooltip prop="frequencyName" min-width="200" />
       <el-table-column label="执行次数" show-overflow-tooltip prop="frequency" width="100" />

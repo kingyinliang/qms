@@ -11,7 +11,7 @@
       </div>
     </template>
     <el-table ref="multipleTable" border :cell-style="{'text-align':'center'}" :data="tableData" tooltip-effect="dark" style="width: 100%" @selection-change="handleSelectionChange">
-      <el-table-column type="selection" width="55" />
+      <el-table-column type="selection" width="55" align="center" />
       <el-table-column type="index" label="序号" :index="(index) => index + 1 + (queryForm.current - 1) * queryForm.size" width="50" />
       <el-table-column label="编码" prop="cycleCode" />
       <el-table-column label="时间单位" prop="dateUnit" />

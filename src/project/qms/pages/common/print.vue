@@ -1,7 +1,7 @@
 <template>
   <mds-card class="test_method" title="打印" :pack-up="false" style="margin-bottom: 0; background: #fff;">
     <el-table :data="printData" @selection-change="handleSelectionChange">
-      <el-table-column type="selection" width="55" />
+      <el-table-column type="selection" width="55" align="center" />
       <el-table-column type="index" label="序号" width="50" />
       <el-table-column label="编码" prop="code" />
       <el-table-column label="实验室名字" prop="deptName" />
