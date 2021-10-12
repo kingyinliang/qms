@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-07-30 11:24:46
  * @LastEditors: Telliex
- * @LastEditTime: 2021-10-12 09:03:19
+ * @LastEditTime: 2021-10-12 16:42:11
 -->
 <template>
   <mds-card class="test_method" :title="title" :pack-up="false" style="margin-bottom: 0; background: #fff;">
@@ -24,7 +24,7 @@
       tooltip-effect="dark"
       style="width: 100%">
       <el-table-column type="index" label="序号" width="50" />
-      <el-table-column label="过程参数" min-width="110" show-overflow-tooltip>
+      <el-table-column label="过程参数" min-width="160" show-overflow-tooltip>
         <template #header>
           <span class="required">过程参数</span>
         </template>
@@ -97,7 +97,7 @@
           </template>
          </el-table-column>
       </el-table-column>
-      <el-table-column label="关联参数" min-width="110" show-overflow-tooltip>
+      <el-table-column label="关联参数" min-width="160" show-overflow-tooltip>
         <template #default="scope">
           <div style="position:relative">
           <el-select v-model="scope.row.parentParamSubscriptCodeWithParentParamSubscript" size="small" :disabled="!isRedact ||  scope.row.paramType === 'SHOW'" :placeholder="!isRedact?'':'请选择'"  @change="val=>changeParentParamSubscriptOptions(val,scope.row)" @focus="val=>focusParentParamSubscriptOptions(val,scope.row)">
@@ -161,7 +161,7 @@
           <el-button  type="danger" size="small" icon="el-icon-delete"  class="topic-button" @click="tempDeleteItemOfrelatedeFormula">批量删除</el-button>
         </div>
           <el-table ref="multipleTable" type="mini"  :cell-style="{'text-align':'center'}" :row-class-name="markRowWithDelFlag" :data="relatedeFormulaData"  tooltip-effect="dark" style="width: 100%" @selection-change="handleSelectionChange">
-          <el-table-column type="selection" width="55" />
+          <el-table-column type="selection" width="55" align="center" />
           <!-- <el-table-column type="index" label="序号" width="50" >
             <template #default="scope" >
               {{scope.row.delFlag!==1 ?scope.$index+1:false}}
@@ -243,7 +243,7 @@ interface ImportData {
   unHtmlFormula?: string
   relatedFormulaForNoId?: RelatedeFormulaData[]
   inspectAssciateAll?: RelatedeFormulaDataNoId
-  canDelete?: boolean
+  canDelete?: boolean | null
 }
 
 interface ImportObj { // 参数组 API
@@ -408,6 +408,19 @@ export default defineComponent({
       state.topicMainData = res.data.data
 
       state.orgTopicMainData = JSON.parse(JSON.stringify(res.data.data))
+
+      // 删除按钮调整
+      state.topicMainData.forEach(item => { item.canDelete = true }) // 将删除 but 复原
+      state.topicMainData.forEach(item => { // 将删除 but 设置
+        if (item.paramType === 'HIDDEN' || item.paramType === 'RESULT') {
+          state.topicMainData.forEach(subItem => {
+            if (subItem.paramCode === item.parentParamCode) {
+              subItem.canDelete = false
+            }
+          })
+        }
+      })
+
       // [BUG] Code Smell 處理
       // 让变数控制表单的表现行为，最后触发
       setTimeout(() => {
@@ -523,13 +536,19 @@ export default defineComponent({
 
           tempAdd.push(item)
         } else { // 编辑
-          if (!_.isEqual(state.orgTopicMainData[index], item)) {
-            delete item.paramSubscriptCodeWithParamSubscript
-            delete item.parentParamSubscriptCodeWithParentParamSubscript
+          const tempItem:ImportData = JSON.parse(JSON.stringify(item))
+          tempItem.canDelete = true
+          if (!_.isEqual(state.orgTopicMainData[index], tempItem)) {
+            console.log('state.orgTopicMainData[index]')
+            console.log(state.orgTopicMainData[index])
+            console.log('tempItem')
+            console.log(tempItem)
+            delete tempItem.paramSubscriptCodeWithParamSubscript
+            delete tempItem.parentParamSubscriptCodeWithParentParamSubscript
 
             const container:string[] = []
-            if (item.formulaDisplay !== undefined && item.formulaDisplay !== '') {
-              item.formulaDisplay.split(',').forEach(subItem => {
+            if (tempItem.formulaDisplay !== undefined && tempItem.formulaDisplay !== '') {
+              tempItem.formulaDisplay.split(',').forEach(subItem => {
                 const temp = subItem.indexOf('<sub>')
                 if (temp >= 0) {
                   container.push(`${subItem.substring(31, temp)}[${subItem.substring(temp + 5, subItem.indexOf('</sub>'))}]`)
@@ -537,9 +556,9 @@ export default defineComponent({
               })
             }
 
-            item.formula = Array.from(new Set(container)).join(',')
-            item.formulaDisplay = html2Escape(item.formulaDisplay as string)
-            tempEdit.push(item)
+            tempItem.formula = Array.from(new Set(container)).join(',')
+            tempItem.formulaDisplay = html2Escape(tempItem.formulaDisplay as string)
+            tempEdit.push(tempItem)
           }
         }
       })
@@ -756,17 +775,21 @@ export default defineComponent({
         }
       })
     }
+    // TODO
     // [SELECT:过程参数][Event:change]
     const focusParamSubscriptOptions = (val:string, row:any) => {
       console.log(row)
       // if (val !== '') {
       // disable 有过程参数里有结果 type 的
+      console.log('state.topicMainData')
+      console.log(state.topicMainData)
+      console.log('state.paramSubscriptOptions')
+      console.log(state.paramSubscriptOptions)
+
+      state.paramSubscriptOptions.forEach(item => { item.disabled = false })
       state.topicMainData.forEach(item => {
         state.paramSubscriptOptions.forEach(subItem => {
-          // if (row.paramCode !== '' && subItem.paramCode === item.paramCode) {
-          //   subItem.disabled = true
-          // }
-          if (item.paramType === 'RESULT' || subItem.paramCode === item.paramCode) {
+          if (subItem.paramCode === item.paramCode) {
             subItem.disabled = true
           }
         })
@@ -877,10 +900,13 @@ export default defineComponent({
       return target
     }
 
+    // TODO
     // rule: 1.需排除已维护参数类型为“结果”的过程参数
     //       2.排除自己
     const focusParentParamSubscriptOptions = (val:any, row:ImportData) => {
       state.parentParamSubscriptOptions = []
+      const temp:any[] = state.topicMainData.map(item => item.parentParamCode)
+      console.log(temp)
       state.topicMainData.forEach(item => {
         state.paramSubscriptOptions.forEach((subItem:ParamSubscriptOptions) => {
           if (item.paramType === 'SHOW' && item.paramCode === subItem.paramCode) {
@@ -890,6 +916,14 @@ export default defineComponent({
               subItem.disabled = true
             }
             state.parentParamSubscriptOptions.push(subItem)
+          }
+        })
+      })
+      // disable 关联参数 options 里，已被选过的
+      temp.forEach(item => {
+        state.paramSubscriptOptions.forEach((subItem:ParamSubscriptOptions) => {
+          if (item !== '' && item === subItem.paramCode) {
+            subItem.disabled = true
           }
         })
       })
@@ -997,6 +1031,9 @@ h3 {
     top: 2px;
     left: 4px;
     width: calc(100% - 30px);
+    overflow : hidden;
+    text-overflow : ellipsis;
+    white-space : nowrap;
 }
 .op.isRedact{
     height: 28px;
