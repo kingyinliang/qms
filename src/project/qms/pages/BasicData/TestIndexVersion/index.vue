@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-07-30 11:24:46
  * @LastEditors: Telliex
- * @LastEditTime: 2021-09-18 20:26:08
+ * @LastEditTime: 2021-10-12 15:37:36
 -->
 <template>
   <mds-card class="test_method" title="版本明细" :pack-up="false" style="margin-bottom: 0; background: #fff;">
@@ -18,7 +18,7 @@
       </div>
     </template>
     <el-table ref="multipleTable" border :row-style="tableRowFocusStyle"    :cell-style="{'text-align':'center'}" :data="topicMainData" tooltip-effect="dark" @selection-change="handleSelectionChangeOfTopicMainData" @row-dblclick="handleDbclickOfTopicMainData" max-height="300" style="width: 100%">
-      <el-table-column type="selection" width="45" :selectable="checkDate" />
+      <el-table-column type="selection" width="55" align="center" :selectable="checkDate" />
       <el-table-column type="index" label="序号" :index="(index) => index + 1 + (currentPage - 1) * pageSize" width="55" />
       <el-table-column label="检验类别\物料" min-width="200" prop="inspectMaterialTypeName" show-overflow-tooltip />
       <el-table-column label="指标代码" width="160" prop="indexCode" show-overflow-tooltip />

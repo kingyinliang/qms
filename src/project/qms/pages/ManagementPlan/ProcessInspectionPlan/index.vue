@@ -65,10 +65,10 @@
             >
           </el-date-picker>
         </el-form-item>
-        <el-form-item label="复制上一版：" prop="paramCode"  :label-width="cssForformLabelWidth">
+        <el-form-item label="复制上一版：" prop="copyVersion"  :label-width="cssForformLabelWidth">
            <div>
-              <el-radio v-model="addAndEditItemForm.copyVersion" label="1">是</el-radio>
-              <el-radio v-model="addAndEditItemForm.copyVersion" label="0">否</el-radio>
+              <el-radio v-model="addAndEditItemForm.copyVersion" label="1" :disabled="!addAndEditItemForm.canCopyVersion">是</el-radio>
+              <el-radio v-model="addAndEditItemForm.copyVersion" label="0" :disabled="!addAndEditItemForm.canCopyVersion">否</el-radio>
             </div>
         </el-form-item>
       </el-form>
@@ -102,6 +102,7 @@ interface TopicMainData {
   planVersion: string
   isDisabled: boolean
   copyVersion: string
+  canCopyVersion: boolean
 }
 
 interface PlantList{
@@ -158,7 +159,8 @@ export default defineComponent({
         inspectScene: 'PROCESS',
         planVersion: '',
         isDisabled: false,
-        copyVersion: '0'
+        copyVersion: '0',
+        canCopyVersion: true
       },
       multipleSelection: []
     })
@@ -196,7 +198,6 @@ export default defineComponent({
       })
       state.dataTopicMainData = res.data.data.records
       state.dataTopicMainData.forEach((item:TopicMainData) => {
-        item.copyVersion = '0'
         if ((new Date(item.beginDate).getTime() - new Date(formatDate()).getTime()) <= 0) {
           item.isDisabled = true
         } else {
@@ -211,6 +212,12 @@ export default defineComponent({
       state.isAddItemDialogShow = true
       await nextTick()
       refAddAndEditItemDialog.value.resetFields()
+      if (row.copyVersion === '1') {
+        row.canCopyVersion = false
+      } else {
+        row.canCopyVersion = true
+      }
+
       state.addAndEditItemForm = { ...row }
     }
 
@@ -264,7 +271,8 @@ export default defineComponent({
         inspectScene: 'PROCESS',
         planVersion: '',
         isDisabled: false,
-        copyVersion: '0'
+        copyVersion: '0',
+        canCopyVersion: true
       }
     }
     // [弹窗][BTN:确定]

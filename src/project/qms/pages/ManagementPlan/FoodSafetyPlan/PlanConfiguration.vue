@@ -1,3 +1,10 @@
+<!--
+ * @Description:
+ * @Anthor: Telliex
+ * @Date: 2021-10-08 17:56:13
+ * @LastEditors: Telliex
+ * @LastEditTime: 2021-10-12 15:37:50
+-->
 <template>
   <tree-page
     ref="refTreeModule"
@@ -33,7 +40,7 @@
         border tooltip-effect="dark"
         class="bueatyScroll"
         @selection-change="handleSelectionChange">
-         <el-table-column type="selection" width="55" />
+         <el-table-column type="selection" width="55" align="center" />
         <el-table-column type="index" :index="index => index + 1 + (Number(currentPage) - 1) * (Number(pageSize))" label="序号"  width="55" fixed align="center" size="small" />
         <el-table-column label="物料/类别" prop="inspectMaterialTypeName" :show-overflow-tooltip="true" min-width="180" />
         <el-table-column label="指标编码" prop="indexCode" :show-overflow-tooltip="true" min-width="100" />

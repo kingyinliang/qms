@@ -257,3 +257,14 @@ body{
     color: #f00;
     margin-right: 4px;
 }
+
+
+// button  disable style
+.topic-button.el-button--primary.is-disabled, 
+.topic-button.el-button--primary.is-disabled:active, 
+.topic-button.el-button--primary.is-disabled:focus, 
+.topic-button.el-button--primary.is-disabled:hover {
+    color: #fff ;
+    background-color: #a0cfff !important;
+    border-color: #a0cfff !important;
+}
