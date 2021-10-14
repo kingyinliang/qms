@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-07-30 11:24:46
  * @LastEditors: Telliex
- * @LastEditTime: 2021-10-12 16:42:11
+ * @LastEditTime: 2021-10-14 09:34:57
 -->
 <template>
   <mds-card class="test_method" :title="title" :pack-up="false" style="margin-bottom: 0; background: #fff;">
@@ -100,7 +100,7 @@
       <el-table-column label="关联参数" min-width="160" show-overflow-tooltip>
         <template #default="scope">
           <div style="position:relative">
-          <el-select v-model="scope.row.parentParamSubscriptCodeWithParentParamSubscript" size="small" :disabled="!isRedact ||  scope.row.paramType === 'SHOW'" :placeholder="!isRedact?'':'请选择'"  @change="val=>changeParentParamSubscriptOptions(val,scope.row)" @focus="val=>focusParentParamSubscriptOptions(val,scope.row)">
+          <el-select v-model="scope.row.parentParamSubscriptCodeWithParentParamSubscript" size="small" :disabled="!isRedact ||  scope.row.paramType === 'SHOW' || scope.row.paramType === 'RESULT'" :placeholder="!isRedact?'':'请选择'"  @change="val=>changeParentParamSubscriptOptions(val,scope.row)" @focus="val=>focusParentParamSubscriptOptions(val,scope.row)">
               <el-option
                     v-for="item in parentParamSubscriptOptions"
                     :key="item.paramSubscriptCode"
@@ -110,7 +110,7 @@
                   <span >{{ item.paramSubscriptCode }}<sub>{{item.paramSubscript}}</sub></span>
                 </el-option>
               </el-select>
-              <div class="op" :class="{isRedact:!isRedact ||  scope.row.paramType === 'SHOW'}" >
+              <div class="op" :class="{isRedact:!isRedact ||  scope.row.paramType === 'SHOW' || scope.row.paramType === 'RESULT'}" >
                 <span >{{ scope.row.parentParamSubscriptCode }}<sub>{{ scope.row.parentParamSubscript}}</sub></span>
               </div>
             </div>
@@ -141,7 +141,7 @@
         <h3>变量</h3>
           <el-button-group>
             <template v-for="item in fomulaList" :key="item.paramSubscriptCode">
-            <el-button size="small" class="topic-button"  v-if="item.paramSubscriptCode!==''&&item.id!==''" type="primary" @click="spellFormula('variable',item.paramSubscriptCode,item.paramSubscript)">{{ item.paramSubscriptCode }}<sub v-if="item.paramSubscript!==''">{{item.paramSubscript}}</sub></el-button>
+            <el-button size="small" class="topic-button"  v-if="item.paramSubscriptCode!==''" type="primary" @click="spellFormula('variable',item.paramSubscriptCode,item.paramSubscript)">{{ item.paramSubscriptCode }}<sub v-if="item.paramSubscript!==''">{{item.paramSubscript}}</sub></el-button>
             </template>
           </el-button-group>
            <el-button-group>
@@ -432,21 +432,20 @@ export default defineComponent({
 
     // [BTN:删除][过程参数] 删除 item
     const btnDeleteItemData = (mainIndex: number, val:ImportData) => {
-      let canPass = false
+      let canPass = true
       state.topicMainData.forEach((item, index) => {
         if (item.id !== '' && mainIndex !== index) {
-          if (!_.isEqual(state.orgTopicMainData[index], item)) {
-            proxy.$errorToast('删除前，请先对编辑数据进行保存')
+          const tempItem:ImportData = JSON.parse(JSON.stringify(item))
+          tempItem.canDelete = true
+          if (!_.isEqual(state.orgTopicMainData[index], tempItem)) {
+            proxy.$infoToast('删除前，请先对编辑数据进行保存')
             canPass = false
-          } else {
-            canPass = true
           }
-        } else {
-          canPass = true
         }
       })
+
       // 有异动的数据，不进行删除动作
-      if (canPass === false) {
+      if (!canPass) {
         return
       }
 
@@ -539,10 +538,6 @@ export default defineComponent({
           const tempItem:ImportData = JSON.parse(JSON.stringify(item))
           tempItem.canDelete = true
           if (!_.isEqual(state.orgTopicMainData[index], tempItem)) {
-            console.log('state.orgTopicMainData[index]')
-            console.log(state.orgTopicMainData[index])
-            console.log('tempItem')
-            console.log(tempItem)
             delete tempItem.paramSubscriptCodeWithParamSubscript
             delete tempItem.parentParamSubscriptCodeWithParentParamSubscript
 
@@ -781,11 +776,6 @@ export default defineComponent({
       console.log(row)
       // if (val !== '') {
       // disable 有过程参数里有结果 type 的
-      console.log('state.topicMainData')
-      console.log(state.topicMainData)
-      console.log('state.paramSubscriptOptions')
-      console.log(state.paramSubscriptOptions)
-
       state.paramSubscriptOptions.forEach(item => { item.disabled = false })
       state.topicMainData.forEach(item => {
         state.paramSubscriptOptions.forEach(subItem => {
@@ -906,7 +896,6 @@ export default defineComponent({
     const focusParentParamSubscriptOptions = (val:any, row:ImportData) => {
       state.parentParamSubscriptOptions = []
       const temp:any[] = state.topicMainData.map(item => item.parentParamCode)
-      console.log(temp)
       state.topicMainData.forEach(item => {
         state.paramSubscriptOptions.forEach((subItem:ParamSubscriptOptions) => {
           if (item.paramType === 'SHOW' && item.paramCode === subItem.paramCode) {
