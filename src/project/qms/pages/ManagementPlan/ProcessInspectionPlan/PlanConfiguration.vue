@@ -988,10 +988,10 @@ export default defineComponent({
 
     // [BTN:批次编辑]
     const btnClickItemBatchEditForTopicMainData = async () => {
-      if (!state.multipleSelection.length) {
-        proxy.$warningToast('请选择数据')
-        return
-      }
+      // if (!state.multipleSelection.length) {
+      //   proxy.$warningToast('请选择数据')
+      //   return
+      // }
 
       state.isBatchEditDialogShow = true
       await getDropDownOptions() // 获取下拉
@@ -1023,7 +1023,7 @@ export default defineComponent({
           deptId: '',
           deptName: ''
         },
-        planConfigureIds: state.multipleSelection
+        planConfigureIds: state.multipleSelection.length ? state.multipleSelection : state.topicMainData.map(item => item.id)
       }
       // await rewriteFormData(act) // 获取下拉与改值
     }
