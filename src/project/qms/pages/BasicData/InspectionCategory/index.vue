@@ -57,8 +57,8 @@
             <el-col :span="12">
               <el-form-item label="取样部门：">
                 <tree-dialog
-                  ref="detailCooperateRef"
-                  v-model="detailInfo.cooperate"
+                  ref="detailSampleRef"
+                  v-model="detailInfo.sample"
                   :tree-data="options"
                   :disabled="isRedact"
                   :leafOnly="false"
@@ -71,8 +71,8 @@
             <el-col :span="12">
               <el-form-item label="配合取样：">
                 <tree-dialog
-                  ref="detailSampleRef"
-                  v-model="detailInfo.sample"
+                  ref="detailCooperateRef"
+                  v-model="detailInfo.cooperate"
                   :tree-data="options"
                   :disabled="isRedact"
                   :leafOnly="false"
@@ -138,8 +138,8 @@
         </el-form-item>
         <el-form-item label="取样部门：" :label-width="formLabelWidth">
           <tree-dialog
-            ref="cooperateRef"
-            v-model="addLevelInfo.cooperate"
+            ref="sampleRef"
+            v-model="addLevelInfo.sample"
             :tree-data="options"
             :leafOnly="false"
             :checkStrictly="true"
@@ -148,8 +148,8 @@
         </el-form-item>
         <el-form-item label="配合取样：" :label-width="formLabelWidth">
           <tree-dialog
-            ref="sampleRef"
-            v-model="addLevelInfo.sample"
+            ref="cooperateRef"
+            v-model="addLevelInfo.cooperate"
             :tree-data="options"
             :leafOnly="false"
             :checkStrictly="true"
@@ -280,7 +280,7 @@ export default defineComponent({
     // 下拉框数据变换
     const setOrGetData = (data: any, type = 'get') => {
       if (type === 'get') {
-        return data.getCheckedNodes(true).map((it: any) => { return { deptName: it.deptName, deptId: it.id } })
+        return data.getCheckedNodes(true).map((it: any) => { return { deptName: it.deptName, deptId: it.id, deptCode: it.deptCode } })
       } else {
         return data.map((it: any) => it.deptId)
       }

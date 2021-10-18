@@ -41,7 +41,11 @@
   <el-dialog v-model="addOrUpdateDialog" title="检验点维护" width="30%">
     <el-form ref="addOrUpdateRef" :model="addOrUpdateForm" :rules="addOrUpdateFormRule" label-width="120px">
       <el-form-item label="生产车间：" prop="deptId">
-        <el-select v-model="addOrUpdateForm.deptId" filterable class="inputWidth" placeholder="请选择" @change="val => addOrUpdateForm.deptName = org.find(it => it.id === val).deptName">
+        <el-select v-model="addOrUpdateForm.deptId" filterable class="inputWidth" placeholder="请选择"
+                   @change="val => {
+                     addOrUpdateForm.deptCode = org.find(it => it.id === val).deptCode
+                     addOrUpdateForm.deptName = org.find(it => it.id === val).deptName
+                   }">
           <el-option v-for="item in org" :key="item.id" :label="item.deptName" :value="item.id" />
         </el-select>
       </el-form-item>
@@ -77,6 +81,7 @@ import {
 interface PointData {
   id: string;
   deptId: string;
+  deptCode: string;
   deptName: string;
   siteName: string;
 }
@@ -116,6 +121,7 @@ export default defineComponent({
     const addOrUpdateForm = ref<PointData>({
       id: '',
       deptId: '',
+      deptCode: '',
       deptName: '',
       siteName: ''
     }) // 新增修改表单数据
@@ -156,6 +162,7 @@ export default defineComponent({
       addOrUpdateForm.value = {
         id: '',
         deptId: '',
+        deptCode: '',
         deptName: '',
         siteName: ''
       }
