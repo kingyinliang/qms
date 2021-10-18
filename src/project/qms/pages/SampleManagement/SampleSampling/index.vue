@@ -109,7 +109,7 @@
           <el-input v-model="queryForm.itemCodeOrName" style="width: 120px"></el-input>
         </el-form-item>
         <el-form-item label="检验内容：">
-          <el-input v-model="queryForm.itemCodeOrName" style="width: 120px"></el-input>
+          <el-input v-model="queryForm.inspectContent" style="width: 120px"></el-input>
         </el-form-item>
         <el-form-item label="状态：">
           <el-input v-model="queryForm.itemCodeOrName" style="width: 120px"></el-input>
@@ -125,7 +125,7 @@
       <el-table-column type="index" fixed="left" :index="(index) => index + 1 + (queryForm.current - 1) * queryForm.size" label="序号" width="50" />
       <el-table-column label="样品码" prop="itemCode" :show-overflow-tooltip="true" />
       <el-table-column label="状态" prop="itemName" min-width="120" :show-overflow-tooltip="true" />
-      <el-table-column label="检验内容" prop="creator" min-width="150" :show-overflow-tooltip="true" />
+      <el-table-column label="检验内容" prop="inspectContent" min-width="150" :show-overflow-tooltip="true" />
       <el-table-column v-if="task === 2" label="订单" prop="creator" min-width="150" :show-overflow-tooltip="true" />
       <el-table-column v-if="task === 1 || task === 2" label="物料信息" prop="created" min-width="165" :show-overflow-tooltip="true" />
       <el-table-column v-if="task === 2" label="品项" prop="creator" min-width="150" :show-overflow-tooltip="true" />
@@ -164,45 +164,33 @@
     </el-row>
   </mds-card>
   <el-dialog v-model="addOrUpdateDialog" title="任务" width="30%">
-    <el-form v-if="task === 1" size="small" :model="addOrUpdateForm" label-width="85px">
+    <el-form size="small" :model="addOrUpdateForm" label-width="85px">
       <el-form-item label="检验类：">
+        <el-select v-model="addOrUpdateForm.inspectTypeId" filterable placeholder="请选择" @change="id => inspectChange(id)" style="width: 100%">
+          <el-option v-for="item in inspect" :key="item.id" :label="item.inspectTypeName" :value="item.id" />
+        </el-select>
+      </el-form-item>
+      <el-form-item label="物料信息：" v-if="task === 1 || task === 2">
+        <el-select v-model="addOrUpdateForm.inspectMaterialCode" filterable placeholder="请选择" @change="val => materialChange(val)" style="width: 100%">
+          <el-option v-for="item in material" :key="item.id" :label="item.inspectGroupName" :value="item.inspectGroupCode" />
+        </el-select>
+      </el-form-item>
+      <el-form-item label="批次：" v-if="task === 1">
+        <!--<el-input v-model="addOrUpdateForm.inspectBatch"></el-input>-->
+        <el-select v-model="addOrUpdateForm.inspectBatch" filterable placeholder="请选择" style="width: 100%">
+          <el-option v-for="item in batch" :key="item.id" :label="item.batch" :value="item.batch" />
+        </el-select>
+      </el-form-item>
+      <el-form-item label="生产订单：" v-if="task === 2">
         <el-input v-model="addOrUpdateForm.itemCodeOrName"></el-input>
       </el-form-item>
-      <el-form-item label="物料信息：">
-        <el-input v-model="addOrUpdateForm.itemCodeOrName"></el-input>
+      <el-form-item label="品项：" v-if="task === 1 || task === 2">
+        <el-input v-model="addOrUpdateForm.itemName" disabled></el-input>
       </el-form-item>
-      <el-form-item label="批次：">
-        <el-input v-model="addOrUpdateForm.itemCodeOrName"></el-input>
+      <el-form-item label="供应商：" v-if="task === 1">
+        <el-input v-model="addOrUpdateForm.supplier" disabled></el-input>
       </el-form-item>
-      <el-form-item label="品项：">
-        <el-input v-model="addOrUpdateForm.itemCodeOrName"></el-input>
-      </el-form-item>
-      <el-form-item label="供应商：">
-        <el-input v-model="addOrUpdateForm.itemCodeOrName"></el-input>
-      </el-form-item>
-    </el-form>
-    <el-form v-if="task === 2" size="small" :model="addOrUpdateForm" label-width="85px">
-      <el-form-item label="检验类：">
-        <el-input v-model="addOrUpdateForm.itemCodeOrName"></el-input>
-      </el-form-item>
-      <el-form-item label="物料信息：">
-        <el-input v-model="addOrUpdateForm.itemCodeOrName"></el-input>
-      </el-form-item>
-      <el-form-item label="生产订单：">
-        <el-input v-model="addOrUpdateForm.itemCodeOrName"></el-input>
-      </el-form-item>
-      <el-form-item label="品项：">
-        <el-input v-model="addOrUpdateForm.itemCodeOrName"></el-input>
-      </el-form-item>
-      <el-form-item label="取样信息：">
-        <el-input v-model="addOrUpdateForm.itemCodeOrName"></el-input>
-      </el-form-item>
-    </el-form>
-    <el-form v-if="task === 3" size="small" :model="addOrUpdateForm" label-width="85px">
-      <el-form-item label="检验类：">
-        <el-input v-model="addOrUpdateForm.itemCodeOrName"></el-input>
-      </el-form-item>
-      <el-form-item label="取样信息：">
+      <el-form-item label="取样信息：" v-if="task === 2 || task === 3">
         <el-input v-model="addOrUpdateForm.itemCodeOrName"></el-input>
       </el-form-item>
     </el-form>
@@ -211,14 +199,31 @@
       <el-button size="small" icon="el-icon-circle-check" type="primary" @click="updateFormSubmit">确定</el-button>
     </div>
   </el-dialog>
+  <el-dialog v-model="sampleInspectDialog" title="取样检查" width="30%">
+    <el-form size="small" :model="sampleInspectForm" label-width="85px">
+    </el-form>
+  </el-dialog>
 </template>
 
 <script lang="ts">
-import { defineComponent, reactive, ref } from 'vue'
+import { defineComponent, reactive, ref, onMounted } from 'vue'
 import layoutTs from '@/components/layout/layoutTs'
 
+interface MaterialObj{
+  inspectGroupCode: string
+  inspectGroupName: string
+}
 interface TableData{
   id?: string
+  taskStatus?: string
+  inspectTypeId?: string
+  inspectBatch?: string
+  inspectMaterialCode?: string
+  inspectMaterialName?: string
+  itemId?: string
+  itemName?: string
+  supplierCode?: string
+  supplier?: string
 }
 export default defineComponent({
   name: 'SampleSampling',
@@ -226,14 +231,38 @@ export default defineComponent({
     const { gotoPage } = layoutTs()
     const task = ref(1)
     const addOrUpdateDialog = ref(false)
+    const sampleInspectDialog = ref(false)
     const queryForm = reactive({
+      taskSampleClassify: '',
+      inspectContent: '',
       itemCodeOrName: '',
       current: 1,
       size: 10,
       total: 0
     }) // 查询表单数据
     const tableData = ref<TableData[]>([]) // 表格数据
-    const addOrUpdateForm = ref({})
+    const addOrUpdateForm = ref({
+      id: '',
+      inspectTypeId: '',
+      inspectMaterialCode: '',
+      inspectMaterialName: '',
+      inspectBatch: '',
+      itemId: '',
+      itemName: '',
+      supplier: '',
+      supplierCode: ''
+    })
+    const sampleInspectForm = ref({
+      taskSampleId: '',
+      vehicleStatus: '',
+      sampleAmount: '',
+      packing: '',
+      handleMod: ''
+    })
+
+    const inspect = ref([])
+    const material = ref<MaterialObj[]>([])
+    const batch = ref([])
 
     const query = () => {
       console.log(1)
@@ -255,15 +284,43 @@ export default defineComponent({
       addOrUpdateDialog.value = false
     }
 
+    const getInspect = () => {
+      inspect.value = []
+    }
+    const inspectChange = (id: string) => {
+      console.log(id)
+      material.value = []
+    }
+    const materialChange = (code: string) => {
+      console.log(code)
+      addOrUpdateForm.value.inspectMaterialName = (material.value.find(item => item.inspectGroupCode === code) as MaterialObj).inspectGroupName
+      batch.value = []
+      addOrUpdateForm.value.itemId = ''
+      addOrUpdateForm.value.itemName = ''
+      addOrUpdateForm.value.supplier = ''
+      addOrUpdateForm.value.supplierCode = ''
+    }
+
+    onMounted(() => {
+      getInspect()
+    })
+
     return {
       task,
       addOrUpdateDialog,
+      sampleInspectDialog,
       queryForm,
       tableData,
       addOrUpdateForm,
+      sampleInspectForm,
+      inspect,
+      material,
+      batch,
       changeTask,
       goHistory,
       query,
+      inspectChange,
+      materialChange,
       addOrUpdate,
       updateFormSubmit
     }

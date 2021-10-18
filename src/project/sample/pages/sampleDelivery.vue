@@ -8,11 +8,12 @@
             <el-input ref="sampleCodeRef" v-model="sampleCode" style="width: 150px" autofocus></el-input>
           </el-form-item>
           <el-form-item>
-            <el-button type="primary"><i class="qmsIconfont qms-shouyang1" /> 送达</el-button>
+            <el-button type="primary" @click="delivery"><i class="qmsIconfont qms-shouyang1"/> 送达</el-button>
           </el-form-item>
         </el-form>
       </template>
-      <el-table border :cell-style="{'text-align':'center'}" :data="tableData" tooltip-effect="dark">
+      <el-table ref="multipleTableRef" border :cell-style="{'text-align':'center'}" :data="tableData" tooltip-effect="dark" @selection-change="handleSelectionChange">
+        <el-table-column type="selection" width="45" />
         <el-table-column type="index" fixed="left" label="序号" width="50" />
         <el-table-column label="样品码" prop="itemCode" :show-overflow-tooltip="true" />
         <el-table-column label="状态" prop="itemName" min-width="120" :show-overflow-tooltip="true" />
@@ -35,10 +36,20 @@ export default defineComponent({
   name: 'sampleDelivery',
   setup () {
     const sampleCodeRef = ref()
+    const multipleTableRef = ref()
     const sampleCode = ref('')
+    const multipleSelection = ref<TableData[]>([])
     const tableData = ref<TableData[]>([]) // 表格数据
 
     const query = () => {
+      const data = {}
+      tableData.value.push(data)
+      multipleTableRef.value.toggleRowSelection(data)
+    }
+    const handleSelectionChange = (val: TableData[]) => {
+      multipleSelection.value = val.map((item: TableData) => item)
+    }
+    const delivery = () => {
       console.log(1)
     }
 
@@ -49,9 +60,12 @@ export default defineComponent({
 
     return {
       sampleCodeRef,
+      multipleTableRef,
       sampleCode,
       tableData,
-      query
+      handleSelectionChange,
+      query,
+      delivery
     }
   }
 })
