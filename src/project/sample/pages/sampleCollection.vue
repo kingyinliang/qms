@@ -38,6 +38,7 @@
 
 <script lang="ts">
 import { defineComponent, nextTick, onMounted, ref } from 'vue'
+import { SAMPLE_HANDOVER_QUERY } from '@/api/api'
 
 interface TableData{
   id?: string
@@ -54,8 +55,10 @@ export default defineComponent({
     const multipleSelection = ref<TableData[]>([])
     const tableData = ref<TableData[]>([]) // 表格数据
 
-    const query = () => {
+    const query = async () => {
       const data = {}
+      const res = await SAMPLE_HANDOVER_QUERY({ sampleCode: sampleCode.value })
+      console.log(res)
       tableData.value.push(data)
       multipleTableRef.value.toggleRowSelection(data)
     }
