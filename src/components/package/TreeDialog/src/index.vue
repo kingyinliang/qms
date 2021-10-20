@@ -157,14 +157,11 @@ export default defineComponent({
       if (!value) return true
       return data[treeProps.value.label].indexOf(value) !== -1
     }
-    const handleCheckedChange = () => {
+    const handleCheckedChange = (selectData: any, checked: boolean) => {
       let checkNodes = treeRef.value.getCheckedNodes(leafOnly?.value)
       let ids = checkNodes.map((it: any) => it.id)
-      if (!props.multiChecked) { // 单选
-        console.log(checkNodes.length)
-        if (checkNodes.length > 1) {
-          checkNodes = JSON.parse(JSON.stringify(checkNodes.slice(1, 2)))
-        }
+      if (!props.multiChecked && checked) { // 单选
+        checkNodes = [selectData]
         ids = checkNodes.map((it: any) => it.id)
       }
       checkedValue.value = checkNodes
