@@ -14,6 +14,13 @@ const pages = {
     template: 'public/index.html',
     filename: 'qms.html',
     chunk: ['chunk-vendors', 'chunk-common', 'qms']
+  },
+  sample: {
+    title: '欣和-qms系统',
+    entry: 'src/project/sample/main.ts',
+    template: 'public/index.html',
+    filename: 'sample.html',
+    chunk: ['chunk-vendors', 'chunk-common', 'sample']
   }
 }
 

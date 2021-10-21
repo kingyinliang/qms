@@ -10,3 +10,4 @@ Mock.XHR.prototype.send = function (...args) {
 }
 
 require('./BasicData')
+require('./sampleManagement')

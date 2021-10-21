@@ -162,7 +162,7 @@ body{
     &.delete-btn.is-disabled .el-icon-delete{
         color: var(--el-button-disabled-font-color);
     }
-    
+
     .iconfont{
       font-size: 12px;
     }
@@ -204,7 +204,140 @@ body{
     background-color: #ecf5ff !important;
 }
 
+/* 标签页样式 */
+.NewDaatTtabs {
+  border-radius: 10px !important;
+  overflow: hidden !important;
+  min-height: 300px !important;
+  .required {
+    position: relative;
+    padding-left: 15px;
+    .reqI {
+      color: red;
+      position: absolute;
+      left: 0;
+      line-height: 32px;
+    }
+  }
+  h3 {
+    font-size: 16px;
+    font-weight: bold;
+    float: left;
+  }
 
+  border-top: 1px solid #e8e8e8;
+  .spanview {
+    .el-button {
+      background-color: white;
+      font-size: 16px;
+      padding: 0;
+      border: none;
+    }
+  }
+  .el-tabs__item {
+    height: 40px;
+    line-height: 40px;
+  }
+  table {
+    .el-form-item {
+      margin-bottom: 0;
+    }
+  }
+  .notNull {
+    color: red;
+  }
+  .el-card__header {
+    font-size: 14px;
+    padding: 13px 20px;
+    background-color: #f9f9f9;
+    color: black;
+    font-weight: bold;
+  }
+  .el-card {
+    margin-bottom: 20px;
+  }
+  // .el-input--small .el-input__inner { height: 22px; line-height: 22px; }
+}
+@mixin dataEntry-head($base-sise) {
+  .tabsPages {
+    margin-top: 10px;
+    background: none !important;
+    border: none !important;
+    box-shadow: none !important;
+    font-size: $base-sise;
+
+    .el-tabs__header {
+      background: none !important;
+      border-bottom: none !important;
+    }
+
+    .el-tabs__item {
+      height: auto !important;
+      line-height: 22px !important;
+      font-size: $base-sise + 2;
+      font-weight: 600;
+      color: #666;
+      padding: 6px 16px !important;
+      background: rgba(235, 235, 235, 1);
+      border-radius: 8px 8px 0 0;
+      box-shadow: 3px 3px 5px 0 rgba(0, 0, 0, 0.1);
+      border: 1px solid rgba(226, 226, 226, 1);
+    }
+
+    .el-tabs__item.is-active {
+      border-bottom: 1px solid white;
+    }
+
+    .el-tabs__content {
+      // min-height: 300px;
+      padding: 16px 10px;
+      background: white;
+      border-radius: 0 8px 0 0;
+      box-shadow: 3px 3px 5px 0 rgba(0, 0, 0, 0.1);
+    }
+
+    .el-button--text {
+      padding: 2px 0;
+    }
+
+    .el-input.is-disabled .el-input__inner {
+      width: 100%;
+      overflow: hidden;
+      background-color: #f5f5f5;
+      border: none;
+      color: #666 !important;
+    }
+
+    .el-button--primary {
+      background-color: #487bff;
+      color: #fff;
+      border-color: #487bff;
+    }
+
+    .el-button--primary.is-disabled {
+      color: #fff;
+      background-color: #a0cfff;
+      border-color: #a0cfff;
+    }
+  }
+}
+@media (max-width: 1367px) {
+  $base-sise: 12px;
+
+  @include dataEntry-head($base-sise);
+}
+
+@media (min-width: 1367px) {
+  $base-sise: 12px;
+
+  @include dataEntry-head($base-sise);
+}
+
+@media (min-width: 1600px) {
+  $base-sise: 14px;
+
+  @include dataEntry-head($base-sise);
+}
 
 /*
 *改变浏览器默认的滚动条样式

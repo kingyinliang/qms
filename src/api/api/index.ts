@@ -3,6 +3,8 @@ import Http from '../http/axios'
 
 export * from './basicData'
 
+export * from './sample'
+
 export interface Dict {
   dictCode: string;
   dictValue: string;

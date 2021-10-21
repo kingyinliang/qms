@@ -6,6 +6,10 @@ const baseURL = (process.env.VUE_APP_QMS_API as string) + (process.env.VUE_APP_A
 export function TIME_QUERY (params = {}):Promise<AxiosResponse> {
   return Http.post('/inspectCycle/queryInspectCycle', params, { baseURL })
 }
+// 组织架构平铺数据
+export function ORG_ALL (params = {}):Promise<AxiosResponse> {
+  return Http.get('/sysDept/dropDown', params)
+}
 export function TIME_ADD (params = {}):Promise<AxiosResponse> {
   return Http.post('/inspectCycle/insertInspectCycle', params, { baseURL })
 }
