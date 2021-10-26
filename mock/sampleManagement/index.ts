@@ -3,47 +3,38 @@ import Mock from 'mockjs'
 const database = [
 ]
 
-Mock.mock('/sample/sampling/task', 'get', function () {
-  const list = [{
-    inspectClassify: '来料检验',
-    unSampled: database.filter(it => it.taskStatus === 'unSampled' && it.inspectClassify === '来料检验').length,
-    sampling: database.filter(it => it.taskStatus === 'sampling' && it.inspectClassify === '来料检验').length,
-    completed: database.filter(it => it.taskStatus === 'completed' && it.inspectClassify === '来料检验').length
-  }, {
-    inspectClassify: '制程检验',
-    unSampled: database.filter(it => it.taskStatus === 'unSampled' && it.inspectClassify === '制程检验').length,
-    sampling: database.filter(it => it.taskStatus === 'sampling' && it.inspectClassify === '制程检验').length,
-    completed: database.filter(it => it.taskStatus === 'completed' && it.inspectClassify === '制程检验').length
-  }, {
-    inspectClassify: '生产辅助检验',
-    unSampled: database.filter(it => it.taskStatus === 'unSampled' && it.inspectClassify === '生产辅助检验').length,
-    sampling: database.filter(it => it.taskStatus === 'sampling' && it.inspectClassify === '生产辅助检验').length,
-    completed: database.filter(it => it.taskStatus === 'completed' && it.inspectClassify === '生产辅助检验').length
-  }, {
-    inspectClassify: '临时检验',
-    unSampled: database.filter(it => it.taskStatus === 'unSampled' && it.inspectClassify === '临时检验').length,
-    sampling: database.filter(it => it.taskStatus === 'sampling' && it.inspectClassify === '临时检验').length,
-    completed: database.filter(it => it.taskStatus === 'completed' && it.inspectClassify === '临时检验').length
-  }]
-  // database.forEach(item => {
-  //   if (!list.find(it => it.inspectClassify === item.inspectClassify)) {
-  //     list.push({
-  //       inspectClassify: item.inspectClassify,
-  //       unSampled: database.filter(it => it.taskStatus === 'unSampled' && it.inspectClassify === item.inspectClassify).length,
-  //       sampling: database.filter(it => it.taskStatus === 'sampling' && it.inspectClassify === item.inspectClassify).length,
-  //       completed: database.filter(it => it.taskStatus === 'completed' && it.inspectClassify === item.inspectClassify).length
-  //     })
-  //   }
-  // })
+Mock.mock('/taskSample/queryUpcomingTaskSample', 'get', function () {
+  const data = {
+    incoming: {
+      execute: database.filter(it => it.taskStatus === 'unSampled' && it.inspectClassify === '来料检验').length,
+      progressing: database.filter(it => it.taskStatus === 'sampling' && it.inspectClassify === '来料检验').length,
+      completed: database.filter(it => it.taskStatus === 'completed' && it.inspectClassify === '来料检验').length
+    },
+    process: {
+      execute: database.filter(it => it.taskStatus === 'unSampled' && it.inspectClassify === '制程检验').length,
+      progressing: database.filter(it => it.taskStatus === 'sampling' && it.inspectClassify === '制程检验').length,
+      completed: database.filter(it => it.taskStatus === 'completed' && it.inspectClassify === '制程检验').length
+    },
+    assist: {
+      execute: database.filter(it => it.taskStatus === 'unSampled' && it.inspectClassify === '生产辅助检验').length,
+      progressing: database.filter(it => it.taskStatus === 'sampling' && it.inspectClassify === '生产辅助检验').length,
+      completed: database.filter(it => it.taskStatus === 'completed' && it.inspectClassify === '生产辅助检验').length
+    },
+    temp: {
+      execute: database.filter(it => it.taskStatus === 'unSampled' && it.inspectClassify === '临时检验').length,
+      progressing: database.filter(it => it.taskStatus === 'sampling' && it.inspectClassify === '临时检验').length,
+      completed: database.filter(it => it.taskStatus === 'completed' && it.inspectClassify === '临时检验').length
+    }
+  }
 
   return Mock.mock({
     code: 200,
-    list,
+    data,
     msg: 'success'
   })
 })
 // 查询
-Mock.mock('/sample/sampling/list', 'post', function (option) {
+Mock.mock('/taskSample/queryTaskSample', 'post', function (option) {
   const data = JSON.parse(option.body)
 
   let list = JSON.parse(JSON.stringify(database))
