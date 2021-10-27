@@ -6,88 +6,99 @@
     :rightTitle="pageRightColumnTitle"
     :treeData="treeData"
     :treeProps="{ label: 'inspectTypeName',children:'children' }"
-    @treeNodeClick="getPlanDetail"
+    @treeNodeClick="actGetTaskDetailOfTree"
     :floatMenu="false"
   >
+  <template #out-header>
+    <span style="font-size:14px;">版本：</span>
+    <el-select v-model="versionValue" placeholder="请选择" size="small" @change="handleChangeSelectVersion">
+      <el-option
+        v-for="item in versionnValueOptions"
+        :key="item.id"
+        :label="item.planVersion"
+        :value="item.id"
+      >
+      </el-option>
+    </el-select>
+  </template>
+
     <template #view>
-      <div style="display:flex;justify-content: flex-end; padding-right:10px;line-height:1.7em;">
-        <template v-if="isShowSearchBar">
+      <el-form label-position="right" :model="dataFormOfSearchFilter" class="demo-form-inline" style="display:flex;justify-content: flex-end; padding-right:10px;line-height:1.7em;">
+        <el-form-item label="样品码：" label-width="80px">
           <el-input
-            placeholder="指标名称"
-            v-model="textForSearch"
+            placeholder="请输入"
+            v-model="dataFormOfSearchFilter.taskCode"
             size="small"
             clearable
             style="margin-bottom:10px; width:200px; height:35px;"
-            @keyup.enter="doPlanDetailGet(currentCategoryId,textForSearch,1,10)">
+            >
           </el-input>
-          <el-button icon="el-icon-search" class="topic-button" size="small" @click="doPlanDetailGet(currentCategoryId,textForSearch,1,10)">查询</el-button>
-          <el-button icon="el-icon-plus" class="topic-button" type="primary" size="small" @click="btnClickItemAddOrEditForTopicMainData('add',{})" :disabled="!currentFocusTargetObj.canAdd" >新增</el-button>
-          <el-button icon="el-icon-delete" class="topic-button" type="danger" size="small"  @click="btnClickItemsDeleteForTopicMainData" :disabled="!currentFocusTargetObj.canDelete">批量删除</el-button>
-          <el-button icon="el-icon-news" class="topic-button" type="primary" size="small" @click="btnClickGenerateForTopicMainData" :disabled="!currentFocusTargetObj.canGenerate">生成</el-button>
-          <el-button icon="el-icon-edit" class="topic-button" type="primary" size="small" @click="btnClickItemBatchEditForTopicMainData" :disabled="!currentFocusTargetObj.canEdit">编辑</el-button>
-        </template>
-      </div>
+        </el-form-item>
+        <el-form-item label="取样部门：" label-width="100px">
+          <el-select v-model="dataFormOfSearchFilter.sampleDeptId" placeholder="请选择" size="small">
+            <el-option
+              v-for="item in sampleDeptIdOptions"
+              :key="item.id"
+              :label="item.deptName"
+              :value="item.id"
+            >
+            </el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="状态：" label-width="70px">
+          <el-select v-model="dataFormOfSearchFilter.taskStatus" placeholder="请选择" size="small" style="width:100px">
+            <el-option
+              v-for="item in taskStatusOptions"
+              :key="item.dictCode"
+              :label="item.dictValue"
+              :value="item.dictCode"
+            >
+            </el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item style="margin-left:10px;">
+            <el-button icon="el-icon-search" class="topic-button" size="small" @click="actGetTaskDetailForTable(currentCategoryId,dataFormOfSearchFilter,1,10)" :disabled="versionValue===''||dataTableOfTopicMain.length===0">查询</el-button>
+        </el-form-item>
+      </el-form>
      <el-table
-        :data="topicMainData"
+        :data="dataTableOfTopicMain"
         height="500"
         border
         tooltip-effect="dark"
         class="bueatyScroll"
         style="width: 100%;"
-        @selection-change="handleSelectionChange">
-        <el-table-column type="selection" width="55" align="center" />
-        <el-table-column type="index" :index="index => index + 1 + (Number(currentPage) - 1) * (Number(pageSize))" label="序号"  width="55"  align="center" size="small" fixed />
-        <el-table-column label="物料/类别" prop="inspectMaterialTypeName" :show-overflow-tooltip="true" min-width="180" />
-        <el-table-column label="指标编码" prop="indexCode" :show-overflow-tooltip="true" min-width="100" />
-        <el-table-column label="指标名称" prop="indexName" :show-overflow-tooltip="true" min-width="180" />
-        <el-table-column label="单位" prop="indexUnit" :show-overflow-tooltip="true" min-width="100" />
-        <el-table-column label="方法" prop="indexMethod" :show-overflow-tooltip="true" min-width="220" />
-        <el-table-column label="取样部门" prop="cooperate" :show-overflow-tooltip="true" min-width="108" >
+       >
+        <el-table-column type="index" label="序号"  width="55"  align="center" size="small" fixed />
+        <el-table-column label="样品码" prop="taskCode" :show-overflow-tooltip="true" min-width="180" />
+        <el-table-column label="状态" prop="taskStatus" :show-overflow-tooltip="true" min-width="100" />
+        <el-table-column label="检验内容" prop="inspectContent" :show-overflow-tooltip="true" min-width="180" />
+        <el-table-column label="取样部门" prop="sampleDeptName" :show-overflow-tooltip="true" min-width="100" />
+        <el-table-column label="取样信息" prop="sampleInformation" :show-overflow-tooltip="true" min-width="220" />
+        <el-table-column label="物料信息" prop="" :show-overflow-tooltip="true" min-width="100" >
           <template #default="scope">
-            {{scope.row.cooperate}}
+            <span>{{`${scope.row.inspectMaterialName} ${scope.row.inspectMaterialCode}`}}</span>
           </template>
         </el-table-column>
-        <el-table-column label="配合取样" prop="sample" :show-overflow-tooltip="true" min-width="100" >
-          <template #default="scope">
-            {{scope.row.sample}}
-          </template>
-        </el-table-column>
-        <el-table-column label="检验部门" prop="inspect.deptName" :show-overflow-tooltip="true" min-width="100" />
-        <el-table-column label="配合检验" prop="coInspect.deptName" :show-overflow-tooltip="true" min-width="100" />
-        <el-table-column label="留样数量" prop="sampleAmount" :show-overflow-tooltip="true" min-width="100" />
-        <el-table-column label="关键指标" prop="keyIndexFlag" :show-overflow-tooltip="true" min-width="100" >
-          <template #default="scope">
-            {{scope.row.keyIndexFlag==='Y'?'是':'否'}}
-          </template>
-        </el-table-column>
-        <el-table-column label="合并属性" prop="mergeFlag" :show-overflow-tooltip="true" min-width="100" >
-          <template #default="scope">
-            {{scope.row.mergeFlag==='Y'?'是':'否'}}
-          </template>
-        </el-table-column>
-        <el-table-column label="检验频次" prop="frequencyName" :show-overflow-tooltip="true" min-width="100" />
-        <el-table-column label="轮循否" prop="loopFlag" :show-overflow-tooltip="true" min-width="100" >
-          <template #default="scope">
-            {{scope.row.loopFlag==='Y'?'是':'否'}}
-          </template>
-        </el-table-column>
-        <el-table-column label="定时触发" prop="timingFlag" :show-overflow-tooltip="true" min-width="100" >
-          <template #default="scope">
-            {{scope.row.timingFlag==='Y'?'是':'否'}}
-          </template>
-        </el-table-column>
-        <el-table-column fixed="right" label="操作" header-align="left" align="left" width="80">
+        <el-table-column label="批次" prop="inspectBatch" :show-overflow-tooltip="true" min-width="220" />
+        <el-table-column label="品项" prop="itemName" :show-overflow-tooltip="true" min-width="108" />
+        <el-table-column label="供应商" prop="supplier" :show-overflow-tooltip="true" min-width="108" />
+        <el-table-column label="触发时间" prop="triggerDate" :show-overflow-tooltip="true" min-width="200" />
+        <el-table-column label="触发方" prop="triggerBy" :show-overflow-tooltip="true" min-width="100" />
+        <el-table-column fixed="right" label="操作" header-align="left" align="left" width="150">
             <template #default="scope">
-                <el-button  type="text" icon="el-icon-edit" @click="btnClickItemAddOrEditForTopicMainData('edit',scope.row)" class="role__btn">
+                <el-button  type="text" icon="el-icon-edit" @click="btnClickItemEditOfTopicMainData(scope.row)" class="role__btn">
                     <em>编辑</em>
+                </el-button>
+                <el-button  type="text" icon="el-icon-delete" @click="btnClickItemCancelOfTopicMainData(scope.row.id)" class="role__btn">
+                    <em>取消</em>
                 </el-button>
             </template>
         </el-table-column>
       </el-table>
       <el-pagination
-        v-if="topicMainData.length!==0"
-        @size-change="handleSizeChange"
-        @current-change="handleCurrentChange"
+        v-if="dataTableOfTopicMain.length!==0"
+        @size-change="handleChangeDataSize"
+        @current-change="handleChangeCurrentPage"
         :current-page="currentPage"
         :page-sizes="[10, 20, 50]"
         :page-size="pageSize"
@@ -95,196 +106,59 @@
         :total="totalItems">
       </el-pagination>
     </template>
+
   </tree-page>
-  <!--新增/编辑-->
-  <el-dialog :title="formGlobleItem.title" v-model="isDialogShow" width="40%" >
-    <el-form ref="refGlobleItem" :model="formGlobleItem" :rules="ruleGlobleItem">
-      <el-form-item label="项目位置：" prop="projectLocation" :label-width="cssForformLabelWidth">
-          <el-input v-model="formGlobleItem.projectLocation" class="140px" autocomplete="off" maxlength="10" :disabled="true"></el-input>
+  <!--编辑-->
+  <el-dialog :title="'任务修改'" v-model="isDialogVisibleForGlobleItem" width="40%" >
+    <el-form ref="refGlobleItem" :model="formGlobleItem" :rules="ruleGlobleItem" class="dialogForm">
+      <el-form-item label="样品码：" prop="taskCode" :label-width="cssForformLabelWidth">
+          <el-input v-model="formGlobleItem.taskCode" class="140px" autocomplete="off"  :disabled="true"></el-input>
       </el-form-item>
-      <el-form-item label="指标编码：" :label-width="cssForformLabelWidth" prop="indexCode">
-        <!-- <el-input v-model="formGlobleItem.indexCode" class="140px" autocomplete="off" maxlength="10" readonly></el-input> -->
-        <el-select v-model="formGlobleItem.indexCode" placeholder="请选择" style="width:100%" filterable @change="handleSelectInspectMaterialChange" clearable>
-          <el-option v-for="(opt, optIndex) in indexCodeOptions" :key="optIndex" :label="opt.indexNameUnitMethod" :value="opt.indexCode" />
+      <el-form-item label="检验内容：" prop="inspectContent" :label-width="cssForformLabelWidth">
+          <el-input v-model="formGlobleItem.inspectContent" class="140px" autocomplete="off"  :disabled="true"></el-input>
+      </el-form-item>
+      <el-form-item label="取样单位：" :label-width="cssForformLabelWidth" prop="sampleDeptName">
+        <el-select v-model="formGlobleItem.sampleDeptName" placeholder="请选择" style="width:100%" filterable clearable>
+          <el-option v-for="opt in sampleUnitptions" :key="opt.id" :label="opt.deptName" :value="opt.id" />
         </el-select>
       </el-form-item>
-      <el-form-item label="指标名称：" prop="indexName" :label-width="cssForformLabelWidth">
-          <el-input v-model="formGlobleItem.indexName" class="140px" autocomplete="off" maxlength="10" :disabled="true"></el-input>
+      <el-form-item label="物料信息：" prop="materialInfo" :label-width="cssForformLabelWidth">
+          <el-input v-model="formGlobleItem.materialInfo" class="140px" autocomplete="off"  disabled="true"></el-input>
       </el-form-item>
-      <el-form-item label="单位：" prop="indexUnit" :label-width="cssForformLabelWidth">
-          <el-input v-model="formGlobleItem.indexUnit" class="140px" autocomplete="off" maxlength="10" :disabled="true"></el-input>
+      <el-form-item label="取样信息：" prop="sampleInformation" :label-width="cssForformLabelWidth">
+          <el-input v-model="formGlobleItem.sampleInformation" class="140px" autocomplete="off"  :disabled="true"></el-input>
       </el-form-item>
-      <el-form-item label="方法：" prop="indexMethod" :label-width="cssForformLabelWidth">
-          <el-input v-model="formGlobleItem.indexMethod" class="140px" autocomplete="off" maxlength="10" :disabled="true"></el-input>
+      <el-form-item label="批次：" prop="inspectBatch" :label-width="cssForformLabelWidth">
+          <el-input v-model="formGlobleItem.inspectBatch" class="140px" autocomplete="off"  :disabled="true"></el-input>
       </el-form-item>
-
-      <el-form-item label="检验部门：" prop="inspectList" :label-width="cssForformLabelWidth">
-          <tree-dialog
-            ref="refInspect"
-            v-model="formGlobleItem.inspectList"
-            :tree-data="orgTreeDataOptions"
-            :leafOnly="false"
-            :checkStrictly="true"
-            :returnObj="true"
-            :multiChecked="false"
-            :tree-props="{ label: 'deptName', children: 'children' }"
-          />
+      <el-form-item label="品项：" prop="itemName" :label-width="cssForformLabelWidth">
+          <el-input v-model="formGlobleItem.itemName" class="140px" autocomplete="off"  :disabled="true"></el-input>
       </el-form-item>
-      <el-form-item label="配合检验：" prop="coInspectList" :label-width="cssForformLabelWidth">
-          <tree-dialog
-            ref="refCoInspect"
-            v-model="formGlobleItem.coInspectList"
-            :tree-data="orgTreeDataOptions"
-            :leafOnly="false"
-            :checkStrictly="true"
-            :returnObj="true"
-            :multiChecked="false"
-            :tree-props="{ label: 'deptName', children: 'children' }"
-          />
-      </el-form-item>
-      <el-form-item label="取样部门：" prop="cooperate" :label-width="cssForformLabelWidth">
-          <el-input v-model="formGlobleItem.cooperate" class="140px" autocomplete="off" maxlength="10" :disabled="true" placeholder="暂无内容"></el-input>
-      </el-form-item>
-      <el-form-item label="配合取样：" prop="sample" :label-width="cssForformLabelWidth">
-          <el-input v-model="formGlobleItem.sample" class="140px" autocomplete="off" maxlength="10" :disabled="true"  placeholder="暂无内容"></el-input>
-        </el-form-item>
-      <el-form-item label="检验频次：" prop="frequencyId" :label-width="cssForformLabelWidth">
-        <el-select v-model="formGlobleItem.frequencyId" placeholder="请选择" style="width:100%" filterable @change="handleSelectFrequencyChange" clearable>
-          <el-option v-for="(opt, optIndex) in frequencyIdOptions" :key="optIndex" :label="opt.frequencyName" :value="opt.id" />
-        </el-select>
-      </el-form-item>
-       <el-form-item label="定时触发：" prop="timingFlag"  :label-width="cssForformLabelWidth">
-          <div>
-            <el-radio v-model="formGlobleItem.timingFlag" label="Y">是</el-radio>
-            <el-radio v-model="formGlobleItem.timingFlag" label="N">否</el-radio>
-          </div>
-      </el-form-item>
-      <el-form-item label="关键指标：" prop="keyIndexFlag"  :label-width="cssForformLabelWidth">
-          <div>
-            <el-radio v-model="formGlobleItem.keyIndexFlag" label="Y">是</el-radio>
-            <el-radio v-model="formGlobleItem.keyIndexFlag" label="N">否</el-radio>
-          </div>
-      </el-form-item>
-            <el-form-item label="合并属性：" prop="mergeFlag"  :label-width="cssForformLabelWidth">
-          <div>
-            <el-radio v-model="formGlobleItem.mergeFlag" label="Y">是</el-radio>
-            <el-radio v-model="formGlobleItem.mergeFlag" label="N">否</el-radio>
-          </div>
-      </el-form-item>
-
-      <el-form-item label="轮循：" prop="loopFlag"  :label-width="cssForformLabelWidth">
-          <div>
-            <el-radio v-model="formGlobleItem.loopFlag" label="Y">是</el-radio>
-            <el-radio v-model="formGlobleItem.loopFlag" label="N">否</el-radio>
-          </div>
+      <el-form-item label="供应商：" prop="supplier" :label-width="cssForformLabelWidth">
+          <el-input v-model="formGlobleItem.supplier" class="140px" autocomplete="off" maxlength="10" :disabled="true" placeholder="暂无内容"></el-input>
       </el-form-item>
     </el-form>
     <template #footer>
       <span class="dialog-footer">
-        <el-button size="small" class="topic-button" icon="el-icon-circle-close" @click="btnClickItemClearForDialog('refGlobleItem')">取消</el-button>
-        <el-button size="small" class="topic-button" icon="el-icon-circle-check" type="primary" @click="btnClickItemConfirmForDialog">确定</el-button>
-      </span>
-    </template>
-  </el-dialog>
-  <!--批次编辑-->
-   <el-dialog :title="formBatchEditItems.title" v-model="isBatchEditDialogShow" width="40%" >
-    <el-form ref="refBatchEditItems" :model="formBatchEditItems" class="batch-edit-form" >
-      <el-form-item label="项目位置：" prop="projectLocation" :label-width="cssForformLabelWidth">
-          <el-input v-model="formBatchEditItems.projectLocation" class="140px" autocomplete="off" maxlength="10" :disabled="true"></el-input>
-      </el-form-item>
-
-      <el-form-item label="检验部门：" prop="inspectList" :label-width="cssForformLabelWidth">
-        <el-checkbox v-model="formBatchEditItems.inspectListChecked" label="" class="checkbox-position" @change="val=>changeChechBox(val,'inspectList')"></el-checkbox>
-        <tree-dialog
-          ref="refInspectOfBatchEdit"
-          v-model="formBatchEditItems.inspectList"
-          :tree-data="orgTreeDataOptions"
-          :leafOnly="false"
-          :checkStrictly="true"
-          :returnObj="true"
-          :multiChecked="false"
-          :tree-props="{ label: 'deptName', children: 'children' }"
-          :disabled="!formBatchEditItems.inspectListChecked"
-        />
-      </el-form-item>
-      <el-form-item label="配合检验：" prop="coInspectList" :label-width="cssForformLabelWidth">
-          <el-checkbox v-model="formBatchEditItems.coInspectListChecked" label="" class="checkbox-position" @change="val=>changeChechBox(val,'coInspectList')"></el-checkbox>
-          <tree-dialog
-            ref="refCoInspectOfBatchEdit"
-            v-model="formBatchEditItems.coInspectList"
-            :tree-data="orgTreeDataOptions"
-            :leafOnly="false"
-            :checkStrictly="true"
-            :returnObj="true"
-            :multiChecked="false"
-            :tree-props="{ label: 'deptName', children: 'children' }"
-            :disabled="!formBatchEditItems.coInspectListChecked"
-          />
-      </el-form-item>
-
-      <el-form-item label="检验频次：" prop="frequencyId" :label-width="cssForformLabelWidth">
-        <el-checkbox v-model="formBatchEditItems.frequencyIdChecked" label="" class="checkbox-position" @change="val=>changeChechBox(val,'frequencyId')"></el-checkbox>
-        <el-select v-model="formBatchEditItems.frequencyId" placeholder="请选择" style="width:100%" filterable @change="handleSelectFrequencyChange" clearable :disabled="!formBatchEditItems.frequencyIdChecked">
-          <el-option v-for="(opt, optIndex) in frequencyIdOptions" :key="optIndex" :label="opt.frequencyName" :value="opt.id" />
-        </el-select>
-      </el-form-item>
-       <el-form-item label="定时触发：" prop="timingFlag"  :label-width="cssForformLabelWidth">
-          <el-checkbox v-model="formBatchEditItems.timingFlagChecked" label="" class="checkbox-position" @change="val=>changeChechBox(val,'timingFlag')"></el-checkbox>
-          <div>
-            <el-radio v-model="formBatchEditItems.timingFlag" :disabled="!formBatchEditItems.timingFlagChecked" label="Y">是</el-radio>
-            <el-radio v-model="formBatchEditItems.timingFlag" :disabled="!formBatchEditItems.timingFlagChecked" label="N">否</el-radio>
-          </div>
-      </el-form-item>
-      <el-form-item label="关键指标：" prop="keyIndexFlag"  :label-width="cssForformLabelWidth">
-          <el-checkbox v-model="formBatchEditItems.keyIndexFlagChecked" label="" class="checkbox-position" @change="val=>changeChechBox(val,'keyIndexFlag')"></el-checkbox>
-          <div>
-            <el-radio v-model="formBatchEditItems.keyIndexFlag" :disabled="!formBatchEditItems.keyIndexFlagChecked" label="Y">是</el-radio>
-            <el-radio v-model="formBatchEditItems.keyIndexFlag" :disabled="!formBatchEditItems.keyIndexFlagChecked" label="N">否</el-radio>
-          </div>
-      </el-form-item>
-      <el-form-item label="合并属性：" prop="mergeFlag"  :label-width="cssForformLabelWidth">
-        <el-checkbox v-model="formBatchEditItems.mergeFlagChecked" label="" class="checkbox-position"  @change="val=>changeChechBox(val,'mergeFlag')"></el-checkbox>
-        <div>
-          <el-radio v-model="formBatchEditItems.mergeFlag" :disabled="!formBatchEditItems.mergeFlagChecked" label="Y">是</el-radio>
-          <el-radio v-model="formBatchEditItems.mergeFlag" :disabled="!formBatchEditItems.mergeFlagChecked" label="N">否</el-radio>
-        </div>
-      </el-form-item>
-      <el-form-item label="轮循：" prop="loopFlag"  :label-width="cssForformLabelWidth">
-        <el-checkbox v-model="formBatchEditItems.loopFlagChecked" label="" class="checkbox-position" @change="val=>changeChechBox(val,'loopFlag')"></el-checkbox>
-        <div>
-          <el-radio v-model="formBatchEditItems.loopFlag" :disabled="!formBatchEditItems.loopFlagChecked" label="Y">是</el-radio>
-          <el-radio v-model="formBatchEditItems.loopFlag" :disabled="!formBatchEditItems.loopFlagChecked" label="N">否</el-radio>
-        </div>
-      </el-form-item>
-    </el-form>
-    <template #footer>
-      <span class="dialog-footer">
-        <el-button size="small" class="topic-button" icon="el-icon-circle-close" @click="btnClickItemClearForDialog('refBatchEditItems')">取消</el-button>
-        <el-button size="small" class="topic-button" icon="el-icon-circle-check" type="primary" @click="btnClickBatchCopyItemConfirmForDialog">确定</el-button>
+        <el-button size="small" class="topic-button" icon="el-icon-circle-close" @click="btnCancelItemEditOfDialog">取消</el-button>
+        <el-button size="small" class="topic-button" icon="el-icon-circle-check" type="primary" @click="btnConfirmItemOfDialog">确定</el-button>
       </span>
     </template>
   </el-dialog>
 </template>
 
 <script lang="ts">
-import { useRouter } from 'vue-router'
-import { useStore } from 'vuex'
 import { defineComponent, ref, toRefs, reactive, onMounted, getCurrentInstance, ComponentInternalInstance, nextTick } from 'vue'
 import {
-  MANAGEMENT_INSPECTION_PLAN_CONFIGURATION_INSERT_API,
-  INSPECT_INSPECT_FREQUENCY_QUERY_DROPDOWN_API,
-  MANAGEMENT_INSPECTION_PLAN_CONFIGURATION_PLAN_INDEX_MATERIAL_QUERY_API,
+  MANAGEMENT_PROCESS_INSPECTION_TASK_INSPECT_MATERIAL_DROP_DOWN_API,
   INSPECT_INDEX_PARAMETER_RELATIVE_ITEM_API,
-  MANAGEMENT_INSPECTION_PLAN_CONFIGURATION_QUERY_API,
-  MANAGEMENT_INSPECTION_PLAN_CONFIGURATION_PLAN_UPDATE_API,
-  MANAGEMENT_INSPECTION_PLAN_CONFIGURATION_PLAN_BATCH_UPDATE_API, // 批次编辑
-  MANAGEMENT_INSPECTION_PLAN_CONFIGURATION_PLAN_DELETE_API,
-  MANAGEMENT_INSPECTION_PLAN_CONFIGURATION_PLAN_GENERATE_API,
-  INSPECT_TYPE_DETAIL_API,
-  // MANAGEMENT_INSPECTION_PLAN_CONFIGURATION_PLAN_INDEX_RELATION_TYPE_QUERY_API, // 检验计划配置-检验类信息查询
-  ORG_TREE_API
+  MANAGEMENT_PROCESS_INSPECTION_TASK_QUERY_API,
+  MANAGEMENT_PROCESS_INSPECTION_TASK_UPDATE_API,
+  MANAGEMENT_INSPECTION_PLAN_VERSION_DROP_DOWN_API, // 任务管理-[过程检验任务]- 检验计划-下拉 获取版本
+  MANAGEMENT_PROCESS_INSPECTION_TASK_SAMPLE_DEPARTMENT_DROP_DOWN_API, // 任务管理-[过程检验任务]- 该版本下的取样部门下拉
+  DICTIONARY_QUERY_API, // 数据字典
+  MANAGEMENT_PROCESS_INSPECTION_TASK_CANCEL_API // 任务管理-[过程检验任务]- 过程检验任务-取消
 } from '@/api/api'
-import layoutTs from '@/components/layout/layoutTs'
 
 interface TreeDataItem {
   // id: string
@@ -336,24 +210,6 @@ interface Inspect {
     relationType?: string
 }
 
-interface IndexCodeOptions{
-  assistFlag: string;
-  id: string;
-  indexCode: string;
-  indexMethod: string;
-  indexName: string;
-  indexNameUnitMethod: string;
-  indexType: string;
-  indexTypeName: string;
-  indexUnit: string;
-  inspectIndexId: string;
-  inspectIndexMaterialIds: string;
-  inspectMaterialCode: string;
-  inspectMaterialCodes: string;
-  inspectMaterialTypeName: string;
-  relationType: string;
-}
-
 interface TopicMainData { // 物料明细 API
   coInspect: CoInspect
   cooperate: string
@@ -380,218 +236,90 @@ interface TopicMainData { // 物料明细 API
   frequencyName: string
 }
 
-// interface TopicMainDataItem {
-//   title: string
-//   id: string
-//   inspectIndexMaterialIds: string
-//   inspectMaterialCodes: string
-//   planVersionId: string
-//   projectLocation: string
-//   indexCode: string
-//   indexName: string
-//   indexUnit: string
-//   indexMethod: string
-//   sample: string
-//   cooperate: string
-//   sampleAmount: number | null
-//   frequencyName: string
-//   frequencyId: string
-//   timingFlag: string
-//   keyIndexFlag: string
-//   mergeFlag: string
-//   loopFlag: string
-//   coInspect: {
-//     deptId: string
-//     deptName: string
-//   }
-//   coInspectList: any[]
-//   inspect: {
-//     deptId: string
-//     deptName: string
-//   }
-//   inspectList: any[]
-//   inspectMaterialAlls: TreeDataItem[]
-// }
-
-interface MaterialTreeData {
-  id: string // 主键
-  parentId: string // "上级类别":
-  inspectTypeName: string // 类别名称
-}
-
-interface FrequencyIdOptions{
-  additionalName: string
-  changed: string
-  changer: string
-  dateUnit: string
-  frequency: number
-  frequencyName: string
+interface VersionOption{
   id: string
-  inspectAdditionalId: string
-  inspectCycleId: string
+  planVersion: string
 }
 
-// interface FormBatchEditItems{
-//         title: string
-//         projectLocation: string
-//         frequencyIdChecked: boolean
-//         frequencyId: string
-//         keyIndexFlagChecked: boolean
-//         keyIndexFlag: string
-//         mergeFlagChecked: boolean
-//         mergeFlag: string
-//         loopFlagChecked: boolean
-//         loopFlag: string
-//         timingFlagChecked: boolean
-//         timingFlag: string
-//         coInspectListChecked: boolean
-//         coInspectList: [],
-//         coInspect: {
-//           deptId: string
-//           deptName: string
-//         },
-//         inspectListChecked: boolean
-//         inspectList: [],
-//         inspect: {
-//           deptId: string
-//           deptName: string
-//         },
-//         planConfigureIds: string[]
-// }
+interface SampleDeptIdOptions{
+  deptName: string
+  id: string
+}
+
+interface DictOptions{
+  dictCode: string
+  dictId: string
+  dictValue: string
+}
 
 interface State {
+    versionValue: string,
+    versionnValueOptions: VersionOption[],
+    dataFormOfSearchFilter:{
+      taskCode: string
+      sampleDeptId: string
+      taskStatus: string
+    }
+    sampleDeptIdOptions: SampleDeptIdOptions[]
+    taskStatusOptions: DictOptions[]
     cssForformLabelWidth: string
-    isDialogShow: boolean
-    isBatchEditDialogShow: boolean
+    isDialogVisibleForGlobleItem: boolean
     currentInspectScene: string
     pageMainTitle: string
     pageLeftColumnTitle: string
     pageRightColumnTitle: string
-    textForSearch: string // 指标名称查找
     totalItems: number
     currentPage: number
     pageSize: number
-    topicMainData: TopicMainData[] // 右边 table
+    dataTableOfTopicMain: TopicMainData[] // 右边 table
     treeData: TreeData[]
-    materialTreeData: MaterialTreeData[]
     formGlobleItem: any // TopicMainDataItem
-    formBatchEditItems:any
-    isShowSearchBar: boolean
-    inspectTypeIds: string[]
-    initFocusNode: string
-    multipleSelection: string[]
-    currentVersion: string
     currentCategoryId: string
-    canEditCurrentPage: string
-    indexCodeOptions: IndexCodeOptions[]
+    sampleUnitptions: SampleDeptIdOptions[]
     currentFocusTargetObj:any
-    currentFocusItem: any
-    frequencyIdOptions: FrequencyIdOptions[]
-    orgTreeDataOptions: any[]
 }
 
 export default defineComponent({
-  name: 'ProcessInspectionPlanPlanConfiguration',
+  name: 'ProcessInspectionTaskIndex',
   components: {
   },
   props: {
-    newsletterPopup: {
-      type: String,
-      default: '0'
-    }
   },
   setup () {
     const ctx = getCurrentInstance() as ComponentInternalInstance
     const proxy = ctx.proxy as any
-    const router = useRouter()
-    const { gotoPage, tabsCloseCurrentHandle } = layoutTs()
-    const store = useStore()
-    const refInspect = ref()
-    const refCoInspect = ref()
-    const refCoInspectOfBatchEdit = ref()
-    const refInspectOfBatchEdit = ref()
     const state = reactive<State>({
-      isDialogShow: false,
-      isBatchEditDialogShow: false,
+      versionValue: '',
+      versionnValueOptions: [],
+      dataFormOfSearchFilter: {
+        taskCode: '',
+        sampleDeptId: '',
+        taskStatus: ''
+      },
+      sampleDeptIdOptions: [],
+      isDialogVisibleForGlobleItem: false,
       currentInspectScene: 'PROCESS', // 过程检验计划
-      pageMainTitle: '计划配置',
+      pageMainTitle: '过程检验任务',
       pageLeftColumnTitle: '检验类别',
-      pageRightColumnTitle: '计划明细',
-      cssForformLabelWidth: '160px',
-      textForSearch: '',
+      pageRightColumnTitle: '任务列表',
+      cssForformLabelWidth: '120px',
       totalItems: 0,
       currentPage: 1,
       pageSize: 10,
-      topicMainData: [],
+      dataTableOfTopicMain: [],
       treeData: [],
-      materialTreeData: [],
       currentCategoryId: '',
-      currentVersion: '',
       formGlobleItem: {
-        title: '',
-        id: '',
-        inspectIndexMaterialIds: '',
-        inspectMaterialCodes: '',
-        planVersionId: '',
-        projectLocation: '',
-        indexCode: '', // 指标编码
-        indexName: '', // 指标名称
-        indexUnit: '', // 单位
-        indexMethod: '', // 方法
-        sample: '', // x配合取样
-        cooperate: '', // x取样部门
-        sampleAmount: null, // 留样数量
-        frequencyName: '', // 检验频次
-        frequencyId: '',
-        timingFlag: 'N', // 定时触发
-        keyIndexFlag: 'N', // 关键指标
-        mergeFlag: 'N', // 合并属性
-        loopFlag: 'N', // 轮循否
-        coInspect: { // 配合检验
-          deptId: '',
-          deptName: ''
-        },
-        coInspectList: [],
-        inspect: { // 检验部门
-          deptId: '',
-          deptName: ''
-        },
-        inspectList: [],
-        inspectMaterialAlls: []
+        taskCode: '',
+        taskStatus: '',
+        inspectContent: '',
+        sampleDeptName: '',
+        sampleInformation: '',
+        materialInfo: '',
+        inspectBatch: '',
+        itemName: '',
+        supplier: ''
       },
-      formBatchEditItems: {
-        title: '',
-        projectLocation: '', // 项目位置
-        frequencyIdChecked: false,
-        frequencyId: '',
-        keyIndexFlagChecked: false,
-        keyIndexFlag: '',
-        mergeFlagChecked: false,
-        mergeFlag: '',
-        loopFlagChecked: false,
-        loopFlag: '',
-        timingFlagChecked: false,
-        timingFlag: '',
-        coInspectListChecked: false,
-        coInspectList: [],
-        coInspect: {
-          deptId: '',
-          deptName: ''
-        },
-        inspectListChecked: false,
-        inspectList: [],
-        inspect: {
-          deptId: '',
-          deptName: ''
-        },
-        planConfigureIds: []
-      },
-      isShowSearchBar: true,
-      inspectTypeIds: [],
-      initFocusNode: '',
-      multipleSelection: [],
-      indexCodeOptions: [],
-      canEditCurrentPage: '0',
       currentFocusTargetObj: {
         assistFlag: '',
         id: '',
@@ -611,221 +339,121 @@ export default defineComponent({
         isFinalNode: false,
         markParentId: ''
       },
-      currentFocusItem: {},
-      frequencyIdOptions: [],
-      orgTreeDataOptions: []
+      taskStatusOptions: [],
+      sampleUnitptions: []
     })
     const refTreeModule = ref()
     const refGlobleItem = ref()
-    const refBatchEditItems = ref()
     const ruleGlobleItem = {
-      indexCode: [
+      sampleDeptName: [
         {
           required: true,
-          message: '指标编码',
-          trigger: 'blur'
-        }
-      ],
-      inspectList: [
-        {
-          required: true,
-          message: '请选择检验部门',
-          trigger: 'blur'
-        }
-      ],
-      cooperate: [
-        {
-          required: true,
-          message: '请选择取样部门',
-          trigger: 'blur'
-        }
-      ],
-      frequencyId: [
-        {
-          required: true,
-          message: '检验频次',
-          trigger: 'blur'
-        }
-      ],
-      timingFlag: [
-        {
-          required: true,
-          message: '请选择定时触发',
+          message: '请选择取样单位',
           trigger: 'blur'
         }
       ]
     }
-    // [BTN:新增|编辑] 新增
-    const btnClickItemAddOrEditForTopicMainData = async (act:string, row:any) => {
-      if (act === 'add') {
-        state.currentFocusItem = {}
-      } else {
-        state.currentFocusItem = row
-      }
-      state.isDialogShow = true
-      await getDropDownOptions() // 获取下拉
+    // [dataTableOfTopicMain][BTN:编辑]
+    const btnClickItemEditOfTopicMainData = async (row:any) => {
+      state.isDialogVisibleForGlobleItem = true
+      await getDropDownOptions(row.id) // 获取下拉
       await nextTick()
       refGlobleItem.value.resetFields()
-
-      if (act === 'add') {
-        state.formGlobleItem = {
-          title: '计划明细-新增',
-          id: '',
-          inspectIndexMaterialIds: '',
-          inspectMaterialCodes: '',
-          planVersionId: state.currentVersion,
-          projectLocation: state.currentFocusTargetObj.projectLocation, // 1项目位置
-          indexCode: row.indexCode, // 指标编码
-          indexName: '', // 指标名称
-          indexUnit: '', // 单位
-          indexMethod: '', // 方法
-          sample: '', // x配合取样
-          cooperate: '', // x取样部门
-          sampleAmount: 0, // 留样数量 // v
-          frequencyName: '', // 检验频次
-          frequencyId: '',
-          timingFlag: 'N', // 定时触发
-          keyIndexFlag: 'N', // 关键指标 // v
-          mergeFlag: 'N', // 合并属性 // v
-          loopFlag: 'N', // 轮循否
-          coInspect: {
-            deptId: '',
-            deptName: ''
-          },
-          coInspectList: [],
-          inspect: {
-            deptId: '',
-            deptName: ''
-          },
-          inspectList: [],
-          inspectMaterialAlls: state.currentFocusTargetObj.inspectMaterialAlls.length ? state.currentFocusTargetObj.inspectMaterialAlls : [state.currentFocusTargetObj]
-        }
-      } else {
-        state.formGlobleItem = {
-          title: '计划明细-编辑',
-          id: row.id,
-          inspectIndexMaterialIds: row.inspectIndexMaterialId,
-          inspectMaterialCodes: '',
-          planVersionId: state.currentVersion,
-          projectLocation: state.currentFocusTargetObj.projectLocation, // 项目位置
-          indexCode: row.indexCode, // 指标编码
-          indexName: row.indexName, // 指标名称
-          indexUnit: row.indexUnit, // 单位
-          indexMethod: row.indexMethod, // 方法
-          sample: row.sample, // x配合取样
-          cooperate: row.cooperate, // x取样部门
-          sampleAmount: 0, // 留样数量 // v
-          frequencyName: row.frequencyName, // 检验频次
-          frequencyId: row.frequencyId,
-          timingFlag: row.timingFlag, // 定时触发
-          keyIndexFlag: row.keyIndexFlag, // 关键指标 // v
-          mergeFlag: row.mergeFlag, // 合并属性 // v
-          loopFlag: row.loopFlag, // 轮循否
-          coInspect: row.coInspect,
-          inspectMaterialId: row.inspectMaterialId,
-          coInspectList: row.coInspect ? setOrGetData([row.coInspect], 'set') : [],
-          inspect: row.inspect,
-          inspectList: row.inspect ? setOrGetData([row.inspect], 'set') : [],
-          inspectMaterialAlls: state.currentFocusTargetObj.inspectMaterialAlls.length ? state.currentFocusTargetObj.inspectMaterialAlls : [state.currentFocusTargetObj]
-        }
-      }
-      await rewriteFormData(act) // 获取下拉与改值
-    }
-
-    const reset = () => {
-      state.inspectTypeIds = []
-      state.materialTreeData = []
       state.formGlobleItem = {
-        title: '',
-        id: '',
-        inspectIndexMaterialIds: '',
-        inspectMaterialCodes: '',
-        planVersionId: state.currentVersion,
-        projectLocation: '', // 1项目位置
-        indexCode: '', // 指标编码
-        indexName: '', // 指标名称
-        indexUnit: '', // 单位
-        indexMethod: '', // 方法
-        sample: '', // x配合取样
-        cooperate: '', // x取样部门
-        sampleAmount: 0, // 留样数量 // v
-        frequencyName: '', // 检验频次
-        frequencyId: '',
-        timingFlag: 'N', // 定时触发
-        keyIndexFlag: 'N', // 关键指标 // v
-        mergeFlag: 'N', // 合并属性 // v
-        loopFlag: 'N', // 轮循否
-        coInspect: {
-          deptId: '',
-          deptName: ''
-        },
-        coInspectList: [],
-        inspect: {
-          deptId: '',
-          deptName: ''
-        },
-        inspectList: [],
-        inspectMaterialAlls: []
+        id: row.id,
+        taskCode: row.taskCode,
+        taskStatus: row.taskStatus,
+        inspectContent: row.inspectContent,
+        taskSampleId: row.taskSampleId,
+        sampleDeptId: row.sampleDeptId,
+        sampleDeptName: row.sampleDeptName,
+        sampleInformation: row.sampleInformation,
+        materialInfo: `${row.inspectMaterialName} ${row.inspectMaterialCode}`,
+        inspectBatch: row.inspectBatch,
+        itemName: row.itemName,
+        supplier: row.supplier
       }
     }
-    const getPlanDetail = (val:TreeData) => {
+
+    // [dataTableOfTopicMain][BTN:取消]
+    const btnClickItemCancelOfTopicMainData = async (id:string) => {
+      await MANAGEMENT_PROCESS_INSPECTION_TASK_CANCEL_API({
+        id
+      })
+      proxy.$successToast('操作成功')
+    }
+
+    // [@treeNodeClick] 获取任务列表 data
+    const actGetTaskDetailOfTree = (val:TreeData) => {
       state.currentFocusTargetObj = JSON.parse(JSON.stringify(val))
-      state.textForSearch = ''
+
+      state.dataFormOfSearchFilter = {
+        taskCode: '',
+        sampleDeptId: '',
+        taskStatus: ''
+      }
       state.currentPage = 1
       state.pageSize = 10
       state.totalItems = 0
       state.currentCategoryId = val.id
-      state.isShowSearchBar = true
-      doPlanDetailGet(val.id, '', state.currentPage, state.pageSize)
+      actGetTaskDetailForTable(val.id, state.dataFormOfSearchFilter, state.currentPage, state.pageSize)
     }
 
-    // [ACT] 计划明细
-    const doPlanDetailGet = (currentCategoryId:string, searchString = '', currentPage:number, pageSize:number) => {
+    // [ACT] 获取任务列表 data
+    const actGetTaskDetailForTable = (currentCategoryId:string, searchString:any, currentPage:number, pageSize:number) => {
       const tempList:any[] = []
       if (!state.currentFocusTargetObj.isFinalNode && state.currentFocusTargetObj.children.length !== 0) {
         getEndNodeItems(state.currentFocusTargetObj.children, tempList)
       }
-
-      MANAGEMENT_INSPECTION_PLAN_CONFIGURATION_QUERY_API({
-        indexCodeOrName: searchString,
-        planVersionId: state.currentVersion,
-        inspectMaterialIds: !state.currentFocusTargetObj.isFinalNode ? tempList.map((item:any) => item.id) : [currentCategoryId],
-        // inspectMaterialIds: tempList,
+      MANAGEMENT_PROCESS_INSPECTION_TASK_QUERY_API({
+        taskType: state.currentInspectScene,
+        taskStatus: searchString.taskStatus,
+        taskCode: searchString.taskCode,
+        sampleDeptId: searchString.sampleDeptId,
+        inspectTypeIds: !state.currentFocusTargetObj.isFinalNode ? tempList.map((item:any) => item.id) : [currentCategoryId],
+        // inspectTypeIds: tempList.map((item:any) => item.id),
+        planVersion: state.versionValue,
         current: currentPage,
-        size: pageSize
+        size: pageSize,
+        inspectMaterialCode: !state.currentFocusTargetObj.isFinalNode ? '' : state.currentFocusTargetObj.inspectMaterialCode
       }).then((res) => {
-        state.topicMainData = res.data.data.records
+        console.log('任务列表')
+        console.log(res)
+        state.dataTableOfTopicMain = res.data.data.records
         state.currentPage = res.data.data.current
         state.pageSize = res.data.data.size
         state.totalItems = res.data.data.total
       })
     }
 
-    const handleSizeChange = (pageSize: number) => { // 每页条数切换
+    const handleChangeDataSize = (pageSize: number) => { // 每页条数切换
       state.currentPage = 1
       state.pageSize = pageSize
-      doPlanDetailGet(state.currentCategoryId, state.textForSearch, state.currentPage, state.pageSize)
+      actGetTaskDetailForTable(state.currentCategoryId, state.dataFormOfSearchFilter, state.currentPage, state.pageSize)
     }
-    const handleCurrentChange = (currentPage: number) => { // 页码切换
+    const handleChangeCurrentPage = (currentPage: number) => { // 页码切换
       state.currentPage = currentPage
-      doPlanDetailGet(state.currentCategoryId, state.textForSearch, state.currentPage, state.pageSize)
+      actGetTaskDetailForTable(state.currentCategoryId, state.dataFormOfSearchFilter, state.currentPage, state.pageSize)
     }
 
     // [ACT:define] 获取 tree-data
     const getBaseData = () => {
       INSPECT_INDEX_PARAMETER_RELATIVE_ITEM_API({
+        planVersionId: state.versionValue
       }).then((res) => {
-        state.textForSearch = ''
-        state.isShowSearchBar = true
+        state.dataFormOfSearchFilter = {
+          taskCode: '',
+          sampleDeptId: '',
+          taskStatus: ''
+        }
         state.treeData = treeDataTranslater(JSON.parse(JSON.stringify(res.data.data)), 'id', 'parentId')
         // 一进页面默认跑第一笔
         if (state.currentCategoryId === '') {
-          state.initFocusNode = state.treeData[0].id
           refTreeModule.value.focusCurrentNodeNumber = state.treeData[0].id
-          getPlanDetail(state.treeData[0])
+          actGetTaskDetailOfTree(state.treeData[0])
         } else {
           refTreeModule.value.focusCurrentNodeNumber = state.currentCategoryId
-          getPlanDetail(state.currentFocusTargetObj)
+          actGetTaskDetailOfTree(state.currentFocusTargetObj)
         }
       })
     }
@@ -924,457 +552,138 @@ export default defineComponent({
       return res
     }
 
-    // [ACT] 批量删除复选选择
-    const handleSelectionChange = (val: TopicMainData[]) => {
-      state.multipleSelection = val.map((item: TopicMainData) => item.id)
-    }
-
-    // [BTN:批量删除]
-    const btnClickItemsDeleteForTopicMainData = () => {
-      if (!state.multipleSelection.length) {
-        proxy.$warningToast('请选择数据')
-        return
-      }
-      proxy.$confirm('是否删除此检测频率，请确认', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }).then(async () => {
-        await MANAGEMENT_INSPECTION_PLAN_CONFIGURATION_PLAN_DELETE_API(state.multipleSelection)
-        proxy.$successToast('操作成功')
-        getBaseData()
-        btnClickItemClearForDialog('refGlobleItem')
-      })
-    }
-
-    // [BTN:生成]
-    const btnClickGenerateForTopicMainData = async () => {
-      // hint: 生产辅助的格式特例
-      let tempInspectMaterialAlls:any[] = []
-      let tempInspectTypeId = state.currentFocusTargetObj.id
-      if (state.currentFocusTargetObj.assistFlag === 'Y' && state.currentFocusTargetObj._level === 1) { // 生產輔助 非子節點
-        state.currentFocusTargetObj.children.forEach((item:any) => {
-          tempInspectMaterialAlls.push({
-            id: item.id,
-            inspectMaterialCode: item.inspectTypeCode,
-            inspectMaterialName: item.inspectTypeName,
-            inspectTypeName: `${item.inspectTypeName} ${item.inspectTypeCode}`
-          })
-        })
-      } else if (state.currentFocusTargetObj.assistFlag === 'Y' && state.currentFocusTargetObj._level === 2) { // 生產輔助 子節點
-        tempInspectMaterialAlls = [{
-          id: state.currentFocusTargetObj.id,
-          inspectMaterialCode: state.currentFocusTargetObj.inspectTypeCode,
-          inspectMaterialName: state.currentFocusTargetObj.inspectTypeName,
-          inspectTypeName: `${state.currentFocusTargetObj.inspectTypeName} ${state.currentFocusTargetObj.inspectTypeCode}`
-        }]
-      } else if (!state.currentFocusTargetObj.isFinalNode) { // 生產輔助外 非子節點
-        tempInspectMaterialAlls = state.currentFocusTargetObj.inspectMaterialAlls
-      } else { // 生產輔助外 子節點
-        tempInspectMaterialAlls.push(state.currentFocusTargetObj)
-        tempInspectTypeId = state.currentFocusTargetObj.markParentId
-      }
-
-      await MANAGEMENT_INSPECTION_PLAN_CONFIGURATION_PLAN_GENERATE_API({
-        inspectMaterialAlls: tempInspectMaterialAlls,
-        inspectScene: state.currentInspectScene,
-        planVersionId: state.currentVersion,
-        projectLocation: state.currentFocusTargetObj.projectLocation,
-        inspectTypeId: tempInspectTypeId
-      })
-      proxy.$successToast('操作成功')
-      getPlanDetail(state.currentFocusTargetObj)
-    }
-
-    // [BTN:批次编辑]
-    const btnClickItemBatchEditForTopicMainData = async () => {
-      if (!state.multipleSelection.length) {
-        proxy.$warningToast('请选择数据')
-        return
-      }
-
-      state.isBatchEditDialogShow = true
-      await getDropDownOptions() // 获取下拉
-      await nextTick()
-      refBatchEditItems.value.resetFields()
-
-      state.formBatchEditItems = {
-        title: '批量编辑',
-        projectLocation: state.currentFocusTargetObj.projectLocation, // 项目位置
-        frequencyIdChecked: false,
-        frequencyId: '',
-        keyIndexFlagChecked: false,
-        keyIndexFlag: '',
-        mergeFlagChecked: false,
-        mergeFlag: '',
-        loopFlagChecked: false,
-        loopFlag: '',
-        timingFlagChecked: false,
-        timingFlag: '',
-        coInspectListChecked: false,
-        coInspectList: [],
-        coInspect: {
-          deptId: '',
-          deptName: ''
-        },
-        inspectListChecked: false,
-        inspectList: [],
-        inspect: {
-          deptId: '',
-          deptName: ''
-        },
-        planConfigureIds: state.multipleSelection
-      }
-      // await rewriteFormData(act) // 获取下拉与改值
-    }
-
     // [ACT:define] 获取指标编码下拉
-    const getDropDownOptions = async () => {
-      // 获取检验频次下拉
-      state.frequencyIdOptions = []
-      await INSPECT_INSPECT_FREQUENCY_QUERY_DROPDOWN_API().then((res) => {
-        state.frequencyIdOptions = res.data.data
-      })
-    }
-    const rewriteFormData = async (act:string) => {
-      // 获取取样部门下拉
-      let tempId = state.currentFocusTargetObj.id
-      if (act === 'add') {
-        if (state.currentFocusTargetObj.isFinalNode && state.currentFocusTargetObj.assistFlag !== 'Y') {
-          tempId = state.currentFocusTargetObj.markParentId
-        }
-      } else {
-        tempId = state.currentFocusItem.inspectTypeIds
-      }
-      await INSPECT_TYPE_DETAIL_API({ id: tempId }).then((res) => {
-        state.formGlobleItem.cooperate = res.data.data.cooperate.map((item:any) => item.deptName).join(',')
-        state.formGlobleItem.sample = res.data.data.sample.map((item:any) => item.deptName).join(',')
-        state.formGlobleItem.sampleAmount = res.data.data.sampleAmount
-      })
-
-      // 获取指标编码下拉
-      let temp:any[] = []
-      if (act === 'add') {
-        if (!state.currentFocusTargetObj.isFinalNode && state.currentFocusTargetObj.assistFlag !== 'Y') {
-          temp = state.currentFocusTargetObj.inspectMaterialAlls
-        } else {
-          // 生产辅料新增时处理
-          if (state.currentFocusTargetObj.assistFlag === 'Y') {
-            state.currentFocusTargetObj.inspectMaterialCode = state.currentFocusTargetObj.inspectTypeCode
-          }
-          temp = [state.currentFocusTargetObj]
-        }
-      } else {
-        // 生产辅料新增时处理
-        if (!state.currentFocusItem.inspectMaterialCode) {
-          state.currentFocusItem.inspectMaterialCode = state.currentFocusItem.inspectMaterialTypeCode
-        }
-        temp = [state.currentFocusItem]
-      }
-
-      await MANAGEMENT_INSPECTION_PLAN_CONFIGURATION_PLAN_INDEX_MATERIAL_QUERY_API({
-        inspectMaterialAlls: temp,
-        inspectScene: state.currentInspectScene
+    const getDropDownOptions = async (id:string) => {
+      // 获取检验类下的取样单位
+      await MANAGEMENT_PROCESS_INSPECTION_TASK_INSPECT_MATERIAL_DROP_DOWN_API({
+        id: id
       }).then((res) => {
-        state.indexCodeOptions = res.data.data
+        state.sampleUnitptions = res.data.data
       })
     }
 
-    // [BTN:取消][float]
-    const btnClickItemClearForDialog = (who:string) => {
-      // uploadOfRemoveFile()
-      if (who === 'refGlobleItem') {
-        reset()
-        state.isDialogShow = false
-      } else if (who === 'refBatchEditItems') { // 批次编辑初始化
-        state.formBatchEditItems = {
-          title: '批次编辑',
-          projectLocation: state.currentFocusTargetObj.projectLocation, // 项目位置
-          frequencyIdChecked: false,
-          frequencyId: '',
-          keyIndexFlagChecked: false,
-          keyIndexFlag: '',
-          mergeFlagChecked: false,
-          mergeFlag: '',
-          loopFlagChecked: false,
-          loopFlag: '',
-          timingFlagChecked: false,
-          timingFlag: 'N',
-          coInspectListChecked: false,
-          coInspectList: [],
-          coInspect: {
-            deptId: '',
-            deptName: ''
-          },
-          inspectListChecked: false,
-          inspectList: [],
-          inspect: {
-            deptId: '',
-            deptName: ''
-          },
-          planConfigureIds: []
-        }
-        state.isBatchEditDialogShow = false
+    // [Dialog][BTN:取消]
+    const btnCancelItemEditOfDialog = () => {
+      reset()
+      state.isDialogVisibleForGlobleItem = false
+    }
+
+    // [Dialog][ACTION:取消]
+    const reset = () => {
+      state.formGlobleItem = {
+        taskCode: '',
+        taskStatus: '',
+        inspectContent: '',
+        sampleDeptName: '',
+        sampleInformation: '',
+        materialInfo: '',
+        inspectBatch: '',
+        itemName: '',
+        supplier: ''
       }
     }
 
-    // [BTN:确认][float] 新增&编辑
-    const btnClickItemConfirmForDialog = async () => {
-      if (state.formGlobleItem.indexCode === '') {
-        proxy.$errorToast('指标编码必填字段未填写，请填写完整')
-        return
-      }
-
-      if (state.formGlobleItem.inspectList.length === 0) {
-        proxy.$errorToast('检验部门必填字段未填写，请填写完整')
-        return
-      }
-
-      if (state.formGlobleItem.cooperate === '') {
-        proxy.$errorToast('取样部门必填字段未填写，请填写完整')
-        return
-      }
-
-      if (state.formGlobleItem.frequencyName === '') {
-        proxy.$errorToast('检验频次必填字段未填写，请填写完整')
-        return
-      }
+    // [Dialog][BTN:确认]
+    const btnConfirmItemOfDialog = async () => {
       refGlobleItem.value.validate(async (valid: boolean) => {
         if (valid) {
-          if (state.formGlobleItem.title === '计划明细-新增') { // 新增
-            const tempCoInspectObj = await refCoInspect.value.getCheckedNodes()
-            state.formGlobleItem.coInspect = {
-              deptId: tempCoInspectObj.length ? tempCoInspectObj[0].id : '',
-              deptName: tempCoInspectObj.length ? tempCoInspectObj[0].deptName : ''
-            }
-            const tempinspectObj = await refInspect.value.getCheckedNodes()
-            state.formGlobleItem.inspect = {
-              deptId: tempinspectObj.length ? tempinspectObj[0].id : '',
-              deptName: tempinspectObj.length ? tempinspectObj[0].deptName : ''
-            }
-            // 生产辅料新增时处理
-            if (state.formGlobleItem.assistFlag === 'Y' && !state.formGlobleItem.inspectMaterialCode) {
-              state.formGlobleItem.inspectMaterialCode = state.formGlobleItem.inspectTypeCode
-            }
-            await MANAGEMENT_INSPECTION_PLAN_CONFIGURATION_INSERT_API({
-              ...state.formGlobleItem
-            })
-          } else { // 编辑
-            const tempCoInspectObj = await refCoInspect.value.getCheckedNodes()
-            state.formGlobleItem.coInspect = {
-              deptId: tempCoInspectObj.length ? tempCoInspectObj[0].id : '',
-              deptName: tempCoInspectObj.length ? tempCoInspectObj[0].deptName : ''
-            }
-            const tempinspectObj = await refInspect.value.getCheckedNodes()
-            state.formGlobleItem.inspect = {
-              deptId: tempinspectObj.length ? tempinspectObj[0].id : '',
-              deptName: tempinspectObj.length ? tempinspectObj[0].deptName : ''
-            }
-            await MANAGEMENT_INSPECTION_PLAN_CONFIGURATION_PLAN_UPDATE_API({
-              ...state.formGlobleItem
-            })
-          }
+          await MANAGEMENT_PROCESS_INSPECTION_TASK_UPDATE_API({
+            ...state.formGlobleItem
+          })
 
           proxy.$successToast('操作成功')
           getBaseData() // reload
-          btnClickItemClearForDialog('refGlobleItem')
+          btnCancelItemEditOfDialog()
         }
       })
     }
 
-    // [BTN:确认][float] 批次编辑
-    const btnClickBatchCopyItemConfirmForDialog = async () => {
-      if (!state.formBatchEditItems.frequencyIdChecked) {
-        state.formBatchEditItems.frequencyId = ''
-      }
-      if (!state.formBatchEditItems.keyIndexFlagChecked) {
-        state.formBatchEditItems.keyIndexFlag = ''
-      }
-      if (!state.formBatchEditItems.mergeFlagChecked) {
-        state.formBatchEditItems.mergeFlag = ''
-      }
-      if (!state.formBatchEditItems.loopFlagChecked) {
-        state.formBatchEditItems.loopFlag = ''
-      }
-      if (!state.formBatchEditItems.timingFlagChecked) {
-        state.formBatchEditItems.timingFlag = ''
-      }
-      if (!state.formBatchEditItems.inspectListChecked) {
-        state.formBatchEditItems.inspectList = []
-        // state.formBatchEditItems.inspect = {
-        //   deptId: '',
-        //   deptName: ''
-        // }
-        state.formBatchEditItems.inspect = null
-      }
-      if (!state.formBatchEditItems.coInspectListChecked) {
-        state.formBatchEditItems.coInspectList = []
-        // state.formBatchEditItems.coInspect = {
-        //   deptId: '',
-        //   deptName: ''
-        // }
-        state.formBatchEditItems.coInspect = null
-      }
-
-      if (state.formBatchEditItems.coInspectListChecked) {
-        const tempCoInspectObj = await refCoInspectOfBatchEdit.value.getCheckedNodes()
-        state.formBatchEditItems.coInspect = {
-          deptId: tempCoInspectObj.length ? tempCoInspectObj[0].id : '',
-          deptName: tempCoInspectObj.length ? tempCoInspectObj[0].deptName : ''
-        }
-      }
-
-      if (state.formBatchEditItems.inspectListChecked) {
-        const tempinspectObj = await refInspectOfBatchEdit.value.getCheckedNodes()
-        state.formBatchEditItems.inspect = {
-          deptId: tempinspectObj.length ? tempinspectObj[0].id : '',
-          deptName: tempinspectObj.length ? tempinspectObj[0].deptName : ''
-        }
-      }
-      if (state.formBatchEditItems.frequencyIdChecked || state.formBatchEditItems.keyIndexFlagChecked || state.formBatchEditItems.mergeFlagChecked || state.formBatchEditItems.loopFlagChecked || state.formBatchEditItems.timingFlagChecked || state.formBatchEditItems.inspectListChecked || state.formBatchEditItems.coInspectListChecked) {
-        await MANAGEMENT_INSPECTION_PLAN_CONFIGURATION_PLAN_BATCH_UPDATE_API({
-          ...state.formBatchEditItems
-        })
-
-        proxy.$successToast('操作成功')
-        getBaseData() // reload
-      }
-      btnClickItemClearForDialog('refBatchEditItems')
+    // [FORM:select][EVENT:change] 版本
+    const handleChangeSelectVersion = (val:string) => {
+      val && resetTaskSearchFilter(val)
+      // [ACT:get] 获取 tree-data
+      getBaseData()
     }
 
-    // [EVENT:change] 检验频次
-    const handleSelectFrequencyChange = (val:string) => {
-      state.formGlobleItem.frequencyName = state.frequencyIdOptions.filter(item => item.id === val)[0].frequencyName
-    }
-
-    // [EVENT:change] 指标编码
-    const handleSelectInspectMaterialChange = (val:string) => {
-      state.indexCodeOptions.forEach(item => {
-        if (item.indexCode === val) {
-          state.formGlobleItem.indexName = item.indexName
-          state.formGlobleItem.indexUnit = item.indexUnit
-          state.formGlobleItem.indexMethod = item.indexMethod
-          state.formGlobleItem.inspectMaterialCodes = item.inspectMaterialCodes
-          state.formGlobleItem.inspectIndexMaterialIds = item.inspectIndexMaterialIds
-        }
+    // [FROM:SearchBar] 获取取样部门下拉
+    const resetTaskSearchFilter = (val:string) => {
+      MANAGEMENT_PROCESS_INSPECTION_TASK_SAMPLE_DEPARTMENT_DROP_DOWN_API({
+        planVersionId: val
+      }).then((res) => {
+        state.sampleDeptIdOptions = res.data.data
       })
-    }
-
-    // [ACT:trans] 获取组织架构去掉 children
-    const cascaderTranslate = (data: any) => {
-      data.forEach((item: any) => {
-        if (item.children.length) {
-          cascaderTranslate(item.children)
-        } else {
-          delete item.children
-        }
-      })
-    }
-
-    // [ACT:define] 获取组织架构
-    const getOrgStructure = async () => {
-      const res = await ORG_TREE_API({ factory: JSON.parse(sessionStorage.getItem('system') || '{}').id || '' })
-      cascaderTranslate(res.data.data)
-      state.orgTreeDataOptions = res.data.data
-    }
-
-    // 下拉框数据变换
-    const setOrGetData = (data: any, type = 'get') => {
-      if (type === 'get') {
-        return data.getCheckedNodes(true).map((it: any) => { return { deptName: it.deptName, deptId: it.id } })
-      } else {
-        return data.map((it: any) => it.deptId)
-      }
     }
 
     const getEndNodeItems = (menuTreeList:any, container:any) => {
       for (const item of menuTreeList) {
-        if (item.isFinalNode === true) {
+        // if (item.isFinalNode === true) {
+        //   container.push(item)
+        // } else if (item.children.length > 0) {
+        //   getEndNodeItems(item.children, container)
+        // }
+        if (item.isFinalNode !== true) {
           container.push(item)
-        } else if (item.children.length > 0) {
-          getEndNodeItems(item.children, container)
+          if (item.children && item.children.length > 0) {
+            getEndNodeItems(item.children, container)
+          }
         }
       }
     }
 
-    const changeChechBox = (val:boolean, target:string) => {
-      if (!val) {
-        if (target === 'inspectList' || target === 'coInspectList') {
-          state.formBatchEditItems[target] = []
-        } else {
-          state.formBatchEditItems[target] = ''
-        }
-      }
+    // [ACT:] 获取版本下拉
+    const getVersionOptions = async () => {
+      await MANAGEMENT_INSPECTION_PLAN_VERSION_DROP_DOWN_API({
+        inspectScene: state.currentInspectScene
+      }).then((res) => {
+        state.versionnValueOptions = res.data.data
+      })
     }
 
-    onMounted(() => {
-      if (!router.currentRoute.value.query.versionID) {
-        tabsCloseCurrentHandle()
-        proxy.$warningToast('版本号无法识别，请重新选择！')
-        gotoPage({
-          path: 'qms-pages-ManagementPlan-ProcessInspectionPlan-index'
-        })
-        return
-      }
-      if (store.state.common.planProcessVersion === '') {
-        store.commit('common/updatePlanProcessVersion', router.currentRoute.value.query.versionID as string)
-      }
-      state.currentVersion = router.currentRoute.value.query.versionID ? router.currentRoute.value.query.versionID as string : store.state.common.planProcessVersion
+    onMounted(async () => {
+      // 获取状态下拉
+      DICTIONARY_QUERY_API({ dictType: 'TASK_STATUS' }).then((res) => {
+        state.taskStatusOptions = res.data.data.filter((item:DictOptions) => item.dictCode !== 'SAVED' && item.dictCode !== 'OUT_STORAGE') // 除去已保存、已出库
+      })
 
-      // [ACT:get] 获取 tree-data
-      getBaseData()
-      // [ACT:get] 获取组织架构
-      getOrgStructure()
+      // 获取版本讯息
+      await getVersionOptions()
+
+      // 预设带入第一笔版本
+      if (state.versionnValueOptions[0]) {
+        state.versionValue = state.versionnValueOptions[0].planVersion
+        handleChangeSelectVersion(state.versionValue)
+      }
     })
 
     return {
       ...toRefs(state),
       // EVENT
-      handleSizeChange,
-      handleCurrentChange,
-      handleSelectFrequencyChange,
-      handleSelectInspectMaterialChange,
-      handleSelectionChange,
-      changeChechBox,
+      handleChangeDataSize,
+      handleChangeCurrentPage,
+      handleChangeSelectVersion,
       // BTN
-      btnClickItemsDeleteForTopicMainData,
-      btnClickItemAddOrEditForTopicMainData,
-      btnClickGenerateForTopicMainData,
-      btnClickItemBatchEditForTopicMainData,
-      btnClickItemClearForDialog,
-      btnClickItemConfirmForDialog,
-      btnClickBatchCopyItemConfirmForDialog,
+      btnClickItemEditOfTopicMainData,
+      btnClickItemCancelOfTopicMainData,
+      btnCancelItemEditOfDialog,
+      btnConfirmItemOfDialog,
       // ACT
-      getDropDownOptions,
-      getOrgStructure,
-      getPlanDetail,
-      doPlanDetailGet,
-      rewriteFormData,
+      actGetTaskDetailOfTree,
+      actGetTaskDetailForTable,
       reset,
       // REF
-      refInspect,
-      refCoInspect,
-      refCoInspectOfBatchEdit,
-      refInspectOfBatchEdit,
       refTreeModule,
       ruleGlobleItem,
-      refGlobleItem,
-      refBatchEditItems,
-      setOrGetData,
-      getEndNodeItems
+      refGlobleItem
     }
   }
 })
 </script>
 
 <style scoped>
-.checkbox-position{
-  position: absolute;
-  left: -110px;
+.el-form-item {
+    margin-bottom: 0px;
 }
-
-.batch-edit-form ::v-deep(.el-checkbox .el-checkbox__label){
-  display:none
-
+.dialogForm .el-form-item {
+    margin-bottom: 20px;
 }
 </style>

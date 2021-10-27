@@ -162,7 +162,6 @@ export default defineComponent({
     })
     const refFunctionDialog = ref()
     const treeModule = ref()
-    // TODO
     // [BTN:分配] single action to go
     const handleSingleAsign = (row:TopicMainData) => {
       state.whoAsign = 'single'
@@ -299,7 +298,6 @@ export default defineComponent({
       }
     }
 
-    // TODO
     // get material detail data
     const getMaterialCatagoryData = () => {
       state.materialDetailText = ''
