@@ -46,3 +46,15 @@ export function POINT_UPDATE (params = {}):Promise<AxiosResponse> {
 export function POINT_DEL (params = {}):Promise<AxiosResponse> {
   return Http.post('/inspectSite/deleteInspectSite', params, { baseURL })
 }
+// 获取检验类
+export function DROPDOWN_INSPECT_TYPE (params = {}):Promise<AxiosResponse> {
+  return Http.get('/inspectType/queryInspectTypeByPlanConfiguresUser', params, { baseURL })
+}
+// 获取检验类取样部门
+export function DROPDOWN_INSPECT_TYPE_DEPT (params = {}):Promise<AxiosResponse> {
+  return Http.get('/inspectTypeDept/getInspectTypeDeptByInspectTypeId', params, { baseURL })
+}
+// 获取检验类物料
+export function DROPDOWN_INSPECT_TYPE_MATERIAL (params = {}):Promise<AxiosResponse> {
+  return Http.get('/inspectMaterial/queryInspectMaterialDropDownByInspectTypeId', params, { baseURL })
+}
