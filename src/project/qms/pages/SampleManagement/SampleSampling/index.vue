@@ -55,7 +55,7 @@
       <el-table-column type="selection" width="45" :selectable="checkDate" />
       <el-table-column type="index" fixed="left" :index="(index) => index + 1 + (queryForm.current - 1) * queryForm.size" label="序号" width="50" />
       <el-table-column label="样品码" prop="sampleCode" min-width="120" :show-overflow-tooltip="true" />
-      <el-table-column label="状态" prop="taskStatus" min-width="120" :show-overflow-tooltip="true" />
+      <el-table-column label="状态" prop="taskStatusName" min-width="120" :show-overflow-tooltip="true" />
       <el-table-column label="检验内容" prop="inspectContent" min-width="150" :show-overflow-tooltip="true" />
       <el-table-column v-if="task === 'PROCESS'" label="订单" prop="orderNo" min-width="150" :show-overflow-tooltip="true" />
       <el-table-column v-if="task === 'INCOMING' || task === 'PROCESS'" label="物料信息" min-width="165" :show-overflow-tooltip="true">
@@ -72,16 +72,16 @@
       <el-table-column v-if="task === 'TEMP'" label="发布时间" prop="triggerDate" min-width="165" :show-overflow-tooltip="true" />
       <el-table-column label="操作" width="250" fixed="right">
         <template #default="scope">
-          <el-button v-if="task === 'INCOMING'" type="text" icon="qmsIconfont qms-binglike" class="role__btn" @click="inspectClick(scope.row)">
+          <el-button v-if="task === 'INCOMING' && (scope.row.taskStatus === 'UNSAMPLED' || scope.row.taskStatus === 'SAMPLING')" type="text" icon="qmsIconfont qms-binglike" class="role__btn" @click="inspectClick(scope.row)">
             检验
           </el-button>
-          <el-button v-if="task !== 'INCOMING' && task !== 'TEMP'" type="text" icon="iconfont factory-luru" class="role__btn" @click="addOrUpdate(scope.row)">
+          <el-button v-if="task !== 'INCOMING' && task !== 'TEMP' && scope.row.taskStatus === 'UNSAMPLED'" type="text" icon="iconfont factory-luru" class="role__btn" @click="addOrUpdate(scope.row)">
             编辑
           </el-button>
-          <el-button type="text" icon="qmsIconfont qms-jianyan3" class="role__btn" @click="sampling(scope.row)">
+          <el-button v-if="scope.row.taskStatus === 'UNSAMPLED'" type="text" icon="qmsIconfont qms-jianyan3" class="role__btn" @click="sampling(scope.row)">
             取样
           </el-button>
-          <el-button v-if="task !== 'TEMP'" style="color: #EF4632" type="text" icon="el-icon-delete" class="role__btn">
+          <el-button v-if="task !== 'TEMP' && scope.row.taskStatus === 'UNSAMPLED'" style="color: #EF4632" type="text" icon="el-icon-delete" class="role__btn" @click="delRow(scope.row)">
             删除
           </el-button>
         </template>
@@ -108,17 +108,17 @@
         </el-radio-group>
       </el-form-item>
       <el-form-item label="检验类：">
-        <el-select v-model="addOrUpdateForm.inspectTypeId" filterable placeholder="请选择" @change="id => inspectChange(id)" style="width: 100%">
+        <el-select v-model="addOrUpdateForm.inspectTypeId" :disabled="addOrUpdateForm.id" filterable placeholder="请选择" @change="id => inspectChange(id)" style="width: 100%">
           <el-option v-for="item in inspect" :key="item.id" :label="item.inspectTypeName" :value="item.id" />
         </el-select>
       </el-form-item>
       <el-form-item label="取样部门：" v-if="task === 'PROCESS'">
-        <el-select v-model="addOrUpdateForm.sampleDeptId" filterable placeholder="请选择" style="width: 100%" @change="id => deptChange(id)">
+        <el-select v-model="addOrUpdateForm.sampleDeptId" :disabled="addOrUpdateForm.id" filterable placeholder="请选择" style="width: 100%" @change="id => deptChange(id)">
           <el-option v-for="item in dept" :key="item.deptId" :label="item.deptName" :value="item.deptId" />
         </el-select>
       </el-form-item>
       <el-form-item label="物料信息：" v-if="task === 'INCOMING' || task === 'PROCESS'">
-        <el-select v-model="addOrUpdateForm.inspectMaterialCode" filterable placeholder="请选择" @change="val => materialChange(val)" style="width: 100%">
+        <el-select v-model="addOrUpdateForm.inspectMaterialCode" :disabled="addOrUpdateForm.id" filterable placeholder="请选择" @change="val => materialChange(val)" style="width: 100%">
           <el-option v-for="item in material" :key="item.id" :label="item.inspectMaterialCode + ' ' + item.inspectMaterialName" :value="item.inspectMaterialCode" />
         </el-select>
       </el-form-item>
@@ -198,7 +198,8 @@ import {
   GET_SAMPLE_SAMPLING_TASK_LIST,
   SAMPLE_SAMPLING_TASK_LIST,
   SAMPLE_SAMPLING_TASK_ASSIST_UPDATE,
-  SAMPLE_SAMPLING_TASK_PROCESS_UPDATE
+  SAMPLE_SAMPLING_TASK_PROCESS_UPDATE,
+  SAMPLE_SAMPLING_TASK_DEL
 } from '@/api/api'
 import printModule from './printModule.vue'
 
@@ -439,7 +440,7 @@ export default defineComponent({
     }
     // 表格复选框能否被选中逻辑
     const checkDate = (row: TableData) => {
-      if (!row.taskStatus) {
+      if (row.taskStatus !== 'UNSAMPLED') {
         return false
       }
       return true
@@ -467,6 +468,17 @@ export default defineComponent({
         proxy.$warningToast('请选择数据')
       }
     }
+    const delRow = (row:TableData) => {
+      proxy.$confirm('是否删除，请确认', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(async () => {
+        await SAMPLE_SAMPLING_TASK_DEL({ taskSampleDeleteReqDto: row })
+        proxy.$successToast('操作成功')
+        await query()
+      })
+    }
 
     onMounted(() => {
       getSelect()
@@ -491,6 +503,7 @@ export default defineComponent({
       dept,
       samplingMessage,
       selectionData,
+      delRow,
       sampling,
       checkDate,
       selectionChange,

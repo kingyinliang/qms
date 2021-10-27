@@ -12,6 +12,9 @@ export function SAMPLE_SAMPLING_TASK_ADD (params = {}):Promise<AxiosResponse> {
 export function SAMPLE_SAMPLING_TASK_LIST (params = {}):Promise<AxiosResponse> {
   return Http.post('/taskSample/queryTaskSample', params, { baseURL })
 }
+export function SAMPLE_SAMPLING_TASK_HISTORY_LIST (params = {}):Promise<AxiosResponse> {
+  return Http.post('/taskSample/queryHistoryTaskSample', params, { baseURL })
+}
 export function SAMPLE_SAMPLING_TASK_ASSIST_UPDATE (params = {}):Promise<AxiosResponse> {
   return Http.post('/taskSample/updateAssistTaskSample', params, { baseURL })
 }

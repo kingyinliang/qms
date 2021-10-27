@@ -2,14 +2,14 @@
   <el-card class="box-card">
     <el-form inline :model="queryForm" size="small" label-suffix="：">
       <el-form-item label="取样码">
-        <el-input v-model="queryForm.itemCodeOrName" style="width: 140px"></el-input>
+        <el-input v-model="queryForm.sampleCode" style="width: 140px"></el-input>
       </el-form-item>
       <el-form-item label="批次">
-        <el-input v-model="queryForm.itemCodeOrName" style="width: 140px"></el-input>
+        <el-input v-model="queryForm.inspectBatch" style="width: 140px"></el-input>
       </el-form-item>
       <el-form-item label="日期">
         <el-date-picker
-          v-model="queryForm.beginDate"
+          v-model="queryForm.triggerDate"
           type="date"
           format="YYYY-MM-DD"
           value-format="YYYY-MM-DD"
@@ -21,42 +21,27 @@
     <el-button type="primary" size="small" icon="el-icon-search" style="float: right" @click="() => {queryForm.current = 1; query()}">查询</el-button>
   </el-card>
   <el-tabs :model-value="task" type="border-card" class="NewDaatTtabs tabsPages" @tab-click="tabClick">
-    <el-tab-pane label="来料检验" name="1"/>
-    <el-tab-pane label="制程检验" name="2" />
-    <el-tab-pane label="生产辅助" name="3" />
-    <el-tab-pane label="临时检验" name="4" />
+    <el-tab-pane label="来料检验" name="INCOMING"/>
+    <el-tab-pane label="制程检验" name="PROCESS" />
+    <el-tab-pane label="生产辅助" name="ASSIST" />
+    <el-tab-pane label="临时检验" name="TEMP" />
     <div class="k-box-card-title clearfix">
       <h3> <em class="title-icon" />任务列表</h3>
     </div>
     <el-table border :cell-style="{'text-align':'center'}" :data="tableData" tooltip-effect="dark" style="width: 100%">
       <el-table-column type="index" fixed="left" :index="(index) => index + 1 + (queryForm.current - 1) * queryForm.size" label="序号" width="50" />
-      <el-table-column label="样品码" prop="itemCode" :show-overflow-tooltip="true" />
-      <el-table-column label="状态" prop="itemName" min-width="120" :show-overflow-tooltip="true" />
-      <el-table-column label="检验内容" prop="creator" min-width="150" :show-overflow-tooltip="true" />
-      <el-table-column v-if="task === '2'" label="订单" prop="creator" min-width="150" :show-overflow-tooltip="true" />
-      <el-table-column v-if="task === '1' || task === '2'" label="物料信息" prop="created" min-width="165" :show-overflow-tooltip="true" />
-      <el-table-column v-if="task === '2'" label="品项" prop="creator" min-width="150" :show-overflow-tooltip="true" />
-      <el-table-column v-if="task === '2'" label="取样信息" prop="creator" min-width="150" :show-overflow-tooltip="true" />
-      <el-table-column v-if="task === '2' || task === '3'" label="取样说明" prop="creator" min-width="150" :show-overflow-tooltip="true" />
-      <el-table-column v-if="task === '1'" label="物料批次" prop="changer" min-width="150" :show-overflow-tooltip="true" />
-      <el-table-column v-if="task === '1'" label="供应商" prop="changed" min-width="165" :show-overflow-tooltip="true" />
-      <el-table-column v-if="task === '1' || task === '3'" label="任务触发时间" prop="changed" min-width="165" :show-overflow-tooltip="true" />
-      <el-table-column v-if="task === '3'" label="取样截至时间" prop="changed" min-width="165" :show-overflow-tooltip="true" />
-      <el-table-column v-if="task === '4'" label="发布人" prop="changed" min-width="165" :show-overflow-tooltip="true" />
-      <el-table-column v-if="task === '4'" label="发布时间" prop="changed" min-width="165" :show-overflow-tooltip="true" />
-      <el-table-column label="操作" width="250" fixed="right">
-        <template #default="scope">
-          <el-button type="text" icon="qmsIconfont qms-guanlian" class="role__btn" @click="updateMaterial(scope.row)">
-            关联物料
-          </el-button>
-          <el-button type="text" icon="iconfont factory-luru" class="role__btn">
-            编辑
-          </el-button>
-          <el-button style="color: #EF4632" type="text" icon="el-icon-delete" class="role__btn">
-            删除
-          </el-button>
-        </template>
+      <el-table-column label="样品码" prop="sampleCode" min-width="120" :show-overflow-tooltip="true" />
+      <el-table-column label="检验内容" prop="inspectContent" min-width="150" :show-overflow-tooltip="true" />
+      <el-table-column label="物料信息" min-width="165" :show-overflow-tooltip="true">
+        <template #default="scope">{{ `${scope.row.inspectMaterialCode} ${scope.row.inspectMaterialName}` }}</template>
       </el-table-column>
+      <el-table-column label="物料批次" prop="inspectBatch" min-width="150" :show-overflow-tooltip="true" />
+      <el-table-column v-if="task === 'PROCESS'||task === 'ASSIST'" label="品项" prop="itemName" min-width="150" :show-overflow-tooltip="true" />
+      <el-table-column v-if="task === 'PROCESS'||task === 'ASSIST'" label="订单" prop="orderNo" min-width="150" :show-overflow-tooltip="true" />
+      <el-table-column v-if="task === 'PROCESS'" label="取样信息" prop="sampleInformation" min-width="150" :show-overflow-tooltip="true" />
+      <el-table-column label="触发时间" prop="triggerDate" min-width="165" :show-overflow-tooltip="true" />
+      <el-table-column label="送达时间" prop="deliveryDate" min-width="165" :show-overflow-tooltip="true" />
+      <el-table-column label="完成时间" prop="triggerDate" min-width="165" :show-overflow-tooltip="true" />
     </el-table>
     <el-row style="float: right">
       <el-pagination
@@ -73,7 +58,8 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, reactive, ref } from 'vue'
+import { defineComponent, reactive, ref, onMounted } from 'vue'
+import { SAMPLE_SAMPLING_TASK_HISTORY_LIST } from '@/api/api'
 
 interface TableData{
   id?: string
@@ -81,21 +67,33 @@ interface TableData{
 export default defineComponent({
   name: 'historyTask',
   setup () {
-    const task = ref('1')
+    const task = ref('INCOMING')
     const queryForm = reactive({
-      itemCodeOrName: '',
+      taskSampleClassify: '',
+      sampleCode: '',
+      inspectBatch: '',
+      triggerDate: '',
       current: 1,
       size: 10,
       total: 0
     }) // 查询表单数据
     const tableData = ref<TableData[]>([]) // 表格数据
 
-    const query = () => {
-      console.log(1)
+    const query = async () => {
+      queryForm.taskSampleClassify = task.value
+      const { data } = await SAMPLE_SAMPLING_TASK_HISTORY_LIST(queryForm)
+      tableData.value = data.data.records
+      queryForm.size = data.data.size
+      queryForm.current = data.data.current
+      queryForm.total = data.data.total
     }
     const tabClick = (tab: any) => {
       task.value = tab.props.name
+      query()
     }
+    onMounted(() => {
+      query()
+    })
 
     return {
       task,
