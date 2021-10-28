@@ -7,8 +7,15 @@
       <el-col :span="6" v-for="(item, index) in taskList" :key="index">
         <div class="task__item" :class="{active: task === item.inspectClassify}"  @click="changeTask(item.inspectClassify)">
           <p class="task__item--title">
-            <i class="qmsIconfont" :class="{'qms-lailiaofujian': item.inspectClassify === 'INCOMING', 'qms-zhichengjianyan1': item.inspectClassify === 'PROCESS', 'qms-shengchanfuzhujiancha': item.inspectClassify === 'ASSIST', 'qms-linjian': item.inspectClassify === 'TEMP' }" style="font-size: 20px;color: #487BFF"/>
-            {{ item.inspectClassifyName }}
+            <svg class="qmsIconfont" aria-hidden="true">
+              <use xlink:href="#qms-lailiaofujian" v-if="item.inspectClassify === 'INCOMING'"></use>
+              <use xlink:href="#qms-zhichengjianyan1" v-if="item.inspectClassify === 'PROCESS'"></use>
+              <use xlink:href="#qms-shengchanfuzhujiancha" v-if="item.inspectClassify === 'ASSIST'"></use>
+              <use xlink:href="#qms-linjian" v-if="item.inspectClassify === 'TEMP'"></use>
+            </svg>
+            <span>
+              {{ item.inspectClassifyName }}
+            </span>
           </p>
           <div class="task__item__flex">
             <div class="task__item__flex__item">
@@ -18,12 +25,12 @@
             <div class="task__item__flex__item--border"/>
             <div class="task__item__flex__item">
               <p class="task__item__flex__item--big">{{ item.progressing }}</p>
-              <p class="task__item__flex__item--small"><i class="qmsIconfont qms-daiwancheng"/>进行中</p>
+              <p class="task__item__flex__item--small"><i class="qmsIconfont qms-jinrushiyan"/>进行中</p>
             </div>
             <div class="task__item__flex__item--border"/>
             <div class="task__item__flex__item">
               <p class="task__item__flex__item--big">{{ item.completed }}</p>
-              <p class="task__item__flex__item--small"><i class="qmsIconfont qms-daiwancheng"/>已完成</p>
+              <p class="task__item__flex__item--small"><i class="qmsIconfont qms-shenhetongguo"/>已完成</p>
             </div>
           </div>
         </div>
@@ -32,12 +39,12 @@
   </mds-card>
   <mds-card class="task-list" title="任务列表" :pack-up="false">
     <template #titleBtn>
-      <el-form :inline="true" size="small" style="float: right;display: flex">
+      <el-form :inline="true" size="small" style="float: right;display: flex" @keyup.enter="() => {queryForm.current = 1; query()}" @submit.prevent>
         <el-form-item label="取样码：">
-          <el-input v-model="queryForm.sampleCode" style="width: 120px"></el-input>
+          <el-input v-model="queryForm.sampleCode" placeholder="请输入" style="width: 120px"></el-input>
         </el-form-item>
         <el-form-item label="检验内容：">
-          <el-input v-model="queryForm.inspectContent" style="width: 120px"></el-input>
+          <el-input v-model="queryForm.inspectContent" placeholder="请输入" style="width: 120px"></el-input>
         </el-form-item>
         <el-form-item label="状态：">
           <el-select v-model="queryForm.taskStatus" placeholder="请选择" style="width: 120px">
@@ -101,47 +108,48 @@
   </mds-card>
   <el-dialog v-model="addOrUpdateDialog" title="任务" width="30%">
     <el-form size="small" :model="addOrUpdateForm" label-width="85px">
-      <el-form-item label="任务类型:" v-if="task === 'INCOMING' || task === 'PROCESS'">
+      <el-form-item label="任务类型:" v-if="task === 'PROCESS'">
         <el-radio-group v-model="addOrUpdateForm.temporaryFlag">
           <el-radio label="N">计划</el-radio>
           <el-radio label="Y">临时</el-radio>
         </el-radio-group>
       </el-form-item>
       <el-form-item label="检验类：">
-        <el-select v-model="addOrUpdateForm.inspectTypeId" :disabled="addOrUpdateForm.id" filterable placeholder="请选择" @change="id => inspectChange(id)" style="width: 100%">
+        <el-select v-model="addOrUpdateForm.inspectTypeId" :disabled="addOrUpdateForm.id !== ''" filterable placeholder="请选择" @change="id => inspectChange(id)" style="width: 100%">
           <el-option v-for="item in inspect" :key="item.id" :label="item.inspectTypeName" :value="item.id" />
         </el-select>
       </el-form-item>
       <el-form-item label="取样部门：" v-if="task === 'PROCESS'">
-        <el-select v-model="addOrUpdateForm.sampleDeptId" :disabled="addOrUpdateForm.id" filterable placeholder="请选择" style="width: 100%" @change="id => deptChange(id)">
+        <el-select v-model="addOrUpdateForm.sampleDeptId" filterable placeholder="请选择" style="width: 100%" @change="id => deptChange(id)">
           <el-option v-for="item in dept" :key="item.deptId" :label="item.deptName" :value="item.deptId" />
         </el-select>
       </el-form-item>
       <el-form-item label="物料信息：" v-if="task === 'INCOMING' || task === 'PROCESS'">
-        <el-select v-model="addOrUpdateForm.inspectMaterialCode" :disabled="addOrUpdateForm.id" filterable placeholder="请选择" @change="val => materialChange(val)" style="width: 100%">
+        <el-select v-model="addOrUpdateForm.inspectMaterialCode" :disabled="addOrUpdateForm.id !== ''" filterable placeholder="请选择" @change="val => materialChange(val)" style="width: 100%">
           <el-option v-for="item in material" :key="item.id" :label="item.inspectMaterialCode + ' ' + item.inspectMaterialName" :value="item.inspectMaterialCode" />
         </el-select>
       </el-form-item>
       <el-form-item label="批次：" v-if="task === 'INCOMING'">
-        <!--<el-input v-model="addOrUpdateForm.inspectBatch"></el-input>-->
         <el-select v-model="addOrUpdateForm.inspectBatch" filterable placeholder="请选择" style="width: 100%">
           <el-option v-for="item in batch" :key="item.id" :label="item.batch" :value="item.batch" />
         </el-select>
       </el-form-item>
       <el-form-item label="生产订单：" v-if="task === 'PROCESS'">
-        <el-input v-model="addOrUpdateForm.orderNo" />
+        <el-input v-model="addOrUpdateForm.orderNo" placeholder="请输入" />
       </el-form-item>
       <el-form-item label="品项：" v-if="task === 'INCOMING' || task === 'PROCESS'">
-        <el-input v-model="addOrUpdateForm.itemName" disabled></el-input>
+        <el-input v-model="addOrUpdateForm.itemName" placeholder="请输入" disabled></el-input>
       </el-form-item>
       <el-form-item label="供应商：" v-if="task === 'INCOMING'">
-        <el-input v-model="addOrUpdateForm.supplier" disabled></el-input>
+        <el-input v-model="addOrUpdateForm.supplier" placeholder="请输入" disabled></el-input>
       </el-form-item>
-      <el-form-item label="取样信息：" v-if="task === 'PROCESS' || task === 'ASSIST'">
-        <el-select v-if="task === 'PROCESS'" v-model="addOrUpdateForm.sysHolderId" filterable placeholder="请选择" style="width: 100%" @change="id => sampleChange(id)">
+      <el-form-item label="取样信息：" v-if="task === 'PROCESS'">
+        <el-select v-model="addOrUpdateForm.sysHolderId" filterable placeholder="请选择" style="width: 100%" @change="id => sampleChange(id)">
           <el-option v-for="item in samplingMessage" :key="item.id" :label="item.holderName" :value="item.id" />
         </el-select>
-        <el-input v-if="task === 'ASSIST'" v-model="addOrUpdateForm.sampleExplain" ></el-input>
+      </el-form-item>
+      <el-form-item label="取样说明：" v-if="task === 'PROCESS' || task === 'ASSIST'">
+        <el-input v-model="addOrUpdateForm.sampleExplain" placeholder="请输入" ></el-input>
       </el-form-item>
     </el-form>
     <div style="margin-top: 10px;display: flex;justify-content: flex-end;">
@@ -181,7 +189,6 @@
       <el-button size="small" icon="el-icon-circle-check" type="primary" @click="updateFormSubmit">确定</el-button>
     </div>
   </el-dialog>
-  <printModuleThree :multipleSelection="selectionData" />
   <printModule ref="printModuleRef"/>
 </template>
 
@@ -310,6 +317,7 @@ export default defineComponent({
     }
     // 查询
     const query = async () => {
+      selectionData.value = []
       queryForm.taskSampleClassify = task.value
       const res = await SAMPLE_SAMPLING_TASK_LIST(queryForm)
       tableData.value = res.data.data.records
@@ -539,6 +547,13 @@ export default defineComponent({
       font-size: 16px;
       font-weight: bold;
       color: #333333;
+      display: flex;
+      line-height: 22px;
+      .qmsIconfont{
+        width: 22px;
+        height: 22px;
+        margin-right: 3px;
+      }
     }
     &__flex{
       display: flex;
