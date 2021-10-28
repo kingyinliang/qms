@@ -2,7 +2,7 @@
   <el-card class="box-card">
     <el-form inline :model="queryForm" size="small" label-suffix="：">
       <el-form-item label="样品码">
-        <el-input v-model="queryForm.sampleCode" style="width: 140px"></el-input>
+        <el-input v-model="queryForm.sampleCode" placeholder="请输入" style="width: 140px"></el-input>
       </el-form-item>
       <el-form-item label="送样单位">
         <tree-dialog
@@ -242,6 +242,7 @@ export default defineComponent({
 
     onMounted(() => {
       getSelect()
+      query()
     })
 
     return {
