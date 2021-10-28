@@ -51,7 +51,6 @@ export default defineComponent({
       overflow: hidden;
       padding-top: 0.28cm;
       &_title{
-        height: 0.6cm;
         white-space: nowrap;
         line-height: 0.6cm;
         font-size: 0.2cm;

@@ -1,11 +1,11 @@
 <template>
   <el-card class="box-card">
-    <el-form inline :model="queryForm" size="small" label-suffix="：">
+    <el-form inline :model="queryForm" size="small" label-suffix="：" @keyup.enter="() => {queryForm.current = 1; query()}" @submit.prevent>
       <el-form-item label="取样码">
-        <el-input v-model="queryForm.sampleCode" style="width: 140px"></el-input>
+        <el-input v-model="queryForm.sampleCode" placeholder="请输入" style="width: 140px"></el-input>
       </el-form-item>
       <el-form-item label="批次">
-        <el-input v-model="queryForm.inspectBatch" style="width: 140px"></el-input>
+        <el-input v-model="queryForm.inspectBatch" placeholder="请输入" style="width: 140px"></el-input>
       </el-form-item>
       <el-form-item label="日期">
         <el-date-picker
@@ -41,7 +41,7 @@
       <el-table-column v-if="task === 'PROCESS'" label="取样信息" prop="sampleInformation" min-width="150" :show-overflow-tooltip="true" />
       <el-table-column label="触发时间" prop="triggerDate" min-width="165" :show-overflow-tooltip="true" />
       <el-table-column label="送达时间" prop="deliveryDate" min-width="165" :show-overflow-tooltip="true" />
-      <el-table-column label="完成时间" prop="triggerDate" min-width="165" :show-overflow-tooltip="true" />
+      <el-table-column label="完成时间" prop="finishDate" min-width="165" :show-overflow-tooltip="true" />
     </el-table>
     <el-row style="float: right">
       <el-pagination

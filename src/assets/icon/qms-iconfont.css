@@ -13,6 +13,26 @@
     -moz-osx-font-smoothing: grayscale;
 }
 
+.qms-shengchanshangxian:before {
+    content: "\e714";
+}
+
+.qms-zhichengjianyan:before {
+    content: "\e64b";
+}
+
+.qms-jinrushiyan:before {
+    content: "\e649";
+}
+
+.qms-shijian:before {
+    content: "\e64f";
+}
+
+.qms-fuzhi:before {
+    content: "\e66b";
+}
+
 .qms-jisuanqishanchu:before {
     content: "\e61c";
 }
