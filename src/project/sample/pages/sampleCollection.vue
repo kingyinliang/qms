@@ -4,7 +4,7 @@
       <el-button type="text" size="small" icon="el-icon-arrow-left" @click="$router.go(-1)"> 返回</el-button>
       <el-form :inline="true" size="small" style="float: right;display: flex" @keyup.enter="query" @submit.prevent>
         <el-form-item label="请扫描样品码：">
-          <el-input ref="sampleCodeRef" v-model="sampleCode" style="width: 150px" autofocus></el-input>
+          <el-input ref="sampleCodeRef" v-model="sampleCode" placeholder="请扫描/输入" style="width: 150px" autofocus></el-input>
         </el-form-item>
         <el-form-item>
           <el-button type="primary" @click="collection"><i class="qmsIconfont qms-shouyang" /> 收样</el-button>

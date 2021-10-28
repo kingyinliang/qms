@@ -47,6 +47,12 @@ export function DEPT_QUERY_API (params = {}):Promise<AxiosResponse> {
 export function DICT_DROPDOWN (params = {}):Promise<AxiosResponse> {
   return Http.get('/sysDictItem/dropDown', params, { baseURL: (process.env.VUE_APP_SYSTEM_API as string) + (process.env.VUE_APP_API_V as string) })
 }
+export function GET_WORKSHOP (params = {}):Promise<AxiosResponse> {
+  return Http.get('/sysDept/queryWorkShopById', params, { baseURL: (process.env.VUE_APP_SYSTEM_API as string) + (process.env.VUE_APP_API_V as string) })
+}
+export function GET_HOLDER (params = {}):Promise<AxiosResponse> {
+  return Http.post('/sysHolder/list/query', params, { baseURL: (process.env.VUE_APP_API_HOST as string) + '/df-data' + (process.env.VUE_APP_API_V as string) })
+}
 
 // 数据字典根据类型获取详情
 export function DICTIONARY_QUERY_API (params = {}):Promise<AxiosResponse> {

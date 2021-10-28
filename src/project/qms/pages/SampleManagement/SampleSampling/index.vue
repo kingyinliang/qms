@@ -5,25 +5,32 @@
     </template>
     <el-row :gutter="16">
       <el-col :span="6" v-for="(item, index) in taskList" :key="index">
-        <div class="task__item" :class="{active: task === index + 1}"  @click="changeTask(index + 1)">
+        <div class="task__item" :class="{active: task === item.inspectClassify}"  @click="changeTask(item.inspectClassify)">
           <p class="task__item--title">
-            <i class="qmsIconfont" :class="{'qms-lailiaofujian': index === 0, 'qms-zhichengjianyan1': index === 1, 'qms-shengchanfuzhujiancha': index === 2, 'qms-linjian': index === 3 }" style="font-size: 20px;color: #487BFF"/>
-            {{ item.inspectClassify }}
+            <svg class="qmsIconfont" aria-hidden="true">
+              <use xlink:href="#qms-lailiaofujian" v-if="item.inspectClassify === 'INCOMING'"></use>
+              <use xlink:href="#qms-zhichengjianyan1" v-if="item.inspectClassify === 'PROCESS'"></use>
+              <use xlink:href="#qms-shengchanfuzhujiancha" v-if="item.inspectClassify === 'ASSIST'"></use>
+              <use xlink:href="#qms-linjian" v-if="item.inspectClassify === 'TEMP'"></use>
+            </svg>
+            <span>
+              {{ item.inspectClassifyName }}
+            </span>
           </p>
           <div class="task__item__flex">
             <div class="task__item__flex__item">
-              <p class="task__item__flex__item--big">{{ item.unSampled }}</p>
+              <p class="task__item__flex__item--big">{{ item.execute }}</p>
               <p class="task__item__flex__item--small"><i class="qmsIconfont qms-daiwancheng"/>待完成</p>
             </div>
             <div class="task__item__flex__item--border"/>
             <div class="task__item__flex__item">
-              <p class="task__item__flex__item--big">{{ item.sampling }}</p>
-              <p class="task__item__flex__item--small"><i class="qmsIconfont qms-daiwancheng"/>进行中</p>
+              <p class="task__item__flex__item--big">{{ item.progressing }}</p>
+              <p class="task__item__flex__item--small"><i class="qmsIconfont qms-jinrushiyan"/>进行中</p>
             </div>
             <div class="task__item__flex__item--border"/>
             <div class="task__item__flex__item">
               <p class="task__item__flex__item--big">{{ item.completed }}</p>
-              <p class="task__item__flex__item--small"><i class="qmsIconfont qms-daiwancheng"/>已完成</p>
+              <p class="task__item__flex__item--small"><i class="qmsIconfont qms-shenhetongguo"/>已完成</p>
             </div>
           </div>
         </div>
@@ -32,54 +39,56 @@
   </mds-card>
   <mds-card class="task-list" title="任务列表" :pack-up="false">
     <template #titleBtn>
-      <el-form :inline="true" size="small" style="float: right;display: flex">
+      <el-form :inline="true" size="small" style="float: right;display: flex" @keyup.enter="() => {queryForm.current = 1; query()}" @submit.prevent>
         <el-form-item label="取样码：">
-          <el-input v-model="queryForm.sampleCode" style="width: 120px"></el-input>
+          <el-input v-model="queryForm.sampleCode" placeholder="请输入" style="width: 120px"></el-input>
         </el-form-item>
         <el-form-item label="检验内容：">
-          <el-input v-model="queryForm.inspectContent" style="width: 120px"></el-input>
+          <el-input v-model="queryForm.inspectContent" placeholder="请输入" style="width: 120px"></el-input>
         </el-form-item>
         <el-form-item label="状态：">
-          <el-input v-model="queryForm.taskStatus" style="width: 120px"></el-input>
+          <el-select v-model="queryForm.taskStatus" placeholder="请选择" style="width: 120px">
+            <el-option v-for="item in taskStatus" :key="item.dictCode" :label="item.dictValue" :value="item.dictCode" />
+          </el-select>
         </el-form-item>
         <el-form-item>
           <el-button icon="el-icon-search" @click="() => {queryForm.current = 1; query()}">查询</el-button>
-          <el-button v-if="task !== 4" icon="el-icon-plus" @click="addOrUpdate()">新建</el-button>
-          <el-button type="primary"><i class="qmsIconfont qms-jianyan3" /> 取样</el-button>
+          <el-button v-if="task !== 'TEMP'" icon="el-icon-plus" @click="addOrUpdate()">新建</el-button>
+          <el-button type="primary" @click="sampling()"><i class="qmsIconfont qms-jianyan3" /> 取样</el-button>
         </el-form-item>
       </el-form>
     </template>
     <el-table border :cell-style="{'text-align':'center'}" :data="tableData" tooltip-effect="dark" style="width: 100%" @selection-change="selectionChange">
       <el-table-column type="selection" width="45" :selectable="checkDate" />
       <el-table-column type="index" fixed="left" :index="(index) => index + 1 + (queryForm.current - 1) * queryForm.size" label="序号" width="50" />
-      <el-table-column label="样品码" prop="sampleCode" :show-overflow-tooltip="true" />
-      <el-table-column label="状态" prop="taskStatus" min-width="120" :show-overflow-tooltip="true" />
+      <el-table-column label="样品码" prop="sampleCode" min-width="120" :show-overflow-tooltip="true" />
+      <el-table-column label="状态" prop="taskStatusName" min-width="120" :show-overflow-tooltip="true" />
       <el-table-column label="检验内容" prop="inspectContent" min-width="150" :show-overflow-tooltip="true" />
-      <el-table-column v-if="task === 2" label="订单" prop="creator" min-width="150" :show-overflow-tooltip="true" />
-      <el-table-column v-if="task === 1 || task === 2" label="物料信息" min-width="165" :show-overflow-tooltip="true">
+      <el-table-column v-if="task === 'PROCESS'" label="订单" prop="orderNo" min-width="150" :show-overflow-tooltip="true" />
+      <el-table-column v-if="task === 'INCOMING' || task === 'PROCESS'" label="物料信息" min-width="165" :show-overflow-tooltip="true">
         <template #default="scope">{{ `${scope.row.inspectMaterialCode} ${scope.row.inspectMaterialName}` }}</template>
       </el-table-column>
-      <el-table-column v-if="task === 2" label="品项" prop="itemName" min-width="150" :show-overflow-tooltip="true" />
-      <el-table-column v-if="task === 2" label="取样信息" prop="creator" min-width="150" :show-overflow-tooltip="true" />
-      <el-table-column v-if="task === 2 || task === 3" label="取样说明" prop="creator" min-width="150" :show-overflow-tooltip="true" />
-      <el-table-column v-if="task === 1" label="物料批次" prop="batch" min-width="150" :show-overflow-tooltip="true" />
-      <el-table-column v-if="task === 1" label="供应商" prop="supplier" min-width="165" :show-overflow-tooltip="true" />
-      <el-table-column v-if="task === 1 || task === 3" label="任务触发时间" prop="changed" min-width="165" :show-overflow-tooltip="true" />
-      <el-table-column v-if="task === 3" label="取样截至时间" prop="changed" min-width="165" :show-overflow-tooltip="true" />
-      <el-table-column v-if="task === 4" label="发布人" prop="changed" min-width="165" :show-overflow-tooltip="true" />
-      <el-table-column v-if="task === 4" label="发布时间" prop="changed" min-width="165" :show-overflow-tooltip="true" />
+      <el-table-column v-if="task === 'PROCESS'" label="品项" prop="itemName" min-width="150" :show-overflow-tooltip="true" />
+      <el-table-column v-if="task === 'PROCESS'" label="取样信息" prop="sampleInformation" min-width="150" :show-overflow-tooltip="true" />
+      <el-table-column v-if="task === 'ASSIST'" label="取样说明" prop="sampleExplain" min-width="150" :show-overflow-tooltip="true" />
+      <el-table-column v-if="task === 'INCOMING'" label="物料批次" prop="inspectBatch" min-width="150" :show-overflow-tooltip="true" />
+      <el-table-column v-if="task === 'INCOMING'" label="供应商" prop="supplier" min-width="165" :show-overflow-tooltip="true" />
+      <el-table-column v-if="task === 'INCOMING' || task === 'ASSIST'" label="任务触发时间" prop="triggerDate" min-width="165" :show-overflow-tooltip="true" />
+      <el-table-column v-if="task === 'ASSIST'" label="取样截至时间" prop="sampleEndDate" min-width="165" :show-overflow-tooltip="true" />
+      <el-table-column v-if="task === 'TEMP'" label="发布人" prop="triggerBy" min-width="165" :show-overflow-tooltip="true" />
+      <el-table-column v-if="task === 'TEMP'" label="发布时间" prop="triggerDate" min-width="165" :show-overflow-tooltip="true" />
       <el-table-column label="操作" width="250" fixed="right">
         <template #default="scope">
-          <el-button v-if="task === 1" type="text" icon="qmsIconfont qms-binglike" class="role__btn" @click="inspectClick(scope.row)">
+          <el-button v-if="task === 'INCOMING' && (scope.row.taskStatus === 'UNSAMPLED' || scope.row.taskStatus === 'SAMPLING')" type="text" icon="qmsIconfont qms-binglike" class="role__btn" @click="inspectClick(scope.row)">
             检验
           </el-button>
-          <el-button v-if="task !== 1 && task !== 4" type="text" icon="iconfont factory-luru" class="role__btn" @click="addOrUpdate(scope.row)">
+          <el-button v-if="task !== 'INCOMING' && task !== 'TEMP' && scope.row.taskStatus === 'UNSAMPLED'" type="text" icon="iconfont factory-luru" class="role__btn" @click="addOrUpdate(scope.row)">
             编辑
           </el-button>
-          <el-button type="text" icon="qmsIconfont qms-jianyan3" class="role__btn" >
+          <el-button v-if="scope.row.taskStatus === 'UNSAMPLED'" type="text" icon="qmsIconfont qms-jianyan3" class="role__btn" @click="sampling(scope.row)">
             取样
           </el-button>
-          <el-button v-if="task !== 4" style="color: #EF4632" type="text" icon="el-icon-delete" class="role__btn">
+          <el-button v-if="task !== 'TEMP' && scope.row.taskStatus === 'UNSAMPLED'" style="color: #EF4632" type="text" icon="el-icon-delete" class="role__btn" @click="delRow(scope.row)">
             删除
           </el-button>
         </template>
@@ -99,37 +108,48 @@
   </mds-card>
   <el-dialog v-model="addOrUpdateDialog" title="任务" width="30%">
     <el-form size="small" :model="addOrUpdateForm" label-width="85px">
+      <el-form-item label="任务类型:" v-if="task === 'PROCESS'">
+        <el-radio-group v-model="addOrUpdateForm.temporaryFlag">
+          <el-radio label="N">计划</el-radio>
+          <el-radio label="Y">临时</el-radio>
+        </el-radio-group>
+      </el-form-item>
       <el-form-item label="检验类：">
-        <el-select v-model="addOrUpdateForm.inspectTypeId" filterable placeholder="请选择" @change="id => inspectChange(id)" style="width: 100%">
+        <el-select v-model="addOrUpdateForm.inspectTypeId" :disabled="addOrUpdateForm.id !== ''" filterable placeholder="请选择" @change="id => inspectChange(id)" style="width: 100%">
           <el-option v-for="item in inspect" :key="item.id" :label="item.inspectTypeName" :value="item.id" />
         </el-select>
       </el-form-item>
-      <el-form-item label="物料信息：" v-if="task === 1 || task === 2">
-        <el-select v-model="addOrUpdateForm.inspectMaterialCode" filterable placeholder="请选择" @change="val => materialChange(val)" style="width: 100%">
-          <el-option v-for="item in material" :key="item.id" :label="item.inspectGroupName" :value="item.inspectGroupCode" />
+      <el-form-item label="取样部门：" v-if="task === 'PROCESS'">
+        <el-select v-model="addOrUpdateForm.sampleDeptId" filterable placeholder="请选择" style="width: 100%" @change="id => deptChange(id)">
+          <el-option v-for="item in dept" :key="item.deptId" :label="item.deptName" :value="item.deptId" />
         </el-select>
       </el-form-item>
-      <el-form-item label="批次：" v-if="task === 1">
-        <!--<el-input v-model="addOrUpdateForm.inspectBatch"></el-input>-->
+      <el-form-item label="物料信息：" v-if="task === 'INCOMING' || task === 'PROCESS'">
+        <el-select v-model="addOrUpdateForm.inspectMaterialCode" :disabled="addOrUpdateForm.id !== ''" filterable placeholder="请选择" @change="val => materialChange(val)" style="width: 100%">
+          <el-option v-for="item in material" :key="item.id" :label="item.inspectMaterialCode + ' ' + item.inspectMaterialName" :value="item.inspectMaterialCode" />
+        </el-select>
+      </el-form-item>
+      <el-form-item label="批次：" v-if="task === 'INCOMING'">
         <el-select v-model="addOrUpdateForm.inspectBatch" filterable placeholder="请选择" style="width: 100%">
           <el-option v-for="item in batch" :key="item.id" :label="item.batch" :value="item.batch" />
         </el-select>
       </el-form-item>
-      <el-form-item label="生产订单：" v-if="task === 2">
-        <el-select v-model="addOrUpdateForm.order" filterable placeholder="请选择" style="width: 100%">
-          <el-option v-for="item in order" :key="item.id" :label="item.name" :value="item.id" />
+      <el-form-item label="生产订单：" v-if="task === 'PROCESS'">
+        <el-input v-model="addOrUpdateForm.orderNo" placeholder="请输入" />
+      </el-form-item>
+      <el-form-item label="品项：" v-if="task === 'INCOMING' || task === 'PROCESS'">
+        <el-input v-model="addOrUpdateForm.itemName" placeholder="请输入" disabled></el-input>
+      </el-form-item>
+      <el-form-item label="供应商：" v-if="task === 'INCOMING'">
+        <el-input v-model="addOrUpdateForm.supplier" placeholder="请输入" disabled></el-input>
+      </el-form-item>
+      <el-form-item label="取样信息：" v-if="task === 'PROCESS'">
+        <el-select v-model="addOrUpdateForm.sysHolderId" filterable placeholder="请选择" style="width: 100%" @change="id => sampleChange(id)">
+          <el-option v-for="item in samplingMessage" :key="item.id" :label="item.holderName" :value="item.id" />
         </el-select>
       </el-form-item>
-      <el-form-item label="品项：" v-if="task === 1 || task === 2">
-        <el-input v-model="addOrUpdateForm.itemName" disabled></el-input>
-      </el-form-item>
-      <el-form-item label="供应商：" v-if="task === 1">
-        <el-input v-model="addOrUpdateForm.supplier" disabled></el-input>
-      </el-form-item>
-      <el-form-item label="取样信息：" v-if="task === 2 || task === 3">
-        <el-select v-model="addOrUpdateForm.samplingMessage" filterable placeholder="请选择" style="width: 100%">
-          <el-option v-for="item in samplingMessage" :key="item.id" :label="item.name" :value="item.id" />
-        </el-select>
+      <el-form-item label="取样说明：" v-if="task === 'PROCESS' || task === 'ASSIST'">
+        <el-input v-model="addOrUpdateForm.sampleExplain" placeholder="请输入" ></el-input>
       </el-form-item>
     </el-form>
     <div style="margin-top: 10px;display: flex;justify-content: flex-end;">
@@ -169,39 +189,71 @@
       <el-button size="small" icon="el-icon-circle-check" type="primary" @click="updateFormSubmit">确定</el-button>
     </div>
   </el-dialog>
-  <printModuleThree :multipleSelection="selectionData" />
+  <printModule ref="printModuleRef"/>
 </template>
 
 <script lang="ts">
-import { defineComponent, reactive, ref, onMounted } from 'vue'
+import { defineComponent, reactive, ref, onMounted, getCurrentInstance, ComponentInternalInstance } from 'vue'
 import layoutTs from '@/components/layout/layoutTs'
 import {
+  DICT_DROPDOWN,
+  GET_WORKSHOP,
+  GET_HOLDER,
+  DROPDOWN_INSPECT_TYPE,
+  DROPDOWN_INSPECT_TYPE_DEPT,
+  DROPDOWN_INSPECT_TYPE_MATERIAL,
   GET_SAMPLE_SAMPLING_TASK_LIST,
-  SAMPLE_SAMPLING_TASK_ADD,
-  SAMPLE_SAMPLING_TASK_LIST
+  SAMPLE_SAMPLING_TASK_LIST,
+  SAMPLE_SAMPLING_TASK_ASSIST_UPDATE,
+  SAMPLE_SAMPLING_TASK_PROCESS_UPDATE,
+  SAMPLE_SAMPLING_TASK_DEL
 } from '@/api/api'
-import printModuleThree from '@/project/qms/pages/common/printModuleTwo.vue'
+import printModule from './printModule.vue'
 
+interface SamplingMessage{
+  id?: string
+  holderName?: string
+  holderNo?: string
+}
+interface DeptObj{
+  id?: string
+  deptName?: string
+  deptId?: string
+}
 interface MaterialObj{
   id: string
+  inspectMaterialType: string
   inspectGroupCode: string
   inspectGroupName: string
+  inspectMaterialCode: string
+  inspectMaterialName: string
+  itemName: string
+  inspectItemId: string
 }
 interface TableData{
   id?: string
   sampleCode?: string
-  inspectClassify?: string
+  inspectContent?: string
   taskStatus?: string
+  inspectClassify?: string
+  taskSampleClassify?: string
+  temporaryFlag?: string
   inspectTypeId?: string
-  inspectBatch?: string
+  sampleDeptId?: string
+  sampleDeptName?: string
+  inspectMaterialType?: string
   inspectMaterialCode?: string
   inspectMaterialName?: string
+  inspectBatch?: string
   itemId?: string
   itemName?: string
   supplierCode?: string
   supplier?: string
-  order?: string
-  samplingMessage?: string
+  orderNo?: string
+  sysHolderId?: string
+  holderNo?: string
+  sampleInformation?: string
+  sampleExplain?: string
   vehicleStatus?: string
   sampleAmount?: string
   packing?: string
@@ -210,16 +262,19 @@ interface TableData{
 export default defineComponent({
   name: 'SampleSampling',
   components: {
-    printModuleThree
+    printModule
   },
   setup () {
+    const ctx = getCurrentInstance() as ComponentInternalInstance
+    const proxy = ctx.proxy as any
     const { gotoPage } = layoutTs()
-    const task = ref(1) // 选择任务
-    const taskList = ref([]) // 任务汇总
+    const printModuleRef = ref()
+    const task = ref('INCOMING') // 选择任务
+    const taskList = ref<any[]>([]) // 任务汇总
     const addOrUpdateDialog = ref(false)
     const sampleInspectDialog = ref(false)
     const queryForm = reactive({
-      inspectClassify: '',
+      taskSampleClassify: '',
       inspectContent: '',
       taskStatus: '',
       sampleCode: '',
@@ -240,34 +295,38 @@ export default defineComponent({
     const inspect = ref<any[]>([])
     const material = ref<MaterialObj[]>([])
     const batch = ref([])
-    const order = ref([])
-    const samplingMessage = ref([])
+    const dept = ref<DeptObj[]>([])
+    const samplingMessage = ref<SamplingMessage[]>([])
+    const taskStatus = ref([])
 
     const selectionData = ref<TableData[]>([])
 
     // 获取任务数
     const getTask = async () => {
       const { data } = await GET_SAMPLE_SAMPLING_TASK_LIST()
-      console.log(data)
-      taskList.value = data.list
+      taskList.value = []
+      for (const key in data.data) {
+        switch (key.toString().toUpperCase()) {
+          case 'INCOMING': data.data[key].inspectClassifyName = '来料检验'; data.data[key].inspectClassify = key.toString().toUpperCase(); break
+          case 'PROCESS': data.data[key].inspectClassifyName = '制程检验'; data.data[key].inspectClassify = key.toString().toUpperCase(); break
+          case 'ASSIST': data.data[key].inspectClassifyName = '生产辅助检验'; data.data[key].inspectClassify = key.toString().toUpperCase(); break
+          case 'TEMP': data.data[key].inspectClassifyName = '临时检验'; data.data[key].inspectClassify = key.toString().toUpperCase(); break
+        }
+        taskList.value.push(data.data[key])
+      }
     }
     // 查询
     const query = async () => {
-      switch (task.value) {
-        case 1: queryForm.inspectClassify = '来料检验'; break
-        case 2: queryForm.inspectClassify = '制程检验'; break
-        case 3: queryForm.inspectClassify = '生产辅助检验'; break
-        case 4: queryForm.inspectClassify = '临时检验'; break
-      }
+      selectionData.value = []
+      queryForm.taskSampleClassify = task.value
       const res = await SAMPLE_SAMPLING_TASK_LIST(queryForm)
-      console.log(res.data.data)
       tableData.value = res.data.data.records
       queryForm.size = res.data.data.size
       queryForm.current = res.data.data.current
       queryForm.total = res.data.data.total
     }
     // 切换任务分类
-    const changeTask = (val: number) => {
+    const changeTask = (val: string) => {
       task.value = val
       queryForm.current = 1
       query()
@@ -280,13 +339,17 @@ export default defineComponent({
     }
     // 新建修改
     const addOrUpdate = (row?: TableData) => {
-      console.log(row)
       if (row) {
         addOrUpdateForm.value = { ...row }
       } else {
         addOrUpdateForm.value = {
           id: '',
+          taskSampleClassify: task.value,
+          temporaryFlag: '',
           inspectTypeId: '',
+          sampleDeptId: '',
+          sampleDeptName: '',
+          inspectMaterialType: '',
           inspectMaterialCode: '',
           inspectMaterialName: '',
           inspectBatch: '',
@@ -294,18 +357,15 @@ export default defineComponent({
           itemName: '',
           supplier: '',
           supplierCode: '',
-          order: '',
-          samplingMessage: '',
+          orderNo: '',
+          sysHolderId: '',
+          holderNo: '',
+          sampleInformation: '',
+          sampleExplain: '',
           vehicleStatus: '',
           sampleAmount: '',
           packing: '',
           handleMod: ''
-        }
-        switch (task.value) {
-          case 1: addOrUpdateForm.value.inspectClassify = '来料检验'; break
-          case 2: addOrUpdateForm.value.inspectClassify = '制程检验'; break
-          case 3: addOrUpdateForm.value.inspectClassify = '生产辅助检验'; break
-          case 4: addOrUpdateForm.value.inspectClassify = '临时检验'; break
         }
       }
       console.log(addOrUpdateForm.value)
@@ -320,47 +380,112 @@ export default defineComponent({
     const updateFormSubmit = async () => {
       addOrUpdateDialog.value = false
       sampleInspectDialog.value = false
-      await SAMPLE_SAMPLING_TASK_ADD(addOrUpdateForm.value)
+      if (addOrUpdateForm.value.id && task.value === 'PROCESS') {
+        await SAMPLE_SAMPLING_TASK_PROCESS_UPDATE(addOrUpdateForm.value)
+      } else if (addOrUpdateForm.value.id && task.value === 'ASSIST') {
+        await SAMPLE_SAMPLING_TASK_ASSIST_UPDATE(addOrUpdateForm.value)
+      }
+      proxy.$successToast('操作成功')
       query()
       getTask()
     }
 
-    // 获取检验类、取样信息、生产订单下拉
-    const getSelect = () => {
-      inspect.value = [{
-        id: '11',
-        inspectTypeName: '检验类名'
-      }]
-      order.value = []
-      samplingMessage.value = []
+    // 获取检验类、状态下拉
+    const getSelect = async () => {
+      try {
+        const { data } = await DICT_DROPDOWN({ dictType: 'TASK_STATUS' })
+        taskStatus.value = data.data
+      } catch (e) {}
+      try {
+        const { data } = await DROPDOWN_INSPECT_TYPE({ assistFlag: 'N' })
+        inspect.value = data.data
+      } catch (e) {}
     }
     // 检验类下拉改变获取对应物料信息
-    const inspectChange = (id: string) => {
-      console.log(id)
-      material.value = [{
-        id: '22',
-        inspectGroupName: '物料名',
-        inspectGroupCode: '物料编码'
-      }]
+    const inspectChange = async (id: string) => {
+      try {
+        const { data } = await DROPDOWN_INSPECT_TYPE_DEPT({ inspectTypeId: id })
+        dept.value = data.data
+      } catch (e) {}
+      try {
+        const { data } = await DROPDOWN_INSPECT_TYPE_MATERIAL({ inspectTypeId: id })
+        material.value = data.data
+      } catch (e) {}
+      addOrUpdateForm.value.inspectMaterialCode = ''
+      addOrUpdateForm.value.inspectMaterialName = ''
+      addOrUpdateForm.value.inspectMaterialType = ''
+      addOrUpdateForm.value.itemId = ''
+      addOrUpdateForm.value.itemName = ''
+    }
+    // 取样部门改变获取取样信息
+    const deptChange = async (id: string) => {
+      const deptObj = (dept.value.find(item => item.deptId === id) as DeptObj)
+      addOrUpdateForm.value.sampleDeptName = deptObj.deptName
+      try {
+        const { data } = await GET_WORKSHOP({ id: id })
+        if (data.data) {
+          const res = await GET_HOLDER({ deptId: data.data.id })
+          samplingMessage.value = res.data.data
+        }
+      } catch (e) {}
     }
     // 物料信息改变获取批次、品项、供应商
     const materialChange = (code: string) => {
-      console.log(code)
-      addOrUpdateForm.value.inspectMaterialName = (material.value.find(item => item.inspectGroupCode === code) as MaterialObj).inspectGroupName
-      batch.value = []
-      addOrUpdateForm.value.itemId = '33'
-      addOrUpdateForm.value.itemName = '品项'
-      addOrUpdateForm.value.supplier = '供应商'
-      addOrUpdateForm.value.supplierCode = '供应商编码'
+      const materialObj = (material.value.find(item => item.inspectMaterialCode === code) as MaterialObj)
+      addOrUpdateForm.value.inspectMaterialName = materialObj.inspectGroupName
+      addOrUpdateForm.value.inspectMaterialType = materialObj.inspectMaterialType
+      addOrUpdateForm.value.itemId = materialObj.inspectItemId
+      addOrUpdateForm.value.itemName = materialObj.itemName
+      // addOrUpdateForm.value.supplier = '供应商'
+      // addOrUpdateForm.value.supplierCode = '供应商编码'
+      // batch.value = []
     }
+    // 取样信息改变
+    const sampleChange = (id: string) => {
+      const samplingMessageObj = (samplingMessage.value.find(item => item.id === id) as SamplingMessage)
+      addOrUpdateForm.value.holderNo = samplingMessageObj.holderNo
+      addOrUpdateForm.value.sampleInformation = samplingMessageObj.holderName
+    }
+    // 表格复选框能否被选中逻辑
     const checkDate = (row: TableData) => {
-      if (!row.taskStatus) {
+      if (row.taskStatus !== 'UNSAMPLED') {
         return false
       }
       return true
     }
+    // 表格复选框改变
     const selectionChange = (val: TableData[]) => {
       selectionData.value = val
+    }
+    // 取样
+    const sampling = (row?:TableData) => {
+      if (row) {
+        printModuleRef.value.print([{
+          title: row.inspectContent,
+          subtitle: row.sampleInformation,
+          code: row.sampleCode
+        }])
+      } else if (selectionData.value.length) {
+        const data = selectionData.value.map(it => ({
+          title: it.inspectContent,
+          subtitle: it.sampleInformation,
+          code: it.sampleCode
+        }))
+        printModuleRef.value.print(data)
+      } else {
+        proxy.$warningToast('请选择数据')
+      }
+    }
+    const delRow = (row:TableData) => {
+      proxy.$confirm('是否删除，请确认', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(async () => {
+        await SAMPLE_SAMPLING_TASK_DEL({ taskSampleDeleteReqDto: row })
+        proxy.$successToast('操作成功')
+        await query()
+      })
     }
 
     onMounted(() => {
@@ -370,8 +495,10 @@ export default defineComponent({
     })
 
     return {
+      printModuleRef,
       task,
       taskList,
+      taskStatus,
       addOrUpdateDialog,
       sampleInspectDialog,
       queryForm,
@@ -381,16 +508,20 @@ export default defineComponent({
       inspect,
       material,
       batch,
-      order,
+      dept,
       samplingMessage,
       selectionData,
+      delRow,
+      sampling,
       checkDate,
       selectionChange,
       changeTask,
       goHistory,
       query,
       inspectChange,
+      deptChange,
       materialChange,
+      sampleChange,
       addOrUpdate,
       inspectClick,
       updateFormSubmit
@@ -416,6 +547,13 @@ export default defineComponent({
       font-size: 16px;
       font-weight: bold;
       color: #333333;
+      display: flex;
+      line-height: 22px;
+      .qmsIconfont{
+        width: 22px;
+        height: 22px;
+        margin-right: 3px;
+      }
     }
     &__flex{
       display: flex;
