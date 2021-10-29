@@ -38,7 +38,7 @@
       <el-table-column label="物料批次" prop="inspectBatch" min-width="150" :show-overflow-tooltip="true" />
       <el-table-column v-if="task === 'PROCESS'||task === 'ASSIST'" label="品项" prop="itemName" min-width="150" :show-overflow-tooltip="true" />
       <el-table-column v-if="task === 'PROCESS'||task === 'ASSIST'" label="订单" prop="orderNo" min-width="150" :show-overflow-tooltip="true" />
-      <el-table-column v-if="task === 'PROCESS'" label="取样信息" prop="sampleInformation" min-width="150" :show-overflow-tooltip="true" />
+      <el-table-column v-if="task === 'PROCESS'" label="取样信息" prop="inspectSiteName" min-width="150" :show-overflow-tooltip="true" />
       <el-table-column label="触发时间" prop="triggerDate" min-width="165" :show-overflow-tooltip="true" />
       <el-table-column label="送达时间" prop="deliveryDate" min-width="165" :show-overflow-tooltip="true" />
       <el-table-column label="完成时间" prop="finishDate" min-width="165" :show-overflow-tooltip="true" />
