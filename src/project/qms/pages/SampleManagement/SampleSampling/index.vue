@@ -69,7 +69,7 @@
         <template #default="scope">{{ `${scope.row.inspectMaterialCode} ${scope.row.inspectMaterialName}` }}</template>
       </el-table-column>
       <el-table-column v-if="task === 'PROCESS'" label="品项" prop="itemName" min-width="150" :show-overflow-tooltip="true" />
-      <el-table-column v-if="task === 'PROCESS'" label="取样信息" prop="sampleInformation" min-width="150" :show-overflow-tooltip="true" />
+      <el-table-column v-if="task === 'PROCESS'" label="取样信息" prop="inspectSiteName" min-width="150" :show-overflow-tooltip="true" />
       <el-table-column v-if="task === 'ASSIST'" label="取样说明" prop="sampleExplain" min-width="150" :show-overflow-tooltip="true" />
       <el-table-column v-if="task === 'INCOMING'" label="物料批次" prop="inspectBatch" min-width="150" :show-overflow-tooltip="true" />
       <el-table-column v-if="task === 'INCOMING'" label="供应商" prop="supplier" min-width="165" :show-overflow-tooltip="true" />
@@ -85,7 +85,7 @@
           <el-button v-if="task !== 'INCOMING' && task !== 'TEMP' && scope.row.taskStatus === 'UNSAMPLED'" type="text" icon="iconfont factory-luru" class="role__btn" @click="addOrUpdate(scope.row)">
             编辑
           </el-button>
-          <el-button v-if="scope.row.taskStatus === 'UNSAMPLED'" type="text" icon="qmsIconfont qms-jianyan3" class="role__btn" @click="sampling(scope.row)">
+          <el-button v-if="scope.row.taskStatus === 'UNSAMPLED' || scope.row.taskStatus === 'SAMPLING'" type="text" icon="qmsIconfont qms-jianyan3" class="role__btn" @click="sampling(scope.row)">
             取样
           </el-button>
           <el-button v-if="task !== 'TEMP' && scope.row.taskStatus === 'UNSAMPLED'" style="color: #EF4632" type="text" icon="el-icon-delete" class="role__btn" @click="delRow(scope.row)">
@@ -144,7 +144,7 @@
         <el-input v-model="addOrUpdateForm.supplier" placeholder="请输入" disabled></el-input>
       </el-form-item>
       <el-form-item label="取样信息：" v-if="task === 'PROCESS'">
-        <el-select v-model="addOrUpdateForm.sysHolderId" filterable placeholder="请选择" style="width: 100%" @change="id => sampleChange(id)">
+        <el-select v-model="addOrUpdateForm.inspectSiteId" filterable placeholder="请选择" style="width: 100%" @change="id => sampleChange(id)">
           <el-option v-for="item in samplingMessage" :key="item.id" :label="item.holderName" :value="item.id" />
         </el-select>
       </el-form-item>
@@ -193,7 +193,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, reactive, ref, onMounted, getCurrentInstance, ComponentInternalInstance } from 'vue'
+import { defineComponent, reactive, ref, onMounted, getCurrentInstance, ComponentInternalInstance, nextTick } from 'vue'
 import layoutTs from '@/components/layout/layoutTs'
 import {
   DICT_DROPDOWN,
@@ -206,7 +206,8 @@ import {
   SAMPLE_SAMPLING_TASK_LIST,
   SAMPLE_SAMPLING_TASK_ASSIST_UPDATE,
   SAMPLE_SAMPLING_TASK_PROCESS_UPDATE,
-  SAMPLE_SAMPLING_TASK_DEL
+  SAMPLE_SAMPLING_TASK_DEL,
+  SAMPLE_SAMPLING_TASK_SAMPLING
 } from '@/api/api'
 import printModule from './printModule.vue'
 
@@ -250,8 +251,8 @@ interface TableData{
   supplierCode?: string
   supplier?: string
   orderNo?: string
-  sysHolderId?: string
-  holderNo?: string
+  inspectSiteId?: string
+  inspectSiteName?: string
   sampleInformation?: string
   sampleExplain?: string
   vehicleStatus?: string
@@ -306,13 +307,15 @@ export default defineComponent({
       const { data } = await GET_SAMPLE_SAMPLING_TASK_LIST()
       taskList.value = []
       for (const key in data.data) {
-        switch (key.toString().toUpperCase()) {
-          case 'INCOMING': data.data[key].inspectClassifyName = '来料检验'; data.data[key].inspectClassify = key.toString().toUpperCase(); break
-          case 'PROCESS': data.data[key].inspectClassifyName = '制程检验'; data.data[key].inspectClassify = key.toString().toUpperCase(); break
-          case 'ASSIST': data.data[key].inspectClassifyName = '生产辅助检验'; data.data[key].inspectClassify = key.toString().toUpperCase(); break
-          case 'TEMP': data.data[key].inspectClassifyName = '临时检验'; data.data[key].inspectClassify = key.toString().toUpperCase(); break
+        if (data.data[key]) {
+          switch (key.toString().toUpperCase()) {
+            case 'INCOMING': data.data[key].inspectClassifyName = '来料检验'; data.data[key].inspectClassify = key.toString().toUpperCase(); break
+            case 'PROCESS': data.data[key].inspectClassifyName = '制程检验'; data.data[key].inspectClassify = key.toString().toUpperCase(); break
+            case 'ASSIST': data.data[key].inspectClassifyName = '生产辅助检验'; data.data[key].inspectClassify = key.toString().toUpperCase(); break
+            case 'TEMP': data.data[key].inspectClassifyName = '临时检验'; data.data[key].inspectClassify = key.toString().toUpperCase(); break
+          }
+          taskList.value.push(data.data[key])
         }
-        taskList.value.push(data.data[key])
       }
     }
     // 查询
@@ -338,9 +341,16 @@ export default defineComponent({
       })
     }
     // 新建修改
-    const addOrUpdate = (row?: TableData) => {
+    const addOrUpdate = async (row?: TableData) => {
+      addOrUpdateDialog.value = true
+      await nextTick()
       if (row) {
         addOrUpdateForm.value = { ...row }
+        await inspectChangeHttp(addOrUpdateForm.value.inspectTypeId)
+        if (task.value === 'PROCESS') {
+          await deptChangeHttp(addOrUpdateForm.value.sampleDeptId)
+          await materialChange(addOrUpdateForm.value.inspectMaterialCode)
+        }
       } else {
         addOrUpdateForm.value = {
           id: '',
@@ -358,8 +368,8 @@ export default defineComponent({
           supplier: '',
           supplierCode: '',
           orderNo: '',
-          sysHolderId: '',
-          holderNo: '',
+          inspectSiteId: '',
+          inspectSiteName: '',
           sampleInformation: '',
           sampleExplain: '',
           vehicleStatus: '',
@@ -369,7 +379,6 @@ export default defineComponent({
         }
       }
       console.log(addOrUpdateForm.value)
-      addOrUpdateDialog.value = true
     }
     // 检验
     const inspectClick = (row: TableData) => {
@@ -403,6 +412,30 @@ export default defineComponent({
     }
     // 检验类下拉改变获取对应物料信息
     const inspectChange = async (id: string) => {
+      await inspectChangeHttp(id)
+      if (task.value === 'PROCESS') {
+        addOrUpdateForm.value.sampleDeptId = ''
+        addOrUpdateForm.value.sampleDeptName = ''
+        addOrUpdateForm.value.inspectMaterialCode = ''
+        addOrUpdateForm.value.inspectMaterialName = ''
+        addOrUpdateForm.value.inspectMaterialType = ''
+        addOrUpdateForm.value.itemId = ''
+        addOrUpdateForm.value.itemName = ''
+        addOrUpdateForm.value.inspectSiteId = ''
+        addOrUpdateForm.value.inspectSiteName = ''
+        addOrUpdateForm.value.sampleInformation = ''
+      } else if (task.value === 'INCOMING') {
+        addOrUpdateForm.value.inspectMaterialCode = ''
+        addOrUpdateForm.value.inspectMaterialName = ''
+        addOrUpdateForm.value.inspectMaterialType = ''
+        addOrUpdateForm.value.itemId = ''
+        addOrUpdateForm.value.itemName = ''
+        addOrUpdateForm.value.inspectBatch = ''
+        addOrUpdateForm.value.supplier = ''
+        addOrUpdateForm.value.supplierCode = ''
+      }
+    }
+    const inspectChangeHttp = async (id?: string) => {
       try {
         const { data } = await DROPDOWN_INSPECT_TYPE_DEPT({ inspectTypeId: id })
         dept.value = data.data
@@ -411,16 +444,17 @@ export default defineComponent({
         const { data } = await DROPDOWN_INSPECT_TYPE_MATERIAL({ inspectTypeId: id })
         material.value = data.data
       } catch (e) {}
-      addOrUpdateForm.value.inspectMaterialCode = ''
-      addOrUpdateForm.value.inspectMaterialName = ''
-      addOrUpdateForm.value.inspectMaterialType = ''
-      addOrUpdateForm.value.itemId = ''
-      addOrUpdateForm.value.itemName = ''
     }
     // 取样部门改变获取取样信息
     const deptChange = async (id: string) => {
       const deptObj = (dept.value.find(item => item.deptId === id) as DeptObj)
       addOrUpdateForm.value.sampleDeptName = deptObj.deptName
+      addOrUpdateForm.value.inspectSiteId = ''
+      addOrUpdateForm.value.inspectSiteName = ''
+      addOrUpdateForm.value.sampleInformation = ''
+      await deptChangeHttp(id)
+    }
+    const deptChangeHttp = async (id?: string) => {
       try {
         const { data } = await GET_WORKSHOP({ id: id })
         if (data.data) {
@@ -430,7 +464,7 @@ export default defineComponent({
       } catch (e) {}
     }
     // 物料信息改变获取批次、品项、供应商
-    const materialChange = (code: string) => {
+    const materialChange = (code?: string) => {
       const materialObj = (material.value.find(item => item.inspectMaterialCode === code) as MaterialObj)
       addOrUpdateForm.value.inspectMaterialName = materialObj.inspectGroupName
       addOrUpdateForm.value.inspectMaterialType = materialObj.inspectMaterialType
@@ -438,17 +472,17 @@ export default defineComponent({
       addOrUpdateForm.value.itemName = materialObj.itemName
       // addOrUpdateForm.value.supplier = '供应商'
       // addOrUpdateForm.value.supplierCode = '供应商编码'
+      // addOrUpdateForm.value.inspectBatch = ''
       // batch.value = []
     }
     // 取样信息改变
     const sampleChange = (id: string) => {
       const samplingMessageObj = (samplingMessage.value.find(item => item.id === id) as SamplingMessage)
-      addOrUpdateForm.value.holderNo = samplingMessageObj.holderNo
-      addOrUpdateForm.value.sampleInformation = samplingMessageObj.holderName
+      addOrUpdateForm.value.inspectSiteName = samplingMessageObj.holderName
     }
     // 表格复选框能否被选中逻辑
     const checkDate = (row: TableData) => {
-      if (row.taskStatus !== 'UNSAMPLED') {
+      if (row.taskStatus !== 'UNSAMPLED' && row.taskStatus !== 'SAMPLING') {
         return false
       }
       return true
@@ -458,13 +492,17 @@ export default defineComponent({
       selectionData.value = val
     }
     // 取样
-    const sampling = (row?:TableData) => {
+    const sampling = async (row?:TableData) => {
       if (row) {
         printModuleRef.value.print([{
           title: row.inspectContent,
           subtitle: row.sampleInformation,
           code: row.sampleCode
         }])
+        if (row.taskStatus === 'UNSAMPLED') {
+          await SAMPLE_SAMPLING_TASK_SAMPLING([row])
+          query()
+        }
       } else if (selectionData.value.length) {
         const data = selectionData.value.map(it => ({
           title: it.inspectContent,
@@ -472,6 +510,17 @@ export default defineComponent({
           code: it.sampleCode
         }))
         printModuleRef.value.print(data)
+        // SAMPLE_SAMPLING_TASK_SAMPLING(selectionData.value)
+        const httpData:TableData[] = []
+        selectionData.value.forEach(it => {
+          if (it.taskStatus === 'UNSAMPLED') {
+            httpData.push(it)
+          }
+        })
+        if (httpData.length) {
+          await SAMPLE_SAMPLING_TASK_SAMPLING(httpData)
+          query()
+        }
       } else {
         proxy.$warningToast('请选择数据')
       }
