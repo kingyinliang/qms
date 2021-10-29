@@ -1,5 +1,12 @@
 <template>
   <mds-card :title="title" :name="'org'" :pack-up="false" style="margin-bottom: 0; background: #fff;">
+    <el-row style="padding:10px 0;">
+      <el-col>
+          <div>
+            <slot name="out-header" />
+          </div>
+      </el-col>
+    </el-row>
     <el-row :gutter="20">
       <el-col :span="8">
         <div class="org-card">
