@@ -24,6 +24,9 @@ export function SAMPLE_SAMPLING_TASK_PROCESS_UPDATE (params = {}):Promise<AxiosR
 export function SAMPLE_SAMPLING_TASK_DEL (params = {}):Promise<AxiosResponse> {
   return Http.post('/taskSample/deleteTaskSample', params, { baseURL })
 }
+export function SAMPLE_SAMPLING_TASK_SAMPLING (params = {}):Promise<AxiosResponse> {
+  return Http.post('/taskSample/sampleTaskSample', params, { baseURL })
+}
 
 export function SAMPLE_HANDOVER_QUERY (params = {}):Promise<AxiosResponse> {
   return Http.get('/taskSample/queryTaskSampleBySampleCode', params, { baseURL })
