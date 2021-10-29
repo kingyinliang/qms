@@ -11,11 +11,11 @@
       </div>
     </template>
     <el-table border ref="multipleTable" :cell-style="{'text-align':'center'}" :data="dataTopicMainData" tooltip-effect="dark" style="width: 100%" @selection-change="handleSelectionChange" max-height="400">
-      <el-table-column type="selection" width="45" />
+      <el-table-column type="selection" width="55" align="center" />
       <el-table-column type="index" label="序号" :index="(index) => index + 1 + (currentPage - 1) * pageSize" width="50" />
       <el-table-column label="参数名称" show-overflow-tooltip prop="paramSubscriptCode" />
       <el-table-column label="下标" show-overflow-tooltip prop="paramSubscript" />
-      <el-table-column label="过程参数" show-overflow-tooltip >
+      <el-table-column label="过程参数" show-overflow-tooltip>
         <template #default="scope">
           <span>{{scope.row.paramCode.split('[')[0]}}<sub v-if="scope.row.paramCode.paramSubscript!==''">{{scope.row.paramCode.split('[')[1].replace(']','')}}</sub></span>
         </template>
@@ -58,10 +58,10 @@
           <el-input v-model="addAndEditItemForm.paramSubscript" maxlength="5" class="inputWidth" placeholder="请输入" autocomplete="off" @change="addAndEditItemForm.paramCode=addAndEditItemForm.paramSubscriptCode+'['+addAndEditItemForm.paramSubscript+']'"></el-input>
         </el-form-item> -->
         <el-form-item label="参数名称："  prop="paramSubscriptCode" :label-width="cssForformLabelWidth">
-          <el-input v-model="addAndEditItemForm.paramSubscriptCode" maxlength="10" class="inputWidth" placeholder="请输入" autocomplete="off" @change="addAndEditItemForm.paramCode=addAndEditItemForm.paramSubscriptCode+'['+addAndEditItemForm.paramSubscript+']'"></el-input>
+          <el-input v-model="addAndEditItemForm.paramSubscriptCode" maxlength="10" oninput="value=value.replace(/\s*/g,'')" class="inputWidth" placeholder="请输入" autocomplete="off" @change="addAndEditItemForm.paramCode=addAndEditItemForm.paramSubscriptCode+'['+addAndEditItemForm.paramSubscript+']'"></el-input>
         </el-form-item>
         <el-form-item label="下标：" prop="paramSubscript" :label-width="cssForformLabelWidth">
-          <el-input v-model="addAndEditItemForm.paramSubscript" maxlength="5" class="inputWidth" placeholder="请输入" autocomplete="off" @change="addAndEditItemForm.paramCode=addAndEditItemForm.paramSubscriptCode+'['+addAndEditItemForm.paramSubscript+']'"></el-input>
+          <el-input v-model="addAndEditItemForm.paramSubscript" maxlength="5" oninput="value=value.replace(/\s*/g,'')" class="inputWidth" placeholder="请输入" autocomplete="off" @change="addAndEditItemForm.paramCode=addAndEditItemForm.paramSubscriptCode+'['+addAndEditItemForm.paramSubscript+']'"></el-input>
         </el-form-item>
         <el-form-item label="过程参数：" prop="paramCode"  :label-width="cssForformLabelWidth">
            <div class="fake-input-disabled">

@@ -1,5 +1,12 @@
 <template>
   <mds-card :title="title" :name="'org'" :pack-up="false" style="margin-bottom: 0; background: #fff;">
+    <el-row style="padding:10px 0;">
+      <el-col>
+          <div>
+            <slot name="out-header" />
+          </div>
+      </el-col>
+    </el-row>
     <el-row :gutter="20">
       <el-col :span="8">
         <div class="org-card">
@@ -7,7 +14,7 @@
             {{ leftTitle }}
           </div>
           <div class="filter-input">
-            <el-input v-model="filterText" placeholder="输入名称搜索" size="small">
+            <el-input v-model="filterText" :placeholder="searchPlaceHolder" size="small">
               <template #suffix>
                 <em class="el-input__icon el-icon-search" />
               </template>
@@ -70,6 +77,12 @@ export default defineComponent({
       type: String,
       default: function () {
         return '标题'
+      }
+    },
+    searchPlaceHolder: {
+      type: String,
+      default: function () {
+        return '输入名称搜索'
       }
     },
     leftTitle: {

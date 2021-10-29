@@ -24,7 +24,7 @@
           <el-button icon="el-icon-plus" class="topic-button" type="primary" size="small" @click="btnClickItemAddOrEditForTopicMainData('add',{})" :disabled="!currentFocusTargetObj.canAdd" >新增</el-button>
           <el-button icon="el-icon-delete" class="topic-button" type="danger" size="small"  @click="btnClickItemsDeleteForTopicMainData" :disabled="!currentFocusTargetObj.canDelete">批量删除</el-button>
           <el-button icon="el-icon-news" class="topic-button" type="primary" size="small" @click="btnClickGenerateForTopicMainData" :disabled="!currentFocusTargetObj.canGenerate">生成</el-button>
-          <el-button icon="el-icon-edit" class="topic-button" type="primary" size="small" @click="btnClickItemBatchEditForTopicMainData">编辑</el-button>
+          <el-button icon="el-icon-edit" class="topic-button" type="primary" size="small" @click="btnClickItemBatchEditForTopicMainData" :disabled="!currentFocusTargetObj.canEdit">编辑</el-button>
         </template>
       </div>
      <el-table
@@ -35,21 +35,21 @@
         class="bueatyScroll"
         style="width: 100%;"
         @selection-change="handleSelectionChange">
-        <el-table-column type="selection" width="55" />
+        <el-table-column type="selection" width="55" align="center" />
         <el-table-column type="index" :index="index => index + 1 + (Number(currentPage) - 1) * (Number(pageSize))" label="序号"  width="55"  align="center" size="small" fixed />
         <el-table-column label="物料/类别" prop="inspectMaterialTypeName" :show-overflow-tooltip="true" min-width="180" />
         <el-table-column label="指标编码" prop="indexCode" :show-overflow-tooltip="true" min-width="100" />
         <el-table-column label="指标名称" prop="indexName" :show-overflow-tooltip="true" min-width="180" />
         <el-table-column label="单位" prop="indexUnit" :show-overflow-tooltip="true" min-width="100" />
-        <el-table-column label="方法" prop="indexMe thod" :show-overflow-tooltip="true" min-width="220" />
-        <el-table-column label="取样部门" prop="cooperate" :show-overflow-tooltip="true" min-width="108" >
-          <template #default="scope">
-            {{scope.row.cooperate}}
-          </template>
-        </el-table-column>
-        <el-table-column label="配合取样" prop="sample" :show-overflow-tooltip="true" min-width="100" >
+        <el-table-column label="方法" prop="indexMethod" :show-overflow-tooltip="true" min-width="220" />
+        <el-table-column label="取样部门" prop="sample" :show-overflow-tooltip="true" min-width="100" >
           <template #default="scope">
             {{scope.row.sample}}
+          </template>
+        </el-table-column>
+        <el-table-column label="配合取样" prop="cooperate" :show-overflow-tooltip="true" min-width="108" >
+          <template #default="scope">
+            {{scope.row.cooperate}}
           </template>
         </el-table-column>
         <el-table-column label="检验部门" prop="inspect.deptName" :show-overflow-tooltip="true" min-width="100" />
@@ -142,12 +142,12 @@
             :tree-props="{ label: 'deptName', children: 'children' }"
           />
       </el-form-item>
-      <el-form-item label="取样部门：" prop="cooperate" :label-width="cssForformLabelWidth">
-          <el-input v-model="formGlobleItem.cooperate" class="140px" autocomplete="off" maxlength="10" :disabled="true" placeholder="暂无内容"></el-input>
-      </el-form-item>
-      <el-form-item label="配合取样：" prop="sample" :label-width="cssForformLabelWidth">
+       <el-form-item label="取样部门：" prop="sample" :label-width="cssForformLabelWidth">
           <el-input v-model="formGlobleItem.sample" class="140px" autocomplete="off" maxlength="10" :disabled="true"  placeholder="暂无内容"></el-input>
         </el-form-item>
+      <el-form-item label="配合取样：" prop="cooperate" :label-width="cssForformLabelWidth">
+          <el-input v-model="formGlobleItem.cooperate" class="140px" autocomplete="off" maxlength="10" :disabled="true" placeholder="暂无内容"></el-input>
+      </el-form-item>
       <el-form-item label="检验频次：" prop="frequencyId" :label-width="cssForformLabelWidth">
         <el-select v-model="formGlobleItem.frequencyId" placeholder="请选择" style="width:100%" filterable @change="handleSelectFrequencyChange" clearable>
           <el-option v-for="(opt, optIndex) in frequencyIdOptions" :key="optIndex" :label="opt.frequencyName" :value="opt.id" />
@@ -538,8 +538,8 @@ export default defineComponent({
         indexName: '', // 指标名称
         indexUnit: '', // 单位
         indexMethod: '', // 方法
-        sample: '', // x配合取样
-        cooperate: '', // x取样部门
+        sample: '', // x取样部门
+        cooperate: '', // x配合取样
         sampleAmount: null, // 留样数量
         frequencyName: '', // 检验频次
         frequencyId: '',
@@ -679,8 +679,8 @@ export default defineComponent({
           indexName: '', // 指标名称
           indexUnit: '', // 单位
           indexMethod: '', // 方法
-          sample: '', // x配合取样
-          cooperate: '', // x取样部门
+          sample: '', // x取样部门
+          cooperate: '', // x配合取样
           sampleAmount: 0, // 留样数量 // v
           frequencyName: '', // 检验频次
           frequencyId: '',
@@ -712,8 +712,8 @@ export default defineComponent({
           indexName: row.indexName, // 指标名称
           indexUnit: row.indexUnit, // 单位
           indexMethod: row.indexMethod, // 方法
-          sample: row.sample, // x配合取样
-          cooperate: row.cooperate, // x取样部门
+          sample: row.sample, // x取样部门
+          cooperate: row.cooperate, // x配合取样
           sampleAmount: 0, // 留样数量 // v
           frequencyName: row.frequencyName, // 检验频次
           frequencyId: row.frequencyId,
@@ -746,8 +746,8 @@ export default defineComponent({
         indexName: '', // 指标名称
         indexUnit: '', // 单位
         indexMethod: '', // 方法
-        sample: '', // x配合取样
-        cooperate: '', // x取样部门
+        sample: '', // x取样部门
+        cooperate: '', // x配合取样
         sampleAmount: 0, // 留样数量 // v
         frequencyName: '', // 检验频次
         frequencyId: '',
@@ -867,7 +867,7 @@ export default defineComponent({
         }
 
         if (data[i].parentId === '0') { // 第一级
-          data[i].canEdit = true // 是否可编辑
+          data[i].canEdit = false // 是否可编辑
           data[i].canDelete = false // 是否可删除
           data[i].canAdd = false // 是否可新增
           data[i].canGenerate = false // 是否可生成
@@ -988,10 +988,10 @@ export default defineComponent({
 
     // [BTN:批次编辑]
     const btnClickItemBatchEditForTopicMainData = async () => {
-      if (!state.multipleSelection.length) {
-        proxy.$warningToast('请选择数据')
-        return
-      }
+      // if (!state.multipleSelection.length) {
+      //   proxy.$warningToast('请选择数据')
+      //   return
+      // }
 
       state.isBatchEditDialogShow = true
       await getDropDownOptions() // 获取下拉
@@ -1023,7 +1023,7 @@ export default defineComponent({
           deptId: '',
           deptName: ''
         },
-        planConfigureIds: state.multipleSelection
+        planConfigureIds: state.multipleSelection.length ? state.multipleSelection : state.topicMainData.map(item => item.id)
       }
       // await rewriteFormData(act) // 获取下拉与改值
     }
@@ -1201,17 +1201,19 @@ export default defineComponent({
       }
       if (!state.formBatchEditItems.inspectListChecked) {
         state.formBatchEditItems.inspectList = []
-        state.formBatchEditItems.inspect = {
-          deptId: '',
-          deptName: ''
-        }
+        // state.formBatchEditItems.inspect = {
+        //   deptId: '',
+        //   deptName: ''
+        // }
+        state.formBatchEditItems.inspect = null
       }
       if (!state.formBatchEditItems.coInspectListChecked) {
         state.formBatchEditItems.coInspectList = []
-        state.formBatchEditItems.coInspect = {
-          deptId: '',
-          deptName: ''
-        }
+        // state.formBatchEditItems.coInspect = {
+        //   deptId: '',
+        //   deptName: ''
+        // }
+        state.formBatchEditItems.coInspect = null
       }
 
       if (state.formBatchEditItems.coInspectListChecked) {
@@ -1229,12 +1231,14 @@ export default defineComponent({
           deptName: tempinspectObj.length ? tempinspectObj[0].deptName : ''
         }
       }
-      await MANAGEMENT_INSPECTION_PLAN_CONFIGURATION_PLAN_BATCH_UPDATE_API({
-        ...state.formBatchEditItems
-      })
+      if (state.formBatchEditItems.frequencyIdChecked || state.formBatchEditItems.keyIndexFlagChecked || state.formBatchEditItems.mergeFlagChecked || state.formBatchEditItems.loopFlagChecked || state.formBatchEditItems.timingFlagChecked || state.formBatchEditItems.inspectListChecked || state.formBatchEditItems.coInspectListChecked) {
+        await MANAGEMENT_INSPECTION_PLAN_CONFIGURATION_PLAN_BATCH_UPDATE_API({
+          ...state.formBatchEditItems
+        })
 
-      proxy.$successToast('操作成功')
-      getBaseData() // reload
+        proxy.$successToast('操作成功')
+        getBaseData() // reload
+      }
       btnClickItemClearForDialog('refBatchEditItems')
     }
 
@@ -1287,7 +1291,7 @@ export default defineComponent({
       for (const item of menuTreeList) {
         if (item.isFinalNode === true) {
           container.push(item)
-        } else if (item.children.length > 0) {
+        } else if (item.children && item.children.length > 0) {
           getEndNodeItems(item.children, container)
         }
       }
