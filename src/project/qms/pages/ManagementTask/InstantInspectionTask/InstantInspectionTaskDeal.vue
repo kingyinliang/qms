@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-10-15 20:07:53
  * @LastEditors: Telliex
- * @LastEditTime: 2021-10-28 17:07:50
+ * @LastEditTime: 2021-10-29 11:51:39
 -->
 <template>
 <div class="k-box-card" style="padding:20px 0;">
@@ -92,7 +92,7 @@
       </el-table-column>
       <el-table-column label="检验方法" show-overflow-tooltip prop="inspectMethod" min-width="150">
         <template #default="scope">
-          <el-select v-model="scope.row.inspectMethod" placeholder="请选择" size="small" clearable @focus="actFocusGetInspectMethodOptions(scope.row)" :disabled="!scope.row.isRedact">
+          <el-select v-model="scope.row.inspectMethod" placeholder="请选择" size="small" clearable @focus="actFocusGetInspectMethodOptions(scope.row)" @change="val=>actChangeGetInspectMethodOptions(val,scope.row)" :disabled="!scope.row.isRedact">
             <el-option
               v-for="item in scope.row.inspectMethodOptions"
               :key="item.id"
@@ -188,8 +188,6 @@
           <el-input v-model="scope.row.inspectExplain" class="140px" autocomplete="off" size="small" ></el-input>
         </template>
       </el-table-column>
-      <el-table-column label="检验部门" show-overflow-tooltip prop="inspectDeptIdList" width="220"></el-table-column>
-
       <el-table-column label="检验部门" show-overflow-tooltip prop="inspectDeptIdList" width="220">
         <template #header>
           <span class="required">检验部门</span>
@@ -229,7 +227,6 @@
       </el-popover>
         </template>
       </el-table-column>
-      <el-table-column label="检验部门" show-overflow-tooltip prop="inspectDeptName" width="220"></el-table-column>
     </el-table>
   </mds-card>
   <!-- 展示 -->
@@ -686,13 +683,12 @@ export default defineComponent({
         state.dataTableOfInspectIndexBuild.forEach((item, index) => {
           if (item.id === '') { // 新增
             tempAdd.push(item)
-          }
-
-          const tempItem = JSON.parse(JSON.stringify(item))
-          delete tempItem.isRedact
-
-          if (!_.isEqual(state.dataOrgTableOfInspectIndexBuild[index], tempItem)) {
-            tempEdit.push(tempItem)
+          } else {
+            const tempItem = JSON.parse(JSON.stringify(item))
+            delete tempItem.isRedact
+            if (!_.isEqual(state.dataOrgTableOfInspectIndexBuild[index], tempItem)) {
+              tempEdit.push(tempItem)
+            }
           }
         })
 
@@ -887,6 +883,15 @@ export default defineComponent({
       }).then((res) => {
         // state.inspectMethodOptions = res.data.data
         row.inspectMethodOptions = res.data.data
+      })
+    }
+    // TODO
+    const actChangeGetInspectMethodOptions = (val:string, row:any) => {
+      row.inspectMethodOptions.forEach((item:any) => {
+        if (val === item.id) {
+          row.inspectMethodCode = item.inspectMethodCode
+          row.inspectMethodName = item.inspectMethodName
+        }
       })
     }
 
@@ -1150,6 +1155,7 @@ export default defineComponent({
       btnConfirmItemOfDialog,
       actFocusGetInspectMethodOptions,
       actChangeInspectIndexOptions,
+      actChangeGetInspectMethodOptions,
       setOrGetData,
       // act
       actReset,
