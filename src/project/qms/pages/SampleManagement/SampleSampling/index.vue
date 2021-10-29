@@ -496,7 +496,7 @@ export default defineComponent({
       if (row) {
         printModuleRef.value.print([{
           title: row.inspectContent,
-          subtitle: row.sampleInformation,
+          subtitle: row.inspectSiteName,
           code: row.sampleCode
         }])
         if (row.taskStatus === 'UNSAMPLED') {
@@ -506,7 +506,7 @@ export default defineComponent({
       } else if (selectionData.value.length) {
         const data = selectionData.value.map(it => ({
           title: it.inspectContent,
-          subtitle: it.sampleInformation,
+          subtitle: it.inspectSiteName,
           code: it.sampleCode
         }))
         printModuleRef.value.print(data)
