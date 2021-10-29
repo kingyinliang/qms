@@ -680,7 +680,6 @@ export default defineComponent({
       return res
     }
 
-    // TODO
     const parameterTreeNodeClick = () => {
       state.parameterTreeCheckNodes = parameterTreeRef.value.getCheckedNodes(false)
       state.parameterTreeSslected = state.parameterTreeCheckNodes.map((it: any) => it.id)
@@ -703,7 +702,6 @@ export default defineComponent({
         }
       })
     }
-    // TODO
     // [BTN:编辑][BTN:新增][参数明细]
     const handleParameterItem = (row:TopicMainData) => {
       if (row) { // 编辑
@@ -763,7 +761,6 @@ export default defineComponent({
       return data.inspectTypeName.indexOf(value) !== -1
     }
 
-    // TODO
     // [参数明细][关联项] 下拉弹窗缩回消失
     const popperHide = () => {
       if (state.parameterTreeCheckNodes.length !== 0) {

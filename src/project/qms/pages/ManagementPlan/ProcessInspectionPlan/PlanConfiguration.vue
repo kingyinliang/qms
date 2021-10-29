@@ -42,14 +42,14 @@
         <el-table-column label="指标名称" prop="indexName" :show-overflow-tooltip="true" min-width="180" />
         <el-table-column label="单位" prop="indexUnit" :show-overflow-tooltip="true" min-width="100" />
         <el-table-column label="方法" prop="indexMethod" :show-overflow-tooltip="true" min-width="220" />
-        <el-table-column label="取样部门" prop="cooperate" :show-overflow-tooltip="true" min-width="108" >
-          <template #default="scope">
-            {{scope.row.cooperate}}
-          </template>
-        </el-table-column>
-        <el-table-column label="配合取样" prop="sample" :show-overflow-tooltip="true" min-width="100" >
+        <el-table-column label="取样部门" prop="sample" :show-overflow-tooltip="true" min-width="100" >
           <template #default="scope">
             {{scope.row.sample}}
+          </template>
+        </el-table-column>
+        <el-table-column label="配合取样" prop="cooperate" :show-overflow-tooltip="true" min-width="108" >
+          <template #default="scope">
+            {{scope.row.cooperate}}
           </template>
         </el-table-column>
         <el-table-column label="检验部门" prop="inspect.deptName" :show-overflow-tooltip="true" min-width="100" />
@@ -142,12 +142,12 @@
             :tree-props="{ label: 'deptName', children: 'children' }"
           />
       </el-form-item>
-      <el-form-item label="取样部门：" prop="cooperate" :label-width="cssForformLabelWidth">
-          <el-input v-model="formGlobleItem.cooperate" class="140px" autocomplete="off" maxlength="10" :disabled="true" placeholder="暂无内容"></el-input>
-      </el-form-item>
-      <el-form-item label="配合取样：" prop="sample" :label-width="cssForformLabelWidth">
+       <el-form-item label="取样部门：" prop="sample" :label-width="cssForformLabelWidth">
           <el-input v-model="formGlobleItem.sample" class="140px" autocomplete="off" maxlength="10" :disabled="true"  placeholder="暂无内容"></el-input>
         </el-form-item>
+      <el-form-item label="配合取样：" prop="cooperate" :label-width="cssForformLabelWidth">
+          <el-input v-model="formGlobleItem.cooperate" class="140px" autocomplete="off" maxlength="10" :disabled="true" placeholder="暂无内容"></el-input>
+      </el-form-item>
       <el-form-item label="检验频次：" prop="frequencyId" :label-width="cssForformLabelWidth">
         <el-select v-model="formGlobleItem.frequencyId" placeholder="请选择" style="width:100%" filterable @change="handleSelectFrequencyChange" clearable>
           <el-option v-for="(opt, optIndex) in frequencyIdOptions" :key="optIndex" :label="opt.frequencyName" :value="opt.id" />
@@ -538,8 +538,8 @@ export default defineComponent({
         indexName: '', // 指标名称
         indexUnit: '', // 单位
         indexMethod: '', // 方法
-        sample: '', // x配合取样
-        cooperate: '', // x取样部门
+        sample: '', // x取样部门
+        cooperate: '', // x配合取样
         sampleAmount: null, // 留样数量
         frequencyName: '', // 检验频次
         frequencyId: '',
@@ -679,8 +679,8 @@ export default defineComponent({
           indexName: '', // 指标名称
           indexUnit: '', // 单位
           indexMethod: '', // 方法
-          sample: '', // x配合取样
-          cooperate: '', // x取样部门
+          sample: '', // x取样部门
+          cooperate: '', // x配合取样
           sampleAmount: 0, // 留样数量 // v
           frequencyName: '', // 检验频次
           frequencyId: '',
@@ -712,8 +712,8 @@ export default defineComponent({
           indexName: row.indexName, // 指标名称
           indexUnit: row.indexUnit, // 单位
           indexMethod: row.indexMethod, // 方法
-          sample: row.sample, // x配合取样
-          cooperate: row.cooperate, // x取样部门
+          sample: row.sample, // x取样部门
+          cooperate: row.cooperate, // x配合取样
           sampleAmount: 0, // 留样数量 // v
           frequencyName: row.frequencyName, // 检验频次
           frequencyId: row.frequencyId,
@@ -746,8 +746,8 @@ export default defineComponent({
         indexName: '', // 指标名称
         indexUnit: '', // 单位
         indexMethod: '', // 方法
-        sample: '', // x配合取样
-        cooperate: '', // x取样部门
+        sample: '', // x取样部门
+        cooperate: '', // x配合取样
         sampleAmount: 0, // 留样数量 // v
         frequencyName: '', // 检验频次
         frequencyId: '',
@@ -1291,7 +1291,7 @@ export default defineComponent({
       for (const item of menuTreeList) {
         if (item.isFinalNode === true) {
           container.push(item)
-        } else if (item.children.length > 0) {
+        } else if (item.children && item.children.length > 0) {
           getEndNodeItems(item.children, container)
         }
       }

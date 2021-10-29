@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-07-30 11:24:46
  * @LastEditors: Telliex
- * @LastEditTime: 2021-10-13 20:18:25
+ * @LastEditTime: 2021-10-29 09:11:35
 -->
 <template>
   <mds-card class="test_method" :title="title" :pack-up="false" style="margin-bottom: 0; background: #fff;">
@@ -48,9 +48,6 @@
         </template>
       </el-table-column>
       <el-table-column label="单位" min-width="110" show-overflow-tooltip>
-        <template #header>
-          <span class="required">单位</span>
-        </template>
         <template #default="scope">
           <el-select v-model="scope.row.paramUnit" size="small" :disabled="!isRedact" :placeholder="!isRedact?'':'请选择'" clearable>
                 <el-option
@@ -616,7 +613,7 @@ export default defineComponent({
             return false
           }
         }
-        if (item.paramSubscriptCode === '' || item.paramUnit === '') {
+        if (item.paramSubscriptCode === '') {
           proxy.$warningToast('请完整录入栏位')
           return false
         }
@@ -770,7 +767,6 @@ export default defineComponent({
         }
       })
     }
-    // TODO
     // [SELECT:过程参数][Event:change]
     const focusParamSubscriptOptions = (val:string, row:any) => {
       console.log(row)
@@ -890,7 +886,6 @@ export default defineComponent({
       return target
     }
 
-    // TODO
     // rule: 1.需排除已维护参数类型为“结果”的过程参数
     //       2.排除自己
     const focusParentParamSubscriptOptions = (val:any, row:ImportData) => {
