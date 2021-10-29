@@ -5,6 +5,7 @@
     :leftTitle="pageLeftColumnTitle"
     :rightTitle="pageRightColumnTitle"
     :treeData="treeData"
+    :searchPlaceHolder="'输入检验名称搜索'"
     :nodeKey="'inspectMethodId'"
     :treeProps="{ label: 'inspect',children:'inspectGroups' }"
     @treeNodeClick="val=>{return getMaterialDetail('default',val,'')}"
@@ -90,7 +91,7 @@
     <!--参数配置-->
     <template v-if="mainDialog.title==='参数配置'">
       <el-form :model="addParameterGroupform">
-        <el-form-item v-if="addParameterGroupform.id!==''" label="编码：" prop="parameterGroupCode" :label-width="'140px'" >
+        <el-form-item v-if="addParameterGroupform.id" label="编码：" prop="parameterGroupCode" :label-width="'140px'" >
           <el-input v-model="addParameterGroupform.parameterGroupCode" class="140px" autocomplete="off" :disabled="true" placeholder="自动带出"></el-input>
         </el-form-item>
         <el-form-item label="过程参数组：" prop="parameterGroupName" :label-width="'140px'" class="required">
@@ -112,10 +113,10 @@
                       <el-tooltip
                       effect="dark"
                       :content="parameterTreeSelectedString"
-                      :disabled="parameterTreeSelectedString===''"
+                      :disabled="!parameterTreeSelectedString"
                       placement="top"
                     >
-                      <input class="el-input__inner" type="botton" readonly autocomplete="off" placeholder="请选择" v-model="parameterTreeSelectedString"  >
+                        <input class="el-input__inner" type="botton" readonly autocomplete="off" placeholder="请选择" v-model="parameterTreeSelectedString"  >
                       </el-tooltip>
                       <span class="el-input__suffix">
                         <span class="el-input__suffix-inner">
@@ -768,7 +769,6 @@ export default defineComponent({
         // const temp:string[] = [...new Set(parameterTreeCheckTranslater(state.parameterTreeCheckNodes, 'id', 'parentId').map((it: any) => it.location))]
         state.parameterTreeSelectedString = [...new Set(temp)].join(',')
       } else {
-        console.log('bbbbbb')
         state.parameterTreeSelectedString = ''
       }
     }

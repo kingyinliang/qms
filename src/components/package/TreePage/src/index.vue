@@ -14,7 +14,7 @@
             {{ leftTitle }}
           </div>
           <div class="filter-input">
-            <el-input v-model="filterText" placeholder="输入名称搜索" size="small">
+            <el-input v-model="filterText" :placeholder="searchPlaceHolder" size="small">
               <template #suffix>
                 <em class="el-input__icon el-icon-search" />
               </template>
@@ -77,6 +77,12 @@ export default defineComponent({
       type: String,
       default: function () {
         return '标题'
+      }
+    },
+    searchPlaceHolder: {
+      type: String,
+      default: function () {
+        return '输入名称搜索'
       }
     },
     leftTitle: {
