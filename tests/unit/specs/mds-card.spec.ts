@@ -1,5 +1,5 @@
 import { shallowMount } from '@vue/test-utils'
-import MdsCard from '@/components/package/mds-card'
+import MdsCard from '@/components/package/mds-card/src/mds-card.vue'
 
 describe('MdsCard.vue', () => {
   const title = 'title'
