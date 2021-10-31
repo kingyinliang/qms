@@ -79,7 +79,7 @@ export default defineComponent({
         return '标题'
       }
     },
-    searchPlaceHolder: {
+    searchPlaceHolder: { // 自定 search bar placeholder string
       type: String,
       default: function () {
         return '输入名称搜索'
@@ -114,15 +114,19 @@ export default defineComponent({
       type: Boolean,
       default: true
     },
-    nodeKey: {
+    nodeKey: { // 自定 node key
       type: String,
       default: 'id'
     },
-    defaultFilterNodeProps: {
+    defaultFilterNodeProps: { // 自定加上第一层过滤维度
       type: Object,
       default: function () {
         return { prop: '', value: '' }
       }
+    },
+    filterWoekLevel: { // 自定 过滤层级
+      type: Number,
+      default: 0
     }
   },
   setup (props, { emit }) {
@@ -164,16 +168,30 @@ export default defineComponent({
 
     // 搜索
     // eslint-disable-next-line
-    const filterNode = (value: string, data: any) => {
+    const filterNode = (value: string, data: any,node:any) => {
+      console.log((props as any).filterWoekLevel)
+
       let defaultFilter = true
       if (data[(props as any).defaultFilterNodeProps.prop]) {
         defaultFilter = data[(props as any).defaultFilterNodeProps.prop] === (props as any).defaultFilterNodeProps.value
       }
 
+      // 如果什么都没填就直接返回
       if (!value) return defaultFilter
 
+      if ((props as any).filterWoekLevel !== 0) {
+        if (node.level >= (props as any).filterWoekLevel) {
+          if (defaultFilter && node.parent.data[(props as any).treeProps.label].indexOf(value) !== -1) {
+            return true
+          }
+          return false
+        }
+      }
+
       // eslint-disable-next-line
-      return defaultFilter && data[(props as any).treeProps.label].indexOf(value) !== -1;
+      if(defaultFilter && data[(props as any).treeProps.label].indexOf(value) !== -1){
+        return true
+      }
     }
 
     // 树点击

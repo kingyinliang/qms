@@ -8,6 +8,7 @@
     :searchPlaceHolder="'输入检验名称搜索'"
     :nodeKey="'inspectMethodId'"
     :treeProps="{ label: 'inspect',children:'inspectGroups' }"
+    :filterWoekLevel="3"
     @treeNodeClick="val=>{return getMaterialDetail('default',val,'')}"
     @treeNodeContextMenu="treeNodeContextMenuHandle"
   >
@@ -33,7 +34,7 @@
             </el-input>
             <div>
               <el-button icon="el-icon-search" class="topic-button" size="small" @click="btnGetMainData" :disabled="Object.keys(globalMainObj).length===0">查询</el-button>
-              <el-button icon="el-icon-plus" class="topic-button" type="primary" size="small" @click="handleParameterItem" :disabled="Object.keys(globalMainObj).length===0">新增</el-button>
+              <el-button icon="el-icon-plus" class="topic-button" type="primary" size="small" @click="handleParameterItem()" :disabled="Object.keys(globalMainObj).length===0">新增</el-button>
               <el-button icon="el-icon-delete" class="topic-button" type="danger" size="small" @click="btnDeleteOfParameterGroupDataDelete" :disabled="multipleSelection.length===0">批量删除</el-button>
             </div>
         </div>
@@ -50,7 +51,6 @@
             <el-table-column label="编码" prop="parameterGroupCode" :show-overflow-tooltip="true" min-width="100" />
             <el-table-column label="过程参数组" prop="parameterGroupName" :show-overflow-tooltip="true" min-width="100" />
             <el-table-column label="关联项" prop="groupMaterialName" :show-overflow-tooltip="true" min-width="100" />
-            <!--todo-->
             <el-table-column v-if="globalMainObj.inspectPropertyName === '微生物类'" label="参数明细" prop="parameterDetails" :show-overflow-tooltip="true" min-width="100" />
             <el-table-column fixed="right" label="操作" header-align="left" align="left" width="80">
                 <template #default="scope">
