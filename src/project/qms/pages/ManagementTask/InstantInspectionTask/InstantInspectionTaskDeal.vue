@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-10-15 20:07:53
  * @LastEditors: Telliex
- * @LastEditTime: 2021-10-29 11:51:39
+ * @LastEditTime: 2021-10-31 11:21:39
 -->
 <template>
 <div class="k-box-card" style="padding:20px 0;">
@@ -50,6 +50,7 @@
         </el-form-item>
       </el-form>
   </mds-card>
+  <!-- 新增/编辑 -->
   <mds-card v-if="pageType==='add'||pageType==='edit'" title="检验指标" :name="'org'" :pack-up="false" style="margin-bottom: 0; background: #fff;padding:10px 0;">
     <div style="font-size:12px;padding: 10px 5px; display: flex;justify-content: flex-end;">
       <el-button icon="el-icon-plus" type="primary" class="topic-button" size="small" @click="btnAddOrEditItemOfTopicMainData">新增</el-button>
@@ -90,14 +91,14 @@
             <em>{{scope.row.indexMethod}}</em>
         </template>
       </el-table-column>
-      <el-table-column label="检验方法" show-overflow-tooltip prop="inspectMethod" min-width="150">
+      <el-table-column label="检验方法" show-overflow-tooltip prop="inspectMethodName" min-width="150">
         <template #default="scope">
-          <el-select v-model="scope.row.inspectMethod" placeholder="请选择" size="small" clearable @focus="actFocusGetInspectMethodOptions(scope.row)" @change="val=>actChangeGetInspectMethodOptions(val,scope.row)" :disabled="!scope.row.isRedact">
+          <el-select v-model="scope.row.inspectMethodName" placeholder="请选择" size="small" clearable @focus="actFocusGetInspectMethodOptions(scope.row)" @change="val=>actChangeGetInspectMethodOptions(val,scope.row)" :disabled="!scope.row.isRedact">
             <el-option
               v-for="item in scope.row.inspectMethodOptions"
               :key="item.id"
               :label="item.inspectMethodName"
-              :value="item.id"
+              :value="item.inspectMethodName"
             >
             </el-option>
           </el-select>
@@ -167,17 +168,17 @@
       <el-table-column label="指标名称" show-overflow-tooltip prop="indexName" width="100" />
       <el-table-column label="单位" show-overflow-tooltip prop="indexUnit" width="80" />
       <el-table-column label="方法" show-overflow-tooltip prop="indexMethod" width="260" />
-      <el-table-column label="检验方法" show-overflow-tooltip prop="inspectMethod" min-width="150">
+      <el-table-column label="检验方法" show-overflow-tooltip prop="inspectMethodName" min-width="150">
         <template #header>
           <span class="required">检验方法</span>
         </template>
         <template #default="scope">
-          <el-select v-model="scope.row.inspectMethod" placeholder="请选择" size="small" clearable @focus="actFocusGetInspectMethodOptions(scope.row)">
+          <el-select v-model="scope.row.inspectMethodName" placeholder="请选择" size="small" clearable @focus="actFocusGetInspectMethodOptions(scope.row)" @change="val=>actChangeGetInspectMethodOptions(val,scope.row)">
             <el-option
               v-for="item in scope.row.inspectMethodOptions"
               :key="item.id"
               :label="item.inspectMethodName"
-              :value="item.id"
+              :value="item.inspectMethodName"
             >
             </el-option>
           </el-select>
@@ -272,7 +273,7 @@
 
 <script lang="ts">
 // import { defineComponent, toRefs, reactive, onMounted, getCurrentInstance, ComponentInternalInstance, watch } from 'vue'
-import { defineComponent, toRefs, ref, reactive, onMounted, getCurrentInstance, ComponentInternalInstance, watch, onBeforeUpdate, onUpdated } from 'vue'
+import { defineComponent, toRefs, ref, reactive, onMounted, getCurrentInstance, ComponentInternalInstance, watch, onBeforeUpdate } from 'vue'
 import {
   INSPECT_INDEX_MATERIAL_BY_CATEGORY_QUERY_API,
   DICTIONARY_QUERY_API,
@@ -614,7 +615,6 @@ export default defineComponent({
         return
       }
 
-      console.log(refNeedDep.value.getCheckedNodes(false))
       const tempNeedDept = refNeedDep.value.getCheckedNodes(false)
       const tempRefTaskTempDeptList: any[] = []
 
@@ -633,8 +633,6 @@ export default defineComponent({
       if (state.pageType === 'add') { // 新增 action
         isChangeDataFormOfInspectRequest = true
         isChangeDataTopicMainData = true
-        console.log('refTaskTempDeptList.value.getCheckedNodes(false)')
-        console.log(refTaskTempDeptList.value.getCheckedNodes(false))
 
         refTaskTempDeptList.value.getCheckedNodes(false).forEach((item:any) => {
           tempRefTaskTempDeptList.push({
@@ -661,9 +659,6 @@ export default defineComponent({
           insertList: tempAdd // 新增
         }
       } else { // 编辑 action
-        console.log('refTaskTempDeptList.value.getCheckedNodes(false)')
-        console.log(refTaskTempDeptList.value.getCheckedNodes(false))
-
         refTaskTempDeptList.value.getCheckedNodes(false).forEach((item:any) => {
           tempRefTaskTempDeptList.push({
             id: item.id,
@@ -675,9 +670,6 @@ export default defineComponent({
 
         if (!_.isEqual(state.dataFormOfInspectRequest, state.dataOrgFormOfInspectRequest)) {
           isChangeDataFormOfInspectRequest = true
-          console.log('state.dataFormOfInspectRequest 有异动')
-        } else {
-          console.log('state.dataFormOfInspectRequest无异动')
         }
 
         state.dataTableOfInspectIndexBuild.forEach((item, index) => {
@@ -726,9 +718,15 @@ export default defineComponent({
         })
 
         if (isSubmit) {
+          console.log('有异动，提交')
           return temp
         }
-      } else { // 无任何异动，直接跳转
+        console.log('有异动，保存')
+      } else if (isSubmit) { // 无任何异动，直接跳转 ，提交
+        console.log('无异动，提交')
+        return temp
+      } else { // 无任何异动，直接跳转 ，且非提交
+        console.log('无异动，不提交不保存')
         tabsCloseCurrentHandle()
         gotoPage({
           path: 'qms-pages-ManagementTask-InstantInspectionTask-index',
@@ -749,7 +747,7 @@ export default defineComponent({
       const tempEdit: any[] = []
 
       state.dataTableOfInspectIndexAssign.forEach((item) => {
-        if (!item.inspectMethod || !item.inspectDeptName) {
+        if (!item.inspectMethodName || !item.inspectDeptName) {
           required = false
         }
       })
@@ -768,9 +766,6 @@ export default defineComponent({
           tempEdit.push(tempItem)
         }
       })
-
-      console.log('tempEdit')
-      console.log(tempEdit)
 
       const temp = {
         deployMan: JSON.parse(sessionStorage.getItem('userInfo') || '{}').realName,
@@ -805,9 +800,15 @@ export default defineComponent({
         })
 
         if (isSubmit) {
+          console.log('有异动,提交')
           return temp
         }
+        console.log('有异动,保存')
+      } else if (isSubmit) {
+        console.log('无异动,提交')
+        return temp
       } else { // 无任何异动，直接跳转
+        console.log('无任何异动,不保存不提交')
         tabsCloseCurrentHandle()
         gotoPage({
           path: 'qms-pages-ManagementTask-InstantInspectionTask-index',
@@ -887,10 +888,12 @@ export default defineComponent({
     }
     // TODO
     const actChangeGetInspectMethodOptions = (val:string, row:any) => {
+      console.log(val)
+      console.log(row)
       row.inspectMethodOptions.forEach((item:any) => {
-        if (val === item.id) {
+        if (val === item.inspectMethodName) {
           row.inspectMethodCode = item.inspectMethodCode
-          row.inspectMethodName = item.inspectMethodName
+          // row.inspectMethodName = item.inspectMethodName
         }
       })
     }
