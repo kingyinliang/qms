@@ -399,18 +399,32 @@ export default defineComponent({
       actGetTaskDetailForTable(val.id, state.dataFormOfSearchFilter, state.currentPage, state.pageSize)
     }
 
+    const getEndNodeItems = (menuTreeList:any, container:any) => {
+      if (menuTreeList.children.length) {
+        for (const item of menuTreeList.children) {
+          container.push(item)
+          if (!item.isFinalNode && item.children && item.children.length > 0) {
+            getEndNodeItems(item.children, container)
+          }
+        }
+      }
+    }
+
     // [ACT] 获取任务列表 data
     const actGetTaskDetailForTable = (currentCategoryId:string, searchString:any, currentPage:number, pageSize:number) => {
       const tempList:any[] = []
-      if (!state.currentFocusTargetObj.isFinalNode && state.currentFocusTargetObj.children.length !== 0) {
-        getEndNodeItems(state.currentFocusTargetObj.children, tempList)
+      // if (!state.currentFocusTargetObj.isFinalNode && state.currentFocusTargetObj.children.length !== 0) {
+      //   getEndNodeItems(state.currentFocusTargetObj.children, tempList)
+      // }
+      if (state.currentFocusTargetObj.isFinalNode === false) {
+        getEndNodeItems(state.currentFocusTargetObj, tempList)
       }
       MANAGEMENT_PROCESS_INSPECTION_TASK_QUERY_API({
         taskType: state.currentInspectScene,
         taskStatus: searchString.taskStatus,
         taskCode: searchString.taskCode,
         sampleDeptId: searchString.sampleDeptId,
-        inspectTypeIds: !state.currentFocusTargetObj.isFinalNode ? tempList.map((item:any) => item.id) : [currentCategoryId],
+        inspectTypeIds: state.currentFocusTargetObj.isFinalNode === false ? tempList.map((item:any) => item.id) : [currentCategoryId],
         // inspectTypeIds: tempList.map((item:any) => item.id),
         planVersion: state.versionValue,
         current: currentPage,
@@ -458,39 +472,45 @@ export default defineComponent({
       })
     }
 
+    // TODO tree-data
     // [ACT:trans] 获取组织架构
     const treeDataTranslater = (data: any[], id: string, pid: string) => {
       const res: any[] = []
       const temp: any = {}
       for (let i = 0; i < data.length; i++) {
         // 追加叶子结点  data[i].assistFlag !== 'Y'
-        if (data[i].inspectMaterialAlls.length !== 0) {
-          data[i].children = []
-          data[i].inspectMaterialAlls.forEach((item:TreeDataItem) => {
+        if (data[i].assistFlag === 'N') {
+          Object.assign(data[i], { children: [] })
+          Object.assign(data[i], { isFinalNode: true })
+
+          if (data[i].inspectMaterialAlls.length) {
+            // data[i].children = []
+            data[i].inspectMaterialAlls.forEach((item:TreeDataItem) => {
             // data[i].children.push({ inspectTypeName: item, isFinalNode: true, markParentId: data[i].id, itemId: item.slice(item.lastIndexOf(' ') + 1), id: data[i].id + index })
-            data[i].children.push({
-              inspectTypeName: item.inspectTypeName,
-              isFinalNode: true,
-              markParentId: data[i].id,
-              id: item.id,
-              inspectMaterialCode: item.inspectMaterialCode,
-              inspectMaterialName: item.inspectMaterialName,
-              inspectMaterialAlls: [],
-              projectLocation: '',
-              canClick: data[i].assistFlag !== 'Y',
-              canEdit: true,
-              canDelete: true,
-              canAdd: true,
-              canGenerate: true,
-              disabled: data[i].assistFlag !== 'Y'
+              data[i].children.push({
+                inspectTypeName: item.inspectTypeName,
+                // isFinalNode: true,
+                markParentId: data[i].id,
+                id: item.id,
+                inspectMaterialCode: item.inspectMaterialCode,
+                inspectMaterialName: item.inspectMaterialName,
+                inspectMaterialAlls: [],
+                projectLocation: '',
+                canClick: data[i].assistFlag !== 'Y',
+                canEdit: true,
+                canDelete: true,
+                canAdd: true,
+                canGenerate: true,
+                disabled: data[i].assistFlag !== 'Y'
+              })
             })
-          })
+          }
         } else {
           // 生产辅助 smell
-          if (data[i].assistFlag === 'Y' && data[i].parentId !== '0') {
-            data[i].isFinalNode = true
+          if (data[i].parentId !== '0') {
+            Object.assign(data[i], { isFinalNode: true })
           } else {
-            data[i].isFinalNode = false
+            Object.assign(data[i], { isFinalNode: false })
           }
         }
 
@@ -520,18 +540,12 @@ export default defineComponent({
           if (!temp[data[k][pid]].children) {
             temp[data[k][pid]].children = []
           }
-
           if (!data[k]._level) {
             data[k]._level = temp[data[k][pid]]._level + 1
           }
-
-          // if (temp[data[k][pid]]._level === 1) {
-          //   temp[data[k][pid]].projectLocation = temp[data[k][pid]].inspectTypeName
-          // }
           if (data[k]._level !== 1) {
             data[k].projectLocation = temp[data[k][pid]].projectLocation + '-' + data[k].inspectTypeName
           }
-
           if (data[k].inspectMaterialAlls.length) {
             data[k].inspectMaterialAlls.forEach((subItem:TreeDataItem, index:number) => {
               subItem.projectLocation = data[k].projectLocation + '-' + subItem.inspectMaterialName
@@ -612,22 +626,6 @@ export default defineComponent({
       }).then((res) => {
         state.sampleDeptIdOptions = res.data.data
       })
-    }
-
-    const getEndNodeItems = (menuTreeList:any, container:any) => {
-      for (const item of menuTreeList) {
-        // if (item.isFinalNode === true) {
-        //   container.push(item)
-        // } else if (item.children.length > 0) {
-        //   getEndNodeItems(item.children, container)
-        // }
-        if (item.isFinalNode !== true) {
-          container.push(item)
-          if (item.children && item.children.length > 0) {
-            getEndNodeItems(item.children, container)
-          }
-        }
-      }
     }
 
     // [ACT:] 获取版本下拉

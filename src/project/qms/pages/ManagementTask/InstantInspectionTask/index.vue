@@ -1,5 +1,5 @@
 <template>
-  <mds-card class="test_method" title="临时检验任务" :pack-up="false" style="margin-bottom: 0; background: #fff; over-flow:scroll">
+  <mds-card class="test_method" title="临时检验任务" :pack-up="false" style="margin-bottom: 0; background: #fff; overflow:scroll">
     <template #titleBtn>
       <div style="display: flex; justify-content: flex-end;">
         <div><span style="font-size:12px;padding-left: 10px;">检验单：</span>
@@ -82,9 +82,7 @@ import MdsCard from '@/components/package/mds-card/src/mds-card.vue'
 import { useRouter } from 'vue-router'
 import {
   MANAGEMENT_PROCESS_INSPECTION_TASK_STATUS_QUERY_API, // 查询
-  MANAGEMENT_INSPECTION_PLAN_INSERT_API, // 新增
   MANAGEMENT_PROCESS_INSPECTION_TASK_STATUS_DELETE_API, // 删除
-  MANAGEMENT_INSPECTION_PLAN_UPDATE_API, // 编辑
   DICTIONARY_QUERY_API
 } from '@/api/api'
 import layoutTs from '@/components/layout/layoutTs'
