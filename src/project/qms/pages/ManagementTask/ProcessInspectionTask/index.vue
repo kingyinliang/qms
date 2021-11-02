@@ -4,6 +4,7 @@
     :title="pageMainTitle"
     :leftTitle="pageLeftColumnTitle"
     :rightTitle="pageRightColumnTitle"
+    :defaultExtend="false"
     :treeData="treeData"
     :treeProps="{ label: 'inspectTypeName',children:'children' }"
     @treeNodeClick="actGetTaskDetailOfTree"
@@ -614,8 +615,16 @@ export default defineComponent({
 
     // [FORM:select][EVENT:change] 版本
     const handleChangeSelectVersion = (val:string) => {
+      state.dataFormOfSearchFilter = {
+        taskCode: '',
+        sampleDeptId: '',
+        taskStatus: ''
+      }
       val && resetTaskSearchFilter(val)
+
       // [ACT:get] 获取 tree-data
+      state.currentCategoryId = '' // 初始化
+      refTreeModule.value.focusCurrentNodeNumber = '' // 初始化
       getBaseData()
     }
 

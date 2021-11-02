@@ -26,6 +26,7 @@
             :data="treeData"
             :node-key="nodeKey"
             :default-expanded-keys="expandedKeys"
+            :default-expand-all="false"
             :current-node-key="focusCurrentNodeNumber"
             :props="treeProps" highlight-current
             :filter-node-method="filterNode"
@@ -127,6 +128,10 @@ export default defineComponent({
     filterWoekLevel: { // 自定 过滤层级
       type: Number,
       default: 0
+    },
+    defaultExtend: { // 默认是否展开
+      type: Boolean,
+      default: true
     }
   },
   setup (props, { emit }) {
@@ -148,10 +153,14 @@ export default defineComponent({
     watch(props, async (val: any) => {
       await nextTick()
       expandedKeys.value = []
+      console.log('expandedKeys.value')
+      console.log(expandedKeys.value)
       treeRef.value.filter(filterText.value) // when reload filter still work
-      for (const item of val.treeData) {
-        if (item[(props as any).treeProps.children] && item[(props as any).treeProps.children].length) {
-          expandedKeys.value.push(item[(props as any).nodeKey])
+      if ((props as any).defaultExtend) {
+        for (const item of val.treeData) {
+          if (item[(props as any).treeProps.children] && item[(props as any).treeProps.children].length) {
+            expandedKeys.value.push(item[(props as any).nodeKey])
+          }
         }
       }
     })
@@ -169,8 +178,6 @@ export default defineComponent({
     // 搜索
     // eslint-disable-next-line
     const filterNode = (value: string, data: any,node:any) => {
-      console.log((props as any).filterWoekLevel)
-
       let defaultFilter = true
       if (data[(props as any).defaultFilterNodeProps.prop]) {
         defaultFilter = data[(props as any).defaultFilterNodeProps.prop] === (props as any).defaultFilterNodeProps.value
@@ -179,6 +186,7 @@ export default defineComponent({
       // 如果什么都没填就直接返回
       if (!value) return defaultFilter
 
+      // 不过滤 n 层以下层级
       if ((props as any).filterWoekLevel !== 0) {
         if (node.level >= (props as any).filterWoekLevel) {
           if (defaultFilter && node.parent.data[(props as any).treeProps.label].indexOf(value) !== -1) {

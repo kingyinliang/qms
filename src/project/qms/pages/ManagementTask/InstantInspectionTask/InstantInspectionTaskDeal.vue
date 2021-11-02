@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-10-15 20:07:53
  * @LastEditors: Telliex
- * @LastEditTime: 2021-10-31 11:21:39
+ * @LastEditTime: 2021-11-01 16:44:03
 -->
 <template>
 <div class="k-box-card" style="padding:20px 0;">
@@ -111,7 +111,7 @@
       </el-table-column>
       <el-table-column label="操作" width="150" fixed="right">
         <template #default="scope">
-          <el-button type="text" icon="el-icon-delete" class="delete-btn" @click="btnDeleteItemData(scope.row)" :disabled="scope.row.isDisabled">
+          <el-button type="text" icon="el-icon-delete" class="delete-btn" @click="btnDeleteItemData(scope.row,scope.$index)" :disabled="scope.row.isDisabled">
             <em>删除</em>
           </el-button>
           <el-button type="text" v-if="pageType==='edit'" icon="el-icon-edit" class="role__btn" @click="btnEditItemOfTopicMainData(scope.row)" :disabled="scope.row.isDisabled || scope.row.isRedact">
@@ -194,7 +194,7 @@
           <span class="required">检验部门</span>
         </template>
         <template #default="scope">
-          <el-popover v-model:visible="scope.row.isDialogVisibleForGlobleItem" trigger="click" placement="left" :width="350" @show="actOpenItemOfPopover(scope.$index,scope.row)" @hide="actConfirmItemOfPopover(scope.$index,scope.row)">
+          <el-popover v-model:visible="scope.row.isDialogVisibleForGlobleItem" trigger="click" placement="left" :width="350" @show="actOpenItemOfPopover(scope.$index)" @hide="actConfirmItemOfPopover(scope.$index,scope.row)">
           <div class="treeDialog__filter-input">
             <el-input
               placeholder="输入关键字进行过滤"
@@ -250,25 +250,6 @@
   </div>
   <!--指标分配弹窗-->
   <category-organization-tree v-model:dialogVisible="isDialogVisibleForAssignIndex" ref="refCategoryOrganizationTree" :title="'指标分配'"  :dialogData="dialogMainDataImport" :disableItems="itemsDisabled"  @actConfirm="actConfirm" @actReset="actReset"  />
-
-<!-- <el-dialog :title="'分配检验组'" v-model="isDialogVisibleForGlobleItem" width="300px" >
-    <tree-dialog
-      ref="refAssignDeptList"
-      v-model="assignDeptList"
-      :tree-data="options"
-      :valueKey="'id'"
-      :leafOnly="false"
-      :checkStrictly="true"
-      :placeholder="'请选择'"
-      :tree-props="{ label: 'deptName', children: 'children' }"
-    />
-    <template #footer>
-      <span class="dialog-footer">
-        <el-button size="small" class="topic-button" icon="el-icon-circle-close" @click="btnCancelItemEditOfDialog">取消</el-button>
-        <el-button size="small" class="topic-button" icon="el-icon-circle-check" type="primary" @click="btnConfirmItemOfDialog">确定</el-button>
-      </span>
-    </template>
-  </el-dialog> -->
 </template>
 
 <script lang="ts">
@@ -419,7 +400,7 @@ export default defineComponent({
 
     /**  == 变量 ==  **/
     const state = reactive<State>({
-      title: '任务新增',
+      title: '',
       pageType: 'add',
       pageId: '',
       isDialogVisibleForGlobleItem: false,
@@ -547,12 +528,25 @@ export default defineComponent({
     }
 
     // [BTN:删除][检验指标]
-    const btnDeleteItemData = (row:any) => {
-      proxy.$confirm('确认删除选中的数据？', '提示', {
+    const btnDeleteItemData = (row:any, index:number) => {
+      let check = false
+      if (row.id) {
+        check = state.dataTableOfInspectIndexBuild.find(item => item.id === '') !== -1
+      }
+      const hintString = check ? '有新增数据，避免数据遗失，请先保存。' : ''
+
+      proxy.$confirm(hintString + '确认删除选中的数据？', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
       }).then(async () => {
+        if (!row.id) {
+          console.log('state.dataTableOfInspectIndexBuild')
+          console.log(state.dataTableOfInspectIndexBuild)
+          state.dataTableOfInspectIndexBuild.splice(index, 1)
+          proxy.$successToast('操作成功')
+          return
+        }
         await MANAGEMENT_PROCESS_INSPECTION_TASK_ASSIGN_DELETE_API({
           id: row.id
         })
@@ -612,6 +606,11 @@ export default defineComponent({
       }
       if (!state.dataFormOfInspectRequest.sampleDeptIdList.length) {
         proxy.$errorToast('请输入取样部门')
+        return
+      }
+
+      if (state.dataTableOfInspectIndexBuild.length !== 0 && (state.dataTableOfInspectIndexBuild.length !== new Set(state.dataTableOfInspectIndexBuild.map(item => item.indexCode)).size)) {
+        proxy.$errorToast('有重复指标编码')
         return
       }
 
@@ -1010,7 +1009,7 @@ export default defineComponent({
       }
     }
 
-    const actOpenItemOfPopover = (index:number, row:any) => {
+    const actOpenItemOfPopover = (index:number) => {
       filterText.value = ''
       state.currentItemRefsIndex = index
       // if (row.inspectDeptId) {
