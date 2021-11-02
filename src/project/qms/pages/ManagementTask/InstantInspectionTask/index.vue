@@ -76,7 +76,7 @@
 
 <script lang="ts">
 import {
-  defineComponent, ref, toRefs, reactive, onMounted, ComponentInternalInstance, getCurrentInstance, onUpdated
+  defineComponent, toRefs, reactive, onMounted, ComponentInternalInstance, getCurrentInstance, onUpdated
 } from 'vue'
 import MdsCard from '@/components/package/mds-card/src/mds-card.vue'
 import { useRouter } from 'vue-router'
