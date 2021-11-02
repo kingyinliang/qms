@@ -623,7 +623,7 @@ export default defineComponent({
       for (const item of menuTreeList) {
         if (item.isFinalNode === true) {
           container.push(item)
-        } else if (item.children.length > 0) {
+        } else if (item.children && item.children.length > 0) {
           getEndNodeItems(item.children, container)
         }
       }

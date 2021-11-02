@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-10-15 20:07:53
  * @LastEditors: Telliex
- * @LastEditTime: 2021-11-01 16:44:03
+ * @LastEditTime: 2021-11-02 09:41:51
 -->
 <template>
 <div class="k-box-card" style="padding:20px 0;">
@@ -744,6 +744,15 @@ export default defineComponent({
       const tempRefTaskTempDeptList: any[] = []
 
       const tempEdit: any[] = []
+
+      refTaskTempDeptList.value.getCheckedNodes(false).forEach((item:any) => {
+        tempRefTaskTempDeptList.push({
+          id: item.id,
+          sampleDeptId: item.id,
+          sampleDeptName: item.deptName,
+          taskTempApplyId: state.pageId
+        })
+      })
 
       state.dataTableOfInspectIndexAssign.forEach((item) => {
         if (!item.inspectMethodName || !item.inspectDeptName) {
