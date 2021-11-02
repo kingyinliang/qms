@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-10-15 20:07:53
  * @LastEditors: Telliex
- * @LastEditTime: 2021-11-02 09:41:51
+ * @LastEditTime: 2021-11-02 17:44:26
 -->
 <template>
 <div class="k-box-card" style="padding:20px 0;">
@@ -541,8 +541,6 @@ export default defineComponent({
         type: 'warning'
       }).then(async () => {
         if (!row.id) {
-          console.log('state.dataTableOfInspectIndexBuild')
-          console.log(state.dataTableOfInspectIndexBuild)
           state.dataTableOfInspectIndexBuild.splice(index, 1)
           proxy.$successToast('操作成功')
           return
@@ -717,15 +715,11 @@ export default defineComponent({
         })
 
         if (isSubmit) {
-          console.log('有异动，提交')
           return temp
         }
-        console.log('有异动，保存')
       } else if (isSubmit) { // 无任何异动，直接跳转 ，提交
-        console.log('无异动，提交')
         return temp
       } else { // 无任何异动，直接跳转 ，且非提交
-        console.log('无异动，不提交不保存')
         tabsCloseCurrentHandle()
         gotoPage({
           path: 'qms-pages-ManagementTask-InstantInspectionTask-index',
@@ -808,15 +802,11 @@ export default defineComponent({
         })
 
         if (isSubmit) {
-          console.log('有异动,提交')
           return temp
         }
-        console.log('有异动,保存')
       } else if (isSubmit) {
-        console.log('无异动,提交')
         return temp
       } else { // 无任何异动，直接跳转
-        console.log('无任何异动,不保存不提交')
         tabsCloseCurrentHandle()
         gotoPage({
           path: 'qms-pages-ManagementTask-InstantInspectionTask-index',
@@ -837,8 +827,6 @@ export default defineComponent({
           temp.allList = state.dataTableOfInspectIndexBuild
           temp.updateList = []
           temp.insertList = []
-
-          console.log(temp)
           MANAGEMENT_PROCESS_INSPECTION_TASK_ADD_AND_EDIT_SUBMIT_API(temp).then(() => {
             proxy.$successToast('操作成功！')
             tabsCloseCurrentHandle()
@@ -857,8 +845,6 @@ export default defineComponent({
           temp.allList = state.dataTableOfInspectIndexAssign
           temp.updateList = []
           temp.insertList = []
-
-          console.log(temp)
           MANAGEMENT_PROCESS_INSPECTION_TASK_ASSIGN_SUBMIT_API(temp).then(() => {
             proxy.$successToast('操作成功！')
             tabsCloseCurrentHandle()
@@ -896,8 +882,6 @@ export default defineComponent({
     }
     // TODO
     const actChangeGetInspectMethodOptions = (val:string, row:any) => {
-      console.log(val)
-      console.log(row)
       row.inspectMethodOptions.forEach((item:any) => {
         if (val === item.inspectMethodName) {
           row.inspectMethodCode = item.inspectMethodCode
@@ -1135,11 +1119,6 @@ export default defineComponent({
         state.dataOrgFormOfInspectRequest = JSON.parse(JSON.stringify(state.dataFormOfInspectRequest))
         getInspectIndexDataForShow()
       }
-
-      console.log('pageType: ' + state.pageType)
-      console.log('pageId: ' + state.pageId)
-      console.log('====state.dataFormOfInspectRequest=====')
-      console.log(state.dataFormOfInspectRequest)
 
       // 数据字典查找
       const resPropertyObject = await DICTIONARY_QUERY_API({ dictType: 'INSPECT_PROPERTY' })

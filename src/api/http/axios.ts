@@ -2,6 +2,7 @@ import axios, { AxiosInstance, AxiosResponse } from 'axios'
 import { ElNotification, ElLoading } from 'element-plus'
 import VueCookies from '@/components/cookie/vue-cookies'
 import SSOLogin from '@/utils/SSOLogin'
+import _ from 'lodash'
 
 enum HttpCode {
   SUCCESS = 200,
@@ -52,6 +53,7 @@ export class HttpManager {
         config.headers.Authorization = VueCookies.get('token')
       }
       this.showFullScreenLoading() // 显示遮罩
+      // _.debounce(this.showFullScreenLoading(), 500)
       return config
     }, error => Promise.reject(error))
   }
@@ -59,7 +61,10 @@ export class HttpManager {
   interceptorsResponse (): void {
     this._axios.interceptors.response.use(res => {
       if (res.data.code === HttpCode.SUCCESS) {
-        this.tryHideFullScreenLoading() // 关闭遮罩
+        setTimeout(() => {
+          this.tryHideFullScreenLoading() // 关闭遮罩
+        }, 500)
+
         return Promise.resolve(res)
       } else if (res.data.code === HttpCode.EXPIRED_TOKEN) {
         this.tryHideFullScreenLoading() // 关闭遮罩
@@ -114,6 +119,32 @@ export class HttpManager {
     this._needLoadingRequestCount = 0
     this._loading.close()
   }
+
+  // debounce<F extends (...args: IArguments) => any>(func: F, delay = 250) {
+  //   let timer = 0
+
+  //   return function () {
+  //     const context = this
+  //     // const args = [].slice.call(...args)
+  //     timer && clearTimeout(timer)
+
+  //     timer = setTimeout(() => {
+  //       func.apply(context, [].slice.call(...args))
+  //     }, delay)
+  //   }
+  // }
+
+  // debounce<F extends (...args: any[]) => any>(func: F, waitFor: number): {
+  //   let timeout = 0
+
+  //   return (...args: Parameters<F>): Promise<ReturnType<F>> =>
+  //     new Promise(resolve => {
+  //       if (timeout) {
+  //         clearTimeout(timeout)
+  //       }
+  //       timeout = setTimeout(() => resolve(func(...args)), waitFor)
+  //     })
+  // }
 }
 
 export default HttpManager.getInstance()

@@ -28,7 +28,7 @@
         <el-form-item label="样品码：" label-width="80px">
           <el-input
             placeholder="请输入"
-            v-model="dataFormOfSearchFilter.taskCode"
+            v-model="dataFormOfSearchFilter.sampleCode"
             size="small"
             clearable
             style="margin-bottom:10px; width:200px; height:35px;"
@@ -71,11 +71,11 @@
         style="width: 100%;"
        >
         <el-table-column type="index" label="序号"  width="55"  align="center" size="small" fixed />
-        <el-table-column label="样品码" prop="taskCode" :show-overflow-tooltip="true" min-width="180" />
+        <el-table-column label="样品码" prop="sampleCode" :show-overflow-tooltip="true" min-width="180" />
         <el-table-column label="状态" prop="taskStatusName" :show-overflow-tooltip="true" min-width="100" />
         <el-table-column label="检验内容" prop="inspectContent" :show-overflow-tooltip="true" min-width="180" />
         <el-table-column label="取样部门" prop="sampleDeptName" :show-overflow-tooltip="true" min-width="100" />
-        <el-table-column label="取样信息" prop="sampleInformation" :show-overflow-tooltip="true" min-width="220" />
+        <el-table-column label="取样信息" prop="inspectSiteName" :show-overflow-tooltip="true" min-width="220" />
         <el-table-column label="物料信息" prop="" :show-overflow-tooltip="true" min-width="100" >
           <template #default="scope">
             <span>{{`${scope.row.inspectMaterialName} ${scope.row.inspectMaterialCode}`}}</span>
@@ -88,7 +88,7 @@
         <el-table-column label="触发方" prop="triggerBy" :show-overflow-tooltip="true" min-width="100" />
         <el-table-column fixed="right" label="操作" header-align="left" align="left" width="150">
             <template #default="scope">
-                <el-button  type="text" icon="el-icon-edit" @click="btnClickItemEditOfTopicMainData(scope.row)" :disabled="!(scope.row.taskStatusName==='UNSAMPLED' && scope.row.loopFlag!=='')" class="role__btn">
+                <el-button  type="text" icon="el-icon-edit" @click="btnClickItemEditOfTopicMainData(scope.row)" :disabled="!(scope.row.taskStatus==='UNSAMPLED'&&scope.row.loopFlag==='Y')" class="role__btn">
                     <em>编辑</em>
                 </el-button>
                 <el-button  type="text" icon="el-icon-delete" @click="btnClickItemCancelOfTopicMainData(scope.row.id)" :disabled="scope.row.taskStatus!=='UNSAMPLED'" class="role__btn">
@@ -113,8 +113,8 @@
   <!--编辑-->
   <el-dialog :title="'任务修改'" v-model="isDialogVisibleForGlobleItem" width="40%" >
     <el-form ref="refGlobleItem" :model="formGlobleItem" :rules="ruleGlobleItem" class="dialogForm">
-      <el-form-item label="样品码：" prop="taskCode" :label-width="cssForformLabelWidth">
-          <el-input v-model="formGlobleItem.taskCode" class="140px" autocomplete="off"  :disabled="true"></el-input>
+      <el-form-item label="样品码：" prop="sampleCode" :label-width="cssForformLabelWidth">
+          <el-input v-model="formGlobleItem.sampleCode" class="140px" autocomplete="off"  :disabled="true"></el-input>
       </el-form-item>
       <el-form-item label="检验内容：" prop="inspectContent" :label-width="cssForformLabelWidth">
           <el-input v-model="formGlobleItem.inspectContent" class="140px" autocomplete="off"  :disabled="true"></el-input>
@@ -127,8 +127,8 @@
       <el-form-item label="物料信息：" prop="materialInfo" :label-width="cssForformLabelWidth">
           <el-input v-model="formGlobleItem.materialInfo" class="140px" autocomplete="off"  disabled="true"></el-input>
       </el-form-item>
-      <el-form-item label="取样信息：" prop="sampleInformation" :label-width="cssForformLabelWidth">
-          <el-input v-model="formGlobleItem.sampleInformation" class="140px" autocomplete="off"  :disabled="true"></el-input>
+      <el-form-item label="取样信息：" prop="inspectSiteName" :label-width="cssForformLabelWidth">
+          <el-input v-model="formGlobleItem.inspectSiteName" class="140px" autocomplete="off"  :disabled="true"></el-input>
       </el-form-item>
       <el-form-item label="批次：" prop="inspectBatch" :label-width="cssForformLabelWidth">
           <el-input v-model="formGlobleItem.inspectBatch" class="140px" autocomplete="off"  :disabled="true"></el-input>
@@ -258,7 +258,7 @@ interface State {
     versionValue: string,
     versionnValueOptions: VersionOption[],
     dataFormOfSearchFilter:{
-      taskCode: string
+      sampleCode: string
       sampleDeptId: string
       taskStatus: string
     }
@@ -294,7 +294,7 @@ export default defineComponent({
       versionValue: '',
       versionnValueOptions: [],
       dataFormOfSearchFilter: {
-        taskCode: '',
+        sampleCode: '',
         sampleDeptId: '',
         taskStatus: ''
       },
@@ -312,11 +312,11 @@ export default defineComponent({
       treeData: [],
       currentCategoryId: '',
       formGlobleItem: {
-        taskCode: '',
+        sampleCode: '',
         taskStatus: '',
         inspectContent: '',
         sampleDeptName: '',
-        sampleInformation: '',
+        inspectSiteName: '',
         materialInfo: '',
         inspectBatch: '',
         itemName: '',
@@ -358,18 +358,18 @@ export default defineComponent({
     // [dataTableOfTopicMain][BTN:编辑]
     const btnClickItemEditOfTopicMainData = async (row:any) => {
       state.isDialogVisibleForGlobleItem = true
-      await getDropDownOptions(row.id) // 获取下拉
+      await getDropDownOptions(row.sampleDeptId) // 获取下拉
       await nextTick()
       refGlobleItem.value.resetFields()
       state.formGlobleItem = {
         id: row.id,
-        taskCode: row.taskCode,
+        sampleCode: row.sampleCode,
         taskStatus: row.taskStatus,
         inspectContent: row.inspectContent,
         taskSampleId: row.taskSampleId,
         sampleDeptId: row.sampleDeptId,
         sampleDeptName: row.sampleDeptName,
-        sampleInformation: row.sampleInformation,
+        inspectSiteName: row.inspectSiteName,
         materialInfo: `${row.inspectMaterialName} ${row.inspectMaterialCode}`,
         inspectBatch: row.inspectBatch,
         itemName: row.itemName,
@@ -397,7 +397,7 @@ export default defineComponent({
       state.currentFocusTargetObj = JSON.parse(JSON.stringify(val))
 
       state.dataFormOfSearchFilter = {
-        taskCode: '',
+        sampleCode: '',
         sampleDeptId: '',
         taskStatus: ''
       }
@@ -431,7 +431,7 @@ export default defineComponent({
       MANAGEMENT_PROCESS_INSPECTION_TASK_QUERY_API({
         taskType: state.currentInspectScene,
         taskStatus: searchString.taskStatus,
-        taskCode: searchString.taskCode,
+        sampleCode: searchString.sampleCode,
         sampleDeptId: searchString.sampleDeptId,
         inspectTypeIds: state.currentFocusTargetObj.isFinalNode === false ? tempList.map((item:any) => item.id) : [currentCategoryId],
         // inspectTypeIds: tempList.map((item:any) => item.id),
@@ -465,7 +465,7 @@ export default defineComponent({
         planVersionId: state.versionValue
       }).then((res) => {
         state.dataFormOfSearchFilter = {
-          taskCode: '',
+          sampleCode: '',
           sampleDeptId: '',
           taskStatus: ''
         }
@@ -594,11 +594,11 @@ export default defineComponent({
     // [Dialog][ACTION:取消]
     const reset = () => {
       state.formGlobleItem = {
-        taskCode: '',
+        sampleCode: '',
         taskStatus: '',
         inspectContent: '',
         sampleDeptName: '',
-        sampleInformation: '',
+        inspectSiteName: '',
         materialInfo: '',
         inspectBatch: '',
         itemName: '',
@@ -623,10 +623,8 @@ export default defineComponent({
 
     // [FORM:select][EVENT:change] 版本
     const handleChangeSelectVersion = (val:string) => {
-      console.log('888888')
-      console.log(val)
       state.dataFormOfSearchFilter = {
-        taskCode: '',
+        sampleCode: '',
         sampleDeptId: '',
         taskStatus: ''
       }
