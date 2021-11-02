@@ -59,7 +59,9 @@ export class HttpManager {
   interceptorsResponse (): void {
     this._axios.interceptors.response.use(res => {
       if (res.data.code === HttpCode.SUCCESS) {
-        this.tryHideFullScreenLoading() // 关闭遮罩
+        setTimeout(() => { // 避免紧凑加载 API 时，画面闪动
+          this.tryHideFullScreenLoading() // 关闭遮罩
+        }, 500)
         return Promise.resolve(res)
       } else if (res.data.code === HttpCode.EXPIRED_TOKEN) {
         this.tryHideFullScreenLoading() // 关闭遮罩

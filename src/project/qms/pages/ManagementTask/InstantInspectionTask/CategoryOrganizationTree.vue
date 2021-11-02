@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-07-08 11:25:52
  * @LastEditors: Telliex
- * @LastEditTime: 2021-10-29 08:41:03
+ * @LastEditTime: 2021-11-02 17:47:07
 -->
 <template>
     <dialogDevice :dialogVisible="dialogVisible" :title="title" @on-confirm="onConfirm" @on-close="onClose" width="70%">
@@ -299,21 +299,6 @@ export default defineComponent({
 .transferWrap ::v-deep(.el-transfer-panel){
   width: 40%;
 }
-
-//.transferWrap ::v-deep(.el-transfer-panel__body .el-checkbox__label){
-  // position: relative;
-//}
-
-// .transferWrap ::v-deep(.el-transfer-panel__body .el-transfer-panel__item:hover .el-checkbox__label:after) {
-//    content: attr(data-title);
-//    color: #fff;
-//    position: absolute;
-//    left: 50px;
-//    top:0;
-//    background: #000000;
-//    border-radius: 4px;
-//    padding:0 6px;
-// }
 
 </style>
 <style scoped>
