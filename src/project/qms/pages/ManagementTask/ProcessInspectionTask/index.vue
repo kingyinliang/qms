@@ -32,11 +32,12 @@
             size="small"
             clearable
             style="margin-bottom:10px; width:200px; height:35px;"
+            @keydown.enter="actGetTaskDetailForTable(currentCategoryId,dataFormOfSearchFilter,1,10)"
             >
           </el-input>
         </el-form-item>
         <el-form-item label="取样部门：" label-width="100px">
-          <el-select v-model="dataFormOfSearchFilter.sampleDeptId" placeholder="请选择" size="small">
+          <el-select v-model="dataFormOfSearchFilter.sampleDeptId" placeholder="请选择" size="small" clearable>
             <el-option
               v-for="item in sampleDeptIdOptions"
               :key="item.id"
@@ -47,7 +48,7 @@
           </el-select>
         </el-form-item>
         <el-form-item label="状态：" label-width="70px">
-          <el-select v-model="dataFormOfSearchFilter.taskStatus" placeholder="请选择" size="small" style="width:100px">
+          <el-select v-model="dataFormOfSearchFilter.taskStatus" placeholder="请选择" size="small" style="width:100px" clearable>
             <el-option
               v-for="item in taskStatusOptions"
               :key="item.dictCode"
@@ -58,7 +59,7 @@
           </el-select>
         </el-form-item>
         <el-form-item style="margin-left:10px;">
-            <el-button icon="el-icon-search" class="topic-button" size="small" @click="actGetTaskDetailForTable(currentCategoryId,dataFormOfSearchFilter,1,10)" :disabled="versionValue===''||dataTableOfTopicMain.length===0">查询</el-button>
+            <el-button icon="el-icon-search" class="topic-button" size="small" @click="actGetTaskDetailForTable(currentCategoryId,dataFormOfSearchFilter,1,10)" :disabled="versionValue===''">查询</el-button>
         </el-form-item>
       </el-form>
      <el-table
@@ -71,7 +72,7 @@
        >
         <el-table-column type="index" label="序号"  width="55"  align="center" size="small" fixed />
         <el-table-column label="样品码" prop="taskCode" :show-overflow-tooltip="true" min-width="180" />
-        <el-table-column label="状态" prop="taskStatus" :show-overflow-tooltip="true" min-width="100" />
+        <el-table-column label="状态" prop="taskStatusName" :show-overflow-tooltip="true" min-width="100" />
         <el-table-column label="检验内容" prop="inspectContent" :show-overflow-tooltip="true" min-width="180" />
         <el-table-column label="取样部门" prop="sampleDeptName" :show-overflow-tooltip="true" min-width="100" />
         <el-table-column label="取样信息" prop="sampleInformation" :show-overflow-tooltip="true" min-width="220" />
@@ -87,10 +88,10 @@
         <el-table-column label="触发方" prop="triggerBy" :show-overflow-tooltip="true" min-width="100" />
         <el-table-column fixed="right" label="操作" header-align="left" align="left" width="150">
             <template #default="scope">
-                <el-button  type="text" icon="el-icon-edit" @click="btnClickItemEditOfTopicMainData(scope.row)" class="role__btn">
+                <el-button  type="text" icon="el-icon-edit" @click="btnClickItemEditOfTopicMainData(scope.row)" :disabled="!(scope.row.taskStatusName==='UNSAMPLED' && scope.row.loopFlag!=='')" class="role__btn">
                     <em>编辑</em>
                 </el-button>
-                <el-button  type="text" icon="el-icon-delete" @click="btnClickItemCancelOfTopicMainData(scope.row.id)" class="role__btn">
+                <el-button  type="text" icon="el-icon-delete" @click="btnClickItemCancelOfTopicMainData(scope.row.id)" :disabled="scope.row.taskStatus!=='UNSAMPLED'" class="role__btn">
                     <em>取消</em>
                 </el-button>
             </template>
@@ -378,10 +379,17 @@ export default defineComponent({
 
     // [dataTableOfTopicMain][BTN:取消]
     const btnClickItemCancelOfTopicMainData = async (id:string) => {
-      await MANAGEMENT_PROCESS_INSPECTION_TASK_CANCEL_API({
-        id
+      proxy.$confirm('确认取消该数据？', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(async () => {
+        await MANAGEMENT_PROCESS_INSPECTION_TASK_CANCEL_API({
+          id
+        })
+        proxy.$successToast('操作成功')
+        actGetTaskDetailOfTree(state.currentFocusTargetObj)
       })
-      proxy.$successToast('操作成功')
     }
 
     // [@treeNodeClick] 获取任务列表 data
@@ -571,7 +579,7 @@ export default defineComponent({
     const getDropDownOptions = async (id:string) => {
       // 获取检验类下的取样单位
       await MANAGEMENT_PROCESS_INSPECTION_TASK_INSPECT_MATERIAL_DROP_DOWN_API({
-        id: id
+        id
       }).then((res) => {
         state.sampleUnitptions = res.data.data
       })
@@ -615,6 +623,8 @@ export default defineComponent({
 
     // [FORM:select][EVENT:change] 版本
     const handleChangeSelectVersion = (val:string) => {
+      console.log('888888')
+      console.log(val)
       state.dataFormOfSearchFilter = {
         taskCode: '',
         sampleDeptId: '',
@@ -642,6 +652,8 @@ export default defineComponent({
       await MANAGEMENT_INSPECTION_PLAN_VERSION_DROP_DOWN_API({
         inspectScene: state.currentInspectScene
       }).then((res) => {
+        console.log('获取版本下拉')
+        console.log(res.data.data)
         state.versionnValueOptions = res.data.data
       })
     }
@@ -658,7 +670,7 @@ export default defineComponent({
       // 预设带入第一笔版本
       if (state.versionnValueOptions[0]) {
         state.versionValue = state.versionnValueOptions[0].planVersion
-        handleChangeSelectVersion(state.versionValue)
+        handleChangeSelectVersion(state.versionnValueOptions[0].id)
       }
     })
 
