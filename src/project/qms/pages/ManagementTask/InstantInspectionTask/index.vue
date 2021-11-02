@@ -52,7 +52,7 @@
           <el-button type="text" icon="el-icon-delete" class="delete-btn" @click="btnDeleteItemData(scope.row)" :disabled="scope.row.applyStatus!=='SAVED'">
             <em>删除</em>
           </el-button>
-          <el-button type="text" icon="el-icon-finished" class="role__btn" @click="btnConfigulation(scope.row)" :disabled="!(scope.row.applyStatus==='SAMPLING' || scope.row.applyStatus==='UNSAMPLED' || scope.row.applyStatus==='ARRIVED' || scope.row.applyStatus==='RECEIVED')&&scope.row.processFlag!=='Y' ">
+          <el-button type="text" icon="el-icon-finished" class="role__btn" @click="btnConfigulation(scope.row)" :disabled="(scope.row.applyStatus==='SAMPLING' || scope.row.applyStatus==='UNSAMPLED' || scope.row.applyStatus==='ARRIVED' || scope.row.applyStatus==='RECEIVED')&&scope.row.processFlag==='Y' ">
            <!-- <el-button type="text" icon="el-icon-finished" class="role__btn" @click="btnConfigulation(scope.row)" > -->
             <em>处理</em>
           </el-button>
