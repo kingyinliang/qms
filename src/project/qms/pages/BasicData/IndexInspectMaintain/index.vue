@@ -5,6 +5,7 @@
     :leftTitle="pageLeftColumnTitle"
     :rightTitle="pageRightColumnTitle"
     :treeData="treeData"
+    :searchPlaceHolder="'输入检验名称搜索'"
     :nodeKey="'inspectMethodId'"
     :treeProps="{ label: 'inspect',children:'inspectGroups' }"
     @treeNodeClick="val=>{return getMaterialDetail('default',val,'')}"
@@ -32,7 +33,7 @@
             </el-input>
             <div>
               <el-button icon="el-icon-search" class="topic-button" size="small" @click="btnGetMainData" :disabled="Object.keys(globalMainObj).length===0">查询</el-button>
-              <el-button icon="el-icon-plus" class="topic-button" type="primary" size="small" @click="handleParameterItem()" :disabled="Object.keys(globalMainObj).length===0">新增</el-button>
+              <el-button icon="el-icon-plus" class="topic-button" type="primary" size="small" @click="handleParameterItem" :disabled="Object.keys(globalMainObj).length===0">新增</el-button>
               <el-button icon="el-icon-delete" class="topic-button" type="danger" size="small" @click="btnDeleteOfParameterGroupDataDelete" :disabled="multipleSelection.length===0">批量删除</el-button>
             </div>
         </div>
@@ -44,7 +45,7 @@
             @row-dblclick="setProcessParameter"
             :row-style="tableRowFocusStyle"
             >
-            <el-table-column type="selection" width="45" />
+            <el-table-column type="selection" width="55" align="center"/>
             <el-table-column type="index" :index="index => index + 1 + (Number(currentPage) - 1) * (Number(pageSize))" label="序号"  width="55" fixed align="center" size="small" />
             <el-table-column label="编码" prop="parameterGroupCode" :show-overflow-tooltip="true" min-width="100" />
             <el-table-column label="过程参数组" prop="parameterGroupName" :show-overflow-tooltip="true" min-width="100" />
@@ -90,7 +91,7 @@
     <!--参数配置-->
     <template v-if="mainDialog.title==='参数配置'">
       <el-form :model="addParameterGroupform">
-        <el-form-item v-if="addParameterGroupform.id!==''" label="编码：" prop="parameterGroupCode" :label-width="'140px'" >
+        <el-form-item v-if="addParameterGroupform.id" label="编码：" prop="parameterGroupCode" :label-width="'140px'" >
           <el-input v-model="addParameterGroupform.parameterGroupCode" class="140px" autocomplete="off" :disabled="true" placeholder="自动带出"></el-input>
         </el-form-item>
         <el-form-item label="过程参数组：" prop="parameterGroupName" :label-width="'140px'" class="required">
@@ -112,10 +113,10 @@
                       <el-tooltip
                       effect="dark"
                       :content="parameterTreeSelectedString"
-                      :disabled="parameterTreeSelectedString===''"
+                      :disabled="!parameterTreeSelectedString"
                       placement="top"
                     >
-                      <input class="el-input__inner" type="botton" readonly autocomplete="off" placeholder="请选择" v-model="parameterTreeSelectedString"  >
+                        <input class="el-input__inner" type="botton" readonly autocomplete="off" placeholder="请选择" v-model="parameterTreeSelectedString"  >
                       </el-tooltip>
                       <span class="el-input__suffix">
                         <span class="el-input__suffix-inner">
@@ -639,6 +640,10 @@ export default defineComponent({
         data[i].inspectMaterialCode = data[i].inspectTypeCode
         data[i].inspectMaterialName = data[i].inspectTypeName
         data[i].location = ''
+        if (data[i].parentId === '0') {
+          data[i]._level = 1
+          data[i].location = data[i].inspectTypeName
+        }
         temp[data[i][id]] = data[i]
       }
       for (let k = 0; k < data.length; k++) {
@@ -664,6 +669,12 @@ export default defineComponent({
 
           temp[data[k][pid]].children.push(data[k])
         } else {
+          if (data[k].inspectMaterialAlls.length !== 0) {
+            data[k].inspectMaterialAlls.forEach((item:ParameterTreeData, index:number) => {
+              item.location = data[k].location
+              data[k].children[index].location = data[k].location
+            })
+          }
           res.push(data[k])
         }
       }

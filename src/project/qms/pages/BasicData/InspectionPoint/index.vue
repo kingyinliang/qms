@@ -11,7 +11,7 @@
       </div>
     </template>
     <el-table ref="multipleTable" border :cell-style="{'text-align':'center'}" :data="tableData" tooltip-effect="dark" style="width: 100%" @selection-change="handleSelectionChange">
-      <el-table-column type="selection" width="55" />
+      <el-table-column type="selection" width="55" align="center" />
       <el-table-column type="index" :index="(index) => index + 1 + (queryForm.current - 1) * queryForm.size" label="序号" width="50" />
       <el-table-column label="生产车间" prop="deptName" min-width="130" :show-overflow-tooltip="true" />
       <el-table-column label="检验点" prop="siteName" min-width="120" :show-overflow-tooltip="true" />

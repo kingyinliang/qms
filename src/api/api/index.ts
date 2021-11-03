@@ -424,6 +424,11 @@ export function MANAGEMENT_INSPECTION_PLAN_DELETE_API (params = {}):Promise<Axio
   return Http.get('/planVersion/deletePlanVersion', params, { baseURL: (process.env.VUE_APP_QMS_API as string) + (process.env.VUE_APP_API_V as string) })
 }
 
+// 任务管理-[过程检验任务]- 检验计划-下拉 获取版本
+export function MANAGEMENT_INSPECTION_PLAN_VERSION_DROP_DOWN_API (params = {}):Promise<AxiosResponse> {
+  return Http.get('/planVersion/queryPlanVersionDropDown', params, { baseURL: (process.env.VUE_APP_QMS_API as string) + (process.env.VUE_APP_API_V as string) })
+}
+
 // 计划管理-[检验计划配置]- 查询
 export function MANAGEMENT_INSPECTION_PLAN_CONFIGURATION_QUERY_API (params = {}):Promise<AxiosResponse> {
   return Http.post('/planConfigure/queryPlanConfigure', params, { baseURL: (process.env.VUE_APP_QMS_API as string) + (process.env.VUE_APP_API_V as string) })
@@ -462,4 +467,74 @@ export function MANAGEMENT_INSPECTION_PLAN_CONFIGURATION_PLAN_INDEX_MATERIAL_QUE
 // 计划管理-[检验计划配置]- 检验计划配置-检验类信息查询
 export function MANAGEMENT_INSPECTION_PLAN_CONFIGURATION_PLAN_INDEX_RELATION_TYPE_QUERY_API (params = {}):Promise<AxiosResponse> {
   return Http.get('/planConfigure/queryPlanConfigureRelationType', params, { baseURL: (process.env.VUE_APP_QMS_API as string) + (process.env.VUE_APP_API_V as string) })
+}
+
+// 任务管理-[过程检验任务]- 该版本下的取样部门下拉
+export function MANAGEMENT_PROCESS_INSPECTION_TASK_SAMPLE_DEPARTMENT_DROP_DOWN_API (params = {}):Promise<AxiosResponse> {
+  return Http.get('/planConfigure/queryPlanConfigureDept?planVersionId', params, { baseURL: (process.env.VUE_APP_QMS_API as string) + (process.env.VUE_APP_API_V as string) })
+}
+
+// 任务管理-[过程检验任务]- 过程检验任务-查询
+export function MANAGEMENT_PROCESS_INSPECTION_TASK_QUERY_API (params = {}):Promise<AxiosResponse> {
+  return Http.post('/taskManage/queryTaskManage ', params, { baseURL: (process.env.VUE_APP_QMS_TASK_API as string) + (process.env.VUE_APP_API_V as string) })
+}
+
+// 任务管理-[过程检验任务]- 过程检验任务 取样单位下拉
+export function MANAGEMENT_PROCESS_INSPECTION_TASK_INSPECT_MATERIAL_DROP_DOWN_API (params = {}):Promise<AxiosResponse> {
+  return Http.get('/inspectType/getInspectTypeByInspectMaterialId', params, { baseURL: (process.env.VUE_APP_QMS_API as string) + (process.env.VUE_APP_API_V as string) })
+}
+
+// 任务管理-[过程检验任务]- 过程检验任务-编辑
+export function MANAGEMENT_PROCESS_INSPECTION_TASK_UPDATE_API (params = {}):Promise<AxiosResponse> {
+  return Http.post('/taskSample/updateTaskSample', params, { baseURL: (process.env.VUE_APP_QMS_TASK_API as string) + (process.env.VUE_APP_API_V as string) })
+}
+
+// 任务管理-[过程检验任务]- 过程检验任务-取消
+export function MANAGEMENT_PROCESS_INSPECTION_TASK_CANCEL_API (params = {}):Promise<AxiosResponse> {
+  return Http.get('/taskManage/cancelTaskManage', params, { baseURL: (process.env.VUE_APP_QMS_TASK_API as string) + (process.env.VUE_APP_API_V as string) })
+}
+
+// 任务管理-[临时检验任务]- 临时检验任务-查询
+export function MANAGEMENT_PROCESS_INSPECTION_TASK_STATUS_QUERY_API (params = {}):Promise<AxiosResponse> {
+  return Http.post('/taskTempApply/queryTaskTempApply', params, { baseURL: (process.env.VUE_APP_QMS_TASK_API as string) + (process.env.VUE_APP_API_V as string) })
+}
+
+// 任务管理-[临时检验任务]- 临时检验任务-删除
+export function MANAGEMENT_PROCESS_INSPECTION_TASK_STATUS_DELETE_API (params = {}):Promise<AxiosResponse> {
+  return Http.get('/taskTempApply/deleteTaskTempApply', params, { baseURL: (process.env.VUE_APP_QMS_TASK_API as string) + (process.env.VUE_APP_API_V as string) })
+}
+
+// 任务管理-[临时检验任务]- 临时检验任务-下拉
+export function MANAGEMENT_PROCESS_INSPECTION_TASK_METHOD_DROPDOWN_API (params = {}):Promise<AxiosResponse> {
+  return Http.get('/inspectMethod/queryInspectMethodDropDown', params, { baseURL: (process.env.VUE_APP_QMS_API as string) + (process.env.VUE_APP_API_V as string) })
+}
+
+// 任务管理-[临时检验任务]- [新增][编辑]- 保存
+export function MANAGEMENT_PROCESS_INSPECTION_TASK_ADD_AND_EDIT_SAVE_API (params = {}):Promise<AxiosResponse> {
+  return Http.post('/taskTempApply/modifyTaskTempApply', params, { baseURL: (process.env.VUE_APP_QMS_TASK_API as string) + (process.env.VUE_APP_API_V as string) })
+}
+
+// 任务管理-[临时检验任务]- [新增][编辑]- 提交
+export function MANAGEMENT_PROCESS_INSPECTION_TASK_ADD_AND_EDIT_SUBMIT_API (params = {}):Promise<AxiosResponse> {
+  return Http.post('/taskTempApply/saveSubmitTaskTempApply', params, { baseURL: (process.env.VUE_APP_QMS_TASK_API as string) + (process.env.VUE_APP_API_V as string) })
+}
+
+// 任务管理-[临时检验任务]- [分配]- 查询
+export function MANAGEMENT_PROCESS_INSPECTION_TASK_ASSIGN_QUERY_API (params = {}):Promise<AxiosResponse> {
+  return Http.get('/taskTempIndex/queryTaskTempIndex', params, { baseURL: (process.env.VUE_APP_QMS_TASK_API as string) + (process.env.VUE_APP_API_V as string) })
+}
+
+// 任务管理-[临时检验任务]- [分配]- 提交
+export function MANAGEMENT_PROCESS_INSPECTION_TASK_ASSIGN_SUBMIT_API (params = {}):Promise<AxiosResponse> {
+  return Http.post('/taskTempApply/distributeSubmitTaskTempApply', params, { baseURL: (process.env.VUE_APP_QMS_TASK_API as string) + (process.env.VUE_APP_API_V as string) })
+}
+
+// 任务管理-[临时检验任务]- [分配]- 保存
+export function MANAGEMENT_PROCESS_INSPECTION_TASK_ASSIGN_SAVE_API (params = {}):Promise<AxiosResponse> {
+  return Http.post('/taskTempIndex/modifyTaskTempIndex', params, { baseURL: (process.env.VUE_APP_QMS_TASK_API as string) + (process.env.VUE_APP_API_V as string) })
+}
+
+// 任务管理-[临时检验任务]- [分配]- 删除
+export function MANAGEMENT_PROCESS_INSPECTION_TASK_ASSIGN_DELETE_API (params = {}):Promise<AxiosResponse> {
+  return Http.get('/taskTempIndex/deleteTaskTempIndex', params, { baseURL: (process.env.VUE_APP_QMS_TASK_API as string) + (process.env.VUE_APP_API_V as string) })
 }
