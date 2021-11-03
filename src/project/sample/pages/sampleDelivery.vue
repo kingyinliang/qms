@@ -63,6 +63,8 @@ export default defineComponent({
       const { data } = await SAMPLE_HANDOVER_QUERY({ sampleCode: sampleCode.value })
       if (!data.data) {
         proxy.$errorToast('该样品码不否存')
+      } else if (tableData.value.filter((it:any) => it.sampleCode === data.data.sampleCode).length) {
+        proxy.$errorToast('该样品码以在表格内')
       } else if (data.data.taskStatus === 'SAMPLING') {
         tableData.value.push(data.data)
         multipleTableRef.value.toggleRowSelection(data.data)
