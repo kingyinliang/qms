@@ -107,19 +107,19 @@
     </el-row>
   </mds-card>
   <el-dialog v-model="addOrUpdateDialog" title="任务" width="30%">
-    <el-form size="small" :model="addOrUpdateForm" label-width="85px">
-      <el-form-item label="任务类型:" v-if="task === 'PROCESS'">
+    <el-form ref="addOrUpdateRef" size="small" :model="addOrUpdateForm" :rules="addOrUpdateFormRule" label-width="95px">
+      <el-form-item label="任务类型:" v-if="task === 'PROCESS'" prop="temporaryFlag">
         <el-radio-group v-model="addOrUpdateForm.temporaryFlag">
           <el-radio label="N">计划</el-radio>
           <el-radio label="Y">临时</el-radio>
         </el-radio-group>
       </el-form-item>
-      <el-form-item label="检验类：">
+      <el-form-item label="检验类：" prop="inspectTypeId">
         <el-select v-model="addOrUpdateForm.inspectTypeId" :disabled="addOrUpdateForm.id !== ''" filterable placeholder="请选择" @change="id => inspectChange(id)" style="width: 100%">
           <el-option v-for="item in inspect" :key="item.id" :label="item.inspectTypeName" :value="item.id" />
         </el-select>
       </el-form-item>
-      <el-form-item label="取样部门：" v-if="task === 'PROCESS'">
+      <el-form-item label="取样部门：" v-if="task === 'PROCESS'" prop="sampleDeptId">
         <el-select v-model="addOrUpdateForm.sampleDeptId" filterable placeholder="请选择" style="width: 100%" @change="id => deptChange(id)">
           <el-option v-for="item in dept" :key="item.deptId" :label="item.deptName" :value="item.deptId" />
         </el-select>
@@ -260,6 +260,23 @@ interface TableData{
   packing?: string
   handleMod?: string
 }
+const addOrUpdateFormRule = {
+  temporaryFlag: [{
+    required: true,
+    message: '请选择任务类型',
+    trigger: 'blur'
+  }],
+  inspectTypeId: [{
+    required: true,
+    message: '请选择检验类',
+    trigger: 'blur'
+  }],
+  sampleDeptId: [{
+    required: true,
+    message: '请选择取样部门',
+    trigger: 'blur'
+  }]
+}
 export default defineComponent({
   name: 'SampleSampling',
   components: {
@@ -270,6 +287,7 @@ export default defineComponent({
     const proxy = ctx.proxy as any
     const { gotoPage } = layoutTs()
     const printModuleRef = ref()
+    const addOrUpdateRef = ref()
     const task = ref('INCOMING') // 选择任务
     const taskList = ref<any[]>([]) // 任务汇总
     const addOrUpdateDialog = ref(false)
@@ -344,14 +362,17 @@ export default defineComponent({
     const addOrUpdate = async (row?: TableData) => {
       addOrUpdateDialog.value = true
       await nextTick()
+      addOrUpdateRef.value.clearValidate()
       if (row) {
         addOrUpdateForm.value = { ...row }
+        getInspect(false)
         await inspectChangeHttp(addOrUpdateForm.value.inspectTypeId)
         if (task.value === 'PROCESS') {
           await deptChangeHttp(addOrUpdateForm.value.sampleDeptId)
           await materialChange(addOrUpdateForm.value.inspectMaterialCode)
         }
       } else {
+        getInspect(true)
         addOrUpdateForm.value = {
           id: '',
           taskSampleClassify: task.value,
@@ -387,16 +408,20 @@ export default defineComponent({
     }
     // 新建修改确认
     const updateFormSubmit = async () => {
-      addOrUpdateDialog.value = false
-      sampleInspectDialog.value = false
-      if (addOrUpdateForm.value.id && task.value === 'PROCESS') {
-        await SAMPLE_SAMPLING_TASK_PROCESS_UPDATE(addOrUpdateForm.value)
-      } else if (addOrUpdateForm.value.id && task.value === 'ASSIST') {
-        await SAMPLE_SAMPLING_TASK_ASSIST_UPDATE(addOrUpdateForm.value)
-      }
-      proxy.$successToast('操作成功')
-      query()
-      getTask()
+      addOrUpdateRef.value.validate(async (valid: boolean) => {
+        if (valid) {
+          addOrUpdateDialog.value = false
+          sampleInspectDialog.value = false
+          if (addOrUpdateForm.value.id && task.value === 'PROCESS') {
+            await SAMPLE_SAMPLING_TASK_PROCESS_UPDATE(addOrUpdateForm.value)
+          } else if (addOrUpdateForm.value.id && task.value === 'ASSIST') {
+            await SAMPLE_SAMPLING_TASK_ASSIST_UPDATE(addOrUpdateForm.value)
+          }
+          proxy.$successToast('操作成功')
+          query()
+          getTask()
+        }
+      })
     }
 
     // 获取检验类、状态下拉
@@ -405,8 +430,21 @@ export default defineComponent({
         const { data } = await DICT_DROPDOWN({ dictType: 'TASK_STATUS' })
         taskStatus.value = data.data
       } catch (e) {}
+    }
+    const getInspect = async (st: boolean) => {
+      const interfaceData:any = {
+        assistFlag: ''
+      }
+      if (task.value === 'PROCESS') {
+        interfaceData.assistFlag = 'N'
+      } else if (task.value === 'ASSIST') {
+        interfaceData.assistFlag = 'Y'
+      }
+      if (st) {
+        interfaceData.manualFlag = 'Y'
+      }
       try {
-        const { data } = await DROPDOWN_INSPECT_TYPE({ assistFlag: 'N' })
+        const { data } = await DROPDOWN_INSPECT_TYPE(interfaceData)
         inspect.value = data.data
       } catch (e) {}
     }
@@ -544,6 +582,7 @@ export default defineComponent({
     })
 
     return {
+      addOrUpdateRef,
       printModuleRef,
       task,
       taskList,
@@ -560,6 +599,7 @@ export default defineComponent({
       dept,
       samplingMessage,
       selectionData,
+      addOrUpdateFormRule,
       delRow,
       sampling,
       checkDate,
