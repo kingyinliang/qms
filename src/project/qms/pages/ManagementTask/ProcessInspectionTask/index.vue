@@ -120,12 +120,12 @@
           <el-input v-model="formGlobleItem.inspectContent" class="140px" autocomplete="off"  :disabled="true"></el-input>
       </el-form-item>
       <el-form-item label="取样单位：" :label-width="cssForformLabelWidth" prop="sampleDeptName">
-        <el-select v-model="formGlobleItem.sampleDeptName" placeholder="请选择" style="width:100%" filterable clearable>
-          <el-option v-for="opt in sampleUnitptions" :key="opt.id" :label="opt.deptName" :value="opt.id" />
+        <el-select v-model="formGlobleItem.sampleDeptName" placeholder="请选择" style="width:100%" filterable clearable @change="actChangeSampleUnitOfFormGlobleItem">
+          <el-option v-for="opt in sampleUnitptions" :key="opt.deptId" :label="opt.deptName" :value="opt.deptId" />
         </el-select>
       </el-form-item>
       <el-form-item label="物料信息：" prop="materialInfo" :label-width="cssForformLabelWidth">
-          <el-input v-model="formGlobleItem.materialInfo" class="140px" autocomplete="off"  disabled="true"></el-input>
+          <el-input v-model="formGlobleItem.materialInfo" class="140px" autocomplete="off"  :disabled="true"></el-input>
       </el-form-item>
       <el-form-item label="取样信息：" prop="inspectSiteName" :label-width="cssForformLabelWidth">
           <el-input v-model="formGlobleItem.inspectSiteName" class="140px" autocomplete="off"  :disabled="true"></el-input>
@@ -245,6 +245,7 @@ interface VersionOption{
 
 interface SampleDeptIdOptions{
   deptName: string
+  deptId: string
   id: string
 }
 
@@ -621,6 +622,14 @@ export default defineComponent({
       })
     }
 
+    const actChangeSampleUnitOfFormGlobleItem = (val:string) => {
+      state.sampleUnitptions.forEach(item => {
+        if (item.deptId === val) {
+          state.formGlobleItem.sampleDeptName = item.deptName
+        }
+      })
+    }
+
     // [FORM:select][EVENT:change] 版本
     const handleChangeSelectVersion = (val:string) => {
       state.dataFormOfSearchFilter = {
@@ -686,6 +695,7 @@ export default defineComponent({
       // ACT
       actGetTaskDetailOfTree,
       actGetTaskDetailForTable,
+      actChangeSampleUnitOfFormGlobleItem,
       reset,
       // REF
       refTreeModule,
