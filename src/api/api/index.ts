@@ -11,7 +11,9 @@ export interface Dict {
 }
 
 export function GET_TENANT_BY_USER_ID (params = {}):Promise<AxiosResponse> {
-  return Http.post('/mock/test', params, { baseURL: '' })
+  return Http.get('/sysTenant/queryUserTenant', params, {
+    baseURL: (process.env.VUE_APP_SYSTEM_API as string) + (process.env.VUE_APP_API_V as string)
+  })
 }
 
 export function UPDATE_TENANT (params = {}):Promise<AxiosResponse> {

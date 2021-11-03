@@ -5,10 +5,21 @@
     @mouseenter="showMenu"
     @mouseleave="closeMenu"
   >
-    <div class="SystemLayout__sidebar__logo">
-      <img v-if="sidebarFold" class="SystemLayout__sidebar__logo--small" src="~@/assets/img/layout/logoHead2.png" alt="logo" style="width: 28px">
-      <img v-else class="SystemLayout__sidebar__logo--big" src="~@/assets/img/layout/logoHead1.png" alt="logo" >
-    </div>
+    <el-popover
+      popper-class="tenant"
+      placement="right"
+      trigger="hover"
+    >
+      <div v-for="(item, index) in tenant" :key="index" class="tenant__item" :style='"background-image: url(" + item.backgroundImgUrl + ")"' @click="goTenant(item)">
+        <img :src="item.logoImgUrl" alt="">
+      </div>
+      <template #reference>
+        <div class="SystemLayout__sidebar__logo">
+          <img v-if="sidebarFold" class="SystemLayout__sidebar__logo--small" src="~@/assets/img/layout/logoHead2.png" alt="logo" style="width: 28px">
+          <img v-else class="SystemLayout__sidebar__logo--big" src="~@/assets/img/layout/logoHead1.png" alt="logo" >
+        </div>
+      </template>
+    </el-popover>
     <el-menu
       :class="{'SystemLayout__sidebar--flold': !sidebarFold}"
       :style="{width: sidebarFold? '64px' : '170px'}"
@@ -29,7 +40,7 @@
 </template>
 
 <script>
-import { defineComponent } from 'vue'
+import { defineComponent, onMounted } from 'vue'
 import LeftSubMenu from './left-sub-menu.vue'
 import layoutTs from '@/components/layout/layoutTs'
 
@@ -42,19 +53,26 @@ export default defineComponent({
     menuList: Array
   },
   setup () {
-    const { menuActiveName, sidebarFold, goHome, showMenu, closeMenu } = layoutTs()
+    const { menuActiveName, sidebarFold, goHome, showMenu, closeMenu, getTenant, tenant } = layoutTs()
+
+    const goTenant = (item) => {
+      window.location.href = item.redirectUri
+    }
+    onMounted(getTenant)
 
     return {
+      tenant,
       menuActiveName,
       sidebarFold,
       goHome,
       showMenu,
-      closeMenu
+      closeMenu,
+      goTenant
     }
   }
 })
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
 
 </style>
