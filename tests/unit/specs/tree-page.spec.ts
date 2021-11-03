@@ -7,11 +7,10 @@ describe('TreePage.vue', () => {
     props: { title },
   })
   it('页面点击', async () => {
-    await wrapper.setData({ menuVisible: true })
-    expect(wrapper.vm.$data.menuVisible).toBe(true)
+    wrapper.vm.menuVisible = true
+    expect(wrapper.vm.menuVisible).toBe(true)
     await window.document.dispatchEvent(new Event('click'))
-    console.log(wrapper.vm)
-    // expect(wrapper.vm.$data.menuVisible).toBe(false)
+    expect(wrapper.vm.menuVisible).toBe(false)
   })
   it('title传值', () => {
     expect(wrapper.props().title).toMatch(title)
