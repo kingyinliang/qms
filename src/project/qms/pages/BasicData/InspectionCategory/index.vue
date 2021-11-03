@@ -344,7 +344,7 @@ export default defineComponent({
       addLevelInfo.relation = []
       addLevelInfo.sample = []
       addLevelInfo.cooperate = []
-      addLevelInfo.manualFlag = 'Y'
+      addLevelInfo.manualFlag = 'N'
       addLevelInfo.sampleAmount = ''
       addLevelInfo.inspectTypeName = ''
     }
