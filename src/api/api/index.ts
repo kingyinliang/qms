@@ -471,7 +471,7 @@ export function MANAGEMENT_INSPECTION_PLAN_CONFIGURATION_PLAN_INDEX_RELATION_TYP
 
 // 任务管理-[过程检验任务]- 该版本下的取样部门下拉
 export function MANAGEMENT_PROCESS_INSPECTION_TASK_SAMPLE_DEPARTMENT_DROP_DOWN_API (params = {}):Promise<AxiosResponse> {
-  return Http.get('/planConfigure/queryPlanConfigureDept?planVersionId', params, { baseURL: (process.env.VUE_APP_QMS_API as string) + (process.env.VUE_APP_API_V as string) })
+  return Http.get('/planConfigure/queryPlanConfigureDept', params, { baseURL: (process.env.VUE_APP_QMS_API as string) + (process.env.VUE_APP_API_V as string) })
 }
 
 // 任务管理-[过程检验任务]- 过程检验任务-查询
