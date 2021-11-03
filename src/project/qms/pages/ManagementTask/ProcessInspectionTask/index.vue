@@ -40,9 +40,9 @@
           <el-select v-model="dataFormOfSearchFilter.sampleDeptId" placeholder="请选择" size="small" clearable>
             <el-option
               v-for="item in sampleDeptIdOptions"
-              :key="item.id"
+              :key="item.deptId"
               :label="item.deptName"
-              :value="item.id"
+              :value="item.deptId"
             >
             </el-option>
           </el-select>
@@ -88,7 +88,10 @@
         <el-table-column label="触发方" prop="triggerBy" :show-overflow-tooltip="true" min-width="100" />
         <el-table-column fixed="right" label="操作" header-align="left" align="left" width="150">
             <template #default="scope">
-                <el-button  type="text" icon="el-icon-edit" @click="btnClickItemEditOfTopicMainData(scope.row)" :disabled="!(scope.row.taskStatus==='UNSAMPLED'&&scope.row.loopFlag==='Y')" class="role__btn">
+                <!-- <el-button  type="text" icon="el-icon-edit" @click="btnClickItemEditOfTopicMainData(scope.row)" :disabled="!(scope.row.taskStatus==='UNSAMPLED'&&scope.row.loopFlag==='Y')" class="role__btn">
+                    <em>编辑</em>
+                </el-button> -->
+                <el-button  type="text" icon="el-icon-edit" @click="btnClickItemEditOfTopicMainData(scope.row)" class="role__btn">
                     <em>编辑</em>
                 </el-button>
                 <el-button  type="text" icon="el-icon-delete" @click="btnClickItemCancelOfTopicMainData(scope.row.id)" :disabled="scope.row.taskStatus!=='UNSAMPLED'" class="role__btn">
@@ -119,8 +122,8 @@
       <el-form-item label="检验内容：" prop="inspectContent" :label-width="cssForformLabelWidth">
           <el-input v-model="formGlobleItem.inspectContent" class="140px" autocomplete="off"  :disabled="true"></el-input>
       </el-form-item>
-      <el-form-item label="取样单位：" :label-width="cssForformLabelWidth" prop="sampleDeptName">
-        <el-select v-model="formGlobleItem.sampleDeptName" placeholder="请选择" style="width:100%" filterable clearable @change="actChangeSampleUnitOfFormGlobleItem">
+      <el-form-item label="取样单位：" :label-width="cssForformLabelWidth" prop="sampleDeptId">
+        <el-select v-model="formGlobleItem.sampleDeptId" placeholder="请选择" style="width:100%" filterable clearable @change="actChangeSampleUnitOfFormGlobleItem">
           <el-option v-for="opt in sampleUnitptions" :key="opt.deptId" :label="opt.deptName" :value="opt.deptId" />
         </el-select>
       </el-form-item>
@@ -246,7 +249,6 @@ interface VersionOption{
 interface SampleDeptIdOptions{
   deptName: string
   deptId: string
-  id: string
 }
 
 interface DictOptions{
@@ -255,8 +257,23 @@ interface DictOptions{
   dictValue: string
 }
 
+interface FormGlobleItem{
+  id: string
+  sampleCode: string
+  taskStatus: string
+  inspectContent: string
+  sampleDeptId: string
+  sampleDeptName: string
+  inspectSiteName: string
+  materialInfo: string
+  inspectBatch: string
+  itemName: string
+  supplier: string
+}
+
 interface State {
     versionValue: string,
+    versionLabel: string,
     versionnValueOptions: VersionOption[],
     dataFormOfSearchFilter:{
       sampleCode: string
@@ -276,7 +293,7 @@ interface State {
     pageSize: number
     dataTableOfTopicMain: TopicMainData[] // 右边 table
     treeData: TreeData[]
-    formGlobleItem: any // TopicMainDataItem
+    formGlobleItem: FormGlobleItem // TopicMainDataItem
     currentCategoryId: string
     sampleUnitptions: SampleDeptIdOptions[]
     currentFocusTargetObj:any
@@ -293,6 +310,7 @@ export default defineComponent({
     const proxy = ctx.proxy as any
     const state = reactive<State>({
       versionValue: '',
+      versionLabel: '',
       versionnValueOptions: [],
       dataFormOfSearchFilter: {
         sampleCode: '',
@@ -313,9 +331,11 @@ export default defineComponent({
       treeData: [],
       currentCategoryId: '',
       formGlobleItem: {
+        id: '',
         sampleCode: '',
         taskStatus: '',
         inspectContent: '',
+        sampleDeptId: '',
         sampleDeptName: '',
         inspectSiteName: '',
         materialInfo: '',
@@ -359,7 +379,7 @@ export default defineComponent({
     // [dataTableOfTopicMain][BTN:编辑]
     const btnClickItemEditOfTopicMainData = async (row:any) => {
       state.isDialogVisibleForGlobleItem = true
-      await getDropDownOptions(row.sampleDeptId) // 获取下拉
+      await getDropDownOptions(row.inspectTypeId) // 获取下拉
       await nextTick()
       refGlobleItem.value.resetFields()
       state.formGlobleItem = {
@@ -367,7 +387,6 @@ export default defineComponent({
         sampleCode: row.sampleCode,
         taskStatus: row.taskStatus,
         inspectContent: row.inspectContent,
-        taskSampleId: row.taskSampleId,
         sampleDeptId: row.sampleDeptId,
         sampleDeptName: row.sampleDeptName,
         inspectSiteName: row.inspectSiteName,
@@ -436,7 +455,7 @@ export default defineComponent({
         sampleDeptId: searchString.sampleDeptId,
         inspectTypeIds: state.currentFocusTargetObj.isFinalNode === false ? tempList.map((item:any) => item.id) : [currentCategoryId],
         // inspectTypeIds: tempList.map((item:any) => item.id),
-        planVersion: state.versionValue,
+        planVersion: state.versionLabel,
         current: currentPage,
         size: pageSize,
         inspectMaterialCode: !state.currentFocusTargetObj.isFinalNode ? '' : state.currentFocusTargetObj.inspectMaterialCode
@@ -595,9 +614,11 @@ export default defineComponent({
     // [Dialog][ACTION:取消]
     const reset = () => {
       state.formGlobleItem = {
+        id: '',
         sampleCode: '',
         taskStatus: '',
         inspectContent: '',
+        sampleDeptId: '',
         sampleDeptName: '',
         inspectSiteName: '',
         materialInfo: '',
@@ -637,6 +658,12 @@ export default defineComponent({
         sampleDeptId: '',
         taskStatus: ''
       }
+      state.versionnValueOptions.forEach(item => {
+        if (item.id === val) {
+          state.versionLabel = item.planVersion
+        }
+      })
+
       val && resetTaskSearchFilter(val)
 
       // [ACT:get] 获取 tree-data
@@ -676,8 +703,9 @@ export default defineComponent({
 
       // 预设带入第一笔版本
       if (state.versionnValueOptions[0]) {
-        state.versionValue = state.versionnValueOptions[0].planVersion
-        handleChangeSelectVersion(state.versionnValueOptions[0].id)
+        state.versionLabel = state.versionnValueOptions[0].planVersion
+        state.versionValue = state.versionnValueOptions[0].id
+        handleChangeSelectVersion(state.versionValue)
       }
     })
 

@@ -645,6 +645,10 @@ export default defineComponent({
           data[i].location = data[i].inspectTypeName
         }
         temp[data[i][id]] = data[i]
+
+        if (data[i].existConfiguration === 'Y') {
+          Object.assign(data[i], { disabled: true })
+        }
       }
       for (let k = 0; k < data.length; k++) {
         if (temp[data[k][pid]] && data[k][id] !== data[k][pid]) {
@@ -703,6 +707,8 @@ export default defineComponent({
         }
       })
     }
+
+    // TODO
     // [BTN:编辑][BTN:新增][参数明细]
     const handleParameterItem = (row:TopicMainData) => {
       if (row) { // 编辑
@@ -750,7 +756,9 @@ export default defineComponent({
       state.mainDialog = {
         title: '参数配置'
       }
-      INSPECT_INDEX_PARAMETER_RELATIVE_ITEM_API(
+      INSPECT_INDEX_PARAMETER_RELATIVE_ITEM_API({
+        inspectIndexMethodId: 'Y'
+      }
       ).then((res) => {
         state.parameterTreeData = parameterTreeDataTranslater(JSON.parse(JSON.stringify(res.data.data)), 'id', 'parentId')
       })
