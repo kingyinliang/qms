@@ -2,13 +2,14 @@ import { ComponentInternalInstance, computed, getCurrentInstance, ref, Ref, next
 import { useStore } from 'vuex'
 import { useRouter, useRoute, Router, RouteLocationNormalizedLoaded, RouteLocationNormalized } from 'vue-router'
 import { WritableComputedRef } from '@vue/reactivity'
-import { USER_QUIT_API } from '@/api/api'
+import { GET_TENANT_BY_USER_ID, USER_QUIT_API } from '@/api/api'
 import VueCookies from '@/components/cookie/vue-cookies'
 
 // eslint-disable-next-line
 type Fn<T> = (ctx?: any) => T
 
 interface LayoutTs<T> {
+  tenant: Ref<never[]>
   systemVisible: Ref<boolean>
   router: Router
   route: RouteLocationNormalizedLoaded
@@ -22,6 +23,7 @@ interface LayoutTs<T> {
   mainTabsActiveName: WritableComputedRef<T>
   gotoRouteHandle: Fn<T>
   routeHandle: Fn<T>
+  getTenant: Fn<T>
   quit: Fn<T>
   showMenu: Fn<T>
   goHome: Fn<T>
@@ -62,6 +64,7 @@ export default function (): LayoutTs<any> {
   const route = useRoute()
 
   const systemVisible = ref(false)
+  const tenant = ref([])
 
   const userInfo = computed({
     get: () => store.state.common.userInfo,
@@ -109,6 +112,11 @@ export default function (): LayoutTs<any> {
     console.log(num)
     return num
   })
+
+  const getTenant = async () => {
+    const { data } = await GET_TENANT_BY_USER_ID({ userId: userInfo.value.id })
+    tenant.value = data.data
+  }
 
   // tabs，切换tab
   const selectedTabHandle = (tab:MainTabs) => {
@@ -242,6 +250,7 @@ export default function (): LayoutTs<any> {
     systemVisible,
     router,
     route,
+    tenant,
     userInfo,
     menuList,
     menuActiveName,
@@ -250,6 +259,7 @@ export default function (): LayoutTs<any> {
     dynamicMenuRoutes,
     mainTabs,
     keepAlivePages,
+    getTenant,
     quit,
     removeTabHandle,
     selectedTabHandle,
