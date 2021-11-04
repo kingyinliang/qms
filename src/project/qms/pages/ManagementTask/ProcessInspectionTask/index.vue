@@ -94,7 +94,7 @@
                 <el-button  type="text" icon="el-icon-edit" @click="btnClickItemEditOfTopicMainData(scope.row)" class="role__btn">
                     <em>编辑</em>
                 </el-button>
-                <el-button  type="text" icon="el-icon-delete" @click="btnClickItemCancelOfTopicMainData(scope.row.id)" :disabled="scope.row.taskStatus!=='UNSAMPLED'" class="role__btn">
+                <el-button  type="text" icon="el-icon-delete" @click="btnClickItemCancelOfTopicMainData(scope.row)" :disabled="scope.row.taskStatus!=='UNSAMPLED'" class="role__btn">
                     <em>取消</em>
                 </el-button>
             </template>
@@ -398,14 +398,16 @@ export default defineComponent({
     }
 
     // [dataTableOfTopicMain][BTN:取消]
-    const btnClickItemCancelOfTopicMainData = async (id:string) => {
+    const btnClickItemCancelOfTopicMainData = async (row:any) => {
+      console.log(row)
       proxy.$confirm('确认取消该数据？', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
       }).then(async () => {
         await MANAGEMENT_PROCESS_INSPECTION_TASK_CANCEL_API({
-          id
+          id: row.id,
+          taskSampleId: row.taskSampleId
         })
         proxy.$successToast('操作成功')
         actGetTaskDetailOfTree(state.currentFocusTargetObj)
