@@ -66,10 +66,9 @@
         <template #default="scope">
           <span class="status"
              :class="{
-                blue: scope.row.taskStatusName === '待取样',
-                green: scope.row.taskStatusName === '取样中',
-                yellow: scope.row.taskStatusName === '已送达',
-                grey: scope.row.taskStatusName === '已送达',
+                yellow: scope.row.taskStatusName === '待取样',
+                green: scope.row.taskStatusName === '已收样',
+                blue: scope.row.taskStatusName === '取样中' || scope.row.taskStatusName === '已送达',
              }"
           >{{ scope.row.taskStatusName }}</span>
         </template>

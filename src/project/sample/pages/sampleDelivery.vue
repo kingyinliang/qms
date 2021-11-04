@@ -17,7 +17,7 @@
       <el-table-column label="样品码" prop="sampleCode" :show-overflow-tooltip="true" />
       <el-table-column label="状态" prop="taskStatusName" min-width="120" :show-overflow-tooltip="true" />
       <el-table-column label="检验内容" prop="inspectContent" min-width="150" :show-overflow-tooltip="true" />
-      <el-table-column label="送样部门" prop="sendSampleDeptName" min-width="150" :show-overflow-tooltip="true" />
+      <el-table-column label="取样部门" prop="sampleDeptName" min-width="150" :show-overflow-tooltip="true" />
       <el-table-column label="取样人" prop="sampler" min-width="150" :show-overflow-tooltip="true" />
       <el-table-column label="取样时间" prop="sampleEndDate" min-width="150" :show-overflow-tooltip="true" />
     </el-table>

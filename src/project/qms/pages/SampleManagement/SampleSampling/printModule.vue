@@ -75,6 +75,7 @@ export default defineComponent({
   @media print {
     @page {
       size: 3cm 3cm;
+      size: portrait;
       margin: 0;
     }
     .none_ele{
