@@ -62,7 +62,18 @@
       <el-table-column type="selection" width="45" :selectable="checkDate" />
       <el-table-column type="index" fixed="left" :index="(index) => index + 1 + (queryForm.current - 1) * queryForm.size" label="序号" width="50" />
       <el-table-column label="样品码" prop="sampleCode" min-width="120" :show-overflow-tooltip="true" />
-      <el-table-column label="状态" prop="taskStatusName" min-width="120" :show-overflow-tooltip="true" />
+      <el-table-column label="状态" prop="taskStatusName" min-width="120" :show-overflow-tooltip="true">
+        <template #default="scope">
+          <span class="status"
+             :class="{
+                blue: scope.row.taskStatusName === '待取样',
+                green: scope.row.taskStatusName === '取样中',
+                yellow: scope.row.taskStatusName === '已送达',
+                grey: scope.row.taskStatusName === '已送达',
+             }"
+          >{{ scope.row.taskStatusName }}</span>
+        </template>
+      </el-table-column>
       <el-table-column label="检验内容" prop="inspectContent" min-width="150" :show-overflow-tooltip="true" />
       <el-table-column v-if="task === 'PROCESS'" label="订单" prop="orderNo" min-width="150" :show-overflow-tooltip="true" />
       <el-table-column v-if="task === 'INCOMING' || task === 'PROCESS'" label="物料信息" min-width="165" :show-overflow-tooltip="true">
@@ -109,7 +120,7 @@
   <el-dialog v-model="addOrUpdateDialog" title="任务" width="30%">
     <el-form ref="addOrUpdateRef" size="small" :model="addOrUpdateForm" :rules="addOrUpdateFormRule" label-width="95px">
       <el-form-item label="任务类型:" v-if="task === 'PROCESS'" prop="temporaryFlag">
-        <el-radio-group v-model="addOrUpdateForm.temporaryFlag">
+        <el-radio-group v-model="addOrUpdateForm.temporaryFlag" :disabled="addOrUpdateForm.triggerBy === 'SYSTEM'">
           <el-radio label="N">计划</el-radio>
           <el-radio label="Y">临时</el-radio>
         </el-radio-group>
@@ -120,7 +131,7 @@
         </el-select>
       </el-form-item>
       <el-form-item label="取样部门：" v-if="task === 'PROCESS'" prop="sampleDeptId">
-        <el-select v-model="addOrUpdateForm.sampleDeptId" filterable placeholder="请选择" style="width: 100%" @change="id => deptChange(id)">
+        <el-select v-model="addOrUpdateForm.sampleDeptId" :disabled="addOrUpdateForm.triggerBy === 'SYSTEM'" filterable placeholder="请选择" style="width: 100%" @change="id => deptChange(id)">
           <el-option v-for="item in dept" :key="item.deptId" :label="item.deptName" :value="item.deptId" />
         </el-select>
       </el-form-item>
@@ -135,7 +146,7 @@
         </el-select>
       </el-form-item>
       <el-form-item label="生产订单：" v-if="task === 'PROCESS'">
-        <el-input v-model="addOrUpdateForm.orderNo" placeholder="请输入" />
+        <el-input v-model="addOrUpdateForm.orderNo" :disabled="addOrUpdateForm.triggerBy === 'SYSTEM'" placeholder="请输入" />
       </el-form-item>
       <el-form-item label="品项：" v-if="task === 'INCOMING' || task === 'PROCESS'">
         <el-input v-model="addOrUpdateForm.itemName" placeholder="请输入" disabled></el-input>
@@ -144,7 +155,7 @@
         <el-input v-model="addOrUpdateForm.supplier" placeholder="请输入" disabled></el-input>
       </el-form-item>
       <el-form-item label="取样信息：" v-if="task === 'PROCESS'">
-        <el-select v-model="addOrUpdateForm.inspectSiteId" filterable placeholder="请选择" style="width: 100%" @change="id => sampleChange(id)">
+        <el-select v-model="addOrUpdateForm.inspectSiteId" :disabled="addOrUpdateForm.triggerBy === 'SYSTEM'" filterable placeholder="请选择" style="width: 100%" @change="id => sampleChange(id)">
           <el-option v-for="item in samplingMessage" :key="item.id" :label="item.holderName" :value="item.id" />
         </el-select>
       </el-form-item>
@@ -233,6 +244,7 @@ interface MaterialObj{
 }
 interface TableData{
   id?: string
+  triggerBy?: string
   sampleCode?: string
   inspectContent?: string
   taskStatus?: string
@@ -428,6 +440,7 @@ export default defineComponent({
     const getSelect = async () => {
       try {
         const { data } = await DICT_DROPDOWN({ dictType: 'TASK_STATUS' })
+        data.data = data.data.filter((it:any) => it.dictCode === 'UNSAMPLED' || it.dictCode === 'SAMPLING' || it.dictCode === 'ARRIVED' || it.dictCode === 'RECEIVED')
         taskStatus.value = data.data
       } catch (e) {}
     }
@@ -540,6 +553,7 @@ export default defineComponent({
         if (row.taskStatus === 'UNSAMPLED') {
           await SAMPLE_SAMPLING_TASK_SAMPLING([row])
           query()
+          getTask()
         }
       } else if (selectionData.value.length) {
         const data = selectionData.value.map(it => ({
@@ -558,6 +572,7 @@ export default defineComponent({
         if (httpData.length) {
           await SAMPLE_SAMPLING_TASK_SAMPLING(httpData)
           query()
+          getTask()
         }
       } else {
         proxy.$warningToast('请选择数据')
@@ -569,9 +584,10 @@ export default defineComponent({
         cancelButtonText: '取消',
         type: 'warning'
       }).then(async () => {
-        await SAMPLE_SAMPLING_TASK_DEL({ taskSampleDeleteReqDto: row })
+        await SAMPLE_SAMPLING_TASK_DEL(row)
         proxy.$successToast('操作成功')
         await query()
+        await getTask()
       })
     }
 
@@ -679,5 +695,31 @@ export default defineComponent({
   .el-form-item{
     margin-bottom: 11px;
   }
+}
+.status{
+  position: relative;
+  padding-left: 15px;
+  &::before {
+    content: "";
+    display: block;
+    border-radius: 50%;
+    position: absolute;
+    top: 7px;
+    left: 0;
+    width: 6px;
+    height: 6px;
+  }
+}
+.yellow::before{
+  background: #FFBF00;
+}
+.blue::before{
+  background: #487BFF;
+}
+.grey::before{
+  background: #D8D8D8;
+}
+.green::before{
+  background: #7ED321;
 }
 </style>

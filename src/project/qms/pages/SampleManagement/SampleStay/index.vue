@@ -92,7 +92,7 @@
   <el-dialog v-model="moveDialog" title="移动" width="50%">
     <el-form ref="moveFormRef" size="small" :model="moveForm" :rules="rules" label-width="100px">
       <el-form-item label="移动类型：" prop="handleType">
-        <el-select v-model="moveForm.handleType" placeholder="请选择" style="width: 100%">
+        <el-select v-model="moveForm.handleType" :disabled="moveForm.id !== ''" placeholder="请选择" style="width: 100%">
           <el-option v-for="item in moveSelect" :key="item.dictCode" :label="item.dictValue" :value="item.dictCode" />
         </el-select>
       </el-form-item>
@@ -214,6 +214,7 @@ export default defineComponent({
           getDetail()
         } else {
           await SAMPLE_STAY_DETAIL_ADD(moveForm.value)
+          query()
         }
         proxy.$successToast('操作成功')
         moveDialog.value = false
