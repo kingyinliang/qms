@@ -509,23 +509,25 @@ export default defineComponent({
     }
 
     // [ACT:trans] 获取组织架构
+    // 叶子节点是(物料) final node
+
     const treeDataTranslater = (data: any[], id: string, pid: string) => {
       const res: any[] = []
       const temp: any = {}
       for (let i = 0; i < data.length; i++) {
         // 追加叶子结点  data[i].assistFlag !== 'Y'
-        if (data[i].inspectMaterialAlls.length !== 0) {
-          data[i].children = []
+        if (data[i].assistFlag === 'N') {
+          Object.assign(data[i], { children: [] })
           data[i].inspectMaterialAlls.forEach((item:TreeDataItem) => {
             data[i].children.push({
               inspectTypeName: item.inspectTypeName,
-              isFinalNode: true,
-              markParentId: data[i].id,
-              id: item.id,
               inspectMaterialCode: item.inspectMaterialCode,
               inspectMaterialName: item.inspectMaterialName,
+              markParentId: data[i].id,
+              id: item.id,
               inspectMaterialAlls: [],
-              existConfiguration: item.existConfiguration
+              existConfiguration: item.existConfiguration,
+              isFinalNode: true
             })
             if (item.existConfiguration === 'Y') {
               data[i].existConfiguration = 'Y'
@@ -533,10 +535,10 @@ export default defineComponent({
           })
         } else {
           // 生产辅助 smell
-          if (data[i].assistFlag === 'Y' && data[i].parentId !== '0') {
-            data[i].isFinalNode = true
+          if (data[i].parentId !== '0') {
+            Object.assign(data[i], { isFinalNode: true })
           } else {
-            data[i].isFinalNode = false
+            Object.assign(data[i], { isFinalNode: false })
           }
         }
 
