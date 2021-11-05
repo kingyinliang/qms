@@ -7,6 +7,7 @@
     :defaultExtend="false"
     :treeData="treeData"
     :treeProps="{ label: 'inspectTypeName',children:'children' }"
+    :defaultFilterNodeProps="{ prop: 'existConfiguration',value:'Y' }"
     @treeNodeClick="actGetTaskDetailOfTree"
     :floatMenu="false"
   >
@@ -177,6 +178,7 @@ interface TreeDataItem {
   inspectMaterialName: string
   inspectTypeName: string
   projectLocation: string
+  existConfiguration: string
 }
 
 interface TreeData {
@@ -197,6 +199,7 @@ interface TreeData {
   projectLocation: string
   isFinalNode: boolean
   markParentId: string
+  existConfiguration :string
 }
 
 interface CoInspect {
@@ -399,7 +402,6 @@ export default defineComponent({
 
     // [dataTableOfTopicMain][BTN:取消]
     const btnClickItemCancelOfTopicMainData = async (row:any) => {
-      console.log(row)
       proxy.$confirm('确认取消该数据？', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
@@ -505,37 +507,36 @@ export default defineComponent({
 
     // TODO tree-data
     // [ACT:trans] 获取组织架构
+    // 叶子节点是(类别) final node
     const treeDataTranslater = (data: any[], id: string, pid: string) => {
       const res: any[] = []
       const temp: any = {}
       for (let i = 0; i < data.length; i++) {
         // 追加叶子结点  data[i].assistFlag !== 'Y'
         if (data[i].assistFlag === 'N') {
-          Object.assign(data[i], { children: [] })
-          Object.assign(data[i], { isFinalNode: true })
+          Object.assign(data[i], { children: [], isFinalNode: true })
+          data[i].inspectMaterialAlls.forEach((item:TreeDataItem) => {
+            data[i].children.push({
+              inspectTypeName: item.inspectTypeName,
+              inspectMaterialCode: item.inspectMaterialCode,
+              inspectMaterialName: item.inspectMaterialName,
+              markParentId: data[i].id,
+              id: item.id,
+              inspectMaterialAlls: [],
 
-          if (data[i].inspectMaterialAlls.length) {
-            // data[i].children = []
-            data[i].inspectMaterialAlls.forEach((item:TreeDataItem) => {
-            // data[i].children.push({ inspectTypeName: item, isFinalNode: true, markParentId: data[i].id, itemId: item.slice(item.lastIndexOf(' ') + 1), id: data[i].id + index })
-              data[i].children.push({
-                inspectTypeName: item.inspectTypeName,
-                // isFinalNode: true,
-                markParentId: data[i].id,
-                id: item.id,
-                inspectMaterialCode: item.inspectMaterialCode,
-                inspectMaterialName: item.inspectMaterialName,
-                inspectMaterialAlls: [],
-                projectLocation: '',
-                canClick: data[i].assistFlag !== 'Y',
-                canEdit: true,
-                canDelete: true,
-                canAdd: true,
-                canGenerate: true,
-                disabled: data[i].assistFlag !== 'Y'
-              })
+              projectLocation: '',
+              canClick: data[i].assistFlag !== 'Y',
+              canEdit: true,
+              canDelete: true,
+              canAdd: true,
+              canGenerate: true,
+              disabled: data[i].assistFlag !== 'Y',
+              existConfiguration: item.existConfiguration
             })
-          }
+            if (item.existConfiguration === 'Y') {
+              data[i].existConfiguration = 'Y'
+            }
+          })
         } else {
           // 生产辅助 smell
           if (data[i].parentId !== '0') {
@@ -546,12 +547,12 @@ export default defineComponent({
         }
 
         if (data[i].parentId === '0') { // 第一级
+          data[i]._level = 1
           data[i].canEdit = false // 是否可编辑
           data[i].canDelete = false // 是否可删除
           data[i].canAdd = false // 是否可新增
           data[i].canGenerate = false // 是否可生成
           data[i].disabled = true
-          data[i]._level = 1
           data[i].projectLocation = data[i].inspectTypeName
         } else { // 第一级以外
           data[i].canEdit = true
@@ -570,6 +571,9 @@ export default defineComponent({
         if (temp[data[k][pid]] && data[k][id] !== data[k][pid]) {
           if (!temp[data[k][pid]].children) {
             temp[data[k][pid]].children = []
+          }
+          if (data[k].existConfiguration === 'Y') {
+            temp[data[k][pid]].existConfiguration = 'Y'
           }
           if (!data[k]._level) {
             data[k]._level = temp[data[k][pid]]._level + 1
