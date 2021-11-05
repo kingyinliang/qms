@@ -218,6 +218,8 @@ interface ParameterTreeData {
     location: string
     isEndNode: boolean
     assistFlag: string
+    disabled: boolean
+    existConfiguration: string
 }
 
 interface InspectTypeform{
@@ -624,31 +626,69 @@ export default defineComponent({
     })
 
     // [参数明细] 关联项 tree-data 处理
-    const parameterTreeDataTranslater = (data: any[], id: string, pid: string) => {
+    const parameterTreeDataTranslater = (type: string, data: any[], id: string, pid: string) => {
       const res: any[] = []
       const temp: any = {}
       for (let i = 0; i < data.length; i++) {
-        data[i].children = []
-        data[i].inspectMaterialAlls.forEach((item:ParameterTreeData) => {
-          // data[i].children.push({ inspectTypeName: item })
-          data[i].children.push({
-            ...item,
-            location: '',
-            isEndNode: true
-          })
+        Object.assign(data[i], {
+          children: [],
+          inspectMaterialCode: data[i].inspectTypeCode,
+          inspectMaterialName: data[i].inspectTypeName,
+          location: ''
         })
-        data[i].inspectMaterialCode = data[i].inspectTypeCode
-        data[i].inspectMaterialName = data[i].inspectTypeName
-        data[i].location = ''
+
+        // 根節點
         if (data[i].parentId === '0') {
-          data[i]._level = 1
+          Object.assign(data[i], {
+            _level: 1
+          })
           data[i].location = data[i].inspectTypeName
         }
-        temp[data[i][id]] = data[i]
 
-        if (data[i].existConfiguration === 'Y') {
-          Object.assign(data[i], { disabled: true })
+        if (data[i].assistFlag === 'Y') { // 生产辅料
+          if (data[i].existConfiguration === 'Y') {
+            Object.assign(data[i], { disabled: true })
+          } else {
+            Object.assign(data[i], { disabled: false })
+          }
+
+          if (type === 'edit') {
+            state.parameterTreeSslected.forEach(item => {
+              if (item === data[i].id) {
+                data[i].disabled = false
+                data[i].existConfiguration = 'N'
+              }
+            })
+          }
+        } else { // 非生產輔料
+          const itemSize = data[i].inspectMaterialAlls.length
+          let tempItemSize = 0
+
+          data[i].inspectMaterialAlls.forEach((item:ParameterTreeData) => {
+            if (type === 'edit') {
+              state.parameterTreeSslected.forEach(subItem => {
+                if (subItem === item.id) {
+                  item.existConfiguration = 'N'
+                }
+              })
+            }
+
+            data[i].children.push({
+              ...item,
+              location: '',
+              isEndNode: true,
+              disabled: item.existConfiguration === 'Y'
+            })
+
+            if (item.existConfiguration === 'Y') {
+              tempItemSize += 1
+            }
+          })
+          data[i].disabled = data[i].inspectMaterialAlls.length !== 0 && itemSize === tempItemSize
+          data[i].existConfiguration = data[i].inspectMaterialAlls.length !== 0 && itemSize === tempItemSize ? 'Y' : 'N'
         }
+
+        temp[data[i][id]] = data[i]
       }
       for (let k = 0; k < data.length; k++) {
         if (temp[data[k][pid]] && data[k][id] !== data[k][pid]) {
@@ -672,6 +712,8 @@ export default defineComponent({
           }
 
           temp[data[k][pid]].children.push(data[k])
+          temp[data[k][pid]].existConfiguration = temp[data[k][pid]].children.filter((item:ParameterTreeData) => item.existConfiguration === 'Y').length === temp[data[k][pid]].children.length ? 'Y' : 'N'
+          temp[data[k][pid]].disabled = temp[data[k][pid]].children.filter((item:ParameterTreeData) => item.existConfiguration === 'Y').length === temp[data[k][pid]].children.length
         } else {
           if (data[k].inspectMaterialAlls.length !== 0) {
             data[k].inspectMaterialAlls.forEach((item:ParameterTreeData, index:number) => {
@@ -682,9 +724,17 @@ export default defineComponent({
           res.push(data[k])
         }
       }
+
+      // 针对根节点做一次过滤
+      res.forEach(item => {
+        item.existConfiguration = item.children.filter((item:ParameterTreeData) => item.existConfiguration === 'Y').length === item.children.length ? 'Y' : 'N'
+        item.disabled = item.children.filter((item:ParameterTreeData) => item.existConfiguration === 'Y').length === item.children.length
+      })
+
       return res
     }
 
+    // TODO
     const parameterTreeNodeClick = () => {
       state.parameterTreeCheckNodes = parameterTreeRef.value.getCheckedNodes(false)
       state.parameterTreeSslected = state.parameterTreeCheckNodes.map((it: any) => it.id)
@@ -757,10 +807,15 @@ export default defineComponent({
         title: '参数配置'
       }
       INSPECT_INDEX_PARAMETER_RELATIVE_ITEM_API({
-        inspectIndexMethodId: 'Y'
+        // inspectIndexMethodId: 'Y',
+        inspectIndexMethodId: state.globalMainObj.inspectIndexId
       }
       ).then((res) => {
-        state.parameterTreeData = parameterTreeDataTranslater(JSON.parse(JSON.stringify(res.data.data)), 'id', 'parentId')
+        if (row) {
+          state.parameterTreeData = parameterTreeDataTranslater('edit', JSON.parse(JSON.stringify(res.data.data)), 'id', 'parentId')
+        } else {
+          state.parameterTreeData = parameterTreeDataTranslater('add', JSON.parse(JSON.stringify(res.data.data)), 'id', 'parentId')
+        }
       })
     }
 
