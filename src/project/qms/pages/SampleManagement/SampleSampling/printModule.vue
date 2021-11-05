@@ -74,8 +74,9 @@ export default defineComponent({
 <style lang="scss" media="print" scoped>
   @media print {
     @page {
-      size: 3cm 3cm;
-      size: portrait;
+      /*size: 30mm 30mm portrait!important;*/
+      /*size: 30mm 30mm landscape!important;*/
+      size: landscape;
       margin: 0;
     }
     .none_ele{
