@@ -76,7 +76,7 @@ export default defineComponent({
     @page {
       /*size: 30mm 30mm portrait!important;*/
       /*size: 30mm 30mm landscape!important;*/
-      size: landscape;
+      size: landscape!important;
       margin: 0;
     }
     .none_ele{
