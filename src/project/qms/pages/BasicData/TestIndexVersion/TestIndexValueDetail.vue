@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-07-30 11:24:46
  * @LastEditors: Telliex
- * @LastEditTime: 2021-10-08 15:06:12
+ * @LastEditTime: 2021-11-09 10:23:13
 -->
 <template>
   <div style="padding-top:10px">
@@ -271,7 +271,7 @@ export default defineComponent({
       state.topicMainData.forEach((item, index) => {
         if (item.id !== '' && mainIndex !== index) {
           if (!_.isEqual(state.orgTopicMainData[index], item)) {
-            proxy.$errorToast('删除前，请先对编辑数据进行保存')
+            proxy.$warningToast('删除前，请先对编辑数据进行保存')
             canPass = false
           } else {
             canPass = true
@@ -360,7 +360,7 @@ export default defineComponent({
         // isRedact: true
         })
       } else {
-        proxy.$errorToast('已有数据执行月份为空！')
+        proxy.$warningToast('已有数据执行月份为空！')
       }
     }
 
@@ -385,7 +385,7 @@ export default defineComponent({
       })
 
       if (state.topicMainData.length >= 2 && nowMonthStatus >= 1) {
-        proxy.$errorToast('已有数据执行月份为空！')
+        proxy.$warningToast('已有数据执行月份为空！')
         return
       }
 

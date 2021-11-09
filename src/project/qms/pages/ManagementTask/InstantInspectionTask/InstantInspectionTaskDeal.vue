@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-10-15 20:07:53
  * @LastEditors: Telliex
- * @LastEditTime: 2021-11-02 17:44:26
+ * @LastEditTime: 2021-11-09 10:22:49
 -->
 <template>
 <div class="k-box-card" style="padding:20px 0;">
@@ -46,7 +46,7 @@
           <el-input v-model="dataFormOfInspectRequest.inspectContent"  class="inputWidth" placeholder="请输入" autocomplete="off" :disabled="dataFormDisabled" ></el-input>
         </el-form-item>
         <el-form-item label="内容说明："  prop="handleExplain" >
-          <el-input v-model="dataFormOfInspectRequest.handleExplain" class="inputWidth" type="textarea" placeholder="请输入" autocomplete="off" :disabled="dataFormDisabled"></el-input>
+          <el-input v-model="dataFormOfInspectRequest.handleExplain" class="inputWidth" maxlength="150" type="textarea" placeholder="请输入" autocomplete="off" :disabled="dataFormDisabled"></el-input>
         </el-form-item>
       </el-form>
   </mds-card>
@@ -62,7 +62,7 @@
           <span class="required">指标编码</span>
         </template>
         <template #default="scope">
-          <el-select v-model="scope.row.indexCode" placeholder="请选择" style="width:100%" filterable @change="val=>actChangeInspectIndexOptions(val,scope.row)" clearable>
+          <el-select v-model="scope.row.indexCode" placeholder="请选择" style="width:100%" filterable @change="val=>actChangeInspectIndexOptions(val,scope.row)" @clear="actClearInspectIndexOptions(scope.row)" clearable>
             <el-option v-for="(opt, optIndex) in indexCodeOptions" :key="optIndex" :label="opt.indexNameUnitMethod" :value="opt.indexCode" />
           </el-select>
         </template>
@@ -77,7 +77,7 @@
       </el-table-column>
       <el-table-column label="单位" show-overflow-tooltip prop="indexUnit" width="80" >
         <template #header>
-          <span class="required">单位</span>
+          <span >单位</span>
         </template>
         <template #default="scope">
             <em>{{scope.row.indexUnit}}</em>
@@ -93,7 +93,7 @@
       </el-table-column>
       <el-table-column label="检验方法" show-overflow-tooltip prop="inspectMethodName" min-width="150">
         <template #default="scope">
-          <el-select v-model="scope.row.inspectMethodName" placeholder="请选择" size="small" clearable @focus="actFocusGetInspectMethodOptions(scope.row)" @change="val=>actChangeGetInspectMethodOptions(val,scope.row)" :disabled="!scope.row.isRedact">
+          <el-select v-model="scope.row.inspectMethodName" placeholder="请选择" size="small" clearable @visible-change="val=>actFocusGetInspectMethodOptions(val,scope.row)" @change="val=>actChangeGetInspectMethodOptions(val,scope.row)" :disabled="!scope.row.isRedact">
             <el-option
               v-for="item in scope.row.inspectMethodOptions"
               :key="item.id"
@@ -106,7 +106,7 @@
       </el-table-column>
       <el-table-column label="检验说明" show-overflow-tooltip prop="inspectExplain" min-width="220">
         <template #default="scope">
-          <el-input v-model="scope.row.inspectExplain" class="140px" autocomplete="off" size="small" :disabled="!scope.row.isRedact"></el-input>
+          <el-input v-model="scope.row.inspectExplain" class="140px" maxlength="150" autocomplete="off" size="small" :disabled="!scope.row.isRedact"></el-input>
         </template>
       </el-table-column>
       <el-table-column label="操作" width="150" fixed="right">
@@ -173,7 +173,7 @@
           <span class="required">检验方法</span>
         </template>
         <template #default="scope">
-          <el-select v-model="scope.row.inspectMethodName" placeholder="请选择" size="small" clearable @focus="actFocusGetInspectMethodOptions(scope.row)" @change="val=>actChangeGetInspectMethodOptions(val,scope.row)">
+          <el-select v-model="scope.row.inspectMethodName" placeholder="请选择" size="small" clearable @visible-change="val=>actFocusGetInspectMethodOptions(val,scope.row)" @change="val=>actChangeGetInspectMethodOptions(val,scope.row)">
             <el-option
               v-for="item in scope.row.inspectMethodOptions"
               :key="item.id"
@@ -579,7 +579,6 @@ export default defineComponent({
       tabsCloseCurrentHandle()
     }
 
-    // TODO [BTN:保存]
     // [BTN:保存] transfor
     const btnSaveDataOfInspect = () => {
       if (state.pageType === 'edit' || state.pageType === 'add') {
@@ -595,20 +594,20 @@ export default defineComponent({
 
       // 检验需求 area 校验必填
       if (state.dataFormOfInspectRequest.needDeptList.length === 0) {
-        proxy.$errorToast('请选择需求部门')
+        proxy.$warningToast('请选择需求部门')
         return
       }
       if (!state.dataFormOfInspectRequest.inspectContent) {
-        proxy.$errorToast('请输入检验内容')
+        proxy.$warningToast('请输入检验内容')
         return
       }
       if (!state.dataFormOfInspectRequest.sampleDeptIdList.length) {
-        proxy.$errorToast('请输入取样部门')
+        proxy.$warningToast('请输入取样部门')
         return
       }
 
       if (state.dataTableOfInspectIndexBuild.length !== 0 && (state.dataTableOfInspectIndexBuild.length !== new Set(state.dataTableOfInspectIndexBuild.map(item => item.indexCode)).size)) {
-        proxy.$errorToast('有重复指标编码')
+        proxy.$warningToast('有重复指标编码')
         return
       }
 
@@ -730,7 +729,6 @@ export default defineComponent({
       }
     }
 
-    // TODO [BTN:保存][ACT:分配]
     // [BTN:保存][ACT:分配]
     const btnSaveDataOfInspectAssign = async (isSubmit = false) => {
       let isChangeDataTopicMainData = false // 检验指标 area 是否有异动
@@ -755,7 +753,7 @@ export default defineComponent({
       })
 
       if (!required) {
-        proxy.$errorToast('请选择必填栏位')
+        proxy.$warningToast('请选择必填栏位')
         return
       }
 
@@ -817,7 +815,6 @@ export default defineComponent({
       }
     }
 
-    // TODO [BTN:提交]
     // [BTN:提交]
     const btnSubmitDataOfInspect = async () => {
       if (state.pageType === 'edit') {
@@ -866,21 +863,26 @@ export default defineComponent({
           row.indexUnit = item.indexUnit
           row.indexMethod = item.indexMethod
           row.inspectMethod = ''
+          row.inspectMethodName = ''
+          row.inspectExplain = ''
           row.indexId = item.id
         }
       })
     }
 
-    const actFocusGetInspectMethodOptions = (row: any) => {
+    const actFocusGetInspectMethodOptions = (val:boolean, row: any) => {
+      row.inspectMethodOptions = []
       // 检验方法下拉
-      MANAGEMENT_PROCESS_INSPECTION_TASK_METHOD_DROPDOWN_API({
-        inspectIndexId: row.indexId
-      }).then((res) => {
+      if (val && row.indexCode !== '') {
+        MANAGEMENT_PROCESS_INSPECTION_TASK_METHOD_DROPDOWN_API({
+          inspectIndexId: row.indexId
+        }).then((res) => {
         // state.inspectMethodOptions = res.data.data
-        row.inspectMethodOptions = res.data.data
-      })
+          row.inspectMethodOptions = res.data.data
+        })
+      }
     }
-    // TODO
+
     const actChangeGetInspectMethodOptions = (val:string, row:any) => {
       row.inspectMethodOptions.forEach((item:any) => {
         if (val === item.inspectMethodName) {
@@ -888,6 +890,15 @@ export default defineComponent({
           // row.inspectMethodName = item.inspectMethodName
         }
       })
+    }
+
+    // TODO
+    const actClearInspectIndexOptions = (row:any) => {
+      row.indexName = ''
+      row.indexUnit = ''
+      row.indexMethod = ''
+      row.inspectMethodName = ''
+      row.inspectExplain = ''
     }
 
     // [ACT:编辑：检验指标 table 加载]
@@ -1146,6 +1157,7 @@ export default defineComponent({
       actFocusGetInspectMethodOptions,
       actChangeInspectIndexOptions,
       actChangeGetInspectMethodOptions,
+      actClearInspectIndexOptions,
       setOrGetData,
       // act
       actReset,
