@@ -31,6 +31,7 @@ interface LayoutTs<T> {
   tabsCloseOtherHandle: Fn<T>
   tabsCloseAllHandle: Fn<T>
   tabsRefreshCurrentHandle: Fn<T>
+  tabsChangeCurrentTitleHandle: Fn<T>
   closeMenu: Fn<T>
   gotoPage: Fn<T>
 }
@@ -164,6 +165,17 @@ export default function (): LayoutTs<any> {
     removeTabHandle(tempTabName, true)
   }
 
+  // tabs, 更新当前 title
+  const tabsChangeCurrentTitleHandle = async (title:string) => {
+    const tempTabName = mainTabsActiveName.value
+    console.log(mainTabsActiveName.value)
+    mainTabs.value.forEach(item => {
+      if (item.name === tempTabName) {
+        item.title = title
+      }
+    })
+  }
+
   // 展开菜单
   const showMenu = () => {
     sidebarFold.value = false
@@ -257,6 +269,7 @@ export default function (): LayoutTs<any> {
     tabsCloseOtherHandle,
     tabsCloseAllHandle,
     tabsRefreshCurrentHandle,
+    tabsChangeCurrentTitleHandle,
     routeHandle,
     gotoRouteHandle,
     goHome,

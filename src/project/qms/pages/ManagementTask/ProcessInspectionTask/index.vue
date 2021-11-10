@@ -120,7 +120,7 @@
       <el-form-item label="检验内容：" prop="inspectContent" :label-width="cssForformLabelWidth">
           <el-input v-model="formGlobleItem.inspectContent" class="140px" autocomplete="off"  :disabled="true"></el-input>
       </el-form-item>
-      <el-form-item label="取样单位：" :label-width="cssForformLabelWidth" prop="sampleDeptId">
+      <el-form-item label="取样部门：" :label-width="cssForformLabelWidth" prop="sampleDeptId">
         <el-select v-model="formGlobleItem.sampleDeptId" placeholder="请选择" style="width:100%" filterable clearable @change="actChangeSampleUnitOfFormGlobleItem">
           <el-option v-for="opt in sampleUnitptions" :key="opt.deptId" :label="opt.deptName" :value="opt.deptId" />
         </el-select>
@@ -371,7 +371,7 @@ export default defineComponent({
       sampleDeptName: [
         {
           required: true,
-          message: '请选择取样单位',
+          message: '请选择取样部门',
           trigger: 'blur'
         }
       ]
@@ -600,7 +600,7 @@ export default defineComponent({
 
     // [ACT:define] 获取指标编码下拉
     const getDropDownOptions = async (id:string) => {
-      // 获取检验类下的取样单位
+      // 获取检验类下的取样部门
       await MANAGEMENT_PROCESS_INSPECTION_TASK_INSPECT_MATERIAL_DROP_DOWN_API({
         id
       }).then((res) => {

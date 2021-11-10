@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-10-15 20:07:53
  * @LastEditors: Telliex
- * @LastEditTime: 2021-11-09 10:22:49
+ * @LastEditTime: 2021-11-10 09:31:24
 -->
 <template>
 <div class="k-box-card" style="padding:20px 0;">
@@ -93,7 +93,7 @@
       </el-table-column>
       <el-table-column label="检验方法" show-overflow-tooltip prop="inspectMethodName" min-width="150">
         <template #default="scope">
-          <el-select v-model="scope.row.inspectMethodName" placeholder="请选择" size="small" clearable @visible-change="val=>actFocusGetInspectMethodOptions(val,scope.row)" @change="val=>actChangeGetInspectMethodOptions(val,scope.row)" :disabled="!scope.row.isRedact">
+          <el-select v-model="scope.row.inspectMethodName" placeholder="请选择" size="small" clearable @visible-change="val=>actFocusGetInspectMethodOptions(val,scope.row)" @change="val=>actChangeGetInspectMethodOptions(val,scope.row)">
             <el-option
               v-for="item in scope.row.inspectMethodOptions"
               :key="item.id"
@@ -106,16 +106,13 @@
       </el-table-column>
       <el-table-column label="检验说明" show-overflow-tooltip prop="inspectExplain" min-width="220">
         <template #default="scope">
-          <el-input v-model="scope.row.inspectExplain" class="140px" maxlength="150" autocomplete="off" size="small" :disabled="!scope.row.isRedact"></el-input>
+          <el-input v-model="scope.row.inspectExplain" class="140px" maxlength="150" autocomplete="off" size="small" ></el-input>
         </template>
       </el-table-column>
-      <el-table-column label="操作" width="150" fixed="right">
+      <el-table-column label="操作" width="100" fixed="right">
         <template #default="scope">
           <el-button type="text" icon="el-icon-delete" class="delete-btn" @click="btnDeleteItemData(scope.row,scope.$index)" :disabled="scope.row.isDisabled">
             <em>删除</em>
-          </el-button>
-          <el-button type="text" v-if="pageType==='edit'" icon="el-icon-edit" class="role__btn" @click="btnEditItemOfTopicMainData(scope.row)" :disabled="scope.row.isDisabled || scope.row.isRedact">
-            <em>编辑</em>
           </el-button>
         </template>
       </el-table-column>
@@ -233,7 +230,7 @@
   <!-- 展示 -->
   <mds-card v-if="pageType==='show'" title="检验指标" :name="'org'" :pack-up="false" style="margin-bottom: 0; background: #fff;padding:10px 0;">
     <el-table border ref="refTableOfInspectIndexShow" :cell-style="{'text-align':'center'}" :data="dataTableOfInspectIndexShow" tooltip-effect="dark" style="width: 100%" max-height="500" :span-method="objectSpanMethod">
-      <el-table-column label="取样单位" show-overflow-tooltip prop="taskTempDept" width="100" />
+      <el-table-column label="取样部门" show-overflow-tooltip prop="taskTempDept" width="100" />
       <el-table-column label="序号"  prop="order" width="50" align="center" />
       <el-table-column label="指标编码" show-overflow-tooltip prop="indexCode" width="100" />
       <el-table-column label="指标名称" show-overflow-tooltip prop="indexName" width="100" />
@@ -245,7 +242,7 @@
   <div style="display: flex; margin:20px 0px;justify-content: flex-end;">
     <el-button  icon="el-icon-circle-close" type="primary" size="small" class="topic-button" @click="btnCancelOfInspect">取消</el-button>
     <el-button  icon="el-icon-circle-check" type="primary" size="small" class="topic-button" v-if="pageType !=='show'" @click="btnSaveDataOfInspect">保存</el-button>
-    <el-button  type="primary" icon="el-icon-circle-check" size="small" class="role__btn topic-button" v-if="pageType !=='show' && pageType !=='add'" @click="btnSubmitDataOfInspect">提交</el-button>
+    <el-button  type="primary" icon="el-icon-circle-check" size="small" class="role__btn topic-button" v-if="pageType !=='show'" @click="btnSubmitDataOfInspect">提交</el-button>
   </div>
   </div>
   <!--指标分配弹窗-->
@@ -390,12 +387,10 @@ export default defineComponent({
     const refNeedDep = ref()
     const filterText = ref('')
     const refTaskTempDeptList = ref()
-    const refAssignDeptList = ref()
-    const reInspectDeptId = ref()
     const treeRef = ref()
     const refTableOfInspectIndexAssign = ref()
     const router = useRouter()
-    const { gotoPage, tabsCloseCurrentHandle } = layoutTs()
+    const { gotoPage, tabsCloseCurrentHandle, tabsChangeCurrentTitleHandle } = layoutTs()
     const store = useStore()
 
     /**  == 变量 ==  **/
@@ -489,15 +484,6 @@ export default defineComponent({
       state.isDialogVisibleForAssignIndex = true
     }
 
-    // 下拉框数据变换
-    const setOrGetData = (data: any, type = 'get') => {
-      if (type === 'get') {
-        return data.getCheckedNodes(true).map((it: any) => { return { deptName: it.deptName, deptId: it.id } })
-      } else {
-        return data.map((it: any) => it.deptId)
-      }
-    }
-
     // [弹窗:指标分配]确认
     const actConfirm = async (data:TransferAreaData[]) => {
       state.tempMultiSelected = JSON.parse(JSON.stringify(data))
@@ -551,11 +537,6 @@ export default defineComponent({
         proxy.$successToast('操作成功')
         getInspectIndexDataForEdit()
       })
-    }
-
-    const btnEditItemOfTopicMainData = (row:any) => {
-      row.isRedact = true
-      // state.isDialogVisibleForInspectIndex = true
     }
 
     // 去掉children
@@ -815,15 +796,16 @@ export default defineComponent({
       }
     }
 
+    // TODO
     // [BTN:提交]
     const btnSubmitDataOfInspect = async () => {
-      if (state.pageType === 'edit') {
+      if (state.pageType === 'add' || state.pageType === 'edit') {
         const temp:any = await btnSaveDataOfInspectEdit(true)
 
         if (temp) {
-          temp.allList = state.dataTableOfInspectIndexBuild
-          temp.updateList = []
-          temp.insertList = []
+          // temp.allList = state.dataTableOfInspectIndexBuild
+          // temp.updateList = []
+          // temp.insertList = []
           MANAGEMENT_PROCESS_INSPECTION_TASK_ADD_AND_EDIT_SUBMIT_API(temp).then(() => {
             proxy.$successToast('操作成功！')
             tabsCloseCurrentHandle()
@@ -1076,9 +1058,30 @@ export default defineComponent({
       // 获取组织架构
       await getOrg()
 
+      console.log('mainTabsActiveName')
+      console.log(tabsChangeCurrentTitleHandle())
       state.pageType = router.currentRoute.value.query.type ? router.currentRoute.value.query.type as string : store.state.common.instantInspectionTask.type
+
+      // const tempMainTabs = store.state.common.mainTabs
+      // tempMainTabs.forEach((item:any) => {
+      //   if (item.name === store.state.common.mainTabsActiveName) {
+      //     if (state.pageType === 'edit') {
+      //       item.title = '临时检验任务编辑'
+      //     } else if (state.pageType === 'add') {
+      //       item.title = '临时检验任务新增'
+      //     } else if (state.pageType === 'assign') {
+      //       item.title = '临时检验任务处理'
+      //     } else {
+      //       item.title = '临时检验任务查看'
+      //     }
+      //   }
+      // })
+      // store.commit('common/updateMainTabs', tempMainTabs)
+
       if (state.pageType === 'edit') { // 编辑
         console.log('我是编辑！！')
+        // 更新 tab title
+        tabsChangeCurrentTitleHandle('临时检验任务编辑')
         state.dataFormDisabled = false
         state.pageId = router.currentRoute.value.query.id ? router.currentRoute.value.query.id as string : store.state.common.instantInspectionTask.id
 
@@ -1089,6 +1092,8 @@ export default defineComponent({
         // 载入检验指标 data
         getInspectIndexDataForEdit()
       } else if (state.pageType === 'add') { // 新增
+        // 更新 tab title
+        tabsChangeCurrentTitleHandle('临时检验任务新增')
         console.log('我是新增！！')
         state.dataFormDisabled = false
         state.pageId = ''
@@ -1112,6 +1117,8 @@ export default defineComponent({
         }
       } else if (state.pageType === 'assign') { // 分配
         console.log('我是分配！！')
+        // 更新 tab title
+        tabsChangeCurrentTitleHandle('临时检验任务处理')
         state.pageId = router.currentRoute.value.query.id ? router.currentRoute.value.query.id as string : store.state.common.instantInspectionTask.id
 
         state.dataFormDisabled = true
@@ -1122,6 +1129,8 @@ export default defineComponent({
         getInspectIndexDataForAssign()
       } else {
         console.log('我是展示！！')
+        // 更新 tab title
+        tabsChangeCurrentTitleHandle('临时检验任务展示')
         state.pageId = router.currentRoute.value.query.id ? router.currentRoute.value.query.id as string : store.state.common.instantInspectionTask.id
 
         state.dataFormDisabled = true
@@ -1147,7 +1156,6 @@ export default defineComponent({
       btnAddOrEditItemOfTopicMainData,
       btnAssignOfTopicMainData,
       btnDeleteItemData,
-      btnEditItemOfTopicMainData,
       handleSelectionChange,
       btnCancelOfInspect,
       btnSaveDataOfInspect,
@@ -1158,19 +1166,15 @@ export default defineComponent({
       actChangeInspectIndexOptions,
       actChangeGetInspectMethodOptions,
       actClearInspectIndexOptions,
-      setOrGetData,
       // act
       actReset,
-      actAddIndexId,
       actConfirm,
       // ref
       refCategoryOrganizationTree,
       refFormOfInspectRequest,
       refNeedDep,
       refTaskTempDeptList,
-      reInspectDeptId,
       refTableOfInspectIndexAssign,
-      refAssignDeptList,
       // other
       objectSpanMethod,
       treeRef,
