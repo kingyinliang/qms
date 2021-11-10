@@ -1121,22 +1121,22 @@ export default defineComponent({
     // [BTN:确认][float] 新增&编辑
     const btnClickItemConfirmForDialog = async () => {
       if (state.formGlobleItem.indexCode === '') {
-        proxy.$errorToast('指标编码必填字段未填写，请填写完整')
+        proxy.$warningToast('指标编码必填字段未填写，请填写完整')
         return
       }
 
       if (state.formGlobleItem.inspectList.length === 0) {
-        proxy.$errorToast('检验部门必填字段未填写，请填写完整')
+        proxy.$warningToast('检验部门必填字段未填写，请填写完整')
         return
       }
 
       if (state.formGlobleItem.cooperate === '') {
-        proxy.$errorToast('取样部门必填字段未填写，请填写完整')
+        proxy.$warningToast('取样部门必填字段未填写，请填写完整')
         return
       }
 
       if (state.formGlobleItem.frequencyName === '') {
-        proxy.$errorToast('检验频次必填字段未填写，请填写完整')
+        proxy.$warningToast('检验频次必填字段未填写，请填写完整')
         return
       }
       refGlobleItem.value.validate(async (valid: boolean) => {

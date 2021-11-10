@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-07-08 11:25:52
  * @LastEditors: Telliex
- * @LastEditTime: 2021-09-07 10:00:32
+ * @LastEditTime: 2021-11-09 10:21:35
 -->
 <template>
     <dialogDevice :dialogVisible="dialogVisible" :title="title" @on-confirm="onConfirm" @on-close="onClose">
@@ -170,7 +170,7 @@ export default defineComponent({
           parent.emit('actConfirm', state.formData)
           parent.emit('update:dialogVisible', false)
         } else {
-          proxy.$errorToast('请填写必填栏位')
+          proxy.$warningToast('请填写必填栏位')
           return false
         }
       })

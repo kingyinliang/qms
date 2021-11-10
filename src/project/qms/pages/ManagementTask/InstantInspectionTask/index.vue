@@ -40,8 +40,8 @@
       </template>
       </el-table-column>
       <el-table-column label="检验内容" show-overflow-tooltip prop="inspectContent" />
-      <el-table-column label="取样单位" show-overflow-tooltip prop="sampleDeptName" />
-      <el-table-column label="检验单位" show-overflow-tooltip prop="inspectDeptName" />
+      <el-table-column label="取样部门" show-overflow-tooltip prop="sampleDeptName" />
+      <el-table-column label="检验部门" show-overflow-tooltip prop="inspectDeptName" />
       <el-table-column label="发布人" show-overflow-tooltip prop="deployMan" />
       <el-table-column label="发布时间" show-overflow-tooltip prop="deployDate" />
       <el-table-column label="操作" width="220" fixed="right">
