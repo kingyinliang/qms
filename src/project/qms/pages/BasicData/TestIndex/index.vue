@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-07-30 11:24:46
  * @LastEditors: Telliex
- * @LastEditTime: 2021-10-12 15:42:50
+ * @LastEditTime: 2021-11-09 10:21:08
 -->
 <template>
   <mds-card class="test_method" title="检验指标标准" :pack-up="false" style="margin-bottom: 0; background: #fff;">
@@ -430,12 +430,12 @@ export default defineComponent({
     const btnItemFloatConfirm = async (val:string) => {
       if (val === '新增指标') { // 新增指标
         if (state.singleItemform.inspectMaterialCode === '') {
-          proxy.$errorToast('检验类别\\物料字段未填写')
+          proxy.$warningToast('检验类别\\物料字段未填写')
           return
         }
 
         if (state.tempMultiSelected.length === 0) {
-          proxy.$errorToast('指标代码字段未填写')
+          proxy.$warningToast('指标代码字段未填写')
           return
         }
 
@@ -458,11 +458,11 @@ export default defineComponent({
         btnGetMainData('act') // reload
       } else { // 编辑指标
         if (state.singleItemform.inspectMaterialId === '') {
-          proxy.$errorToast('检验类别\\物料字段未填写')
+          proxy.$warningToast('检验类别\\物料字段未填写')
           return
         }
         if (state.singleItemform.inspectIndexId === '') {
-          proxy.$errorToast('指标代码字段未填写')
+          proxy.$warningToast('指标代码字段未填写')
           return
         }
         await INSPECT_INDEX_MATERIAL_ITEM_UPDATE_API(state.singleItemform)
@@ -477,12 +477,12 @@ export default defineComponent({
     // 复制 操作确认
     const btnCopyItemFloatConfirm = async () => {
       if (state.copyItemform.inspectMaterialCode === '') {
-        proxy.$errorToast('请选择检验类别\\物料字段未填写')
+        proxy.$warningToast('请选择检验类别\\物料字段未填写')
         return
       }
 
       if (state.copyItemform.inspectMaterialCodeCopy === '') {
-        proxy.$errorToast('请选择复制项')
+        proxy.$warningToast('请选择复制项')
         return
       }
       await INSPECT_INDEX_MATERIAL_ITEM_COPY_API(state.copyItemform)
