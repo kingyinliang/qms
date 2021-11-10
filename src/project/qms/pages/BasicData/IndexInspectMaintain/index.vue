@@ -497,7 +497,7 @@ export default defineComponent({
     // [BTN:确定][指标检验方法明细] Dialog
     const btnItemFloatConfirm = (val:string) => {
       if (val === '') {
-        proxy.$errorToast('请录入必填栏位')
+        proxy.$warningToast('请录入必填栏位')
         return
       }
 
@@ -540,12 +540,12 @@ export default defineComponent({
     // [BTN:确定][参数明细] 新增+编辑 function dialog
     const btnAddItemFloatConfirm = () => {
       if (state.addParameterGroupform.parameterGroupName === '') {
-        proxy.$errorToast('请录入必填栏位')
+        proxy.$warningToast('请录入必填栏位')
         return
       }
 
       if (state.globalMainObj.inspectPropertyName === '微生物类' && state.addParameterGroupform.parameterDetailsList[0] === '') {
-        proxy.$errorToast('请录入必填栏位')
+        proxy.$warningToast('请录入必填栏位')
         return
       }
 
