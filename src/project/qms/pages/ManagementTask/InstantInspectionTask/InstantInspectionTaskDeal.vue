@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-10-15 20:07:53
  * @LastEditors: Telliex
- * @LastEditTime: 2021-11-10 09:31:24
+ * @LastEditTime: 2021-11-11 16:14:08
 -->
 <template>
 <div class="k-box-card" style="padding:20px 0;">
@@ -681,8 +681,8 @@ export default defineComponent({
       }
 
       if (isChangeDataTopicMainData || isChangeDataFormOfInspectRequest) { // 有异动，呼叫 API 后，跳转
-        await MANAGEMENT_PROCESS_INSPECTION_TASK_ADD_AND_EDIT_SAVE_API(temp).then(() => {
-          if (!isSubmit) {
+        if (!isSubmit) {
+          await MANAGEMENT_PROCESS_INSPECTION_TASK_ADD_AND_EDIT_SAVE_API(temp).then(() => {
             proxy.$successToast('操作成功！')
             tabsCloseCurrentHandle()
             gotoPage({
@@ -691,10 +691,8 @@ export default defineComponent({
                 type: 'back'
               }
             })
-          }
-        })
-
-        if (isSubmit) {
+          })
+        } else {
           return temp
         }
       } else if (isSubmit) { // 无任何异动，直接跳转 ，提交
@@ -998,15 +996,6 @@ export default defineComponent({
     const actOpenItemOfPopover = (index:number) => {
       filterText.value = ''
       state.currentItemRefsIndex = index
-      // if (row.inspectDeptId) {
-      //   console.log('have')
-      //   state.defaultCheckedKeys = [row.inspectDeptId]
-      //   state.itemRefs[index].setCheckedKeys([row.inspectDeptId])
-      // } else {
-      //   console.log('empty')
-      //   state.defaultCheckedKeys = []
-      //   state.itemRefs[index].setCheckedKeys([])
-      // }
     }
 
     const actConfirmItemOfPopover = (index:number, row:any) => {
@@ -1057,26 +1046,7 @@ export default defineComponent({
 
       // 获取组织架构
       await getOrg()
-
-      console.log('mainTabsActiveName')
-      console.log(tabsChangeCurrentTitleHandle())
       state.pageType = router.currentRoute.value.query.type ? router.currentRoute.value.query.type as string : store.state.common.instantInspectionTask.type
-
-      // const tempMainTabs = store.state.common.mainTabs
-      // tempMainTabs.forEach((item:any) => {
-      //   if (item.name === store.state.common.mainTabsActiveName) {
-      //     if (state.pageType === 'edit') {
-      //       item.title = '临时检验任务编辑'
-      //     } else if (state.pageType === 'add') {
-      //       item.title = '临时检验任务新增'
-      //     } else if (state.pageType === 'assign') {
-      //       item.title = '临时检验任务处理'
-      //     } else {
-      //       item.title = '临时检验任务查看'
-      //     }
-      //   }
-      // })
-      // store.commit('common/updateMainTabs', tempMainTabs)
 
       if (state.pageType === 'edit') { // 编辑
         console.log('我是编辑！！')

@@ -429,13 +429,11 @@ export default defineComponent({
       actGetTaskDetailForTable(val.id, state.dataFormOfSearchFilter, state.currentPage, state.pageSize)
     }
 
-    const getEndNodeItems = (menuTreeList:any, container:any) => {
-      if (menuTreeList.children.length) {
-        for (const item of menuTreeList.children) {
-          container.push(item)
-          if (!item.isFinalNode && item.children && item.children.length > 0) {
-            getEndNodeItems(item.children, container)
-          }
+    const getEndNodeItems = (menuTreeList:any[], container:any) => {
+      for (const item of menuTreeList) {
+        container.push(item)
+        if (!item.isFinalNode && item.children && item.children.length > 0) {
+          getEndNodeItems(item.children, container)
         }
       }
     }
@@ -443,23 +441,30 @@ export default defineComponent({
     // [ACT] 获取任务列表 data
     const actGetTaskDetailForTable = (currentCategoryId:string, searchString:any, currentPage:number, pageSize:number) => {
       const tempList:any[] = []
-      // if (!state.currentFocusTargetObj.isFinalNode && state.currentFocusTargetObj.children.length !== 0) {
-      //   getEndNodeItems(state.currentFocusTargetObj.children, tempList)
-      // }
-      if (state.currentFocusTargetObj.isFinalNode === false) {
-        getEndNodeItems(state.currentFocusTargetObj, tempList)
+      let tempInspectTypeIds = []
+      if (state.currentFocusTargetObj.isFinalNode) {
+        tempInspectTypeIds = [state.currentFocusTargetObj.id]
+      } else {
+        if (state.currentFocusTargetObj.isLeafNode === true) {
+          tempInspectTypeIds = [state.currentFocusTargetObj.markParentId]
+        } else {
+          getEndNodeItems(state.currentFocusTargetObj.children, tempList)
+          tempInspectTypeIds = tempList.map((item:any) => item.id)
+        }
       }
+
       MANAGEMENT_PROCESS_INSPECTION_TASK_QUERY_API({
         taskType: state.currentInspectScene,
         taskStatus: searchString.taskStatus,
         sampleCode: searchString.sampleCode,
         sampleDeptId: searchString.sampleDeptId,
-        inspectTypeIds: state.currentFocusTargetObj.isFinalNode === false ? tempList.map((item:any) => item.id) : [currentCategoryId],
+        // inspectTypeIds: state.currentFocusTargetObj.isFinalNode === false ? tempList.map((item:any) => item.id) : [currentCategoryId],
+        inspectTypeIds: tempInspectTypeIds,
         // inspectTypeIds: tempList.map((item:any) => item.id),
         planVersion: state.versionLabel,
         current: currentPage,
         size: pageSize,
-        inspectMaterialCode: !state.currentFocusTargetObj.isFinalNode ? '' : state.currentFocusTargetObj.inspectMaterialCode
+        inspectMaterialCode: state.currentFocusTargetObj.isLeafNode ? state.currentFocusTargetObj.inspectMaterialCode : ''
       }).then((res) => {
         console.log('任务列表')
         console.log(res)
@@ -511,7 +516,11 @@ export default defineComponent({
       for (let i = 0; i < data.length; i++) {
         // 追加叶子结点  data[i].assistFlag !== 'Y'
         if (data[i].assistFlag === 'N') {
-          Object.assign(data[i], { children: [], isFinalNode: true })
+          Object.assign(data[i], {
+            children: [],
+            isFinalNode: data[i].inspectMaterialAlls.length !== 0,
+            isLeafNode: false
+          })
           data[i].inspectMaterialAlls.forEach((item:TreeDataItem) => {
             data[i].children.push({
               inspectTypeName: item.inspectTypeName,
@@ -520,7 +529,7 @@ export default defineComponent({
               markParentId: data[i].id,
               id: item.id,
               inspectMaterialAlls: [],
-
+              isLeafNode: true,
               projectLocation: '',
               canClick: data[i].assistFlag !== 'Y',
               canEdit: true,
@@ -537,9 +546,9 @@ export default defineComponent({
         } else {
           // 生产辅助 smell
           if (data[i].parentId !== '0') {
-            Object.assign(data[i], { isFinalNode: true })
+            Object.assign(data[i], { isFinalNode: true, isLeafNode: false })
           } else {
-            Object.assign(data[i], { isFinalNode: false })
+            Object.assign(data[i], { isFinalNode: false, isLeafNode: false })
           }
         }
 
