@@ -1,10 +1,12 @@
 <template>
   <div id="print_ele__module_Three" class="none_ele">
     <div class="print_item" v-for="item in multipleSelection" :key="item.code">
-      <p class="print_item_title">{{ item.title }}</p>
-      <p class="print_item_title">{{ item.subtitle }}</p>
-      <img :id="'code' + item.code" class="print_item_qrcode" />
-      <p class="print_item_number">{{ item.code }}</p>
+      <div class="print_item--div">
+        <p class="print_item_title">{{ item.title }}</p>
+        <p class="print_item_title">{{ item.subtitle }}</p>
+        <img :id="'code' + item.code" class="print_item_qrcode" />
+        <p class="print_item_number">{{ item.code }}</p>
+      </div>
     </div>
   </div>
 </template>
@@ -44,12 +46,15 @@ export default defineComponent({
     display: none;
   }
   #print_ele__module_Three{
-    .print_item{
+    .print_item--div{
+      margin: auto;
       background: white;
       width: 3cm;
       height: 3cm;
       overflow: hidden;
       padding-top: 0.28cm;
+    }
+    .print_item{
       &_title{
         white-space: nowrap;
         line-height: 0.6cm;
