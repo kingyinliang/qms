@@ -4,7 +4,7 @@
       <div style="float: right; color: #333333;font-size: 14px;font-weight: bold;cursor: pointer" @click="goHistory"><i class="qmsIconfont qms-lishirenwu1" style="color: #487BFF"/> 历史任务</div>
     </template>
     <el-row :gutter="16">
-      <el-col :span="6" v-for="(item, index) in taskList" :key="index">
+      <el-col :span="4" style="min-width: 255px" v-for="(item, index) in taskList" :key="index">
         <div class="task__item" :class="{active: task === item.inspectClassify}"  @click="changeTask(item.inspectClassify)">
           <p class="task__item--title">
             <svg class="qmsIconfont" aria-hidden="true">
@@ -46,13 +46,54 @@
         <el-form-item label="检验内容：">
           <el-input v-model="queryForm.inspectContent" placeholder="请输入" style="width: 120px"></el-input>
         </el-form-item>
+        <el-form-item label="取样信息：">
+          <el-input v-model="queryForm.inspectContent" placeholder="请输入" style="width: 120px"></el-input>
+        </el-form-item>
         <el-form-item>
           <el-button icon="el-icon-search" @click="() => {queryForm.current = 1; query()}">查询</el-button>
-          <el-button icon="el-icon-plus" @click="goInspect()">检验</el-button>
-          <el-button type="primary" @click="goPrint()"><i class="qmsIconfont qms-jianyan3" /> 打印</el-button>
+          <el-button @click="goInspect()"><i class="qmsIconfont qms-jianyan"/> 检验</el-button>
+          <el-button type="primary" @click="goPrint()"><i class="qmsIconfont qms-dayin" /> 打印</el-button>
         </el-form-item>
       </el-form>
     </template>
+    <el-table border :cell-style="{'text-align':'center'}" :data="tableData" tooltip-effect="dark" style="width: 100%" @selection-change="selectionChange">
+      <el-table-column type="selection" width="45" :selectable="checkDate" />
+      <el-table-column type="index" fixed="left" :index="(index) => index + 1 + (queryForm.current - 1) * queryForm.size" label="序号" width="50" />
+      <el-table-column label="样品码" prop="sampleCode" min-width="120" :show-overflow-tooltip="true" />
+      <el-table-column label="状态" prop="taskStatusName" min-width="120" :show-overflow-tooltip="true">
+        <template #default="scope">
+          <span class="status"
+                :class="{
+                yellow: scope.row.taskStatusName === '待取样',
+                green: scope.row.taskStatusName === '已收样',
+                blue: scope.row.taskStatusName === '取样中' || scope.row.taskStatusName === '已送达',
+             }"
+          >{{ scope.row.taskStatusName }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="检验内容" prop="inspectContent" min-width="150" :show-overflow-tooltip="true" />
+      <el-table-column v-if="task === 'PROCESS'" label="生产物料" min-width="165" :show-overflow-tooltip="true">
+        <template #default="scope">{{ `${scope.row.inspectMaterialCode} ${scope.row.inspectMaterialName}` }}</template>
+      </el-table-column>
+      <el-table-column v-if="task === 'PROCESS'" label="订单" prop="itemName" min-width="150" :show-overflow-tooltip="true" />
+      <el-table-column v-if="task === 'PROCESS'" label="品项" prop="itemName" min-width="150" :show-overflow-tooltip="true" />
+      <el-table-column v-if="task === 'PROCESS'" label="取样信息" prop="itemName" min-width="150" :show-overflow-tooltip="true" />
+      <el-table-column v-if="task === 'ASSIST'" label="取样说明" prop="inspectContent" min-width="150" :show-overflow-tooltip="true" />
+      <el-table-column v-if="task === 'ASSIST'" label="检验频次" prop="inspectContent" min-width="150" :show-overflow-tooltip="true" />
+      <el-table-column label="取样部门" prop="inspectContent" min-width="150" :show-overflow-tooltip="true" />
+      <el-table-column label="送达时间" prop="inspectContent" min-width="150" :show-overflow-tooltip="true" />
+      <el-table-column label="收样时间" prop="inspectContent" min-width="150" :show-overflow-tooltip="true" />
+      <el-table-column label="操作" width="250" fixed="right">
+        <template #default="scope">
+          <el-button v-if="task !== 'TEMP'" type="text" icon="qmsIconfont qms-jianyan3" class="role__btn" @click="retentionSample(scope.row)">
+            留样
+          </el-button>
+          <el-button type="text" icon="qmsIconfont qms-binglike" class="role__btn" @click="goInspect(scope.row)">
+            检验
+          </el-button>
+        </template>
+      </el-table-column>
+    </el-table>
     <el-row style="float: right">
       <el-pagination
         :page-size="queryForm.size"
@@ -68,8 +109,19 @@
 </template>
 
 <script lang="ts">
-import { ComponentInternalInstance, defineComponent, getCurrentInstance, reactive, ref } from 'vue'
+import {
+  ComponentInternalInstance,
+  defineComponent,
+  getCurrentInstance,
+  onMounted,
+  reactive,
+  ref
+} from 'vue'
 import layoutTs from '@/components/layout/layoutTs'
+interface TableData{
+  id?: string
+  taskStatus?: string
+}
 
 export default defineComponent({
   name: 'inspectionTask',
@@ -77,6 +129,7 @@ export default defineComponent({
     const ctx = getCurrentInstance() as ComponentInternalInstance
     const proxy = ctx.proxy as any
     const { gotoPage } = layoutTs()
+    const task = ref('PROCESS') // 选择任务
     const taskList = ref<any[]>([]) // 任务汇总
     const queryForm = reactive({
       taskSampleClassify: '',
@@ -87,11 +140,35 @@ export default defineComponent({
       size: 10,
       total: 0
     }) // 查询表单数据
+    const tableData = ref<TableData[]>([]) // 表格数据
+    const selectionData = ref<TableData[]>([]) // 选中数据
 
+    // 获取任务数
+    const getTask = async () => {
+      taskList.value = [{
+        inspectClassify: 'PROCESS',
+        inspectClassifyName: '制程检验',
+        execute: '1',
+        progressing: '1',
+        completed: '1'
+      }, {
+        inspectClassify: 'ASSIST',
+        inspectClassifyName: '生产辅助检验',
+        execute: '2',
+        progressing: '2',
+        completed: '2'
+      }, {
+        inspectClassify: 'TEMP',
+        inspectClassifyName: '临时检验',
+        execute: '3',
+        progressing: '3',
+        completed: '3'
+      }]
+    }
     // 跳转历史任务
     const goHistory = () => {
       gotoPage({
-        path: 'qms-pages-SampleManagement-SampleSampling-historyTask'
+        path: 'qms-pages-InspectionManagement-InspectionTask-historyTask'
       })
     }
     // 查询
@@ -100,27 +177,60 @@ export default defineComponent({
     }
     // 切换任务分类
     const changeTask = (val: string) => {
-      console.log(val)
+      task.value = val
+      queryForm.current = 1
+      query()
     }
     // 检验
-    const goInspect = () => {
+    const goInspect = (row?: TableData) => {
+      console.log(row)
       gotoPage({
-        path: 'qms-pages-SampleManagement-SampleSampling-historyTask'
+        path: 'qms-pages-InspectionManagement-PhysicochemicalInspect-index'
       })
     }
     // 打印
     const goPrint = () => {
       console.log(1)
     }
+    // 表格复选框能否被选中逻辑
+    const checkDate = (row: TableData) => {
+      if (row.taskStatus !== 'UNSAMPLED' && row.taskStatus !== 'SAMPLING') {
+        return false
+      }
+      return true
+    }
+    // 表格复选框改变
+    const selectionChange = (val: TableData[]) => {
+      selectionData.value = val
+    }
+    // 留样
+    const retentionSample = (row: TableData) => {
+      proxy.$confirm('是否留样，请确认', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(async () => {
+        console.log(1)
+      })
+    }
+
+    onMounted(() => {
+      getTask()
+    })
 
     return {
+      task,
       taskList,
       queryForm,
+      tableData,
       goHistory,
       changeTask,
       query,
       goInspect,
-      goPrint
+      goPrint,
+      checkDate,
+      selectionChange,
+      retentionSample
     }
   }
 })
@@ -132,6 +242,7 @@ export default defineComponent({
     box-shadow: none;
     padding: 0!important;
     &__item{
+      min-width: 255px;
       cursor: pointer;
       height: 140px;
       background: white;
@@ -178,7 +289,11 @@ export default defineComponent({
       }
     }
     .active{
-      border: 1px solid #487BFF
+      border: 1px solid #487BFF;
+      color: #487BFF;
+      .task__item--title{
+        color: #487BFF;
+      }
     }
   }
   .task-list{
