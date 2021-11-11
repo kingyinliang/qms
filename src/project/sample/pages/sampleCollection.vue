@@ -60,9 +60,11 @@ export default defineComponent({
     const tableData = ref<TableData[]>([]) // 表格数据
 
     const query = async () => {
+      sampleCodeRef.value.input.select()
+      document.execCommand('Copy')
       const { data } = await SAMPLE_HANDOVER_QUERY({ sampleCode: sampleCode.value })
       if (!data.data) {
-        proxy.$errorToast('该样品码不否存')
+        proxy.$errorToast('该样品码不存在')
       } else if (tableData.value.filter((it:any) => it.sampleCode === data.data.sampleCode).length) {
         proxy.$errorToast('该样品码以在表格内')
       } else if (data.data.taskStatus === 'ARRIVED') {

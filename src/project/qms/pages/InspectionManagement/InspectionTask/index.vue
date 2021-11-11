@@ -168,7 +168,7 @@ export default defineComponent({
     // 跳转历史任务
     const goHistory = () => {
       gotoPage({
-        path: 'qms-pages-SampleManagement-SampleSampling-historyTask'
+        path: 'qms-pages-InspectionManagement-InspectionTask-historyTask'
       })
     }
     // 查询
@@ -185,7 +185,7 @@ export default defineComponent({
     const goInspect = (row?: TableData) => {
       console.log(row)
       gotoPage({
-        path: 'qms-pages-SampleManagement-SampleSampling-historyTask'
+        path: 'qms-pages-InspectionManagement-PhysicochemicalInspect-index'
       })
     }
     // 打印

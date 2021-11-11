@@ -41,13 +41,13 @@
     <template #titleBtn>
       <el-form :inline="true" size="small" style="float: right;display: flex" @keyup.enter="() => {queryForm.current = 1; query()}" @submit.prevent>
         <el-form-item label="取样码：">
-          <el-input v-model="queryForm.sampleCode" placeholder="请输入" style="width: 120px"></el-input>
+          <el-input v-model="queryForm.sampleCode" placeholder="请输入" clearable style="width: 120px"></el-input>
         </el-form-item>
         <el-form-item label="检验内容：">
-          <el-input v-model="queryForm.inspectContent" placeholder="请输入" style="width: 120px"></el-input>
+          <el-input v-model="queryForm.inspectContent" placeholder="请输入" clearable style="width: 120px"></el-input>
         </el-form-item>
         <el-form-item label="状态：">
-          <el-select v-model="queryForm.taskStatus" placeholder="请选择" style="width: 120px">
+          <el-select v-model="queryForm.taskStatus" placeholder="请选择" clearable style="width: 120px">
             <el-option v-for="item in taskStatus" :key="item.dictCode" :label="item.dictValue" :value="item.dictCode" />
           </el-select>
         </el-form-item>
@@ -76,7 +76,7 @@
       <el-table-column label="检验内容" prop="inspectContent" min-width="150" :show-overflow-tooltip="true" />
       <el-table-column v-if="task === 'PROCESS'" label="订单" prop="orderNo" min-width="150" :show-overflow-tooltip="true" />
       <el-table-column v-if="task === 'INCOMING' || task === 'PROCESS'" label="物料信息" min-width="165" :show-overflow-tooltip="true">
-        <template #default="scope">{{ `${scope.row.inspectMaterialCode} ${scope.row.inspectMaterialName}` }}</template>
+        <template #default="scope">{{ `${scope.row.inspectMaterialName} ${scope.row.inspectMaterialCode}` }}</template>
       </el-table-column>
       <el-table-column v-if="task === 'PROCESS'" label="品项" prop="itemName" min-width="150" :show-overflow-tooltip="true" />
       <el-table-column v-if="task === 'PROCESS'" label="取样信息" prop="inspectSiteName" min-width="150" :show-overflow-tooltip="true" />
@@ -544,34 +544,53 @@ export default defineComponent({
     // 取样
     const sampling = async (row?:TableData) => {
       if (row) {
-        printModuleRef.value.print([{
-          title: row.inspectContent,
-          subtitle: row.inspectSiteName,
-          code: row.sampleCode
-        }])
         if (row.taskStatus === 'UNSAMPLED') {
-          await SAMPLE_SAMPLING_TASK_SAMPLING([row])
-          query()
-          getTask()
+          proxy.$confirm('是否确定取样，请确认', '提示', {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            type: 'warning'
+          }).then(async () => {
+            await SAMPLE_SAMPLING_TASK_SAMPLING([row])
+            query()
+            getTask()
+            printModuleRef.value.print([{
+              title: row.inspectContent,
+              subtitle: row.inspectSiteName,
+              code: row.sampleCode
+            }])
+          })
+        } else {
+          printModuleRef.value.print([{
+            title: row.inspectContent,
+            subtitle: (row.itemName || '') + (row.inspectSiteName || ''),
+            code: row.sampleCode
+          }])
         }
       } else if (selectionData.value.length) {
-        const data = selectionData.value.map(it => ({
-          title: it.inspectContent,
-          subtitle: it.inspectSiteName,
-          code: it.sampleCode
-        }))
-        printModuleRef.value.print(data)
-        // SAMPLE_SAMPLING_TASK_SAMPLING(selectionData.value)
         const httpData:TableData[] = []
         selectionData.value.forEach(it => {
           if (it.taskStatus === 'UNSAMPLED') {
             httpData.push(it)
           }
         })
+        const data = selectionData.value.map(it => ({
+          title: it.inspectContent,
+          subtitle: (it.itemName || '') + (it.inspectSiteName || ''),
+          code: it.sampleCode
+        }))
         if (httpData.length) {
-          await SAMPLE_SAMPLING_TASK_SAMPLING(httpData)
-          query()
-          getTask()
+          proxy.$confirm('是否确定取样，请确认', '提示', {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            type: 'warning'
+          }).then(async () => {
+            await SAMPLE_SAMPLING_TASK_SAMPLING(httpData)
+            query()
+            getTask()
+            printModuleRef.value.print(data)
+          })
+        } else {
+          printModuleRef.value.print(data)
         }
       } else {
         proxy.$warningToast('请选择数据')
