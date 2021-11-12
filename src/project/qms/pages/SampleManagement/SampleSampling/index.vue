@@ -598,7 +598,7 @@ export default defineComponent({
     }
     const setText = (row: TableData):string => {
       const inspectContent = (row.inspectContent as string).split('-')
-      if (inspectContent.length) {
+      if (inspectContent.length && inspectContent[1] && inspectContent[2]) {
         let tmp = ''
         inspectContent[2].indexOf('理') >= 0 ? tmp = '理'
           : inspectContent[2].indexOf('菌') >= 0 ? tmp = '菌' : tmp = ''
