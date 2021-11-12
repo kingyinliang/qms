@@ -49,6 +49,7 @@ export default defineComponent({
     .print_item--div{
       margin: auto;
       background: white;
+      border: 1px solid black;
       width: 3cm;
       height: 3cm;
       overflow: hidden;

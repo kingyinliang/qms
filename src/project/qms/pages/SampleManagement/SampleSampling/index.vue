@@ -554,14 +554,14 @@ export default defineComponent({
             query()
             getTask()
             printModuleRef.value.print([{
-              title: row.inspectContent,
+              title: setText(row),
               subtitle: row.inspectSiteName,
               code: row.sampleCode
             }])
           })
         } else {
           printModuleRef.value.print([{
-            title: row.inspectContent,
+            title: setText(row),
             subtitle: (row.itemName || '') + (row.inspectSiteName || ''),
             code: row.sampleCode
           }])
@@ -574,7 +574,7 @@ export default defineComponent({
           }
         })
         const data = selectionData.value.map(it => ({
-          title: it.inspectContent,
+          title: setText(it),
           subtitle: (it.itemName || '') + (it.inspectSiteName || ''),
           code: it.sampleCode
         }))
@@ -594,6 +594,17 @@ export default defineComponent({
         }
       } else {
         proxy.$warningToast('请选择数据')
+      }
+    }
+    const setText = (row: TableData):string => {
+      const inspectContent = (row.inspectContent as string).split('-')
+      if (inspectContent.length) {
+        let tmp = ''
+        inspectContent[2].indexOf('理') >= 0 ? tmp = '理'
+          : inspectContent[2].indexOf('菌') >= 0 ? tmp = '菌' : tmp = ''
+        return `${inspectContent[1]}(${tmp})`
+      } else {
+        return ''
       }
     }
     const delRow = (row:TableData) => {
