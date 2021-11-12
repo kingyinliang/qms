@@ -7,7 +7,6 @@
     :defaultExtend="false"
     :treeData="treeData"
     :treeProps="{ label: 'inspectTypeName',children:'children' }"
-    :defaultFilterNodeProps="{ prop: 'existConfiguration',value:'Y' }"
     @treeNodeClick="actGetTaskDetailOfTree"
     :floatMenu="false"
   >
