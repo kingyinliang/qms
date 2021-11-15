@@ -18,7 +18,7 @@
             </span>
           </p>
           <div class="task__item__flex">
-            <div class="task__item__flex__item">
+            <div class="task__item__flex__item" @click="() => { queryForm.taskStatus = ''; changeTask(item.inspectClassify); }">
               <p class="task__item__flex__item--big">{{ item.execute }}</p>
               <p class="task__item__flex__item--small"><i class="qmsIconfont qms-daiwancheng"/>待完成</p>
             </div>
@@ -52,7 +52,7 @@
           </el-select>
         </el-form-item>
         <el-form-item>
-          <el-button icon="el-icon-search" @click="() => {queryForm.current = 1; query()}">查询</el-button>
+          <el-button icon="el-icon-search" @click="() => {queryForm.current = 1; query(); getTask()}">查询</el-button>
           <el-button v-if="task !== 'TEMP'" icon="el-icon-plus" @click="addOrUpdate()">新建</el-button>
           <el-button type="primary" @click="sampling()"><i class="qmsIconfont qms-jianyan3" /> 取样</el-button>
         </el-form-item>
@@ -554,14 +554,14 @@ export default defineComponent({
             query()
             getTask()
             printModuleRef.value.print([{
-              title: row.inspectContent,
+              title: setText(row),
               subtitle: row.inspectSiteName,
               code: row.sampleCode
             }])
           })
         } else {
           printModuleRef.value.print([{
-            title: row.inspectContent,
+            title: setText(row),
             subtitle: (row.itemName || '') + (row.inspectSiteName || ''),
             code: row.sampleCode
           }])
@@ -574,7 +574,7 @@ export default defineComponent({
           }
         })
         const data = selectionData.value.map(it => ({
-          title: it.inspectContent,
+          title: setText(it),
           subtitle: (it.itemName || '') + (it.inspectSiteName || ''),
           code: it.sampleCode
         }))
@@ -594,6 +594,17 @@ export default defineComponent({
         }
       } else {
         proxy.$warningToast('请选择数据')
+      }
+    }
+    const setText = (row: TableData):string => {
+      const inspectContent = (row.inspectContent as string).split('-')
+      if (inspectContent.length && inspectContent[1] && inspectContent[2]) {
+        let tmp = ''
+        inspectContent[2].indexOf('理') >= 0 ? tmp = '理'
+          : inspectContent[2].indexOf('微生物') >= 0 ? tmp = '菌' : tmp = ''
+        return `${inspectContent[1]}(${tmp})`
+      } else {
+        return ''
       }
     }
     const delRow = (row:TableData) => {
@@ -705,7 +716,12 @@ export default defineComponent({
     }
   }
   .active{
-    border: 1px solid #487BFF
+    border: 1px solid #487BFF;
+    color: #487BFF;
+    transform: scale(1.05);
+    .task__item--title{
+      color: #487BFF;
+    }
   }
 }
 .task-list{

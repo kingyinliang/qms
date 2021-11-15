@@ -19,7 +19,7 @@
           </p>
           <div class="task__item__flex">
             <div class="task__item__flex__item">
-              <p class="task__item__flex__item--big">{{ item.execute }}</p>
+              <p class="task__item__flex__item--big"><span>{{ item.execute }}</span><span style="font-size: 18px;margin-left: 3px">/{{ item.executeInvisible }}</span></p>
               <p class="task__item__flex__item--small"><i class="qmsIconfont qms-daiwancheng"/>待完成</p>
             </div>
             <div class="task__item__flex__item--border"/>
@@ -47,7 +47,7 @@
           <el-input v-model="queryForm.inspectContent" placeholder="请输入" style="width: 120px"></el-input>
         </el-form-item>
         <el-form-item label="取样信息：">
-          <el-input v-model="queryForm.inspectContent" placeholder="请输入" style="width: 120px"></el-input>
+          <el-input v-model="queryForm.inspectSiteName" placeholder="请输入" style="width: 120px"></el-input>
         </el-form-item>
         <el-form-item>
           <el-button icon="el-icon-search" @click="() => {queryForm.current = 1; query()}">查询</el-button>
@@ -75,14 +75,14 @@
       <el-table-column v-if="task === 'PROCESS'" label="生产物料" min-width="165" :show-overflow-tooltip="true">
         <template #default="scope">{{ `${scope.row.inspectMaterialCode} ${scope.row.inspectMaterialName}` }}</template>
       </el-table-column>
-      <el-table-column v-if="task === 'PROCESS'" label="订单" prop="itemName" min-width="150" :show-overflow-tooltip="true" />
+      <el-table-column v-if="task === 'PROCESS'" label="订单" prop="orderNo" min-width="150" :show-overflow-tooltip="true" />
       <el-table-column v-if="task === 'PROCESS'" label="品项" prop="itemName" min-width="150" :show-overflow-tooltip="true" />
-      <el-table-column v-if="task === 'PROCESS'" label="取样信息" prop="itemName" min-width="150" :show-overflow-tooltip="true" />
-      <el-table-column v-if="task === 'ASSIST'" label="取样说明" prop="inspectContent" min-width="150" :show-overflow-tooltip="true" />
-      <el-table-column v-if="task === 'ASSIST'" label="检验频次" prop="inspectContent" min-width="150" :show-overflow-tooltip="true" />
-      <el-table-column label="取样部门" prop="inspectContent" min-width="150" :show-overflow-tooltip="true" />
-      <el-table-column label="送达时间" prop="inspectContent" min-width="150" :show-overflow-tooltip="true" />
-      <el-table-column label="收样时间" prop="inspectContent" min-width="150" :show-overflow-tooltip="true" />
+      <el-table-column v-if="task === 'PROCESS'" label="取样信息" prop="inspectSiteName" min-width="150" :show-overflow-tooltip="true" />
+      <el-table-column v-if="task === 'ASSIST'" label="取样说明" prop="sampleExplain" min-width="150" :show-overflow-tooltip="true" />
+      <el-table-column v-if="task === 'ASSIST'" label="检验频次" prop="inspectFrequency" min-width="150" :show-overflow-tooltip="true" />
+      <el-table-column label="取样部门" prop="sampleDeptName" min-width="150" :show-overflow-tooltip="true" />
+      <el-table-column label="送达时间" prop="deliveryDate" min-width="150" :show-overflow-tooltip="true" />
+      <el-table-column label="收样时间" prop="receiveDate" min-width="150" :show-overflow-tooltip="true" />
       <el-table-column label="操作" width="250" fixed="right">
         <template #default="scope">
           <el-button v-if="task !== 'TEMP'" type="text" icon="qmsIconfont qms-jianyan3" class="role__btn" @click="retentionSample(scope.row)">
@@ -117,6 +117,7 @@ import {
   reactive,
   ref
 } from 'vue'
+import { INSPECT_TASK_LIST, QUERY_INSPECT_TASK_LIST } from '@/api/api'
 import layoutTs from '@/components/layout/layoutTs'
 interface TableData{
   id?: string
@@ -132,9 +133,9 @@ export default defineComponent({
     const task = ref('PROCESS') // 选择任务
     const taskList = ref<any[]>([]) // 任务汇总
     const queryForm = reactive({
-      taskSampleClassify: '',
+      taskInspectClassify: '',
       inspectContent: '',
-      taskStatus: '',
+      inspectSiteName: '',
       sampleCode: '',
       current: 1,
       size: 10,
@@ -145,25 +146,22 @@ export default defineComponent({
 
     // 获取任务数
     const getTask = async () => {
-      taskList.value = [{
-        inspectClassify: 'PROCESS',
-        inspectClassifyName: '制程检验',
-        execute: '1',
-        progressing: '1',
-        completed: '1'
-      }, {
-        inspectClassify: 'ASSIST',
-        inspectClassifyName: '生产辅助检验',
-        execute: '2',
-        progressing: '2',
-        completed: '2'
-      }, {
-        inspectClassify: 'TEMP',
-        inspectClassifyName: '临时检验',
-        execute: '3',
-        progressing: '3',
-        completed: '3'
-      }]
+      const { data } = await INSPECT_TASK_LIST()
+      console.log(data)
+      taskList.value = []
+      for (const key in data.data) {
+        if (data.data[key]) {
+          switch (key.toString().toUpperCase()) {
+            case 'SAFETY': data.data[key].inspectClassifyName = '（食）委外检验'; data.data[key].inspectClassify = key.toString().toUpperCase(); break
+            case 'COMPETITOR': data.data[key].inspectClassifyName = '竞品检验'; data.data[key].inspectClassify = key.toString().toUpperCase(); break
+            case 'INCOMING': data.data[key].inspectClassifyName = '来料检验'; data.data[key].inspectClassify = key.toString().toUpperCase(); break
+            case 'PROCESS': data.data[key].inspectClassifyName = '制程检验'; data.data[key].inspectClassify = key.toString().toUpperCase(); break
+            case 'ASSIST': data.data[key].inspectClassifyName = '生产辅助检验'; data.data[key].inspectClassify = key.toString().toUpperCase(); break
+            case 'TEMP': data.data[key].inspectClassifyName = '临时检验'; data.data[key].inspectClassify = key.toString().toUpperCase(); break
+          }
+          taskList.value.push(data.data[key])
+        }
+      }
     }
     // 跳转历史任务
     const goHistory = () => {
@@ -173,7 +171,12 @@ export default defineComponent({
     }
     // 查询
     const query = async () => {
-      console.log(1)
+      queryForm.taskInspectClassify = task.value
+      const { data } = await QUERY_INSPECT_TASK_LIST(queryForm)
+      tableData.value = data.data.records
+      queryForm.size = data.data.size
+      queryForm.current = data.data.current
+      queryForm.total = data.data.total
     }
     // 切换任务分类
     const changeTask = (val: string) => {
@@ -210,7 +213,7 @@ export default defineComponent({
         cancelButtonText: '取消',
         type: 'warning'
       }).then(async () => {
-        console.log(1)
+        console.log(row)
       })
     }
 
@@ -291,6 +294,7 @@ export default defineComponent({
     .active{
       border: 1px solid #487BFF;
       color: #487BFF;
+      transform: scale(1.05);
       .task__item--title{
         color: #487BFF;
       }
