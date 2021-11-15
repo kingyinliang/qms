@@ -81,9 +81,10 @@ export default defineComponent({
   @media print {
     @page {
       /*size: 30mm 30mm portrait!important;*/
-      /*size: 30mm 30mm landscape!important;*/
-      size: landscape!important;
-      margin: 0;
+      size: 30mm 30mm;
+      /*size: landscape!important;*/
+      border: #111111 1px;
+      margin: 10px;
     }
     .none_ele{
       display: block;

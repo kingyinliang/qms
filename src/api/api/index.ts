@@ -5,6 +5,8 @@ export * from './basicData'
 
 export * from './sample'
 
+export * from './inspect'
+
 export interface Dict {
   dictCode: string;
   dictValue: string;
