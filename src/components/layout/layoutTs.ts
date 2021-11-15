@@ -1,13 +1,15 @@
-import { ComponentInternalInstance, computed, getCurrentInstance, ref, Ref } from 'vue'
+import { ComponentInternalInstance, computed, getCurrentInstance, ref, Ref, nextTick } from 'vue'
 import { useStore } from 'vuex'
 import { useRouter, useRoute, Router, RouteLocationNormalizedLoaded, RouteLocationNormalized } from 'vue-router'
 import { WritableComputedRef } from '@vue/reactivity'
-import { USER_QUIT_API } from '@/api/api'
+import { GET_TENANT_BY_USER_ID, USER_QUIT_API } from '@/api/api'
+import VueCookies from '@/components/cookie/vue-cookies'
 
 // eslint-disable-next-line
 type Fn<T> = (ctx?: any) => T
 
 interface LayoutTs<T> {
+  tenant: Ref<never[]>
   systemVisible: Ref<boolean>
   router: Router
   route: RouteLocationNormalizedLoaded
@@ -21,6 +23,7 @@ interface LayoutTs<T> {
   mainTabsActiveName: WritableComputedRef<T>
   gotoRouteHandle: Fn<T>
   routeHandle: Fn<T>
+  getTenant: Fn<T>
   quit: Fn<T>
   showMenu: Fn<T>
   goHome: Fn<T>
@@ -30,7 +33,9 @@ interface LayoutTs<T> {
   tabsCloseOtherHandle: Fn<T>
   tabsCloseAllHandle: Fn<T>
   tabsRefreshCurrentHandle: Fn<T>
+  tabsChangeCurrentTitleHandle: Fn<T>
   closeMenu: Fn<T>
+  gotoPage: Fn<T>
 }
 interface Meta {
   menuId: string
@@ -60,6 +65,7 @@ export default function (): LayoutTs<any> {
   const route = useRoute()
 
   const systemVisible = ref(false)
+  const tenant = ref([])
 
   const userInfo = computed({
     get: () => store.state.common.userInfo,
@@ -104,8 +110,14 @@ export default function (): LayoutTs<any> {
         return previousValue + ',' + currentValue.componentName
       }
     }, '')
+    console.log(num)
     return num
   })
+
+  const getTenant = async () => {
+    const { data } = await GET_TENANT_BY_USER_ID({ userId: userInfo.value.id })
+    tenant.value = data.data
+  }
 
   // tabs，切换tab
   const selectedTabHandle = (tab:MainTabs) => {
@@ -161,6 +173,17 @@ export default function (): LayoutTs<any> {
     removeTabHandle(tempTabName, true)
   }
 
+  // tabs, 更新当前 title
+  const tabsChangeCurrentTitleHandle = async (title:string) => {
+    const tempTabName = mainTabsActiveName.value
+    console.log(mainTabsActiveName.value)
+    mainTabs.value.forEach(item => {
+      if (item.name === tempTabName) {
+        item.title = title
+      }
+    })
+  }
+
   // 展开菜单
   const showMenu = () => {
     sidebarFold.value = false
@@ -178,15 +201,25 @@ export default function (): LayoutTs<any> {
   }
 
   // 菜单点击
-  const gotoRouteHandle = (menu: { id:'' }) => {
-    const route = dynamicMenuRoutes.value.filter(item => item && item.meta.menuId === menu.id)
-    if (route.length >= 1) {
-      router.push(route[0].path)
+  const gotoRouteHandle = (menu: { id: '', menuUrl: '' }) => {
+    if (/^http[s]?:\/\/.*/.test(menu.menuUrl)) {
+      window.location.href = menu.menuUrl + '&token=' + VueCookies.get('token') + '&tenant=qms'
+    } else {
+      const route = dynamicMenuRoutes.value.filter(item => item && item.meta.menuId === menu.id)
+      if (route.length >= 1) {
+        router.push(route[0].path)
+      }
     }
   }
 
+  // 点击跳转
+  const gotoPage = (obj:any) => {
+    removeTabHandle(obj.path.replace(/\//g, '-'))
+    router.push(obj)
+  }
+
   // 监听路由添加tabs
-  const routeHandle = (route: RouteLocationNormalized) => {
+  const routeHandle = async (route: RouteLocationNormalized) => {
     if (route.meta.isTab) {
       let tab = mainTabs.value.filter(item => item.name === route.name)[0]
       if (!tab) {
@@ -195,8 +228,10 @@ export default function (): LayoutTs<any> {
             return
           }
         }
+        await nextTick()
         tab = {
-          componentName: route.meta.componentName as string,
+          // componentName: route.meta.componentName as string,
+          componentName: require('@/project/' + (route.name as string).replace(/-/g, '/') + '.vue').default.name,
           menuId: (route.meta.menuId || route.name) as string,
           name: route.name as string,
           title: route.meta.title as string,
@@ -227,6 +262,7 @@ export default function (): LayoutTs<any> {
     systemVisible,
     router,
     route,
+    tenant,
     userInfo,
     menuList,
     menuActiveName,
@@ -235,6 +271,7 @@ export default function (): LayoutTs<any> {
     dynamicMenuRoutes,
     mainTabs,
     keepAlivePages,
+    getTenant,
     quit,
     removeTabHandle,
     selectedTabHandle,
@@ -242,10 +279,12 @@ export default function (): LayoutTs<any> {
     tabsCloseOtherHandle,
     tabsCloseAllHandle,
     tabsRefreshCurrentHandle,
+    tabsChangeCurrentTitleHandle,
     routeHandle,
     gotoRouteHandle,
     goHome,
     showMenu,
-    closeMenu
+    closeMenu,
+    gotoPage
   }
 }

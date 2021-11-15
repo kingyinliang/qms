@@ -10,6 +10,22 @@
 .SystemLayout__sidebar,.SystemLayout__container,.el-menu{
   transition: inline-block 0.3s, left 0.3s, width 0.3s, margin-left 0.3s, font-size 0.3s;
 }
+.tenant{
+  width: 100px!important;
+  min-width: 100px!important;
+  padding: 10px!important;
+  &__item{
+    cursor: pointer;
+    width: 80px;
+    height: 80px;
+    margin: auto;
+    border-radius: 50%;
+    img{
+      width: 100%;
+      height: 100%;
+    }
+  }
+}
 .SystemLayout{
   &__header{
     position: relative;
@@ -99,8 +115,10 @@
       &:hover {
         //color: mix(#fff, $sidebar-text-color, 50%);
         //background-color: mix(#fff, $sidebar-bg-color, 15%);
-        color: $sidebar-text-color;
-        background-color: $sidebar-bg-color;
+        //color: $sidebar-text-color;
+        //background-color: $sidebar-bg-color;
+        color: $sidebar-hover-text-color;
+        background-color: $sidebar-hover-bg-color;
         //background-color: set_color(#fff, $sidebar-bg-color, 15%);
       }
     }

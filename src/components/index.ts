@@ -1,18 +1,20 @@
-import { App, ComponentOptions } from 'vue'
+import { App } from 'vue'
 import MdsCard from './package/mds-card'
 import TableTreeColumn from './package/TableTreeColumn'
 import OrgView from './package/OrgView'
 import TreePage from './package/TreePage'
+import TreeDialog from './package/TreeDialog'
 import CooperativeEditing from './package/CooperativeEditing'
 
 import { ElNotification } from 'element-plus'
 import { isAuth } from '@/utils'
 
-const components: ComponentOptions[] = [
+const components = [
   MdsCard,
   TableTreeColumn,
   OrgView,
   TreePage,
+  TreeDialog,
   CooperativeEditing
 ]
 

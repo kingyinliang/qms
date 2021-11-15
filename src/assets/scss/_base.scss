@@ -3,6 +3,13 @@
   background: $--color-primary!important;
 }
 
+.icon {
+  width: 1em; height: 1em;
+  vertical-align: -0.15em;
+  fill: currentColor;
+  overflow: hidden;
+}
+
 
 body{
   .el-button--text {
@@ -108,4 +115,289 @@ body{
   box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2);
   border-radius: 3px;
   background: rgba(255, 255, 255, 1);
+}
+// 新增全局样式
+// 查询表单，
+.queryForm{
+  .el-form-item{
+    margin-bottom: 8px!important;
+    display: inline-block;
+    &::before{
+      display: inline-block;
+    }
+  }
+}
+/* table's row hide temporarily */
+.rowDel {
+    display: none;
+}
+
+// global button's style  -- important!!
+body{
+  .el-button--small{
+    padding: 9px 11px;
+  }
+  .el-button [class*=el-icon-]+span{
+    margin-left: 4px;
+  }
+  .el-button{
+    .qmsIconfont{
+      font-size: 12px;
+      & + span{
+            padding-left: 5px;
+        }
+    }
+    &.delete-btn .el-icon-delete{
+        color: var(--el-color-mark-delete);
+    }
+    &.delete-btn span{
+        color: var(--el-color-mark-delete);
+    }
+    &.delete-btn span:hover{
+        color: var(--el-color-error);
+    }
+    &.delete-btn.is-disabled span{
+        color: var(--el-button-disabled-font-color);
+    }
+    &.delete-btn.is-disabled .el-icon-delete{
+        color: var(--el-button-disabled-font-color);
+    }
+
+    .iconfont{
+      font-size: 12px;
+    }
+  }
+}
+
+
+.fake-input-disabled{
+    background-color: var(--el-disabled-fill-base,#f5f7fa);
+    border-color: var(--el-disabled-border-base,#e4e7ed);
+    color: var(--el-disabled-color-base,#c0c4cc);
+    cursor: not-allowed;
+    -webkit-appearance: none;
+    background-image: none;
+    border-radius: var(--el-input-border-radius,var(--el-border-radius-base),4px);
+    border: var(--el-input-border,var(--el-border-base),1px);
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+    display: inline-block;
+    font-size: inherit;
+    height: 40px;
+    line-height: 40px;
+    outline: 0;
+    padding: 0 15px;
+    -webkit-transition: var(--el-border-transition-base);
+    transition: var(--el-border-transition-base);
+    width: 100%;
+}
+
+.el-button--small.topic-button{
+    height:32px;
+    margin-left:5px;
+    padding:0 11px;
+    margin-left: 5px;
+}
+
+// table highlight color
+.el-table__body tr.current-row>td{
+    background-color: #ecf5ff !important;
+}
+
+/* 标签页样式 */
+.NewDaatTtabs {
+  border-radius: 10px !important;
+  overflow: hidden !important;
+  min-height: 300px !important;
+  .required {
+    position: relative;
+    padding-left: 15px;
+    .reqI {
+      color: red;
+      position: absolute;
+      left: 0;
+      line-height: 32px;
+    }
+  }
+  h3 {
+    font-size: 16px;
+    font-weight: bold;
+    float: left;
+  }
+
+  border-top: 1px solid #e8e8e8;
+  .spanview {
+    .el-button {
+      background-color: white;
+      font-size: 16px;
+      padding: 0;
+      border: none;
+    }
+  }
+  .el-tabs__item {
+    height: 40px;
+    line-height: 40px;
+  }
+  table {
+    .el-form-item {
+      margin-bottom: 0;
+    }
+  }
+  .notNull {
+    color: red;
+  }
+  .el-card__header {
+    font-size: 14px;
+    padding: 13px 20px;
+    background-color: #f9f9f9;
+    color: black;
+    font-weight: bold;
+  }
+  .el-card {
+    margin-bottom: 20px;
+  }
+  // .el-input--small .el-input__inner { height: 22px; line-height: 22px; }
+}
+@mixin dataEntry-head($base-sise) {
+  .tabsPages {
+    margin-top: 10px;
+    background: none !important;
+    border: none !important;
+    box-shadow: none !important;
+    font-size: $base-sise;
+
+    .el-tabs__header {
+      background: none !important;
+      border-bottom: none !important;
+    }
+
+    .el-tabs__item {
+      height: auto !important;
+      line-height: 22px !important;
+      font-size: $base-sise + 2;
+      font-weight: 600;
+      color: #666;
+      padding: 6px 16px !important;
+      background: rgba(235, 235, 235, 1);
+      border-radius: 8px 8px 0 0;
+      box-shadow: 3px 3px 5px 0 rgba(0, 0, 0, 0.1);
+      border: 1px solid rgba(226, 226, 226, 1);
+    }
+
+    .el-tabs__item.is-active {
+      border-bottom: 1px solid white;
+    }
+
+    .el-tabs__content {
+      // min-height: 300px;
+      padding: 16px 10px;
+      background: white;
+      border-radius: 0 8px 0 0;
+      box-shadow: 3px 3px 5px 0 rgba(0, 0, 0, 0.1);
+    }
+
+    .el-button--text {
+      padding: 2px 0;
+    }
+
+    .el-input.is-disabled .el-input__inner {
+      width: 100%;
+      overflow: hidden;
+      background-color: #f5f5f5;
+      border: none;
+      color: #666 !important;
+    }
+
+    .el-button--primary {
+      background-color: #487bff;
+      color: #fff;
+      border-color: #487bff;
+    }
+
+    .el-button--primary.is-disabled {
+      color: #fff;
+      background-color: #a0cfff;
+      border-color: #a0cfff;
+    }
+  }
+}
+@media (max-width: 1367px) {
+  $base-sise: 12px;
+
+  @include dataEntry-head($base-sise);
+}
+
+@media (min-width: 1367px) {
+  $base-sise: 12px;
+
+  @include dataEntry-head($base-sise);
+}
+
+@media (min-width: 1600px) {
+  $base-sise: 14px;
+
+  @include dataEntry-head($base-sise);
+}
+
+/*
+*改变浏览器默认的滚动条样式
+*/
+
+.el-table__body-wrapper::-webkit-scrollbar-track-piece {
+    background-color:#f8f8f8;
+}
+
+//滚动条的宽度
+.el-table__body-wrapper::-webkit-scrollbar {
+    width: 6px;
+    height: 10px;
+  }
+//滚动条的滑块
+.el-table__body-wrapper::-webkit-scrollbar-thumb {
+    background-color: #c0c1c5;
+    border-radius: 3px;
+}
+
+.el-table__body-wrapper::-webkit-scrollbar-thumb:hover {
+    background-color:#bbb;
+}
+
+.el-table__fixed,
+.el-table__fixed-right {
+  height: auto !important; // 让固定列的高自适应，且设置!important覆盖ele-ui的默认样式
+  bottom: 0px !important; // 固定列默认设置了定位，    position: absolute;top: 0;left: 0;只需要再设置一下bottom的值，让固定列和父元素的底部出现距离即可
+}
+// data-tree flow menu style
+.contextMenu {
+    list-style: none;
+    font-size: 14px;
+    font-family: PingFangSC-Regular, PingFang SC;
+    font-weight: 400;
+    color: #333333;
+    line-height: 28px;
+  }
+
+// table 必填 mark
+.el-table__header .required::before{
+    content: '*';
+    color: var(--el-color-danger);
+    margin-right: 4px;
+}
+
+// form 必填 mark
+.required .el-form-item__label:before {
+    content: "*";
+    color: #f00;
+    margin-right: 4px;
+}
+
+
+// button  disable style
+.topic-button.el-button--primary.is-disabled, 
+.topic-button.el-button--primary.is-disabled:active, 
+.topic-button.el-button--primary.is-disabled:focus, 
+.topic-button.el-button--primary.is-disabled:hover {
+    color: #fff ;
+    background-color: #a0cfff !important;
+    border-color: #a0cfff !important;
 }
