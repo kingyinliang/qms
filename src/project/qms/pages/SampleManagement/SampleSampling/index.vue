@@ -620,10 +620,13 @@ export default defineComponent({
       })
     }
 
-    onMounted(() => {
+    onMounted(async () => {
       getSelect()
+      await getTask()
+      if (taskList.value.length) {
+        task.value = taskList.value[0].inspectClassify
+      }
       query()
-      getTask()
     })
 
     return {
