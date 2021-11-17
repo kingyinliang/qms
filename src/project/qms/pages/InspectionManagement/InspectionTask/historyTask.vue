@@ -25,23 +25,33 @@
     <el-tab-pane label="制程检验" name="PROCESS" />
     <el-tab-pane label="生产辅助" name="ASSIST" />
     <el-tab-pane label="临时检验" name="TEMP" />
+    <el-tab-pane label="委外" name="SAFETY" />
     <div class="k-box-card-title clearfix">
       <h3> <em class="title-icon" />任务列表</h3>
     </div>
     <el-table border :cell-style="{'text-align':'center'}" :data="tableData" tooltip-effect="dark" style="width: 100%">
       <el-table-column type="index" fixed="left" :index="(index) => index + 1 + (queryForm.current - 1) * queryForm.size" label="序号" width="50" />
       <el-table-column label="样品码" prop="sampleCode" min-width="120" :show-overflow-tooltip="true" />
+      <el-table-column v-if="task === 'INCOMING'||task === 'PROCESS'" label="状态" prop="taskStatusName" min-width="120" :show-overflow-tooltip="true" />
       <el-table-column label="检验内容" prop="inspectContent" min-width="150" :show-overflow-tooltip="true" />
-      <el-table-column label="物料信息" min-width="165" :show-overflow-tooltip="true">
+      <el-table-column label="物料信息" v-if="task !== 'ASSIST'&&task !== 'TEMP'" min-width="165" :show-overflow-tooltip="true">
         <template #default="scope">{{ `${scope.row.inspectMaterialCode} ${scope.row.inspectMaterialName}` }}</template>
       </el-table-column>
-      <el-table-column label="物料批次" prop="inspectBatch" min-width="150" :show-overflow-tooltip="true" />
-      <el-table-column v-if="task === 'PROCESS'||task === 'ASSIST'" label="品项" prop="itemName" min-width="150" :show-overflow-tooltip="true" />
-      <el-table-column v-if="task === 'PROCESS'||task === 'ASSIST'" label="订单" prop="orderNo" min-width="150" :show-overflow-tooltip="true" />
+      <el-table-column label="物料批次" v-if="task === 'INCOMING'||task === 'SAFETY'" prop="inspectBatch" min-width="150" :show-overflow-tooltip="true" />
+      <el-table-column v-if="task !== 'ASSIST'&&task !== 'TEMP'" label="品项" prop="itemName" min-width="150" :show-overflow-tooltip="true" />
+      <el-table-column v-if="task === 'INCOMING'||task === 'SAFETY'" label="供应商" prop="supplier" min-width="150" :show-overflow-tooltip="true" />
+
+      <el-table-column v-if="task === 'PROCESS'" label="订单" prop="orderNo" min-width="150" :show-overflow-tooltip="true" />
       <el-table-column v-if="task === 'PROCESS'" label="取样信息" prop="inspectSiteName" min-width="150" :show-overflow-tooltip="true" />
-      <el-table-column label="触发时间" prop="triggerDate" min-width="165" :show-overflow-tooltip="true" />
-      <el-table-column label="送达时间" prop="deliveryDate" min-width="165" :show-overflow-tooltip="true" />
-      <el-table-column label="完成时间" prop="finishDate" min-width="165" :show-overflow-tooltip="true" />
+<!--      <el-table-column label="触发时间" prop="triggerDate" min-width="165" :show-overflow-tooltip="true" />-->
+<!--      <el-table-column label="送达时间" prop="deliveryDate" min-width="165" :show-overflow-tooltip="true" />-->
+<!--      <el-table-column label="完成时间" prop="finishDate" min-width="165" :show-overflow-tooltip="true" />-->
+
+      <el-table-column v-if="task !== 'INCOMING'&&task !== 'SAFETY'" label="取样部门" prop="sampleDeptName" min-width="165" :show-overflow-tooltip="true" />
+      <el-table-column v-if="task === 'INCOMING'" label="检验单位" prop="inspectDeptName" min-width="165" :show-overflow-tooltip="true" />
+      <el-table-column v-if="task !== 'SAFETY'" label="取样时间" prop="sampleEndDate" min-width="165" :show-overflow-tooltip="true" />
+      <el-table-column v-if="task === 'INCOMING'" label="检验开始" prop="inspectStartDate" min-width="165" :show-overflow-tooltip="true" />
+      <el-table-column v-if="task === 'INCOMING'" label="检验结束" prop="inspectEndDate" min-width="165" :show-overflow-tooltip="true" />
     </el-table>
     <el-row style="float: right">
       <el-pagination
@@ -89,7 +99,7 @@ export default defineComponent({
     }
     const tabClick = (tab: any) => {
       task.value = tab.props.name
-      query()
+      // query()
     }
     onMounted(() => {
       query()
