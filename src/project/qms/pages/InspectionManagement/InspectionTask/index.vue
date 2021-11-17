@@ -59,7 +59,13 @@
     <el-table border :cell-style="{'text-align':'center'}" :data="tableData" tooltip-effect="dark" style="width: 100%" @selection-change="selectionChange">
       <el-table-column type="selection" width="45" :selectable="checkDate" />
       <el-table-column type="index" fixed="left" :index="(index) => index + 1 + (queryForm.current - 1) * queryForm.size" label="序号" width="50" />
-      <el-table-column label="样品码" prop="sampleCode" min-width="120" :show-overflow-tooltip="true" />
+      <el-table-column label="样品码" prop="sampleCode" min-width="120" :show-overflow-tooltip="true" >
+        <template #default="scope">
+         <el-button type="text" class="role__btn" @click="btnConfigulationReadOnly(scope.row)">
+            <em>{{scope.row.sampleCode}}</em>
+          </el-button>
+        </template>
+      </el-table-column>
       <el-table-column label="状态" prop="taskStatusName" min-width="120" :show-overflow-tooltip="true">
         <template #default="scope">
           <span class="status"
@@ -119,9 +125,11 @@ import {
 } from 'vue'
 import { INSPECT_TASK_LIST, QUERY_INSPECT_TASK_LIST } from '@/api/api'
 import layoutTs from '@/components/layout/layoutTs'
+import { useStore } from 'vuex'
 interface TableData{
   id?: string
   taskStatus?: string
+  sampleCode: string
 }
 
 export default defineComponent({
@@ -130,6 +138,7 @@ export default defineComponent({
     const ctx = getCurrentInstance() as ComponentInternalInstance
     const proxy = ctx.proxy as any
     const { gotoPage } = layoutTs()
+    const store = useStore()
     const task = ref('PROCESS') // 选择任务
     const taskList = ref<any[]>([]) // 任务汇总
     const queryForm = reactive({
@@ -147,7 +156,8 @@ export default defineComponent({
     // 获取任务数
     const getTask = async () => {
       const { data } = await INSPECT_TASK_LIST()
-      console.log(data)
+      console.log('获取任务数')
+      console.log(data.data)
       taskList.value = []
       for (const key in data.data) {
         if (data.data[key]) {
@@ -173,6 +183,8 @@ export default defineComponent({
     const query = async () => {
       queryForm.taskInspectClassify = task.value
       const { data } = await QUERY_INSPECT_TASK_LIST(queryForm)
+      console.log('000000')
+      console.log(data)
       tableData.value = data.data.records
       queryForm.size = data.data.size
       queryForm.current = data.data.current
@@ -186,7 +198,7 @@ export default defineComponent({
     }
     // 检验
     const goInspect = (row?: TableData) => {
-      console.log(row)
+      store.commit('common/updateSampleObjToView', { type: 'process', obj: row ? [row] : [] })
       gotoPage({
         path: 'qms-pages-InspectionManagement-PhysicochemicalInspect-index'
       })
@@ -217,6 +229,14 @@ export default defineComponent({
       })
     }
 
+    // [BTN:只读]
+    const btnConfigulationReadOnly = async (row:TableData) => {
+      store.commit('common/updateSampleObjToView', { type: 'process', obj: [row] })
+      gotoPage({
+        path: 'qms-pages-InspectionManagement-components-form'
+      })
+    }
+
     onMounted(() => {
       getTask()
     })
@@ -233,7 +253,8 @@ export default defineComponent({
       goPrint,
       checkDate,
       selectionChange,
-      retentionSample
+      retentionSample,
+      btnConfigulationReadOnly
     }
   }
 })

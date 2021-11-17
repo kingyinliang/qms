@@ -545,5 +545,14 @@ export function MANAGEMENT_PROCESS_INSPECTION_TASK_ASSIGN_DELETE_API (params = {
 
 // 检验管理-[检验任务]- 检验表单查询
 export function MANAGEMENT_INSPECTION_PHYSICOCHEMICAL_TASK_FORM_QUERY_API (params = {}):Promise<AxiosResponse> {
-  return Http.post('/taskInspectIndex/queryTaskInspectIndex', params, { baseURL: (process.env.VUE_APP_QMS_TASK_API as string) + (process.env.VUE_APP_API_V as string) })
+  return Http.post('/taskInspect/formTaskInspect', params, { baseURL: (process.env.VUE_APP_QMS_TASK_API as string) + (process.env.VUE_APP_API_V as string) })
+}
+
+// export function MANAGEMENT_INSPECTION_PHYSICOCHEMICAL_TASK_FORM_QUERY_API (params = {}):Promise<AxiosResponse> {
+//   return Http.post('/taskInspectIndex/queryTaskInspectIndex', params, { baseURL: (process.env.VUE_APP_QMS_TASK_API as string) + (process.env.VUE_APP_API_V as string) })
+// }
+
+// 检验管理-[检验任务]- 根据样品码查询检验任务
+export function MANAGEMENT_INSPECTION_PHYSICOCHEMICAL_QUERY_BY_SAMPLE_CODE_API (params = {}):Promise<AxiosResponse> {
+  return Http.get('/taskInspect/queryTaskInspectBySampleCode', params, { baseURL: (process.env.VUE_APP_QMS_TASK_API as string) + (process.env.VUE_APP_API_V as string) })
 }
