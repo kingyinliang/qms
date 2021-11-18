@@ -1,5 +1,13 @@
+/*
+ * @Description:
+ * @Anthor: Telliex
+ * @Date: 2021-08-10 15:45:54
+ * @LastEditors: Telliex
+ * @LastEditTime: 2021-11-12 11:13:46
+ */
 import { App } from 'vue'
 import MdsCard from './package/mds-card'
+import MdsArea from './package/mds-area'
 import TableTreeColumn from './package/TableTreeColumn'
 import OrgView from './package/OrgView'
 import TreePage from './package/TreePage'
@@ -11,6 +19,7 @@ import { isAuth } from '@/utils'
 
 const components = [
   MdsCard,
+  MdsArea,
   TableTreeColumn,
   OrgView,
   TreePage,
@@ -50,6 +59,7 @@ declare module '@vue/runtime-core' {
 export default {
   install,
   MdsCard,
+  MdsArea,
   TableTreeColumn,
   OrgView,
   TreePage,

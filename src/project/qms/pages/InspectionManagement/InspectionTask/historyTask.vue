@@ -31,7 +31,13 @@
     </div>
     <el-table border :cell-style="{'text-align':'center'}" :data="tableData" tooltip-effect="dark" style="width: 100%">
       <el-table-column type="index" fixed="left" :index="(index) => index + 1 + (queryForm.current - 1) * queryForm.size" label="序号" width="50" />
-      <el-table-column label="样品码" prop="sampleCode" min-width="120" :show-overflow-tooltip="true" />
+      <el-table-column label="样品码" prop="sampleCode" min-width="120" :show-overflow-tooltip="true">
+        <template #default="scope">
+         <el-button type="text" class="role__btn" @click="btnConfigulationReadOnly(scope.row)">
+            <em>{{scope.row.sampleCode}}</em>
+          </el-button>
+        </template>
+      </el-table-column>
       <el-table-column v-if="task === 'INCOMING'||task === 'PROCESS'" label="状态" prop="taskStatusName" min-width="120" :show-overflow-tooltip="true" />
       <el-table-column label="检验内容" prop="inspectContent" min-width="150" :show-overflow-tooltip="true" />
       <el-table-column label="物料信息" v-if="task !== 'ASSIST'&&task !== 'TEMP'" min-width="165" :show-overflow-tooltip="true">
@@ -70,6 +76,8 @@
 <script lang="ts">
 import { defineComponent, reactive, ref, onMounted } from 'vue'
 import { SAMPLE_SAMPLING_TASK_HISTORY_LIST } from '@/api/api'
+import layoutTs from '@/components/layout/layoutTs'
+import { useStore } from 'vuex'
 
 interface TableData{
   id?: string
@@ -77,6 +85,7 @@ interface TableData{
 export default defineComponent({
   name: 'inspectHistoryTask',
   setup () {
+    const store = useStore()
     const task = ref('INCOMING')
     const queryForm = reactive({
       taskSampleClassify: '',
@@ -88,7 +97,7 @@ export default defineComponent({
       total: 0
     }) // 查询表单数据
     const tableData = ref<TableData[]>([]) // 表格数据
-
+    const { gotoPage } = layoutTs()
     const query = async () => {
       queryForm.taskSampleClassify = task.value
       const { data } = await SAMPLE_SAMPLING_TASK_HISTORY_LIST(queryForm)
@@ -101,6 +110,15 @@ export default defineComponent({
       task.value = tab.props.name
       // query()
     }
+
+    // [BTN:只读]
+    const btnConfigulationReadOnly = async (row:TableData) => {
+      store.commit('common/updateSampleObjToView', { type: 'history', obj: [row] })
+      gotoPage({
+        path: 'qms-pages-InspectionManagement-components-form'
+      })
+    }
+
     onMounted(() => {
       query()
     })
@@ -110,7 +128,8 @@ export default defineComponent({
       queryForm,
       tableData,
       tabClick,
-      query
+      query,
+      btnConfigulationReadOnly
     }
   }
 })
