@@ -59,7 +59,13 @@
     <el-table border :cell-style="{'text-align':'center'}" :data="tableData" tooltip-effect="dark" style="width: 100%" @selection-change="selectionChange">
       <el-table-column type="selection" width="45" :selectable="checkDate" />
       <el-table-column type="index" fixed="left" :index="(index) => index + 1 + (queryForm.current - 1) * queryForm.size" label="序号" width="50" />
-      <el-table-column label="样品码" prop="sampleCode" min-width="120" :show-overflow-tooltip="true" />
+      <el-table-column label="样品码" prop="sampleCode" min-width="120" :show-overflow-tooltip="true" >
+        <template #default="scope">
+         <el-button type="text" class="role__btn" @click="btnConfigulationReadOnly(scope.row)">
+            <em>{{scope.row.sampleCode}}</em>
+          </el-button>
+        </template>
+      </el-table-column>
       <el-table-column label="状态" prop="taskStatusName" min-width="120" :show-overflow-tooltip="true">
         <template #default="scope">
           <span class="status"
@@ -193,7 +199,7 @@ export default defineComponent({
       query()
     }
     // 检验
-    const goInspect = () => {
+    const goInspect = (row?: TableData) => {
       if (!selectionData.value.length) {
         proxy.$warningToast('请选择数据')
         return
@@ -204,6 +210,8 @@ export default defineComponent({
         return
       }
       store.commit('inspection/updateInspectionTask', selectionData.value)
+      store.commit('common/updateSampleObjToView', { type: 'process', obj: row ? [row] : [] })
+
       gotoPage({
         path: 'qms-pages-InspectionManagement-PhysicochemicalInspect-index'
       })
@@ -257,6 +265,14 @@ export default defineComponent({
       })
     }
 
+    // [BTN:只读]
+    const btnConfigulationReadOnly = async (row:TableData) => {
+      store.commit('common/updateSampleObjToView', { type: 'process', obj: [row] })
+      gotoPage({
+        path: 'qms-pages-InspectionManagement-components-form'
+      })
+    }
+
     onMounted(async () => {
       await getTask()
       if (taskList.value.length) {
@@ -278,7 +294,8 @@ export default defineComponent({
       goPrint,
       checkDate,
       selectionChange,
-      retentionSample
+      retentionSample,
+      btnConfigulationReadOnly
     }
   }
 })
