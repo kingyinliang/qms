@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-07-08 11:25:52
  * @LastEditors: Telliex
- * @LastEditTime: 2021-11-10 18:50:44
+ * @LastEditTime: 2021-11-18 15:12:30
 -->
 <template>
     <dialogDevice :dialogVisible="dialogVisible" :title="title" @on-confirm="onConfirm" @on-close="onClose" width="70%">
@@ -239,8 +239,6 @@ export default defineComponent({
       dialogData,
       newValue => {
         state.materialTreeData = newValue
-        console.log('99999999')
-        console.log(state.materialTreeData)
         state.treeValueSelected = [] // 进页面 elected items init
         state.treeFrameworkData = [] // 进页面 data structure init
 
