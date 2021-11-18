@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-10-15 20:07:53
  * @LastEditors: Telliex
- * @LastEditTime: 2021-11-11 16:14:08
+ * @LastEditTime: 2021-11-18 17:05:35
 -->
 <template>
 <div class="k-box-card" style="padding:20px 0;">
@@ -410,7 +410,7 @@ export default defineComponent({
         needDeptList: [],
         sampleDeptId: '',
         taskTempDeptList: [],
-        deployMan: JSON.parse(sessionStorage.getItem('userInfo') || '{}').realName,
+        deployMan: '',
         inspectContent: '',
         handleExplain: '',
         applyStatus: '',
@@ -573,25 +573,6 @@ export default defineComponent({
       let isChangeDataFormOfInspectRequest = false // 检验需求 area 是否有异动
       let isChangeDataTopicMainData = false // 检验指标 area 是否有异动
 
-      // 检验需求 area 校验必填
-      if (state.dataFormOfInspectRequest.needDeptList.length === 0) {
-        proxy.$warningToast('请选择需求部门')
-        return
-      }
-      if (!state.dataFormOfInspectRequest.inspectContent) {
-        proxy.$warningToast('请输入检验内容')
-        return
-      }
-      if (!state.dataFormOfInspectRequest.sampleDeptIdList.length) {
-        proxy.$warningToast('请输入取样部门')
-        return
-      }
-
-      if (state.dataTableOfInspectIndexBuild.length !== 0 && (state.dataTableOfInspectIndexBuild.length !== new Set(state.dataTableOfInspectIndexBuild.map(item => item.indexCode)).size)) {
-        proxy.$warningToast('有重复指标编码')
-        return
-      }
-
       const tempNeedDept = refNeedDep.value.getCheckedNodes(false)
       const tempRefTaskTempDeptList: any[] = []
 
@@ -626,9 +607,9 @@ export default defineComponent({
           tempApplyNo: '', // 任务单号
           applyStatus: '', // 申请状态
           id: '',
-          needDeptId: tempNeedDept[0].id, // 需求单位
-          needDeptCode: tempNeedDept[0].deptCode,
-          needDeptName: tempNeedDept[0].deptName,
+          needDeptId: tempNeedDept.length ? tempNeedDept[0].id : '', // 需求单位
+          needDeptCode: tempNeedDept.length ? tempNeedDept[0].deptCode : '',
+          needDeptName: tempNeedDept.length ? tempNeedDept[0].deptName : '',
           taskTempDeptList: tempRefTaskTempDeptList, // 取样部门
           inspectContent: state.dataFormOfInspectRequest.inspectContent, // 检验内容
           handleExplain: state.dataFormOfInspectRequest.handleExplain, // 内容说明
@@ -662,7 +643,7 @@ export default defineComponent({
         })
 
         temp = {
-          deployMan: JSON.parse(sessionStorage.getItem('userInfo') || '{}').realName,
+          deployMan: `${JSON.parse(sessionStorage.getItem('userInfo') || '{}').realName || ''}(${JSON.parse(sessionStorage.getItem('userInfo') || '{}').userName || ''})`,
           tempApplyNo: state.dataFormOfInspectRequest.tempApplyNo, // 任务单号
           applyStatus: state.dataFormOfInspectRequest.applyStatus, // 申请状态
           id: state.pageId,
@@ -747,7 +728,7 @@ export default defineComponent({
       })
 
       const temp = {
-        deployMan: JSON.parse(sessionStorage.getItem('userInfo') || '{}').realName,
+        deployMan: `${JSON.parse(sessionStorage.getItem('userInfo') || '{}').realName || ''}(${JSON.parse(sessionStorage.getItem('userInfo') || '{}').userName || ''})`,
         tempApplyNo: state.dataFormOfInspectRequest.tempApplyNo, // 任务单号
         applyStatus: state.dataFormOfInspectRequest.applyStatus, // 申请状态
         id: state.pageId,
@@ -798,10 +779,34 @@ export default defineComponent({
     // [BTN:提交]
     const btnSubmitDataOfInspect = async () => {
       if (state.pageType === 'add' || state.pageType === 'edit') {
+        if (!state.dataTableOfInspectIndexBuild.length) {
+          proxy.$warningToast('未填写检验指标')
+          return
+        }
+
+        // 检验需求 area 校验必填
+        if (state.dataFormOfInspectRequest.needDeptList.length === 0) {
+          proxy.$warningToast('请选择需求部门')
+          return
+        }
+        if (!state.dataFormOfInspectRequest.inspectContent) {
+          proxy.$warningToast('请输入检验内容')
+          return
+        }
+        if (!state.dataFormOfInspectRequest.sampleDeptIdList.length) {
+          proxy.$warningToast('请输入取样部门')
+          return
+        }
+
+        if (state.dataTableOfInspectIndexBuild.length !== 0 && (state.dataTableOfInspectIndexBuild.length !== new Set(state.dataTableOfInspectIndexBuild.map(item => item.indexCode)).size)) {
+          proxy.$warningToast('有重复指标编码')
+          return
+        }
+
         const temp:any = await btnSaveDataOfInspectEdit(true)
 
         if (temp) {
-          // temp.allList = state.dataTableOfInspectIndexBuild
+          temp.allList = state.dataTableOfInspectIndexBuild
           // temp.updateList = []
           // temp.insertList = []
           MANAGEMENT_PROCESS_INSPECTION_TASK_ADD_AND_EDIT_SUBMIT_API(temp).then(() => {
@@ -1077,7 +1082,7 @@ export default defineComponent({
           needDeptList: [],
           sampleDeptId: '',
           taskTempDeptList: [],
-          deployMan: JSON.parse(sessionStorage.getItem('userInfo') || '{}').realName,
+          deployMan: `${JSON.parse(sessionStorage.getItem('userInfo') || '{}').realName || ''}(${JSON.parse(sessionStorage.getItem('userInfo') || '{}').userName || ''})`,
           inspectContent: '',
           handleExplain: '',
           applyStatus: '',

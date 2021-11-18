@@ -180,7 +180,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, toRefs, reactive, onMounted, getCurrentInstance, ComponentInternalInstance, watch } from 'vue'
+import { defineComponent, ref, toRefs, reactive, onMounted, getCurrentInstance, ComponentInternalInstance, watch, nextTick } from 'vue'
 import {
   INSPECT_INDEX_METHOD_QUERY_API,
   INSPECT_INDEX_METHOD_DROPDOWN_QUERY_API,
@@ -401,28 +401,38 @@ export default defineComponent({
 
     // [ACTION:load][指标检验方法明细] tree - get material detail data
     const getMainTreeData = () => {
+      treeModule.value.focusCurrentNodeNumber = ''
       INSPECT_INDEX_METHOD_QUERY_API({
       }).then((res) => {
         state.textParameterGroupSearch = ''
-        state.treeData = treeDataTranslater(res.data.data) // 转换结构
+        console.log('res.data.data')
+        console.log(res.data.data)
+        state.treeData = treeDataTranslater(JSON.parse(JSON.stringify(res.data.data))) // 转换结构
+        console.log('state.treeData')
+        console.log(state.treeData)
         state.topicMainData = []
         // 默认 Tree-Data 第一笔 给 id
-        state.treeData[0].inspectGroups[0].inspectMethodId = 'b'
-        treeModule.value.focusCurrentNodeNumber = state.treeData[0].inspectGroups[0].inspectMethodId
+        // state.treeData[0].inspectGroups[0].inspectMethodId = '1a0'
+        // console.log('state.treeData[0].inspectGroups[0].inspectMethodId')
+        // console.log(JSON.parse(JSON.stringify(state.treeData[0].inspectGroups[0].inspectMethodId)))
+
+        setTimeout(() => {
+          treeModule.value.focusCurrentNodeNumber = '1a0'
+        }, 2000)
       })
     }
 
     // [指标检验方法明细] Tree data 处理
     const treeDataTranslater = (data: any[]): any[] => {
       for (let i = 0; i < data.length; i++) {
-        // 数据缺省 id , 前端赋予 id , 避免 tree 高亮问题
-        if (data[i].inspectMethodId === '') {
-          data[i].inspectMethodId = 'a'
-        }
         data[i].inspect = state.inspectPropertyOptions[data[i].inspect] || '不分类'
         // data[i].inspect = data[i].inspect === 'CHEMISTRY' ? '理化类' : data[i].inspect === 'MICROORGANISM' ? '微生物类' : '不分类'
         data[i].canEdit = false
         data[i]._level = 1
+        // 数据缺省 id , 前端赋予 id , 避免 tree 高亮问题
+        if (data[i].inspectMethodId === '') {
+          data[i].inspectMethodId = data[i]._level + 'a' + i
+        }
         data[i].isTooltip = false
         for (let j = 0; j < data[i].inspectGroups.length; j++) {
           data[i].inspectGroups[j]._level = 2
@@ -431,7 +441,7 @@ export default defineComponent({
           data[i].inspectGroups[j].canEdit = true
           // 数据缺省 id , 前端赋予 id , 避免 tree 高亮问题
           if (data[i].inspectGroups[j].inspectMethodId === '') {
-            data[i].inspectGroups[j].inspectMethodId = 'a'
+            data[i].inspectGroups[j].inspectMethodId = data[i].inspectGroups[j]._level + 'b' + j
           }
           for (let k = 0; k < data[i].inspectGroups[j].inspectGroups.length; k++) {
             data[i].inspectGroups[j].inspectGroups[k]._level = 3
@@ -443,6 +453,12 @@ export default defineComponent({
     }
     // [指标检验方法明细] 触发
     const treeNodeContextMenuHandle = (val:TreeItemData) => {
+      console.log('8888888')
+      console.log(val.inspectMethodId)
+      treeModule.value.focusCurrentNodeNumber = ''
+      setTimeout(() => {
+        treeModule.value.focusCurrentNodeNumber = '659447186223812608'
+      }, 3000)
       state.globalMainObj = val // 赋予全局当前 node infomation
       if (val.canEdit === true && val._level === 2) { // display 新增 submenu
         state.isSubMenuAddBNTShow = true
