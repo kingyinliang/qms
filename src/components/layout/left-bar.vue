@@ -24,8 +24,8 @@
       <img v-if="sidebarFold" class="SystemLayout__sidebar__logo--small" src="~@/assets/img/layout/logoHead2.png" alt="logo" style="width: 28px">
       <img v-else class="SystemLayout__sidebar__logo--big" src="~@/assets/img/layout/logoHead1.png" alt="logo" >
     </div>
-    <div v-if="showOrHide">
-      <div v-for="(item, index) in tenant" :key="index" class="tenant__item">
+    <div class="change_system" v-if="showOrHide">
+      <div v-for="(item, index) in tenant" :key="index" class="tenant__item"  @click="goTenant(item)">
         <img :src="item.logoImgUrl" alt="">
       </div>
     </div>
@@ -85,5 +85,10 @@ export default defineComponent({
 </script>
 
 <style lang="scss" scoped>
-
+.change_system{
+  width: 170px;
+  position: absolute;
+  z-index: 99;
+  background: #00152B;
+}
 </style>
