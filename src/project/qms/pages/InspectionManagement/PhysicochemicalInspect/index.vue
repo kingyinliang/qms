@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-11-16 09:59:02
  * @LastEditors: Telliex
- * @LastEditTime: 2021-11-17 19:01:38
+ * @LastEditTime: 2021-11-19 15:36:14
 -->
 <template>
   <mds-area class="test_method" title="已选中样品" :pack-up="false" style="margin-bottom: 0; background: #fff; overflow:scroll">
@@ -32,7 +32,7 @@
     </el-table>
   </mds-area>
 
-  <instection-dialog v-if="isShowDialog" />
+  <instection-dialog v-model="dialogVisible" :targetOgj="targetOgjList" />
 </template>
 
 <script lang="ts">
@@ -114,8 +114,9 @@ interface DataTableOfTopicMain {
 }
 
 interface State {
+  targetOgjList: any[] // 检验物件
   currentOgj: any
-  isShowDialog: boolean
+  dialogVisible: boolean
   currentType: string
   currentObj:any
   dataTableOfTopicMain: DataTableOfTopicMain[]
@@ -141,7 +142,7 @@ export default defineComponent({
 
     /**  == 变量 ==  **/
     const state = reactive<State>({
-      isShowDialog: false,
+      dialogVisible: false,
       currentOgj: {},
       currentType: '',
       currentObj: {},
@@ -152,14 +153,18 @@ export default defineComponent({
       dataTableOfTopicMain: [],
       applyStatusNameObj: {},
       applyStatusOptions: {},
-      selectedListOfTopicMainData: []
+      selectedListOfTopicMainData: [],
+      targetOgjList: []
     })
 
     /**  == 函数 ==  **/
     // 临时检验列表数据
 
     const btnGetInspectDetail = () => {
-      state.isShowDialog = true
+      if (state.dataTableOfTopicMain.length) {
+        state.targetOgjList = [state.currentOgj]
+      }
+      state.dialogVisible = true
     }
 
     const btnGetInspectList = (str:string) => {
@@ -178,14 +183,17 @@ export default defineComponent({
           })
 
           // remove checked item
-          state.selectedListOfTopicMainData = []
-          refTableOfTopicMain.value.clearSelection()
+          // state.selectedListOfTopicMainData = []
+          // refTableOfTopicMain.value.clearSelection()
           // remove highlight row
           setCurrent({})
-          // highlight row
+          // R:highlight row
           if (!state.searchFilter.merge) {
             state.dataTableOfTopicMain.length >= 1 && setCurrent(state.dataTableOfTopicMain[0])
             state.currentOgj = state.dataTableOfTopicMain[0]
+          } else {
+          // R:合併檢掃碼新增時帶上勾選
+            refTableOfTopicMain.value.toggleRowSelection(state.dataTableOfTopicMain[state.dataTableOfTopicMain.length - 1])
           }
         }
       }).catch(() => {
@@ -201,6 +209,7 @@ export default defineComponent({
     // focus
     const setCurrent = (row:any) => {
       Object.keys(row).length === 0 ? refTableOfTopicMain.value.setCurrentRow() : refTableOfTopicMain.value.setCurrentRow(row)
+      state.currentOgj = row
     }
 
     //
@@ -236,8 +245,6 @@ export default defineComponent({
         state.applyStatusNameObj = {}
         state.applyStatusOptions.forEach((item:any) => {
           state.applyStatusNameObj[item.dictCode] = item.dictValue
-          console.log('state.applyStatusNameObj')
-          console.log(state.applyStatusNameObj)
         })
       })
 
@@ -248,11 +255,7 @@ export default defineComponent({
           path: 'qms-pages-InspectionManagement-InspectionTask-index'
         })
       } else {
-        console.log('state.currentObj')
-        console.log(state.currentObj)
         state.dataTableOfTopicMain = state.currentObj.length ? [state.currentObj[0]] : []
-        console.log('state.dataTableOfTopicMain')
-        console.log(state.dataTableOfTopicMain)
         if (!state.searchFilter.merge) {
           state.dataTableOfTopicMain.length >= 1 && setCurrent(state.dataTableOfTopicMain[0])
         }

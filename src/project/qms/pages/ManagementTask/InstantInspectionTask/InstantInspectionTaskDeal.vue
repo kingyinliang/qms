@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-10-15 20:07:53
  * @LastEditors: Telliex
- * @LastEditTime: 2021-11-18 17:05:35
+ * @LastEditTime: 2021-11-19 17:52:06
 -->
 <template>
 <div class="k-box-card" style="padding:20px 0;">
@@ -97,7 +97,7 @@
             <el-option
               v-for="item in scope.row.inspectMethodOptions"
               :key="item.id"
-              :label="item.inspectMethodName"
+              :label="item.inspectMethodGroupName"
               :value="item.inspectMethodName"
             >
             </el-option>
@@ -174,7 +174,7 @@
             <el-option
               v-for="item in scope.row.inspectMethodOptions"
               :key="item.id"
-              :label="item.inspectMethodName"
+              :label="item.inspectMethodGroupName"
               :value="item.inspectMethodName"
             >
             </el-option>
@@ -692,7 +692,6 @@ export default defineComponent({
     // [BTN:保存][ACT:分配]
     const btnSaveDataOfInspectAssign = async (isSubmit = false) => {
       let isChangeDataTopicMainData = false // 检验指标 area 是否有异动
-      let required = true
       const tempRefTaskTempDeptList: any[] = []
 
       const tempEdit: any[] = []
@@ -705,21 +704,9 @@ export default defineComponent({
           taskTempApplyId: state.pageId
         })
       })
-
-      state.dataTableOfInspectIndexAssign.forEach((item) => {
-        if (!item.inspectMethodName || !item.inspectDeptName) {
-          required = false
-        }
-      })
-
-      if (!required) {
-        proxy.$warningToast('请选择必填栏位')
-        return
-      }
-
       state.dataTableOfInspectIndexAssign.forEach((item, index) => {
         const tempItem = JSON.parse(JSON.stringify(item))
-        item.inspectDeptId = !item.inspectDeptId.length ? '' : item.inspectDeptId[0]
+        item.inspectDeptId = !item.inspectDeptIdList.length ? '' : item.inspectDeptIdList[0]
         item.isDialogVisibleForGlobleItem = false
 
         if (!_.isEqual(state.dataOrgTableOfInspectIndexAssign[index], tempItem)) {
@@ -821,6 +808,17 @@ export default defineComponent({
           })
         }
       } else if (state.pageType === 'assign') {
+        let required = true
+        state.dataTableOfInspectIndexAssign.forEach((item) => {
+          if (!item.inspectMethodName || !item.inspectDeptName) {
+            required = false
+          }
+        })
+        if (!required) {
+          proxy.$warningToast('请选择必填栏位')
+          return
+        }
+
         const temp:any = await btnSaveDataOfInspectAssign(true)
 
         if (temp) {
@@ -872,6 +870,7 @@ export default defineComponent({
       row.inspectMethodOptions.forEach((item:any) => {
         if (val === item.inspectMethodName) {
           row.inspectMethodCode = item.inspectMethodCode
+          row.inspectParameterGroupId = item.inspectParameterGroupId
           // row.inspectMethodName = item.inspectMethodName
         }
       })

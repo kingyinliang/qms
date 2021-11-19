@@ -3,10 +3,10 @@
  * @Anthor: Telliex
  * @Date: 2021-11-11 16:30:07
  * @LastEditors: Telliex
- * @LastEditTime: 2021-11-17 18:51:43
+ * @LastEditTime: 2021-11-19 15:52:09
 -->
 <template>
-  <el-dialog :title="title+subTitle" v-model="isDialogShow" width="90%">
+  <el-dialog :title="title+subTitle" v-model="isDialogShow" width="90%" @close="onClose">
   <mds-area class="info">
     <mds-area :title="infoSubTitle" :name="'org'" class="info">
         <el-form :inline="true" ref="refFormOfSampleInfo" :model="dataFormOfSampleInfo" :label-width="cssForformLabelWidth">
@@ -111,7 +111,7 @@
         </div>
       </mds-area>
     <div style="display: flex; margin:20px 0px;justify-content: flex-end;">
-      <el-button  icon="el-icon-circle-close" type="primary" size="small" class="topic-button" @click="btnCancelOfInspect">取消</el-button>
+      <el-button  icon="el-icon-circle-close" type="primary" size="small" class="topic-button" @click="onClose">取消</el-button>
       <el-button  icon="el-icon-circle-check" type="primary" size="small" class="topic-button"  @click="btnSaveDataOfInspect">保存</el-button>
       <el-button  type="primary" icon="el-icon-circle-check" size="small" class="role__btn topic-button"  @click="btnSubmitDataOfInspect">提交</el-button>
     </div>
@@ -120,12 +120,12 @@
 </template>
 
 <script lang="ts">
-// import { defineComponent, toRefs, reactive, onMounted, getCurrentInstance, ComponentInternalInstance, watch } from 'vue'
-import { defineComponent, toRefs, ref, reactive, onMounted, getCurrentInstance, ComponentInternalInstance } from 'vue'
+import { defineComponent, toRefs, ref, reactive, onMounted, getCurrentInstance, ComponentInternalInstance, watch } from 'vue'
 import layoutTs from '@/components/layout/layoutTs'
 import { useStore } from 'vuex'
+import _ from 'lodash'
 import {
-  MANAGEMENT_INSPECTION_PHYSICOCHEMICAL_TASK_FORM_QUERY_API
+  MANAGEMENT_INSPECTION_PHYSICOCHEMICAL_RECHECK_TASK_INSPECT_API
 } from '@/api/api'
 
 interface State {
@@ -141,23 +141,45 @@ interface State {
   dataFormOfSampleItemUnit: any[]
   activities: any[]
 }
+
+interface Props{
+  dialogVisible: boolean
+  targetOgj: any
+}
+
 export default defineComponent({
   name: 'InspectionManagementDialogIndex',
+  emits: ['on-close', 'on-confirm'],
   components: {
   },
 
   props: {
+    targetOgj: {
+      type: Object,
+      default: () => {
+        return {}
+      }
+    },
+    dialogVisible: {
+      type: Boolean,
+      default: false
+    }
   },
-  setup () {
-    const refFormOfSampleInfo = ref()
+  setup (props, context) {
+    const { targetOgj, dialogVisible } = toRefs(props as Props)
+    const parent = { ...context }
+
     const { gotoPage, tabsCloseCurrentHandle } = layoutTs()
+
     const ctx = getCurrentInstance() as ComponentInternalInstance
     const proxy = ctx.proxy as any
+
+    const refFormOfSampleInfo = ref()
     const store = useStore()
 
     /**  == 变量 ==  **/
     const state = reactive<State>({
-      isDialogShow: true,
+      isDialogShow: dialogVisible.value,
       title: '样品检验-',
       subTitle: '制取/煮豆/理化检验',
       currentType: 'checkagain', // temp , checkagain, merge
@@ -220,28 +242,40 @@ export default defineComponent({
     })
 
     // [BTN:取消]
-    const btnCancelOfInspect = () => {
-      tabsCloseCurrentHandle()
+    const onClose = () => {
+      parent.emit('on-close')
     }
 
     // [BTN:保存] transfor
-    const btnSaveDataOfInspect = () => {
+    const btnSaveDataOfInspect = _.debounce(() => {
       //
-    }
+    }, 1000)
 
     // [BTN:提交]
-    const btnSubmitDataOfInspect = async () => {
+    const btnSubmitDataOfInspect = _.debounce(() => {
       //
-    }
+    }, 1000)
 
     const btnChangeMethodOfIndex = (who:string, tagget: any) => {
       tagget.method = who
     }
+    watch(targetOgj, (val) => {
+      console.log('watch')
+      console.log(val)
+      if (val.length) {
+        MANAGEMENT_INSPECTION_PHYSICOCHEMICAL_RECHECK_TASK_INSPECT_API(
+          [val[0].id]
+        ).then(res => {
+          console.log('tttttttt')
+          console.log(res.data.data)
+        })
+      }
+    })
 
     onMounted(async () => {
       // state.currentType = store.state.common.sampleObj.type
       // state.currentObj = store.state.common.sampleObj.obj
-
+      console.log('wwwwwwww')
       if (!state.currentType) {
         tabsCloseCurrentHandle()
         proxy.$warningToast('操作过时，请重新选择！')
@@ -249,19 +283,17 @@ export default defineComponent({
           path: 'qms-pages-InspectionManagement-InspectionTask-index'
         })
       } else {
+        console.log('00000000')
+        console.log(targetOgj)
         console.log('state.currentObj')
         console.log(state.currentObj)
-        MANAGEMENT_INSPECTION_PHYSICOCHEMICAL_TASK_FORM_QUERY_API([state.currentObj.id]).then(res => {
-          console.log('222222')
-          console.log(res.data.data)
-        })
       }
     })
 
     return {
       ...toRefs(state),
       // btn
-      btnCancelOfInspect,
+      onClose,
       btnSaveDataOfInspect,
       btnSubmitDataOfInspect,
       btnChangeMethodOfIndex,
