@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-11-16 09:59:02
  * @LastEditors: Telliex
- * @LastEditTime: 2021-11-19 15:36:14
+ * @LastEditTime: 2021-11-23 19:12:31
 -->
 <template>
   <mds-area class="test_method" title="已选中样品" :pack-up="false" style="margin-bottom: 0; background: #fff; overflow:scroll">
@@ -16,23 +16,55 @@
         </div>
         <div style="padding-left: 12px;">
           <el-button icon="el-icon-search" size="small" class="topic-button" @click="btnReset" :disabled="!dataTableOfTopicMain.length">重置</el-button>
-          <el-button icon="el-icon-search" size="small" class="topic-button" @click="btnGetInspectDetail()" :disabled="!dataTableOfTopicMain.length">检验</el-button>
+          <el-button icon="el-icon-search" size="small" class="topic-button" @click="actGetInspectDetail()" :disabled="!dataTableOfTopicMain.length">检验</el-button>
         </div>
     </template>
-    <el-table border ref="refTableOfTopicMain" :cell-style="{'text-align':'center'}" :data="dataTableOfTopicMain" tooltip-effect="dark" style="width: 100%" max-height="500" highlight-current-row @row-click="handleCurrentChange" @selection-change="actHandleSelectionChange">
+    <el-table border ref="refTableOfTopicMain" :cell-style="{'text-align':'center'}" :data="dataTableOfTopicMain" tooltip-effect="dark" style="width: 100%" max-height="500" highlight-current-row @row-click="handleCurrentChange" @selection-change="actHandleSelectionChange" @select="btnHandleOneSelectionChange" @select-all="btnHandleAllSelectionChange">
       <el-table-column type="selection" width="55" align="center"/>
       <el-table-column type="index" label="序号" width="50" align="center" />
       <el-table-column label="样品码" show-overflow-tooltip prop="sampleCode" />
-      <el-table-column label="状态" show-overflow-tooltip prop="taskStatus">
+      <el-table-column label="状态" show-overflow-tooltip prop="taskStatusName">
       <template #default="scope">
-        <span>{{applyStatusNameObj[scope.row.taskStatus]}}</span>
+        <span>{{scope.row.taskStatusName}}</span>
       </template>
       </el-table-column>
       <el-table-column label="检验内容" show-overflow-tooltip prop="inspectContent" />
     </el-table>
   </mds-area>
 
-  <instection-dialog v-model="dialogVisible" :targetOgj="targetOgjList" />
+  <instection-dialog v-model="dialogVisible" :targetOgj="targetOgjList" :mainType="mainType" :subType="subType" @on-close="dialogVisible=false" @openHandle="openHandle" />
+    <!--任务新增-->
+  <el-dialog :title="'样品任务新增'" v-model="isDialogVisibleForAddTask" width="40%" >
+    <el-form ref="refGlobleItem" :model="formForTaskAdd" class="dialogForm">
+      <el-form-item label="检验类：" prop="inspectTypeId" :label-width="cssForformLabelWidth">
+          <el-input v-model="formForTaskAdd.inspectTypeId" class="140px" autocomplete="off"  :disabled="true"></el-input>
+      </el-form-item>
+      <el-form-item label="取样部门：" :label-width="cssForformLabelWidth" prop="sampleDeptId">
+        <el-input v-model="formForTaskAdd.sampleDeptName" class="140px" autocomplete="off"  :disabled="true"></el-input>
+      </el-form-item>
+      <el-form-item label="生产物料：" prop="inspectMaterialName" :label-width="cssForformLabelWidth">
+          <el-input v-model="formForTaskAdd.inspectMaterialName" class="140px" autocomplete="off"  :disabled="true"></el-input>
+      </el-form-item>
+      <el-form-item label="生产订单：" prop="orderNo" :label-width="cssForformLabelWidth">
+          <el-input v-model="formForTaskAdd.orderNo" class="140px" autocomplete="off"  :disabled="true"></el-input>
+      </el-form-item>
+      <el-form-item label="品项：" prop="itemName" :label-width="cssForformLabelWidth">
+          <el-input v-model="formForTaskAdd.itemName" class="140px" autocomplete="off"  :disabled="true"></el-input>
+      </el-form-item>
+      <el-form-item label="取样信息：" prop="inspectSiteName" :label-width="cssForformLabelWidth">
+          <el-input v-model="formForTaskAdd.inspectSiteName" class="140px" autocomplete="off"  :disabled="true"></el-input>
+      </el-form-item>
+      <el-form-item label="取样说明：" prop="sampleExplain" :label-width="cssForformLabelWidth">
+          <el-input v-model="formForTaskAdd.sampleExplain" class="140px" autocomplete="off" maxlength="10"  placeholder="暂无内容"></el-input>
+      </el-form-item>
+    </el-form>
+    <template #footer>
+      <span class="dialog-footer">
+        <el-button size="small" class="topic-button" icon="el-icon-circle-close" @click="btnCancelTaskAddOfDialog">取消</el-button>
+        <el-button size="small" class="topic-button" icon="el-icon-circle-check" type="primary" @click="btnConfirmTaskAddOfDialog">保存</el-button>
+      </span>
+    </template>
+  </el-dialog>
 </template>
 
 <script lang="ts">
@@ -42,7 +74,8 @@ import {
 import MdsArea from '@/components/package/mds-area/src/mds-area.vue'
 import {
   DICTIONARY_QUERY_API,
-  MANAGEMENT_INSPECTION_PHYSICOCHEMICAL_QUERY_BY_SAMPLE_CODE_API // 检验管理-[检验任务]- 根据样品码查询检验任务
+  MANAGEMENT_INSPECTION_PHYSICOCHEMICAL_QUERY_BY_SAMPLE_CODE_API, // 检验管理-[检验任务]- 根据样品码查询检验任务
+  MANAGEMENT_INSPECTION_TASK_INSPECT_QUERY_BY_ID_API // 检验管理-[检验任务]- 分析是否有合并检 /taskInspect/queryTaskInspectByIds
 } from '@/api/api'
 import layoutTs from '@/components/layout/layoutTs'
 import { useStore } from 'vuex'
@@ -114,16 +147,21 @@ interface DataTableOfTopicMain {
 }
 
 interface State {
+  indexOfCurrentRowOnFocus: number
+  subType: string
+  isDialogVisibleForAddTask: boolean
   targetOgjList: any[] // 检验物件
-  currentOgj: any
+  currentGlobalActOgj: any
   dialogVisible: boolean
-  currentType: string
+  mainType: string
   currentObj:any
   dataTableOfTopicMain: DataTableOfTopicMain[]
   searchFilter: SearchFilter
   applyStatusNameObj: any
   applyStatusOptions: any
   selectedListOfTopicMainData: DataTableOfTopicMain[]
+  formForTaskAdd: any
+  cssForformLabelWidth: string
 }
 
 export default defineComponent({
@@ -142,9 +180,11 @@ export default defineComponent({
 
     /**  == 变量 ==  **/
     const state = reactive<State>({
+      indexOfCurrentRowOnFocus: 0,
       dialogVisible: false,
-      currentOgj: {},
-      currentType: '',
+      isDialogVisibleForAddTask: false,
+      currentGlobalActOgj: {},
+      mainType: '',
       currentObj: {},
       searchFilter: {
         sampleCode: '',
@@ -154,46 +194,133 @@ export default defineComponent({
       applyStatusNameObj: {},
       applyStatusOptions: {},
       selectedListOfTopicMainData: [],
-      targetOgjList: []
+      targetOgjList: [],
+      subType: '',
+      formForTaskAdd: {},
+      cssForformLabelWidth: '110px'
     })
 
     /**  == 函数 ==  **/
+    //
+    const checkIfMergeByMaterialCode = (val:DataTableOfTopicMain[]) => {
+      const tempInspectMaterialCode = val[0].inspectMaterialCode
+      return val.every(item => item.taskInspectClassify === 'PROCESS' && item.inspectMaterialCode === tempInspectMaterialCode)
+    }
+
+    const checkIfMergeByClassify = (val:DataTableOfTopicMain[]) => {
+      return val.some(item => item.taskInspectClassify !== 'PROCESS')
+    }
+
     // 临时检验列表数据
 
-    const btnGetInspectDetail = () => {
-      if (state.dataTableOfTopicMain.length) {
-        state.targetOgjList = [state.currentOgj]
+    // TODO
+    const actGetInspectDetail = () => {
+      if (state.searchFilter.merge && state.selectedListOfTopicMainData.length > 1) { // 勾选 2 个以上， 视为合并检
+        if (checkIfMergeByClassify(state.selectedListOfTopicMainData)) {
+          proxy.$warningToast('存在临时检验任务，无法合并检验')
+          return
+        }
+
+        if (!checkIfMergeByMaterialCode(state.selectedListOfTopicMainData)) {
+          proxy.$warningToast('存在不同物料，无法合并检验')
+          return
+        }
+        state.subType = 'merge'
+        console.log('merge')
+        state.targetOgjList = state.selectedListOfTopicMainData
+      } else if (state.searchFilter.merge && state.selectedListOfTopicMainData.length === 1) { // 勾选 1 个， 视为一般检
+        console.log('normal')
+        state.subType = 'normal'
+        state.targetOgjList = state.selectedListOfTopicMainData
+      } else {
+        console.log('normal')
+        state.subType = 'normal'
+        state.targetOgjList = [state.currentGlobalActOgj]
       }
+
+      // if (state.mainType === 'TEMP') { // 临时检验
+      //   state.subType = 'temp'
+
+      //   if (val === 'normality') { // 一般流程
+      //     if (state.dataTableOfTopicMain.length) {
+      //       if (state.selectedListOfTopicMainData.length >= 2) { // 勾选 2 个以上， 视为合并检
+      //         state.subType = 'merge'
+      //         state.targetOgjList = state.selectedListOfTopicMainData
+      //       } else if (state.selectedListOfTopicMainData.length === 1) { // 勾选 1 个， 视为一般检
+      //         state.subType = 'normal'
+      //         state.targetOgjList = state.selectedListOfTopicMainData
+      //       } else { // 都没勾，一般检
+      //         state.subType = 'normal'
+      //         state.targetOgjList = [state.currentGlobalActOgj]
+      //       }
+      //     }
+      //   } else if (val === 'checkagain') { // 复检流程
+      //     state.subType = 'checkagain'
+      //   // state.targetOgjList = state.selectedListOfTopicMainData
+      //   }
+      // } else if (state.mainType === 'PROCESS') {
+      //   if (val === 'normality') { // 一般流程
+      //     if (state.dataTableOfTopicMain.length) {
+      //       if (state.selectedListOfTopicMainData.length >= 2) { // 勾选 2 个以上， 视为合并检
+      //         state.subType = 'merge'
+      //         state.targetOgjList = state.selectedListOfTopicMainData
+      //       } else if (state.selectedListOfTopicMainData.length === 1) { // 勾选 1 个， 视为一般检
+      //         state.subType = 'normal'
+      //         state.targetOgjList = state.selectedListOfTopicMainData
+      //       } else { // 都没勾，一般检
+      //         state.subType = 'normal'
+      //         state.targetOgjList = [state.currentGlobalActOgj]
+      //       }
+      //     }
+      //   } else if (val === 'checkagain') { // 复检流程
+      //     state.subType = 'checkagain'
+      //   // state.targetOgjList = state.selectedListOfTopicMainData
+      //   }
+      // }
+
       state.dialogVisible = true
     }
 
+    const actReGetInspectDetail = () => {
+      state.dialogVisible = true
+    }
+
+    // 根据取样码添加任务
     const btnGetInspectList = (str:string) => {
-      str && MANAGEMENT_INSPECTION_PHYSICOCHEMICAL_QUERY_BY_SAMPLE_CODE_API({
-        sampleCode: str
-      }).then(res => {
+      str && MANAGEMENT_INSPECTION_PHYSICOCHEMICAL_QUERY_BY_SAMPLE_CODE_API(
+        [str]
+      ).then(res => {
         console.log('根据样品码查询检验任务')
         console.log(res.data.data)
         if (!res.data.data.length) {
           proxy.$infoToast('无任何数据')
         } else {
           // push 前去重
-          const temp = state.dataTableOfTopicMain.map(item => item.sampleCode)
+          let tempLength = 0
+          const temp = state.dataTableOfTopicMain.map(item => item.id)
           res.data.data.forEach((item:any) => {
-            !temp.includes(item.sampleCode) && state.dataTableOfTopicMain.push(item)
+            if (!temp.includes(item.id)) {
+              if (item.taskStatus === 'RECEIVED' || item.taskStatus === 'CHECKING') {
+                state.dataTableOfTopicMain.push(item)
+                tempLength += 1
+              } else {
+                proxy.$warningToast('已滤掉非[已收样]及[检验中]状态任务')
+              }
+            } else {
+              proxy.$warningToast('列表中已存在欲添加的检验码')
+            }
           })
 
-          // remove checked item
-          // state.selectedListOfTopicMainData = []
-          // refTableOfTopicMain.value.clearSelection()
-          // remove highlight row
-          setCurrent({})
+          setCurrentRowOnFocus({})
           // R:highlight row
           if (!state.searchFilter.merge) {
-            state.dataTableOfTopicMain.length >= 1 && setCurrent(state.dataTableOfTopicMain[0])
-            state.currentOgj = state.dataTableOfTopicMain[0]
+            state.dataTableOfTopicMain.length >= 1 && setCurrentRowOnFocus(state.dataTableOfTopicMain[0])
+            state.currentGlobalActOgj = state.dataTableOfTopicMain[0]
           } else {
           // R:合併檢掃碼新增時帶上勾選
-            refTableOfTopicMain.value.toggleRowSelection(state.dataTableOfTopicMain[state.dataTableOfTopicMain.length - 1])
+            for (let i = 1; i <= tempLength; i++) {
+              refTableOfTopicMain.value.toggleRowSelection(state.dataTableOfTopicMain[state.dataTableOfTopicMain.length - i])
+            }
           }
         }
       }).catch(() => {
@@ -201,39 +328,117 @@ export default defineComponent({
       })
     }
 
+    // reload 任务表单
+    const btnGetInspectListReload = (val: string[]) => {
+      val.length && MANAGEMENT_INSPECTION_PHYSICOCHEMICAL_QUERY_BY_SAMPLE_CODE_API(
+        val
+      ).then(res => {
+        state.dataTableOfTopicMain = []
+        res.data.data.forEach((item:any) => {
+          if (item.taskStatus === 'RECEIVED' || item.taskStatus === 'CHECKING') {
+            state.dataTableOfTopicMain.push(item)
+          }
+        })
+        setCurrentRowOnFocus({})
+        // R:highlight row
+        if (!state.searchFilter.merge) {
+          state.dataTableOfTopicMain.length >= 1 && setCurrentRowOnFocus(state.dataTableOfTopicMain[0])
+          state.indexOfCurrentRowOnFocus = 0
+          state.currentGlobalActOgj = state.dataTableOfTopicMain[state.indexOfCurrentRowOnFocus]
+        }
+      })
+    }
+
     // 重置 table data
     const btnReset = () => {
       state.dataTableOfTopicMain = []
+      store.commit('common/updateSampleObjToInspect', { type: 'EMPTY', obj: [] })
     }
 
-    // focus
-    const setCurrent = (row:any) => {
+    // focus or remove focus
+    const setCurrentRowOnFocus = (row:any) => {
       Object.keys(row).length === 0 ? refTableOfTopicMain.value.setCurrentRow() : refTableOfTopicMain.value.setCurrentRow(row)
-      state.currentOgj = row
+      state.currentGlobalActOgj = row
     }
 
-    //
-    const handleCurrentChange = (row:any) => {
-      console.log(row)
-      state.currentOgj = row
+    // assign global index & focus row obj
+    const handleCurrentChange = (row:DataTableOfTopicMain) => {
+      state.currentGlobalActOgj = row
+      state.dataTableOfTopicMain.forEach((item, index) => {
+        if (item.id === row.id) {
+          state.indexOfCurrentRowOnFocus = index
+        }
+      })
     }
 
+    //  click 合并检 button 后行为：取消 row's focus
     const btnCheckOfMergeOrNot = (val:boolean) => {
       if (state.dataTableOfTopicMain.length !== 0) {
-        val ? setCurrent({}) : setCurrent(state.dataTableOfTopicMain[0])
+        val ? setCurrentRowOnFocus({}) : setCurrentRowOnFocus(state.dataTableOfTopicMain[state.indexOfCurrentRowOnFocus])
       }
     }
 
-    // [table] 选框选择
+    // [ACT][Table] 选框选择後的处理
     const actHandleSelectionChange = (val: DataTableOfTopicMain[]) => {
-      console.log('9999999')
-      console.log(val)
       state.selectedListOfTopicMainData = val
+    }
+
+    // [SELECT][Table] 选框选择
+    const btnHandleOneSelectionChange = (val: DataTableOfTopicMain[]) => {
+      if (val.length && val[val.length - 1].taskInspectClassify !== 'PROCESS') {
+        proxy.$warningToast('存在临时检验任务，无法勾选合并')
+        refTableOfTopicMain.value.toggleRowSelection(val[val.length - 1], false)
+      }
+    }
+    // [SELECT][Table] 选框 ALL 选择
+    const btnHandleAllSelectionChange = (val: DataTableOfTopicMain[]) => {
+      if (val.length && state.selectedListOfTopicMainData.some(item => item.taskInspectClassify !== 'PROCESS')) {
+        proxy.$warningToast('存在临时检验任务，无法勾选合并')
+        refTableOfTopicMain.value.clearSelection()
+      }
+    }
+
+    const openHandle = (val:any) => {
+      console.log('.............')
+      console.log(val)
+
+      if (val.act === 'save') {
+        if (state.indexOfCurrentRowOnFocus + 1 < state.dataTableOfTopicMain.length) {
+          console.log('还有可开')
+          state.indexOfCurrentRowOnFocus += 1
+          setCurrentRowOnFocus(state.dataTableOfTopicMain[state.indexOfCurrentRowOnFocus])
+          setTimeout(() => {
+            actGetInspectDetail()
+          }, 1000)
+        } else {
+          console.log('没有可开')
+        }
+      } else if (val.act === 'submit') {
+        if (val.target === 'ORIGINAL_RECHECK') { // 原样复检
+          // actGetInspectDetail('checkagain')
+        } else if (val.target === 'RESAMOLING') { // 重新取样
+
+        } else if (val.target === 'OTHER_SAMPLING') { // 其它取样
+          state.isDialogVisibleForAddTask = true
+          state.formForTaskAdd = val.obj.taskInspectList[0]
+        } else { // not chose
+
+        }
+      }
+    }
+
+    // [Dialog:任务新增][BTN:取消]
+    const btnCancelTaskAddOfDialog = () => {
+      state.isDialogVisibleForAddTask = false
+    }
+    // [Dialog:任务新增][BTN:取消]
+    const btnConfirmTaskAddOfDialog = () => {
+      state.isDialogVisibleForAddTask = false
     }
 
     /**  == 生命周期 ==  **/
     onMounted(async () => {
-      state.currentType = store.state.common.sampleObj.type
+      state.mainType = store.state.common.sampleObj.type //  temp | process
       state.currentObj = store.state.common.sampleObj.obj
       console.log('=============')
       console.log(store.state.common.sampleObj.type)
@@ -241,23 +446,34 @@ export default defineComponent({
       console.log('=============')
       // 获取状态下拉
       await DICTIONARY_QUERY_API({ dictType: 'TASK_STATUS' }).then((res) => {
-        state.applyStatusOptions = res.data.data // 除去已出库
+        state.applyStatusOptions = res.data.data
         state.applyStatusNameObj = {}
         state.applyStatusOptions.forEach((item:any) => {
           state.applyStatusNameObj[item.dictCode] = item.dictValue
         })
       })
 
-      if (!state.currentType) {
+      if (!state.mainType) {
         tabsCloseCurrentHandle()
         proxy.$warningToast('操作过时，请重新选择！')
         gotoPage({
           path: 'qms-pages-InspectionManagement-InspectionTask-index'
         })
       } else {
-        state.dataTableOfTopicMain = state.currentObj.length ? [state.currentObj[0]] : []
+        // 除去非已收样或检验中状态任务3
+        state.dataTableOfTopicMain = []
+        await MANAGEMENT_INSPECTION_TASK_INSPECT_QUERY_BY_ID_API(store.state.common.sampleObj.obj).then((res) => {
+          res.data.data.forEach((item:DataTableOfTopicMain) => {
+            if (item.taskStatus === 'RECEIVED' || item.taskStatus === 'CHECKING') {
+              state.dataTableOfTopicMain.push(item)
+            }
+          })
+        })
+
+        // 没勾选合并检下，focus 第一条
         if (!state.searchFilter.merge) {
-          state.dataTableOfTopicMain.length >= 1 && setCurrent(state.dataTableOfTopicMain[0])
+          state.dataTableOfTopicMain.length >= 1 && setCurrentRowOnFocus(state.dataTableOfTopicMain[state.indexOfCurrentRowOnFocus])
+          state.indexOfCurrentRowOnFocus = 0
         }
       }
     })
@@ -265,13 +481,21 @@ export default defineComponent({
     return {
       ...toRefs(state),
       // btn
-      btnGetInspectDetail,
+      actGetInspectDetail,
       btnGetInspectList,
       btnReset,
-      setCurrent,
+      setCurrentRowOnFocus,
       handleCurrentChange,
       btnCheckOfMergeOrNot,
       actHandleSelectionChange,
+      btnCancelTaskAddOfDialog,
+      btnConfirmTaskAddOfDialog,
+      btnHandleOneSelectionChange,
+      btnHandleAllSelectionChange,
+      openHandle,
+      btnGetInspectListReload,
+      checkIfMergeByMaterialCode,
+      actReGetInspectDetail,
       // data
       // ref
       refTableOfTopicMain

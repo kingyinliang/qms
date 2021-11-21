@@ -113,7 +113,7 @@ export default defineComponent({
 
     // [BTN:只读]
     const btnConfigulationReadOnly = async (row:TableData) => {
-      store.commit('common/updateSampleObjToView', { type: 'history', obj: [row] })
+      store.commit('common/updateSampleObjForView', { type: 'HISTORY', obj: [row] })
       gotoPage({
         path: 'qms-pages-InspectionManagement-components-form'
       })
