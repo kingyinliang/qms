@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-07-30 11:24:46
  * @LastEditors: Telliex
- * @LastEditTime: 2021-10-29 09:11:35
+ * @LastEditTime: 2021-11-09 10:20:48
 -->
 <template>
   <mds-card class="test_method" :title="title" :pack-up="false" style="margin-bottom: 0; background: #fff;">
@@ -816,7 +816,7 @@ export default defineComponent({
     // [BTN:批次删除][关联公式]
     const tempDeleteItemOfrelatedeFormula = () => {
       if (state.selectedListOfRelatedeFormulaData.length === 0) {
-        proxy.$errorToast('请选择数据')
+        proxy.$warningToast('请选择数据')
         return
       }
       proxy.$confirm('确认删除选中的数据？', '提示', {

@@ -279,7 +279,7 @@ export default defineComponent({
     // [弹窗][BTN:确定]
     const btnAddItemToConfirm = () => {
       if (state.addAndEditItemForm.inspectAdditionalIds.length === 0 && state.addAndEditItemForm.inspectCycleId === '') {
-        proxy.$errorToast('请选择执行周期或输入频次附加项')
+        proxy.$warningToast('请选择执行周期或输入频次附加项')
         return
       }
 

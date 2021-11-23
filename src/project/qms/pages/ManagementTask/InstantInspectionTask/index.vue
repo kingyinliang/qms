@@ -1,12 +1,12 @@
 <template>
-  <mds-card class="test_method" title="临时检验任务" :pack-up="false" style="margin-bottom: 0; background: #fff; over-flow:scroll">
+  <mds-card class="test_method" title="临时检验任务" :pack-up="false" style="margin-bottom: 0; background: #fff; overflow:scroll">
     <template #titleBtn>
       <div style="display: flex; justify-content: flex-end;">
         <div><span style="font-size:12px;padding-left: 10px;">检验单：</span>
-          <el-input size="small" style="margin-bottom:10px; width:200px; height:35px;margin-right:10px" clearable  v-model="searchFilter.tempApplyNo" placeholder="请输入" />
+          <el-input size="small" style="margin-bottom:10px; width:200px; height:35px;margin-right:10px" clearable @keydown.enter="btnGetTopicMainData('init')"  v-model="searchFilter.tempApplyNo" placeholder="请输入" />
         </div>
         <div><span style="font-size:12px;padding-left: 10px;">检验内容：</span>
-          <el-input size="small" style="margin-bottom:10px; width:200px; height:35px;margin-right:10px" clearable  v-model="searchFilter.inspectContent" placeholder="请输入" />
+          <el-input size="small" style="margin-bottom:10px; width:200px; height:35px;margin-right:10px" clearable @keydown.enter="btnGetTopicMainData('init')"  v-model="searchFilter.inspectContent" placeholder="请输入" />
         </div>
         <div>
           <span style="font-size:12px;padding-left: 10px;">状态：</span>
@@ -40,8 +40,8 @@
       </template>
       </el-table-column>
       <el-table-column label="检验内容" show-overflow-tooltip prop="inspectContent" />
-      <el-table-column label="取样单位" show-overflow-tooltip prop="sampleDeptName" />
-      <el-table-column label="检验单位" show-overflow-tooltip prop="inspectDeptName" />
+      <el-table-column label="取样部门" show-overflow-tooltip prop="sampleDeptName" />
+      <el-table-column label="检验部门" show-overflow-tooltip prop="inspectDeptName" />
       <el-table-column label="发布人" show-overflow-tooltip prop="deployMan" />
       <el-table-column label="发布时间" show-overflow-tooltip prop="deployDate" />
       <el-table-column label="操作" width="220" fixed="right">
@@ -52,7 +52,7 @@
           <el-button type="text" icon="el-icon-delete" class="delete-btn" @click="btnDeleteItemData(scope.row)" :disabled="scope.row.applyStatus!=='SAVED'">
             <em>删除</em>
           </el-button>
-          <el-button type="text" icon="el-icon-finished" class="role__btn" @click="btnConfigulation(scope.row)" :disabled="!(scope.row.applyStatus==='SAMPLING' || scope.row.applyStatus==='UNSAMPLED' || scope.row.applyStatus==='ARRIVED' || scope.row.applyStatus==='RECEIVED')&&scope.row.processFlag!=='Y' ">
+          <el-button type="text" icon="el-icon-finished" class="role__btn" @click="btnConfigulation(scope.row)" :disabled="(scope.row.applyStatus==='SAMPLING' || scope.row.applyStatus==='UNSAMPLED' || scope.row.applyStatus==='ARRIVED' || scope.row.applyStatus==='RECEIVED')&&scope.row.processFlag==='Y' ">
            <!-- <el-button type="text" icon="el-icon-finished" class="role__btn" @click="btnConfigulation(scope.row)" > -->
             <em>处理</em>
           </el-button>
@@ -76,15 +76,13 @@
 
 <script lang="ts">
 import {
-  defineComponent, ref, toRefs, reactive, onMounted, ComponentInternalInstance, getCurrentInstance, onUpdated
+  defineComponent, toRefs, reactive, onMounted, ComponentInternalInstance, getCurrentInstance, onUpdated
 } from 'vue'
 import MdsCard from '@/components/package/mds-card/src/mds-card.vue'
 import { useRouter } from 'vue-router'
 import {
   MANAGEMENT_PROCESS_INSPECTION_TASK_STATUS_QUERY_API, // 查询
-  MANAGEMENT_INSPECTION_PLAN_INSERT_API, // 新增
   MANAGEMENT_PROCESS_INSPECTION_TASK_STATUS_DELETE_API, // 删除
-  MANAGEMENT_INSPECTION_PLAN_UPDATE_API, // 编辑
   DICTIONARY_QUERY_API
 } from '@/api/api'
 import layoutTs from '@/components/layout/layoutTs'
@@ -152,7 +150,6 @@ export default defineComponent({
     const router = useRouter()
 
     /**  == 变量 ==  **/
-    // const { } = toRefs(props as Props)
     const state = reactive<State>({
       currentInspectScene: 'PROCESS', // 过程检验计划
       dialogTitle: '',
@@ -188,24 +185,6 @@ export default defineComponent({
       applyStatusOptions: [],
       applyStatusNameObj: {}
     })
-    const refFormOfAddAndEditItem = ref()
-    const ruleFormOfAddAndEditItem = {
-      planVersion: [
-        {
-          required: true,
-          message: '请输入版本号',
-          trigger: 'blur'
-        }
-      ],
-      beginDate: [
-        {
-          required: true,
-          message: '请输入执行开始日期',
-          trigger: 'blur'
-        }
-      ]
-    }
-    const props = { multiple: true }
 
     /**  == 函数 ==  **/
     // 临时检验列表数据
@@ -303,33 +282,6 @@ export default defineComponent({
       btnGetTopicMainData()
     }
 
-    // 时间选取限制
-    const pickerOptions = (time:any) => {
-      return time.getTime() < Date.now()
-    }
-
-    const formatDateTransfer = (date:any) => {
-      var d = new Date(date)
-      var month = '' + (d.getMonth() + 1)
-      var day = '' + d.getDate()
-      var year = d.getFullYear()
-
-      if (month.length < 2) { month = '0' + month }
-      if (day.length < 2) { day = '0' + day }
-      return [year, month, day].join('-')
-    }
-
-    const formatDate = () => {
-      var d = new Date()
-      var month = '' + (d.getMonth() + 1)
-      var day = '' + d.getDate()
-      var year = d.getFullYear()
-
-      if (month.length < 2) { month = '0' + month }
-      if (day.length < 2) { day = '0' + day }
-      return [year, month, day].join('-')
-    }
-
     /**  == 生命周期 ==  **/
     onMounted(async () => {
       // 获取状态下拉
@@ -353,20 +305,14 @@ export default defineComponent({
 
     return {
       ...toRefs(state),
-      refFormOfAddAndEditItem,
       // btn
       btnEditItemOfTopicMainData,
       btnAddItemOfTopicMainData,
       btnGetTopicMainData,
       // data
-      ruleFormOfAddAndEditItem,
-      props,
       handleChangeDataSize,
       handleChangeCurrentPage,
-      formatDateTransfer,
       btnDeleteItemData,
-      formatDate,
-      pickerOptions,
       btnConfigulation,
       btnConfigulationReadOnly
     }
@@ -379,23 +325,4 @@ export default defineComponent({
   min-height: 550px;
   height: calc(100vh - 117px);
 }
-.topforms {
-  display: flex;
-  .el-date-editor.el-input {
-    width: auto;
-  }
-  .formtextarea {
-    .el-form-item__content {
-      width: 500px;
-    }
-  }
-}
-.dialog-footer {
-  display: flex;
-  justify-content: flex-end;
-}
-.el-form::v-deep(.inputWidth) {
-  width: 100%;
-}
-
 </style>

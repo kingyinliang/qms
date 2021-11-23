@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-07-08 11:25:52
  * @LastEditors: Telliex
- * @LastEditTime: 2021-10-29 08:41:03
+ * @LastEditTime: 2021-11-18 15:12:30
 -->
 <template>
     <dialogDevice :dialogVisible="dialogVisible" :title="title" @on-confirm="onConfirm" @on-close="onClose" width="70%">
@@ -15,20 +15,26 @@
                     属性
                 </div>
                 <ul class="category">
-                  <li :class="{'item-focus-status':currentIndex===index}" v-for="(item, index) in materialTreeData" v-bind:key="item"><el-button type="text" @click="clickGategoryToChangeData(item.inspectProperty,index)">{{item.inspectPropertyName}}</el-button></li>
+                  <li :class="{'item-focus-status':currentIndex===index}" v-for="(item, index) in materialTreeData" :key="item">
+                    <el-tooltip class="item" effect="dark" :content="item.inspectPropertyName" placement="top-end" :disabled="item.inspectPropertyName===''">
+                      <el-button type="text" @click="clickGategoryToChangeData(item.inspectProperty,index)">{{item.inspectPropertyName}}</el-button>
+                    </el-tooltip>
+                  </li>
                 </ul>
             </el-card>
           </div>
           <el-transfer
+            ref="refTreeFrameworkData"
             v-model="treeValueSelected"
             filterable
-            :titles="['未分配指标', '已分配指标']"
             filter-placeholder="搜索指标"
+            :titles="['未分配指标', '已分配指标']"
             :data="treeFrameworkData"
             class="transferWrap"
+            @change="handleChange"
           >
             <template #default="{option}">
-            <el-tooltip class="item" effect="dark" :content="option.label" placement="top-end">
+            <el-tooltip class="item" effect="dark" :content="option.label" placement="top-end" :disabled="option.label===''">
               <span>{{ option.label }}</span>
             </el-tooltip>
           </template>
@@ -142,6 +148,7 @@ export default defineComponent({
     const parent = { ...context }
     const { dialogVisible, dialogData, disableItems } = toRefs(props as Props)
     const materialInspectionTree = ref()
+    const refTreeFrameworkData = ref()
 
     const onConfirm = () => {
       if (state.treeValueSelected.length !== 0) {
@@ -170,7 +177,9 @@ export default defineComponent({
       }
     }
 
-    const onClose = () => {
+    const onClose = async () => {
+      // await nextTick()
+      // refTreeFrameworkData.value.clearQuery('left')
       state.treeFrameworkData = []
       parent.emit('actReset')
       parent.emit('update:dialogVisible', false)
@@ -205,7 +214,11 @@ export default defineComponent({
       }
     }
 
-    onMounted(() => {
+    const handleChange = (value:any, direction:any, movedKeys:any) => {
+      console.log(value, direction, movedKeys)
+    }
+
+    onMounted(async () => {
       // 检验属性下拉
       DICTIONARY_QUERY_API({ dictType: 'INSPECT_PROPERTY' }).then((res) => {
         res.data.data.forEach((item:any) => {
@@ -221,18 +234,6 @@ export default defineComponent({
       },
       { immediate: true }
     )
-
-    // watch(
-    //   importData,
-    //   newValue => {
-    //     if (newValue.length !== 0) {
-    //       newValue.forEach((item) => {
-    //         state.treeValueSelected.push(item.id)
-    //       })
-    //     }
-    //   },
-    //   { immediate: true }
-    // )
 
     watch(
       dialogData,
@@ -259,7 +260,9 @@ export default defineComponent({
       materialInspectionTree,
       onConfirm,
       onClose,
-      clickGategoryToChangeData
+      clickGategoryToChangeData,
+      refTreeFrameworkData,
+      handleChange
     }
   }
 })
@@ -299,21 +302,6 @@ export default defineComponent({
 .transferWrap ::v-deep(.el-transfer-panel){
   width: 40%;
 }
-
-//.transferWrap ::v-deep(.el-transfer-panel__body .el-checkbox__label){
-  // position: relative;
-//}
-
-// .transferWrap ::v-deep(.el-transfer-panel__body .el-transfer-panel__item:hover .el-checkbox__label:after) {
-//    content: attr(data-title);
-//    color: #fff;
-//    position: absolute;
-//    left: 50px;
-//    top:0;
-//    background: #000000;
-//    border-radius: 4px;
-//    padding:0 6px;
-// }
 
 </style>
 <style scoped>
