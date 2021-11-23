@@ -18,17 +18,17 @@
             </span>
           </p>
           <div class="task__item__flex">
-            <div class="task__item__flex__item" @click="() => { queryForm.taskStatus = ''; changeTask(item.inspectClassify); }">
+            <div class="task__item__flex__item" @click.stop="changeTask(item.inspectClassify, 'execute')">
               <p class="task__item__flex__item--big">{{ item.execute }}</p>
               <p class="task__item__flex__item--small"><i class="qmsIconfont qms-daiwancheng"/>待完成</p>
             </div>
             <div class="task__item__flex__item--border"/>
-            <div class="task__item__flex__item">
+            <div class="task__item__flex__item" @click.stop="changeTask(item.inspectClassify, 'progressing')">
               <p class="task__item__flex__item--big">{{ item.progressing }}</p>
               <p class="task__item__flex__item--small"><i class="qmsIconfont qms-jinrushiyan"/>进行中</p>
             </div>
             <div class="task__item__flex__item--border"/>
-            <div class="task__item__flex__item">
+            <div class="task__item__flex__item" @click.stop="changeTask(item.inspectClassify, 'completed')">
               <p class="task__item__flex__item--big">{{ item.completed }}</p>
               <p class="task__item__flex__item--small"><i class="qmsIconfont qms-shenhetongguo"/>已完成</p>
             </div>
@@ -84,7 +84,7 @@
       <el-table-column v-if="task === 'INCOMING'" label="物料批次" prop="inspectBatch" min-width="150" :show-overflow-tooltip="true" />
       <el-table-column v-if="task === 'INCOMING'" label="供应商" prop="supplier" min-width="165" :show-overflow-tooltip="true" />
       <el-table-column v-if="task === 'INCOMING' || task === 'ASSIST'" label="任务触发时间" prop="triggerDate" min-width="165" :show-overflow-tooltip="true" />
-      <el-table-column v-if="task === 'ASSIST'" label="取样截至时间" prop="sampleEndDate" min-width="165" :show-overflow-tooltip="true" />
+      <el-table-column v-if="task === 'ASSIST'" label="取样截至时间" prop="sampleDeadlineDate" min-width="165" :show-overflow-tooltip="true" />
       <el-table-column v-if="task === 'TEMP'" label="发布人" prop="triggerBy" min-width="165" :show-overflow-tooltip="true" />
       <el-table-column v-if="task === 'TEMP'" label="发布时间" prop="triggerDate" min-width="165" :show-overflow-tooltip="true" />
       <el-table-column label="操作" width="250" fixed="right">
@@ -305,6 +305,7 @@ export default defineComponent({
     const sampleInspectDialog = ref(false)
     const queryForm = reactive({
       taskSampleClassify: '',
+      sampleQuantityStatus: '',
       inspectContent: '',
       taskStatus: '',
       sampleCode: '',
@@ -348,20 +349,24 @@ export default defineComponent({
       }
     }
     // 查询
-    const query = async () => {
+    const query = async (status?: string) => {
       selectionData.value = []
       queryForm.taskSampleClassify = task.value
+      if (status) {
+        queryForm.sampleQuantityStatus = status
+      } else {
+        queryForm.sampleQuantityStatus = ''
+      }
       const res = await SAMPLE_SAMPLING_TASK_LIST(queryForm)
       tableData.value = res.data.data.records
       queryForm.size = res.data.data.size
       queryForm.current = res.data.data.current
       queryForm.total = res.data.data.total
     }
-    // 切换任务分类
-    const changeTask = (val: string) => {
+    const changeTask = (val: string, status?: string) => {
       task.value = val
       queryForm.current = 1
-      query()
+      query(status)
     }
     // 跳转历史任务
     const goHistory = () => {

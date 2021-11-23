@@ -12,3 +12,6 @@ export function INSPECT_TASK_LIST_QUERY (params = {}):Promise<AxiosResponse> {
 export function INSPECT_TASK_RETENTION (params = {}):Promise<AxiosResponse> {
   return Http.post('/taskSample/keepTaskSample', params, { baseURL })
 }
+export function INSPECT_TASK_HISTORY_LIST (params = {}):Promise<AxiosResponse> {
+  return Http.post('/taskInspect/queryHistoryTaskInspect', params, { baseURL })
+}

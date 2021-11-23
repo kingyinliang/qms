@@ -4,12 +4,24 @@
       <el-form-item label="取样码">
         <el-input v-model="queryForm.sampleCode" placeholder="请输入" style="width: 140px"></el-input>
       </el-form-item>
-      <el-form-item label="批次">
-        <el-input v-model="queryForm.inspectBatch" placeholder="请输入" style="width: 140px"></el-input>
+      <el-form-item label="检验内容">
+        <el-input v-model="queryForm.inspectContent" placeholder="请输入" style="width: 140px"></el-input>
+      </el-form-item>
+      <el-form-item label="取样信息">
+        <el-input v-model="queryForm.inspectSiteName" placeholder="请输入" style="width: 140px"></el-input>
       </el-form-item>
       <el-form-item label="日期">
         <el-date-picker
-          v-model="queryForm.triggerDate"
+          v-model="queryForm.inspectStartDateBegin"
+          type="date"
+          format="YYYY-MM-DD"
+          value-format="YYYY-MM-DD"
+          placeholder="请选选择日期"
+          style="width: 140px"
+        />
+        -
+        <el-date-picker
+          v-model="queryForm.inspectStartDateEnd"
           type="date"
           format="YYYY-MM-DD"
           value-format="YYYY-MM-DD"
@@ -43,12 +55,15 @@
 
       <el-table-column v-if="task === 'PROCESS'" label="订单" prop="orderNo" min-width="150" :show-overflow-tooltip="true" />
       <el-table-column v-if="task === 'PROCESS'" label="取样信息" prop="inspectSiteName" min-width="150" :show-overflow-tooltip="true" />
-<!--      <el-table-column label="触发时间" prop="triggerDate" min-width="165" :show-overflow-tooltip="true" />-->
-<!--      <el-table-column label="送达时间" prop="deliveryDate" min-width="165" :show-overflow-tooltip="true" />-->
-<!--      <el-table-column label="完成时间" prop="finishDate" min-width="165" :show-overflow-tooltip="true" />-->
+      <el-table-column v-if="task === 'ASSIST'" label="取样说明" prop="sampleExplain" min-width="150" :show-overflow-tooltip="true" />
+      <el-table-column v-if="task === 'ASSIST'" label="检验频次" prop="inspectFrequency" min-width="150" :show-overflow-tooltip="true" />
+      <el-table-column v-if="task === 'TEMP'" label="需求部门" prop="needDeptName" min-width="150" :show-overflow-tooltip="true" />
+      <el-table-column v-if="task === 'TEMP'" label="需求日期" prop="inspectSiteName" min-width="150" :show-overflow-tooltip="true" />
 
-      <el-table-column v-if="task !== 'INCOMING'&&task !== 'SAFETY'" label="取样部门" prop="sampleDeptName" min-width="165" :show-overflow-tooltip="true" />
-      <el-table-column v-if="task === 'INCOMING'" label="检验单位" prop="inspectDeptName" min-width="165" :show-overflow-tooltip="true" />
+      <el-table-column v-if="task === 'SAFETY'" label="送达时间" prop="deliveryDate" min-width="150" :show-overflow-tooltip="true" />
+      <el-table-column v-if="task === 'SAFETY'" label="收样时间" prop="receiveDate" min-width="150" :show-overflow-tooltip="true" />
+      <el-table-column v-if="task !== 'INCOMING'&&task !== 'SAFETY'" label="取样部门" prop="coSampleDeptName" min-width="165" :show-overflow-tooltip="true" />
+      <el-table-column v-if="task === 'INCOMING' || task === 'SAFETY'" label="检验单位" prop="coInspectDeptName" min-width="165" :show-overflow-tooltip="true" />
       <el-table-column v-if="task !== 'SAFETY'" label="取样时间" prop="sampleEndDate" min-width="165" :show-overflow-tooltip="true" />
       <el-table-column v-if="task === 'INCOMING'" label="检验开始" prop="inspectStartDate" min-width="165" :show-overflow-tooltip="true" />
       <el-table-column v-if="task === 'INCOMING'" label="检验结束" prop="inspectEndDate" min-width="165" :show-overflow-tooltip="true" />
@@ -69,7 +84,7 @@
 
 <script lang="ts">
 import { defineComponent, reactive, ref, onMounted } from 'vue'
-import { SAMPLE_SAMPLING_TASK_HISTORY_LIST } from '@/api/api'
+import { INSPECT_TASK_HISTORY_LIST } from '@/api/api'
 
 interface TableData{
   id?: string
@@ -79,10 +94,12 @@ export default defineComponent({
   setup () {
     const task = ref('INCOMING')
     const queryForm = reactive({
-      taskSampleClassify: '',
+      taskInspectClassify: '',
       sampleCode: '',
-      inspectBatch: '',
-      triggerDate: '',
+      inspectContent: '',
+      inspectSiteName: '',
+      inspectStartDateBegin: '',
+      inspectStartDateEnd: '',
       current: 1,
       size: 10,
       total: 0
@@ -90,8 +107,8 @@ export default defineComponent({
     const tableData = ref<TableData[]>([]) // 表格数据
 
     const query = async () => {
-      queryForm.taskSampleClassify = task.value
-      const { data } = await SAMPLE_SAMPLING_TASK_HISTORY_LIST(queryForm)
+      queryForm.taskInspectClassify = task.value
+      const { data } = await INSPECT_TASK_HISTORY_LIST(queryForm)
       tableData.value = data.data.records
       queryForm.size = data.data.size
       queryForm.current = data.data.current
@@ -99,7 +116,7 @@ export default defineComponent({
     }
     const tabClick = (tab: any) => {
       task.value = tab.props.name
-      // query()
+      query()
     }
     onMounted(() => {
       query()
