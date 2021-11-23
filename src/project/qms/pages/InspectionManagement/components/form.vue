@@ -3,53 +3,53 @@
  * @Anthor: Telliex
  * @Date: 2021-11-11 16:30:07
  * @LastEditors: Telliex
- * @LastEditTime: 2021-11-17 15:02:11
+ * @LastEditTime: 2021-11-23 19:45:23
 -->
 <template>
   <mds-area class="info" :title="subTitle">
     <!-- 历史任务表单 -->
     <mds-area :title="infoSubTitle" :name="'org'" class="info">
         <el-form :inline="true" ref="refFormOfSampleInfo" :model="dataFormOfSampleInfo" :label-width="cssForformLabelWidth">
-          <el-form-item label="任务单号："  prop="tempApplyNo" v-if="currentType==='temp'" >
+          <el-form-item label="任务单号："  prop="tempApplyNo" v-if="currentType==='TEMP'" >
             <el-input v-model="dataFormOfSampleInfo.tempApplyNo" size="small" class="inputWidth" placeholder="自动带入" autocomplete="off" :readonly="onlyRead" :disabled="onlyRead"></el-input>
           </el-form-item>
-          <el-form-item label="检验内容："  prop="inspectSampleContent" v-if="currentType==='temp'" >
+          <el-form-item label="检验内容："  prop="inspectSampleContent" v-if="currentType==='TEMP'" >
             <el-input v-model="dataFormOfSampleInfo.inspectSampleContent" size="small" class="inputWidth" placeholder="自动带入" autocomplete="off" :readonly="onlyRead" :disabled="onlyRead"></el-input>
           </el-form-item>
-          <el-form-item label="样品码："  prop="sampleCode" v-if="currentType==='history'||currentType==='process'||currentType==='temp'" >
+          <el-form-item label="样品码："  prop="sampleCode" v-if="currentType==='HISTORY'||currentType==='PROCESS'||currentType==='TEMP'" >
             <el-input v-model="dataFormOfSampleInfo.sampleCode" size="small"  class="inputWidth" placeholder="自动带入" autocomplete="off" :readonly="onlyRead" :disabled="onlyRead"></el-input>
           </el-form-item>
-          <el-form-item label="物料："  prop="inspectMaterial" v-if="currentType==='history'||currentType==='process'" >
+          <el-form-item label="物料："  prop="inspectMaterial" v-if="currentType==='HISTORY'||currentType==='PROCESS'" >
             <el-input v-model="dataFormOfSampleInfo.inspectMaterial" size="small" class="inputWidth" placeholder="自动带入" autocomplete="off" :readonly="onlyRead" :disabled="onlyRead"></el-input>
           </el-form-item>
-          <el-form-item label="生产订单："  prop="orderNo" v-if="currentType==='history'||currentType==='process'" >
+          <el-form-item label="生产订单："  prop="orderNo" v-if="currentType==='HISTORY'||currentType==='PROCESS'" >
             <el-input v-model="dataFormOfSampleInfo.orderNo" size="small" class="inputWidth" placeholder="自动带入" autocomplete="off" :readonly="onlyRead" :disabled="onlyRead"></el-input>
           </el-form-item>
-          <el-form-item label="品项："  prop="itemName" v-if="currentType==='history'||currentType==='process'">
+          <el-form-item label="品项："  prop="itemName" v-if="currentType==='HISTORY'||currentType==='PROCESS'">
             <el-input v-model="dataFormOfSampleInfo.itemName" size="small" class="inputWidth" placeholder="自动带入" autocomplete="off" :readonly="onlyRead" :disabled="onlyRead"></el-input>
           </el-form-item>
-          <el-form-item label="需求部门："  prop="needDeptName" v-if="currentType==='temp'" >
+          <el-form-item label="需求部门："  prop="needDeptName" v-if="currentType==='TEMP'" >
             <el-input v-model="dataFormOfSampleInfo.needDeptName" size="small" class="inputWidth" placeholder="自动带入" autocomplete="off" :readonly="onlyRead" :disabled="onlyRead"></el-input>
           </el-form-item>
-          <el-form-item label="取样部门："  prop="sampleDeptName" v-if="currentType==='history'||currentType==='process'||currentType==='temp'">
+          <el-form-item label="取样部门："  prop="sampleDeptName" v-if="currentType==='HISTORY'||currentType==='PROCESS'||currentType==='TEMP'">
             <el-input v-model="dataFormOfSampleInfo.sampleDeptName" size="small" class="inputWidth" placeholder="自动带入" autocomplete="off" :readonly="onlyRead" :disabled="onlyRead"></el-input>
           </el-form-item>
-          <el-form-item label="取样信息："  prop="inspectSiteName" v-if="currentType==='history'||currentType==='process'" >
+          <el-form-item label="取样信息："  prop="inspectSiteName" v-if="currentType==='HISTORY'||currentType==='PROCESS'" >
             <el-input v-model="dataFormOfSampleInfo.inspectSiteName" size="small" class="inputWidth" placeholder="自动带入" autocomplete="off" :readonly="onlyRead" :disabled="onlyRead"></el-input>
           </el-form-item>
-          <el-form-item label="取样日期："  prop="sampleEndDate" v-if="currentType==='temp'" >
+          <el-form-item label="取样日期："  prop="sampleEndDate" v-if="currentType==='TEMP'" >
             <el-input v-model="dataFormOfSampleInfo.sampleEndDate" size="small" class="inputWidth" placeholder="自动带入" autocomplete="off" :readonly="onlyRead"  :disabled="onlyRead"></el-input>
           </el-form-item>
-          <el-form-item label="检验开始："  prop="inspectStartDate" v-if="currentType==='process'||currentType==='temp'">
+          <el-form-item label="检验开始："  prop="inspectStartDate" v-if="currentType==='PROCESS'||currentType==='TEMP'">
             <el-input v-model="dataFormOfSampleInfo.inspectStartDate" size="small" class="inputWidth" placeholder="自动带入" autocomplete="off" :readonly="onlyRead" :disabled="onlyRead"></el-input>
           </el-form-item>
-          <el-form-item label="检验结束："  prop="inspectEndDate" v-if="currentType==='process'||currentType==='temp'" >
+          <el-form-item label="检验结束："  prop="inspectEndDate" v-if="currentType==='PROCESS'||currentType==='TEMP'" >
             <el-input v-model="dataFormOfSampleInfo.inspectEndDate" size="small" class="inputWidth" placeholder="自动带入" autocomplete="off" :readonly="onlyRead" :disabled="onlyRead"></el-input>
           </el-form-item>
-          <el-form-item label="取样说明："  prop="sampleExplain" v-if="currentType==='process'" >
+          <el-form-item label="取样说明："  prop="sampleExplain" v-if="currentType==='PROCESS'" >
             <el-input v-model="dataFormOfSampleInfo.sampleExplain" size="small" class="inputWidth" placeholder="自动带入" autocomplete="off" :readonly="onlyRead" :disabled="onlyRead"></el-input>
           </el-form-item>
-          <el-form-item label="内容说明："  prop="handleExplain" v-if="currentType==='temp'" >
+          <el-form-item label="内容说明："  prop="handleExplain" v-if="currentType==='TEMP'" >
             <el-input v-model="dataFormOfSampleInfo.handleExplain" size="small" class="inputWidth" placeholder="自动带入" autocomplete="off" :readonly="onlyRead" :disabled="onlyRead"></el-input>
           </el-form-item>
         </el-form>
@@ -57,7 +57,7 @@
 
       <template v-for="item in dataFormOfSampleItemUnit" :key="item">
         <mds-area :name="'org'" >
-            <el-form :inline="true" :model="item"  :label-width="cssForformLabelWidth" v-if="currentType==='history'">
+            <el-form :inline="true" :model="item"  :label-width="cssForformLabelWidth" v-if="currentType==='HISTORY'">
           <el-form-item label="检验开始："  prop="inspectStartDate">
             <el-input v-model="item.inspectStartDate" size="small" class="inputWidth" placeholder="自动带入" autocomplete="off" :readonly="onlyRead"></el-input>
           </el-form-item>
@@ -84,7 +84,7 @@
               <el-form-item label="标准："  prop="column4" >
                   <el-input v-model="subItem.column4" size="small"  class="inputWidth" placeholder="自动带入" autocomplete="off" :readonly="onlyRead" :disabled="onlyRead"></el-input>
               </el-form-item>
-              <el-form-item label="检验过程："  prop="">
+              <el-form-item label="检验过程："  prop="" v-if="subItem.taskInspectPhysicalList.length">
                 <!-- <el-input v-model="subItem.taskInspectPhysical" size="small"  class="inputWidth" placeholder="自动带入" autocomplete="off" :readonly="onlyRead" :disabled="onlyRead"></el-input> -->
                 <template v-for="s in subItem.taskInspectPhysical" :key="s.id">
                   <el-input v-model="s.value" type="text"  size="small" placeholder="自动带入" :readonly="onlyRead" style="width:100px;margin-right:10px">
@@ -101,7 +101,7 @@
             </mds-area>
           </template>
         </mds-area>
-        <el-form :inline="true" :model="item"  :label-width="cssForformLabelWidth" v-if="currentType==='process'|| currentType==='history'">
+        <el-form :inline="true" :model="item"  :label-width="cssForformLabelWidth" v-if="currentType==='PROCESS'|| currentType==='HISTORY'">
           <el-form-item label="综合判定："  prop="judgeResult" >
             <el-radio v-model="item.judgeResult" label="Y" :disabled="onlyRead">合格</el-radio>
             <el-radio v-model="item.judgeResult" label="N" :disabled="onlyRead">不合格</el-radio>
@@ -113,7 +113,7 @@
           </el-form-item>
         </el-form>
        </template>
-      <el-form :inline="true"  :model="dataFormOfSampleInfo"  :label-width="cssForformLabelWidth" v-if="currentType==='process'">
+      <el-form :inline="true"  :model="dataFormOfSampleInfo"  :label-width="cssForformLabelWidth" v-if="currentType==='PROCESS'">
           <el-form-item label="复检综合判定："  prop="recheckMod" >
             <el-radio v-model="dataFormOfSampleInfo.recheckMod" label="ORIGINAL_RECHECK" :disabled="onlyRead">原样复检</el-radio>
             <el-radio v-model="dataFormOfSampleInfo.recheckMod" label="RESAMOLING" :disabled="onlyRead">重新取样</el-radio>
@@ -133,7 +133,8 @@ import layoutTs from '@/components/layout/layoutTs'
 import { useRouter } from 'vue-router'
 import { useStore } from 'vuex'
 import {
-  MANAGEMENT_INSPECTION_PHYSICOCHEMICAL_TASK_FORM_QUERY_API
+  MANAGEMENT_INSPECTION_PHYSICOCHEMICAL_TASK_FORM_QUERY_API,
+  MANAGEMENT_INSPECTION_PHYSICOCHEMICAL_HISTORY_TASK_FORM_QUERY_API
 } from '@/api/api'
 
 interface State {
@@ -174,59 +175,19 @@ export default defineComponent({
       cssForformLabelWidth: '110px',
       dataFormOfSampleInfo: {},
       dataFormOfSampleItemUnit: []
-      // dataFormOfSampleItemUnit: [{
-      //   title: '初检1',
-      //   taskInspectIndexList: [{
-      //     indexName: '感官',
-      //     inspectVarable: [{
-      //       key: 'v[1]',
-      //       value: '100',
-      //       unit: 'g/ml'
-      //     }, {
-      //       key: 'v[2]',
-      //       value: '200',
-      //       unit: 'g/ml'
-      //     }]
-      //   },
-      //   {
-      //     indexName: '颗粒',
-      //     inspectVarable: [{
-      //       key: 'v[7]',
-      //       value: '400',
-      //       unit: 'g/ml'
-      //     }, {
-      //       key: 'v[5]',
-      //       value: '300',
-      //       unit: 'g/ml'
-      //     }]
-      //   }]
-      // },
-      // {
-      //   title: '复检1',
-      //   taskInspectIndexList: [{
-      //     indexName: '感官',
-      //     inspectVarable: [{
-      //       key: 'v[1]',
-      //       value: '100',
-      //       unit: 'g/ml'
-      //     }, {
-      //       key: 'v[2]',
-      //       value: '200',
-      //       unit: 'g/ml'
-      //     }]
-      //   }]
-      // }]
     })
 
     // [BTN:取消]
     const btnCancelOfInspect = () => {
-      store.commit('common/updateSampleObjToView', { type: '', obj: [] })
+      store.commit('common/updateSampleObjForView', { type: '', obj: [] })
       tabsCloseCurrentHandle()
     }
 
     onMounted(async () => {
-      state.currentType = store.state.common.sampleObj.type
-      state.currentObj = store.state.common.sampleObj.obj[0]
+      state.currentType = store.state.common.sampleObjForView.type
+      state.currentObj = store.state.common.sampleObjForView.obj[0]
+      console.log('state.currentObj')
+      console.log(state.currentObj)
 
       if (!state.currentType) {
         tabsCloseCurrentHandle()
@@ -235,21 +196,27 @@ export default defineComponent({
           path: 'qms-pages-InspectionManagement-InspectionTask-index'
         })
       } else {
-        state.subTitle = state.currentType !== 'temp' ? state.currentObj.inspectContent : '临时检验单'
+        state.subTitle = state.currentType !== 'TEMP' ? state.currentObj.inspectContent : '临时检验单'
         state.dataFormOfSampleInfo = { ...state.currentObj }
 
         Object.assign(state.dataFormOfSampleInfo, { inspectMaterial: `${state.dataFormOfSampleInfo.inspectMaterialName} ${state.dataFormOfSampleInfo.inspectMaterialCode}` })
 
-        console.log('state.currentObj')
-        console.log(state.currentObj)
-        MANAGEMENT_INSPECTION_PHYSICOCHEMICAL_TASK_FORM_QUERY_API({
-          id: state.currentObj.id,
-          recheckBatch: ''
-        }).then(res => {
-          console.log('222222')
-          console.log(res.data.data)
-          state.dataFormOfSampleItemUnit = res.data.data
-        })
+        if (state.currentType === 'HISTORY') {
+          MANAGEMENT_INSPECTION_PHYSICOCHEMICAL_HISTORY_TASK_FORM_QUERY_API([state.currentObj.id]).then(res => {
+            console.log('HISTORY VIEW')
+            console.log(res.data.data)
+            state.dataFormOfSampleItemUnit = res.data.data
+          })
+        } else {
+          MANAGEMENT_INSPECTION_PHYSICOCHEMICAL_TASK_FORM_QUERY_API({
+            id: state.currentObj.id,
+            recheckBatch: ''
+          }).then(res => {
+            console.log('PROCESS or TEMP VIEW')
+            console.log(res.data.data)
+            state.dataFormOfSampleItemUnit = res.data.data
+          })
+        }
       }
     })
 

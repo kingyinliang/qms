@@ -210,7 +210,13 @@ export default defineComponent({
         return
       }
       store.commit('inspection/updateInspectionTask', selectionData.value)
-      store.commit('common/updateSampleObjToView', { type: 'process', obj: row ? [row] : [] })
+      console.log('selectionData.value')
+      console.log(selectionData.value)
+      if (task.value === 'PROCESS') {
+        store.commit('common/updateSampleObjToInspect', { type: 'PROCESS', obj: selectionData.value.length ? selectionData.value : [] })
+      } else if (task.value === 'TEMP') {
+        store.commit('common/updateSampleObjToInspect', { type: 'TEMP', obj: [] })
+      }
 
       gotoPage({
         path: 'qms-pages-InspectionManagement-PhysicochemicalInspect-index'
@@ -267,7 +273,16 @@ export default defineComponent({
 
     // [BTN:只读]
     const btnConfigulationReadOnly = async (row:TableData) => {
-      store.commit('common/updateSampleObjToView', { type: 'process', obj: [row] })
+      if (task.value === 'TEMP') {
+        console.log('TEMP')
+        console.log(row)
+        store.commit('common/updateSampleObjForView', { type: 'TEMP', obj: [row] })
+      } else if (task.value === 'PROCESS') {
+        store.commit('common/updateSampleObjForView', { type: 'PROCESS', obj: [row] })
+        console.log('PROCESS')
+        console.log(row)
+      }
+
       gotoPage({
         path: 'qms-pages-InspectionManagement-components-form'
       })
