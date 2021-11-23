@@ -80,17 +80,15 @@ export default defineComponent({
 <style lang="scss" media="print" scoped>
   @media print {
     @page {
-      /*size: 30mm 30mm portrait!important;*/
-      size: 30mm 30mm;
-      /*size: landscape!important;*/
-      border: #111111 1px;
-      margin: 10px;
+      size: landscape!important;
+      margin: auto;
     }
     .none_ele{
       display: block;
     }
     #print_ele__module_Three{
       .print_item{
+        width: 100%;
         page-break-after:always;
         page-break-before: always;
       }

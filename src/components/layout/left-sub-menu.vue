@@ -1,8 +1,10 @@
 <template>
   <el-submenu v-if="getChildren" :index="String(menu.id)">
-    <template #title @click="gotoRouteHandle(menu)">
-      <em :class="menu.menuIcon || ''" class="iconfont" />
-      <span>{{ menu.menuName }}</span>
+    <template #title >
+      <div @click="gotoRouteHandle(menu)">
+        <em :class="menu.menuIcon || ''" class="iconfont" />
+        <span>{{ menu.menuName }}</span>
+      </div>
     </template>
     <LeftSubMenu v-for="menuItem in menu.list" :key="menuItem.id" :menu="menuItem" />
   </el-submenu>
