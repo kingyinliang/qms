@@ -87,6 +87,13 @@
                 <el-input :disabled="isRedact" v-model="detailInfo.sampleAmount" maxlength='2' @input="e => detailInfo.sampleAmount = e.replace(/[^0-9]/gi, '')" :placeholder="isRedact?' ': '请输入'"></el-input>
               </el-form-item>
             </el-col>
+            <el-col v-if="detailInfo.parentId !== '0'" :span="12">
+              <el-form-item label="周期定义：">
+                <el-input :disabled="isRedact" v-model.number="detailInfo.cycleDefinition" :placeholder="isRedact?' ': '请输入'" style="width: 100%">
+                  <template #append>天</template>
+                </el-input>
+              </el-form-item>
+            </el-col>
             <el-col :span="12">
               <el-form-item label="手动执行：" prop="manualFlag">
                 <el-radio-group :disabled="isRedact" v-model="detailInfo.manualFlag">
@@ -159,6 +166,11 @@
         <el-form-item label="留样数量：" :label-width="formLabelWidth">
           <el-input v-model="addLevelInfo.sampleAmount" maxlength='2' @input="e => addLevelInfo.sampleAmount = e.replace(/[^0-9]/gi, '')" placeholder="请输入" class="inputWidth" autocomplete="off"></el-input>
         </el-form-item>
+        <el-form-item v-if="addLevelInfo.parentId !== '0'" label="周期定义：" :label-width="formLabelWidth">
+          <el-input v-model.number="addLevelInfo.cycleDefinition" placeholder="请输入" style="width: 100%">
+            <template #append>天</template>
+          </el-input>
+        </el-form-item>
         <el-form-item label="手动执行：" prop="manualFlag" :label-width="formLabelWidth">
           <el-radio-group v-model="addLevelInfo.manualFlag">
             <el-radio label="Y">允许</el-radio>
@@ -199,6 +211,7 @@ interface AddLevelInfo {
   inspectTypeCode?: string; // 类别编码
   sampleAmount?: string; // 留样数量
   manualFlag?: string; // 手动执行
+  cycleDefinition?: string; // 手动执行
   relation?: any[]; // 关联组织列表;
   sample?: any[]; // 配合取样;
   cooperate?: any[]; // 取样部门
@@ -242,6 +255,7 @@ export default defineComponent({
       id: '',
       parentId: '',
       parentName: '',
+      cycleDefinition: '',
       inspectTypeName: '',
       inspectTypeCode: '',
       sampleAmount: '',
