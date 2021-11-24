@@ -215,7 +215,7 @@ export default defineComponent({
       if (task.value === 'PROCESS') {
         store.commit('common/updateSampleObjToInspect', { type: 'PROCESS', obj: selectionData.value.length ? selectionData.value : [] })
       } else if (task.value === 'TEMP') {
-        store.commit('common/updateSampleObjToInspect', { type: 'TEMP', obj: [] })
+        store.commit('common/updateSampleObjToInspect', { type: 'TEMP', obj: selectionData.value.length ? selectionData.value : [] })
       }
 
       gotoPage({
