@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-07-30 11:24:46
  * @LastEditors: Telliex
- * @LastEditTime: 2021-10-13 19:12:29
+ * @LastEditTime: 2021-11-09 10:21:48
 -->
 <template>
   <mds-card class="test_method" title="版本明细" :pack-up="false" style="margin-bottom: 0; background: #fff;">
@@ -384,17 +384,17 @@ export default defineComponent({
       console.log('state.addFormInfo.beginDate')
       console.log(state.addFormInfo.beginDate)
       if (state.addFormInfo.indexVersion === '') {
-        proxy.$errorToast('请输入版本')
+        proxy.$warningToast('请输入版本')
         return
       }
 
       if (state.addFormInfo.beginDate === '') {
-        proxy.$errorToast('请输入执行开始日')
+        proxy.$warningToast('请输入执行开始日')
         return
       }
 
       if ((new Date(state.addFormInfo.beginDate).getTime() - new Date(formatDate()).getTime()) <= 0) {
-        proxy.$errorToast('必须选择今天以后的日期')
+        proxy.$warningToast('必须选择今天以后的日期')
         return
       }
       if (state.addFormInfo.beginDate !== '') {

@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-07-08 11:25:52
  * @LastEditors: Telliex
- * @LastEditTime: 2021-09-02 14:53:13
+ * @LastEditTime: 2021-11-18 16:33:05
 -->
 <template>
   <el-dialog :title="title" v-model="isDialogShow" width="30%" @close="onClose">
@@ -21,6 +21,7 @@
 
 <script lang="ts">
 import { defineComponent, toRefs, reactive, watch } from 'vue'
+import _ from 'lodash'
 
 interface Props {
     title: string
@@ -58,9 +59,10 @@ export default defineComponent({
     const onClose = () => {
       parent.emit('on-close')
     }
-    const onConfirm = () => {
+    const onConfirm = _.debounce(() => {
       parent.emit('on-confirm')
-    }
+    }, 1000)
+
     return {
       ...toRefs(state),
       onClose,

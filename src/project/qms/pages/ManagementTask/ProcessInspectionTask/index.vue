@@ -4,8 +4,10 @@
     :title="pageMainTitle"
     :leftTitle="pageLeftColumnTitle"
     :rightTitle="pageRightColumnTitle"
+    :defaultExtend="false"
     :treeData="treeData"
     :treeProps="{ label: 'inspectTypeName',children:'children' }"
+    :defaultFilterNodeProps="{ prop: 'existConfiguration',value:'Y' }"
     @treeNodeClick="actGetTaskDetailOfTree"
     :floatMenu="false"
   >
@@ -27,26 +29,27 @@
         <el-form-item label="样品码：" label-width="80px">
           <el-input
             placeholder="请输入"
-            v-model="dataFormOfSearchFilter.taskCode"
+            v-model="dataFormOfSearchFilter.sampleCode"
             size="small"
             clearable
             style="margin-bottom:10px; width:200px; height:35px;"
+            @keydown.enter="actGetTaskDetailForTable(currentCategoryId,dataFormOfSearchFilter,1,10)"
             >
           </el-input>
         </el-form-item>
         <el-form-item label="取样部门：" label-width="100px">
-          <el-select v-model="dataFormOfSearchFilter.sampleDeptId" placeholder="请选择" size="small">
+          <el-select v-model="dataFormOfSearchFilter.sampleDeptId" placeholder="请选择" size="small" clearable>
             <el-option
               v-for="item in sampleDeptIdOptions"
-              :key="item.id"
+              :key="item.deptId"
               :label="item.deptName"
-              :value="item.id"
+              :value="item.deptId"
             >
             </el-option>
           </el-select>
         </el-form-item>
         <el-form-item label="状态：" label-width="70px">
-          <el-select v-model="dataFormOfSearchFilter.taskStatus" placeholder="请选择" size="small" style="width:100px">
+          <el-select v-model="dataFormOfSearchFilter.taskStatus" placeholder="请选择" size="small" style="width:100px" clearable>
             <el-option
               v-for="item in taskStatusOptions"
               :key="item.dictCode"
@@ -57,7 +60,7 @@
           </el-select>
         </el-form-item>
         <el-form-item style="margin-left:10px;">
-            <el-button icon="el-icon-search" class="topic-button" size="small" @click="actGetTaskDetailForTable(currentCategoryId,dataFormOfSearchFilter,1,10)" :disabled="versionValue===''||dataTableOfTopicMain.length===0">查询</el-button>
+            <el-button icon="el-icon-search" class="topic-button" size="small" @click="actGetTaskDetailForTable(currentCategoryId,dataFormOfSearchFilter,1,10)" :disabled="versionValue===''">查询</el-button>
         </el-form-item>
       </el-form>
      <el-table
@@ -69,11 +72,11 @@
         style="width: 100%;"
        >
         <el-table-column type="index" label="序号"  width="55"  align="center" size="small" fixed />
-        <el-table-column label="样品码" prop="taskCode" :show-overflow-tooltip="true" min-width="180" />
-        <el-table-column label="状态" prop="taskStatus" :show-overflow-tooltip="true" min-width="100" />
+        <el-table-column label="样品码" prop="sampleCode" :show-overflow-tooltip="true" min-width="180" />
+        <el-table-column label="状态" prop="taskStatusName" :show-overflow-tooltip="true" min-width="100" />
         <el-table-column label="检验内容" prop="inspectContent" :show-overflow-tooltip="true" min-width="180" />
         <el-table-column label="取样部门" prop="sampleDeptName" :show-overflow-tooltip="true" min-width="100" />
-        <el-table-column label="取样信息" prop="sampleInformation" :show-overflow-tooltip="true" min-width="220" />
+        <el-table-column label="取样信息" prop="inspectSiteName" :show-overflow-tooltip="true" min-width="220" />
         <el-table-column label="物料信息" prop="" :show-overflow-tooltip="true" min-width="100" >
           <template #default="scope">
             <span>{{`${scope.row.inspectMaterialName} ${scope.row.inspectMaterialCode}`}}</span>
@@ -89,7 +92,7 @@
                 <el-button  type="text" icon="el-icon-edit" @click="btnClickItemEditOfTopicMainData(scope.row)" class="role__btn">
                     <em>编辑</em>
                 </el-button>
-                <el-button  type="text" icon="el-icon-delete" @click="btnClickItemCancelOfTopicMainData(scope.row.id)" class="role__btn">
+                <el-button  type="text" icon="el-icon-delete" @click="btnClickItemCancelOfTopicMainData(scope.row)" :disabled="scope.row.taskStatus!=='UNSAMPLED'" class="role__btn">
                     <em>取消</em>
                 </el-button>
             </template>
@@ -111,22 +114,22 @@
   <!--编辑-->
   <el-dialog :title="'任务修改'" v-model="isDialogVisibleForGlobleItem" width="40%" >
     <el-form ref="refGlobleItem" :model="formGlobleItem" :rules="ruleGlobleItem" class="dialogForm">
-      <el-form-item label="样品码：" prop="taskCode" :label-width="cssForformLabelWidth">
-          <el-input v-model="formGlobleItem.taskCode" class="140px" autocomplete="off"  :disabled="true"></el-input>
+      <el-form-item label="样品码：" prop="sampleCode" :label-width="cssForformLabelWidth">
+          <el-input v-model="formGlobleItem.sampleCode" class="140px" autocomplete="off"  :disabled="true"></el-input>
       </el-form-item>
       <el-form-item label="检验内容：" prop="inspectContent" :label-width="cssForformLabelWidth">
           <el-input v-model="formGlobleItem.inspectContent" class="140px" autocomplete="off"  :disabled="true"></el-input>
       </el-form-item>
-      <el-form-item label="取样单位：" :label-width="cssForformLabelWidth" prop="sampleDeptName">
-        <el-select v-model="formGlobleItem.sampleDeptName" placeholder="请选择" style="width:100%" filterable clearable>
-          <el-option v-for="opt in sampleUnitptions" :key="opt.id" :label="opt.deptName" :value="opt.id" />
+      <el-form-item label="取样部门：" :label-width="cssForformLabelWidth" prop="sampleDeptId">
+        <el-select v-model="formGlobleItem.sampleDeptId" placeholder="请选择" style="width:100%" filterable clearable @change="actChangeSampleUnitOfFormGlobleItem">
+          <el-option v-for="opt in sampleUnitptions" :key="opt.deptId" :label="opt.deptName" :value="opt.deptId" />
         </el-select>
       </el-form-item>
       <el-form-item label="物料信息：" prop="materialInfo" :label-width="cssForformLabelWidth">
-          <el-input v-model="formGlobleItem.materialInfo" class="140px" autocomplete="off"  disabled="true"></el-input>
+          <el-input v-model="formGlobleItem.materialInfo" class="140px" autocomplete="off"  :disabled="true"></el-input>
       </el-form-item>
-      <el-form-item label="取样信息：" prop="sampleInformation" :label-width="cssForformLabelWidth">
-          <el-input v-model="formGlobleItem.sampleInformation" class="140px" autocomplete="off"  :disabled="true"></el-input>
+      <el-form-item label="取样信息：" prop="inspectSiteName" :label-width="cssForformLabelWidth">
+          <el-input v-model="formGlobleItem.inspectSiteName" class="140px" autocomplete="off"  :disabled="true"></el-input>
       </el-form-item>
       <el-form-item label="批次：" prop="inspectBatch" :label-width="cssForformLabelWidth">
           <el-input v-model="formGlobleItem.inspectBatch" class="140px" autocomplete="off"  :disabled="true"></el-input>
@@ -172,6 +175,7 @@ interface TreeDataItem {
   inspectMaterialName: string
   inspectTypeName: string
   projectLocation: string
+  existConfiguration: string
 }
 
 interface TreeData {
@@ -192,6 +196,7 @@ interface TreeData {
   projectLocation: string
   isFinalNode: boolean
   markParentId: string
+  existConfiguration :string
 }
 
 interface CoInspect {
@@ -243,7 +248,7 @@ interface VersionOption{
 
 interface SampleDeptIdOptions{
   deptName: string
-  id: string
+  deptId: string
 }
 
 interface DictOptions{
@@ -252,11 +257,26 @@ interface DictOptions{
   dictValue: string
 }
 
+interface FormGlobleItem{
+  id: string
+  sampleCode: string
+  taskStatus: string
+  inspectContent: string
+  sampleDeptId: string
+  sampleDeptName: string
+  inspectSiteName: string
+  materialInfo: string
+  inspectBatch: string
+  itemName: string
+  supplier: string
+}
+
 interface State {
     versionValue: string,
+    versionLabel: string,
     versionnValueOptions: VersionOption[],
     dataFormOfSearchFilter:{
-      taskCode: string
+      sampleCode: string
       sampleDeptId: string
       taskStatus: string
     }
@@ -273,7 +293,7 @@ interface State {
     pageSize: number
     dataTableOfTopicMain: TopicMainData[] // 右边 table
     treeData: TreeData[]
-    formGlobleItem: any // TopicMainDataItem
+    formGlobleItem: FormGlobleItem // TopicMainDataItem
     currentCategoryId: string
     sampleUnitptions: SampleDeptIdOptions[]
     currentFocusTargetObj:any
@@ -290,9 +310,10 @@ export default defineComponent({
     const proxy = ctx.proxy as any
     const state = reactive<State>({
       versionValue: '',
+      versionLabel: '',
       versionnValueOptions: [],
       dataFormOfSearchFilter: {
-        taskCode: '',
+        sampleCode: '',
         sampleDeptId: '',
         taskStatus: ''
       },
@@ -310,11 +331,13 @@ export default defineComponent({
       treeData: [],
       currentCategoryId: '',
       formGlobleItem: {
-        taskCode: '',
+        id: '',
+        sampleCode: '',
         taskStatus: '',
         inspectContent: '',
+        sampleDeptId: '',
         sampleDeptName: '',
-        sampleInformation: '',
+        inspectSiteName: '',
         materialInfo: '',
         inspectBatch: '',
         itemName: '',
@@ -348,7 +371,7 @@ export default defineComponent({
       sampleDeptName: [
         {
           required: true,
-          message: '请选择取样单位',
+          message: '请选择取样部门',
           trigger: 'blur'
         }
       ]
@@ -356,18 +379,17 @@ export default defineComponent({
     // [dataTableOfTopicMain][BTN:编辑]
     const btnClickItemEditOfTopicMainData = async (row:any) => {
       state.isDialogVisibleForGlobleItem = true
-      await getDropDownOptions(row.id) // 获取下拉
+      await getDropDownOptions(row.inspectTypeId) // 获取下拉
       await nextTick()
       refGlobleItem.value.resetFields()
       state.formGlobleItem = {
         id: row.id,
-        taskCode: row.taskCode,
+        sampleCode: row.sampleCode,
         taskStatus: row.taskStatus,
         inspectContent: row.inspectContent,
-        taskSampleId: row.taskSampleId,
         sampleDeptId: row.sampleDeptId,
         sampleDeptName: row.sampleDeptName,
-        sampleInformation: row.sampleInformation,
+        inspectSiteName: row.inspectSiteName,
         materialInfo: `${row.inspectMaterialName} ${row.inspectMaterialCode}`,
         inspectBatch: row.inspectBatch,
         itemName: row.itemName,
@@ -376,11 +398,19 @@ export default defineComponent({
     }
 
     // [dataTableOfTopicMain][BTN:取消]
-    const btnClickItemCancelOfTopicMainData = async (id:string) => {
-      await MANAGEMENT_PROCESS_INSPECTION_TASK_CANCEL_API({
-        id
+    const btnClickItemCancelOfTopicMainData = async (row:any) => {
+      proxy.$confirm('确认取消该数据？', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(async () => {
+        await MANAGEMENT_PROCESS_INSPECTION_TASK_CANCEL_API({
+          id: row.id,
+          taskSampleId: row.taskSampleId
+        })
+        proxy.$successToast('操作成功')
+        actGetTaskDetailOfTree(state.currentFocusTargetObj)
       })
-      proxy.$successToast('操作成功')
     }
 
     // [@treeNodeClick] 获取任务列表 data
@@ -388,7 +418,7 @@ export default defineComponent({
       state.currentFocusTargetObj = JSON.parse(JSON.stringify(val))
 
       state.dataFormOfSearchFilter = {
-        taskCode: '',
+        sampleCode: '',
         sampleDeptId: '',
         taskStatus: ''
       }
@@ -399,23 +429,42 @@ export default defineComponent({
       actGetTaskDetailForTable(val.id, state.dataFormOfSearchFilter, state.currentPage, state.pageSize)
     }
 
+    const getEndNodeItems = (menuTreeList:any[], container:any) => {
+      for (const item of menuTreeList) {
+        container.push(item)
+        if (!item.isFinalNode && item.children && item.children.length > 0) {
+          getEndNodeItems(item.children, container)
+        }
+      }
+    }
+
     // [ACT] 获取任务列表 data
     const actGetTaskDetailForTable = (currentCategoryId:string, searchString:any, currentPage:number, pageSize:number) => {
       const tempList:any[] = []
-      if (!state.currentFocusTargetObj.isFinalNode && state.currentFocusTargetObj.children.length !== 0) {
-        getEndNodeItems(state.currentFocusTargetObj.children, tempList)
+      let tempInspectTypeIds = []
+      if (state.currentFocusTargetObj.isFinalNode) {
+        tempInspectTypeIds = [state.currentFocusTargetObj.id]
+      } else {
+        if (state.currentFocusTargetObj.isLeafNode === true) {
+          tempInspectTypeIds = [state.currentFocusTargetObj.markParentId]
+        } else {
+          getEndNodeItems(state.currentFocusTargetObj.children, tempList)
+          tempInspectTypeIds = tempList.map((item:any) => item.id)
+        }
       }
+
       MANAGEMENT_PROCESS_INSPECTION_TASK_QUERY_API({
         taskType: state.currentInspectScene,
         taskStatus: searchString.taskStatus,
-        taskCode: searchString.taskCode,
+        sampleCode: searchString.sampleCode,
         sampleDeptId: searchString.sampleDeptId,
-        inspectTypeIds: !state.currentFocusTargetObj.isFinalNode ? tempList.map((item:any) => item.id) : [currentCategoryId],
+        // inspectTypeIds: state.currentFocusTargetObj.isFinalNode === false ? tempList.map((item:any) => item.id) : [currentCategoryId],
+        inspectTypeIds: tempInspectTypeIds,
         // inspectTypeIds: tempList.map((item:any) => item.id),
-        planVersion: state.versionValue,
+        planVersion: state.versionLabel,
         current: currentPage,
         size: pageSize,
-        inspectMaterialCode: !state.currentFocusTargetObj.isFinalNode ? '' : state.currentFocusTargetObj.inspectMaterialCode
+        inspectMaterialCode: state.currentFocusTargetObj.isLeafNode ? state.currentFocusTargetObj.inspectMaterialCode : ''
       }).then((res) => {
         console.log('任务列表')
         console.log(res)
@@ -442,7 +491,7 @@ export default defineComponent({
         planVersionId: state.versionValue
       }).then((res) => {
         state.dataFormOfSearchFilter = {
-          taskCode: '',
+          sampleCode: '',
           sampleDeptId: '',
           taskStatus: ''
         }
@@ -458,49 +507,58 @@ export default defineComponent({
       })
     }
 
+    // TODO tree-data
     // [ACT:trans] 获取组织架构
+    // 叶子节点是(类别) final node
     const treeDataTranslater = (data: any[], id: string, pid: string) => {
       const res: any[] = []
       const temp: any = {}
       for (let i = 0; i < data.length; i++) {
         // 追加叶子结点  data[i].assistFlag !== 'Y'
-        if (data[i].inspectMaterialAlls.length !== 0) {
-          data[i].children = []
+        if (data[i].assistFlag === 'N') {
+          Object.assign(data[i], {
+            children: [],
+            isFinalNode: data[i].inspectMaterialAlls.length !== 0,
+            isLeafNode: false
+          })
           data[i].inspectMaterialAlls.forEach((item:TreeDataItem) => {
-            // data[i].children.push({ inspectTypeName: item, isFinalNode: true, markParentId: data[i].id, itemId: item.slice(item.lastIndexOf(' ') + 1), id: data[i].id + index })
             data[i].children.push({
               inspectTypeName: item.inspectTypeName,
-              isFinalNode: true,
-              markParentId: data[i].id,
-              id: item.id,
               inspectMaterialCode: item.inspectMaterialCode,
               inspectMaterialName: item.inspectMaterialName,
+              markParentId: data[i].id,
+              id: item.id,
               inspectMaterialAlls: [],
+              isLeafNode: true,
               projectLocation: '',
               canClick: data[i].assistFlag !== 'Y',
               canEdit: true,
               canDelete: true,
               canAdd: true,
               canGenerate: true,
-              disabled: data[i].assistFlag !== 'Y'
+              disabled: data[i].assistFlag !== 'Y',
+              existConfiguration: item.existConfiguration
             })
+            if (item.existConfiguration === 'Y') {
+              data[i].existConfiguration = 'Y'
+            }
           })
         } else {
           // 生产辅助 smell
-          if (data[i].assistFlag === 'Y' && data[i].parentId !== '0') {
-            data[i].isFinalNode = true
+          if (data[i].parentId !== '0') {
+            Object.assign(data[i], { isFinalNode: true, isLeafNode: false })
           } else {
-            data[i].isFinalNode = false
+            Object.assign(data[i], { isFinalNode: false, isLeafNode: false })
           }
         }
 
         if (data[i].parentId === '0') { // 第一级
+          data[i]._level = 1
           data[i].canEdit = false // 是否可编辑
           data[i].canDelete = false // 是否可删除
           data[i].canAdd = false // 是否可新增
           data[i].canGenerate = false // 是否可生成
           data[i].disabled = true
-          data[i]._level = 1
           data[i].projectLocation = data[i].inspectTypeName
         } else { // 第一级以外
           data[i].canEdit = true
@@ -520,18 +578,15 @@ export default defineComponent({
           if (!temp[data[k][pid]].children) {
             temp[data[k][pid]].children = []
           }
-
+          if (data[k].existConfiguration === 'Y') {
+            temp[data[k][pid]].existConfiguration = 'Y'
+          }
           if (!data[k]._level) {
             data[k]._level = temp[data[k][pid]]._level + 1
           }
-
-          // if (temp[data[k][pid]]._level === 1) {
-          //   temp[data[k][pid]].projectLocation = temp[data[k][pid]].inspectTypeName
-          // }
           if (data[k]._level !== 1) {
             data[k].projectLocation = temp[data[k][pid]].projectLocation + '-' + data[k].inspectTypeName
           }
-
           if (data[k].inspectMaterialAlls.length) {
             data[k].inspectMaterialAlls.forEach((subItem:TreeDataItem, index:number) => {
               subItem.projectLocation = data[k].projectLocation + '-' + subItem.inspectMaterialName
@@ -554,9 +609,9 @@ export default defineComponent({
 
     // [ACT:define] 获取指标编码下拉
     const getDropDownOptions = async (id:string) => {
-      // 获取检验类下的取样单位
+      // 获取检验类下的取样部门
       await MANAGEMENT_PROCESS_INSPECTION_TASK_INSPECT_MATERIAL_DROP_DOWN_API({
-        id: id
+        id
       }).then((res) => {
         state.sampleUnitptions = res.data.data
       })
@@ -571,11 +626,13 @@ export default defineComponent({
     // [Dialog][ACTION:取消]
     const reset = () => {
       state.formGlobleItem = {
-        taskCode: '',
+        id: '',
+        sampleCode: '',
         taskStatus: '',
         inspectContent: '',
+        sampleDeptId: '',
         sampleDeptName: '',
-        sampleInformation: '',
+        inspectSiteName: '',
         materialInfo: '',
         inspectBatch: '',
         itemName: '',
@@ -598,10 +655,32 @@ export default defineComponent({
       })
     }
 
+    const actChangeSampleUnitOfFormGlobleItem = (val:string) => {
+      state.sampleUnitptions.forEach(item => {
+        if (item.deptId === val) {
+          state.formGlobleItem.sampleDeptName = item.deptName
+        }
+      })
+    }
+
     // [FORM:select][EVENT:change] 版本
     const handleChangeSelectVersion = (val:string) => {
+      state.dataFormOfSearchFilter = {
+        sampleCode: '',
+        sampleDeptId: '',
+        taskStatus: ''
+      }
+      state.versionnValueOptions.forEach(item => {
+        if (item.id === val) {
+          state.versionLabel = item.planVersion
+        }
+      })
+
       val && resetTaskSearchFilter(val)
+
       // [ACT:get] 获取 tree-data
+      state.currentCategoryId = '' // 初始化
+      refTreeModule.value.focusCurrentNodeNumber = '' // 初始化
       getBaseData()
     }
 
@@ -614,27 +693,13 @@ export default defineComponent({
       })
     }
 
-    const getEndNodeItems = (menuTreeList:any, container:any) => {
-      for (const item of menuTreeList) {
-        // if (item.isFinalNode === true) {
-        //   container.push(item)
-        // } else if (item.children.length > 0) {
-        //   getEndNodeItems(item.children, container)
-        // }
-        if (item.isFinalNode !== true) {
-          container.push(item)
-          if (item.children && item.children.length > 0) {
-            getEndNodeItems(item.children, container)
-          }
-        }
-      }
-    }
-
     // [ACT:] 获取版本下拉
     const getVersionOptions = async () => {
       await MANAGEMENT_INSPECTION_PLAN_VERSION_DROP_DOWN_API({
         inspectScene: state.currentInspectScene
       }).then((res) => {
+        console.log('获取版本下拉')
+        console.log(res.data.data)
         state.versionnValueOptions = res.data.data
       })
     }
@@ -650,7 +715,8 @@ export default defineComponent({
 
       // 预设带入第一笔版本
       if (state.versionnValueOptions[0]) {
-        state.versionValue = state.versionnValueOptions[0].planVersion
+        state.versionLabel = state.versionnValueOptions[0].planVersion
+        state.versionValue = state.versionnValueOptions[0].id
         handleChangeSelectVersion(state.versionValue)
       }
     })
@@ -669,6 +735,7 @@ export default defineComponent({
       // ACT
       actGetTaskDetailOfTree,
       actGetTaskDetailForTable,
+      actChangeSampleUnitOfFormGlobleItem,
       reset,
       // REF
       refTreeModule,

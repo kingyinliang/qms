@@ -39,14 +39,14 @@
         <el-table-column label="指标名称" prop="indexName" :show-overflow-tooltip="true" min-width="180" />
         <el-table-column label="单位" prop="indexUnit" :show-overflow-tooltip="true" min-width="100" />
         <el-table-column label="方法" prop="indexMethod" :show-overflow-tooltip="true" min-width="220" />
-        <el-table-column label="配合取样" prop="cooperate" :show-overflow-tooltip="true" min-width="108" >
-          <template #default="scope">
-            {{scope.row.cooperate}}
-          </template>
-        </el-table-column>
         <el-table-column label="取样部门" prop="sample" :show-overflow-tooltip="true" min-width="100" >
           <template #default="scope">
             {{scope.row.sample}}
+          </template>
+        </el-table-column>
+        <el-table-column label="配合取样" prop="cooperate" :show-overflow-tooltip="true" min-width="108" >
+          <template #default="scope">
+            {{scope.row.cooperate}}
           </template>
         </el-table-column>
         <el-table-column label="检验部门" prop="inspect.deptName" :show-overflow-tooltip="true" min-width="100" />
@@ -509,23 +509,25 @@ export default defineComponent({
     }
 
     // [ACT:trans] 获取组织架构
+    // 叶子节点是(物料) final node
+
     const treeDataTranslater = (data: any[], id: string, pid: string) => {
       const res: any[] = []
       const temp: any = {}
       for (let i = 0; i < data.length; i++) {
         // 追加叶子结点  data[i].assistFlag !== 'Y'
-        if (data[i].inspectMaterialAlls.length !== 0) {
-          data[i].children = []
+        if (data[i].assistFlag === 'N') {
+          Object.assign(data[i], { children: [] })
           data[i].inspectMaterialAlls.forEach((item:TreeDataItem) => {
             data[i].children.push({
               inspectTypeName: item.inspectTypeName,
-              isFinalNode: true,
-              markParentId: data[i].id,
-              id: item.id,
               inspectMaterialCode: item.inspectMaterialCode,
               inspectMaterialName: item.inspectMaterialName,
+              markParentId: data[i].id,
+              id: item.id,
               inspectMaterialAlls: [],
-              existConfiguration: item.existConfiguration
+              existConfiguration: item.existConfiguration,
+              isFinalNode: true
             })
             if (item.existConfiguration === 'Y') {
               data[i].existConfiguration = 'Y'
@@ -533,10 +535,10 @@ export default defineComponent({
           })
         } else {
           // 生产辅助 smell
-          if (data[i].assistFlag === 'Y' && data[i].parentId !== '0') {
-            data[i].isFinalNode = true
+          if (data[i].parentId !== '0') {
+            Object.assign(data[i], { isFinalNode: true })
           } else {
-            data[i].isFinalNode = false
+            Object.assign(data[i], { isFinalNode: false })
           }
         }
 
@@ -623,7 +625,7 @@ export default defineComponent({
       for (const item of menuTreeList) {
         if (item.isFinalNode === true) {
           container.push(item)
-        } else if (item.children.length > 0) {
+        } else if (item.children && item.children.length > 0) {
           getEndNodeItems(item.children, container)
         }
       }

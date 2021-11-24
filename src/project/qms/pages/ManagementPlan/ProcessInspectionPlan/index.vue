@@ -278,11 +278,11 @@ export default defineComponent({
     // [弹窗][BTN:确定]
     const btnAddItemToConfirm = () => {
       if (!state.addAndEditItemForm.planVersion) {
-        proxy.$errorToast('版本号必填字段未填写，请填写完整')
+        proxy.$warningToast('版本号必填字段未填写，请填写完整')
         return
       }
       if (!state.addAndEditItemForm.beginDate) {
-        proxy.$errorToast('执行开始日必填字段未填写，请填写完整')
+        proxy.$warningToast('执行开始日必填字段未填写，请填写完整')
         return
       }
 

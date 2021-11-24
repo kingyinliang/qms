@@ -707,7 +707,8 @@ export default defineComponent({
           inspectIndexMaterialIds: row.inspectIndexMaterialId,
           inspectMaterialCodes: '',
           planVersionId: state.currentVersion,
-          projectLocation: state.currentFocusTargetObj.projectLocation, // 项目位置
+          // projectLocation: state.currentFocusTargetObj.projectLocation, // 项目位置
+          projectLocation: row.projectLocation, // 项目位置
           indexCode: row.indexCode, // 指标编码
           indexName: row.indexName, // 指标名称
           indexUnit: row.indexUnit, // 单位
@@ -832,6 +833,7 @@ export default defineComponent({
 
     // [ACT:trans] 获取组织架构
     const treeDataTranslater = (data: any[], id: string, pid: string) => {
+      // 混乱版本，勿取用
       const res: any[] = []
       const temp: any = {}
       for (let i = 0; i < data.length; i++) {
@@ -857,10 +859,18 @@ export default defineComponent({
               disabled: data[i].assistFlag !== 'Y'
             })
           })
+          data[i].canDelete = true
+          data[i].canAdd = true
+          data[i].canGenerate = true
+          data[i].canEdit = true
         } else {
           // 生产辅助 smell
           if (data[i].assistFlag === 'Y' && data[i].parentId !== '0') {
             data[i].isFinalNode = true
+            data[i].canDelete = true
+            data[i].canAdd = true
+            data[i].canGenerate = true
+            data[i].canEdit = true
           } else {
             data[i].isFinalNode = false
           }
@@ -875,10 +885,10 @@ export default defineComponent({
           data[i]._level = 1
           data[i].projectLocation = data[i].inspectTypeName
         } else { // 第一级以外
-          data[i].canEdit = true
-          data[i].canDelete = true
-          data[i].canAdd = true
-          data[i].canGenerate = true
+          // data[i].canEdit = true
+          // data[i].canDelete = true
+          // data[i].canAdd = true
+          // data[i].canGenerate = true
           data[i].disabled = false
           data[i].projectLocation = ''
         }
@@ -897,17 +907,14 @@ export default defineComponent({
             data[k]._level = temp[data[k][pid]]._level + 1
           }
 
-          // if (temp[data[k][pid]]._level === 1) {
-          //   temp[data[k][pid]].projectLocation = temp[data[k][pid]].inspectTypeName
-          // }
           if (data[k]._level !== 1) {
             data[k].projectLocation = temp[data[k][pid]].projectLocation + '-' + data[k].inspectTypeName
           }
 
           if (data[k].inspectMaterialAlls.length) {
             data[k].inspectMaterialAlls.forEach((subItem:TreeDataItem, index:number) => {
-              subItem.projectLocation = data[k].projectLocation + '-' + subItem.inspectMaterialName
-              data[k].children[index].projectLocation = data[k].projectLocation + '-' + subItem.inspectMaterialName
+              subItem.projectLocation = data[k].projectLocation
+              data[k].children[index].projectLocation = data[k].projectLocation
             })
           }
           temp[data[k][pid]].children.push(data[k])
@@ -1121,37 +1128,37 @@ export default defineComponent({
     // [BTN:确认][float] 新增&编辑
     const btnClickItemConfirmForDialog = async () => {
       if (state.formGlobleItem.indexCode === '') {
-        proxy.$errorToast('指标编码必填字段未填写，请填写完整')
+        proxy.$warningToast('指标编码必填字段未填写，请填写完整')
         return
       }
 
       if (state.formGlobleItem.inspectList.length === 0) {
-        proxy.$errorToast('检验部门必填字段未填写，请填写完整')
+        proxy.$warningToast('检验部门必填字段未填写，请填写完整')
         return
       }
 
       if (state.formGlobleItem.cooperate === '') {
-        proxy.$errorToast('取样部门必填字段未填写，请填写完整')
+        proxy.$warningToast('取样部门必填字段未填写，请填写完整')
         return
       }
 
       if (state.formGlobleItem.frequencyName === '') {
-        proxy.$errorToast('检验频次必填字段未填写，请填写完整')
+        proxy.$warningToast('检验频次必填字段未填写，请填写完整')
         return
       }
       refGlobleItem.value.validate(async (valid: boolean) => {
         if (valid) {
           if (state.formGlobleItem.title === '计划明细-新增') { // 新增
             const tempCoInspectObj = await refCoInspect.value.getCheckedNodes()
-            state.formGlobleItem.coInspect = {
-              deptId: tempCoInspectObj.length ? tempCoInspectObj[0].id : '',
-              deptName: tempCoInspectObj.length ? tempCoInspectObj[0].deptName : ''
-            }
+            state.formGlobleItem.coInspect = tempCoInspectObj.length ? {
+              deptId: tempCoInspectObj[0],
+              deptName: tempCoInspectObj[0].deptName
+            } : null
             const tempinspectObj = await refInspect.value.getCheckedNodes()
-            state.formGlobleItem.inspect = {
-              deptId: tempinspectObj.length ? tempinspectObj[0].id : '',
-              deptName: tempinspectObj.length ? tempinspectObj[0].deptName : ''
-            }
+            state.formGlobleItem.inspect = tempinspectObj.length ? {
+              deptId: tempinspectObj[0].id,
+              deptName: tempinspectObj[0].deptName
+            } : null
             // 生产辅料新增时处理
             if (state.formGlobleItem.assistFlag === 'Y' && !state.formGlobleItem.inspectMaterialCode) {
               state.formGlobleItem.inspectMaterialCode = state.formGlobleItem.inspectTypeCode
@@ -1161,15 +1168,15 @@ export default defineComponent({
             })
           } else { // 编辑
             const tempCoInspectObj = await refCoInspect.value.getCheckedNodes()
-            state.formGlobleItem.coInspect = {
-              deptId: tempCoInspectObj.length ? tempCoInspectObj[0].id : '',
-              deptName: tempCoInspectObj.length ? tempCoInspectObj[0].deptName : ''
-            }
+            state.formGlobleItem.coInspect = tempCoInspectObj.length ? {
+              deptId: tempCoInspectObj[0].id,
+              deptName: tempCoInspectObj[0].deptName
+            } : null
             const tempinspectObj = await refInspect.value.getCheckedNodes()
-            state.formGlobleItem.inspect = {
-              deptId: tempinspectObj.length ? tempinspectObj[0].id : '',
-              deptName: tempinspectObj.length ? tempinspectObj[0].deptName : ''
-            }
+            state.formGlobleItem.inspect = tempinspectObj.length ? {
+              deptId: tempinspectObj[0].id,
+              deptName: tempinspectObj[0].deptName
+            } : null
             await MANAGEMENT_INSPECTION_PLAN_CONFIGURATION_PLAN_UPDATE_API({
               ...state.formGlobleItem
             })
@@ -1201,35 +1208,28 @@ export default defineComponent({
       }
       if (!state.formBatchEditItems.inspectListChecked) {
         state.formBatchEditItems.inspectList = []
-        // state.formBatchEditItems.inspect = {
-        //   deptId: '',
-        //   deptName: ''
-        // }
         state.formBatchEditItems.inspect = null
       }
       if (!state.formBatchEditItems.coInspectListChecked) {
         state.formBatchEditItems.coInspectList = []
-        // state.formBatchEditItems.coInspect = {
-        //   deptId: '',
-        //   deptName: ''
-        // }
         state.formBatchEditItems.coInspect = null
       }
 
       if (state.formBatchEditItems.coInspectListChecked) {
         const tempCoInspectObj = await refCoInspectOfBatchEdit.value.getCheckedNodes()
-        state.formBatchEditItems.coInspect = {
-          deptId: tempCoInspectObj.length ? tempCoInspectObj[0].id : '',
-          deptName: tempCoInspectObj.length ? tempCoInspectObj[0].deptName : ''
-        }
+        state.formBatchEditItems.coInspect = tempCoInspectObj.length ? {
+          deptId: tempCoInspectObj[0].id,
+          deptName: tempCoInspectObj[0].deptName
+        } : null
       }
 
       if (state.formBatchEditItems.inspectListChecked) {
         const tempinspectObj = await refInspectOfBatchEdit.value.getCheckedNodes()
-        state.formBatchEditItems.inspect = {
-          deptId: tempinspectObj.length ? tempinspectObj[0].id : '',
-          deptName: tempinspectObj.length ? tempinspectObj[0].deptName : ''
-        }
+
+        state.formBatchEditItems.inspect = tempinspectObj.length ? {
+          deptId: tempinspectObj[0].id,
+          deptName: tempinspectObj[0].deptName
+        } : null
       }
       if (state.formBatchEditItems.frequencyIdChecked || state.formBatchEditItems.keyIndexFlagChecked || state.formBatchEditItems.mergeFlagChecked || state.formBatchEditItems.loopFlagChecked || state.formBatchEditItems.timingFlagChecked || state.formBatchEditItems.inspectListChecked || state.formBatchEditItems.coInspectListChecked) {
         await MANAGEMENT_INSPECTION_PLAN_CONFIGURATION_PLAN_BATCH_UPDATE_API({

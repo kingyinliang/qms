@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-08-09 13:43:49
  * @LastEditors: Telliex
- * @LastEditTime: 2021-10-26 15:37:59
+ * @LastEditTime: 2021-11-16 11:17:05
  */
 import { MutationTree } from 'vuex'
 
@@ -25,7 +25,8 @@ const state = {
     id: ''
   },
   instantInspectionTaskObj: { // 临时检验任务页面跳转用 存 object
-  }
+  },
+  sampleObj: {} // 理化检验任务-检验 obj   type
 
 }
 // eslint-disable-next-line
@@ -72,6 +73,9 @@ const mutations: MutationTree<any> = {
   },
   updateInstantInspectionTaskObj (state, obj):void {
     state.instantInspectionTaskObj = obj
+  },
+  updateSampleObjToView (state, obj):void {
+    state.sampleObj = obj // type: '', obj: {}
   }
 
 }
