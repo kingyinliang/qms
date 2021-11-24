@@ -39,7 +39,7 @@
   </mds-card>
   <mds-card class="task-list" title="任务列表" :pack-up="false">
     <template #titleBtn>
-      <el-form :inline="true" size="small" style="float: right;display: flex" @keyup.enter="() => {queryForm.current = 1; query()}" @submit.prevent>
+      <el-form :inline="true" size="small" style="float: right;display: flex" @keyup.enter="() => {queryForm.current = 1; getTask(); query()}" @submit.prevent>
         <el-form-item label="取样码：">
           <el-input v-model="queryForm.sampleCode" placeholder="请输入" clearable style="width: 120px"></el-input>
         </el-form-item>
@@ -558,11 +558,19 @@ export default defineComponent({
             await SAMPLE_SAMPLING_TASK_SAMPLING([row])
             query()
             getTask()
-            printModuleRef.value.print([{
-              title: setText(row),
-              subtitle: row.inspectSiteName,
-              code: row.sampleCode
-            }])
+            if (task.value === 'TEMP') {
+              printModuleRef.value.print([{
+                title: row.inspectContent,
+                wrap: true,
+                code: row.sampleCode
+              }])
+            } else {
+              printModuleRef.value.print([{
+                title: setText(row),
+                subtitle: (row.itemName || '') + (row.inspectSiteName || ''),
+                code: row.sampleCode
+              }])
+            }
           })
         } else {
           printModuleRef.value.print([{
@@ -578,11 +586,20 @@ export default defineComponent({
             httpData.push(it)
           }
         })
-        const data = selectionData.value.map(it => ({
-          title: setText(it),
-          subtitle: (it.itemName || '') + (it.inspectSiteName || ''),
-          code: it.sampleCode
-        }))
+        const data = selectionData.value.map(it => {
+          if (task.value === 'TEMP') {
+            return {
+              title: it.inspectContent,
+              wrap: true,
+              code: it.sampleCode
+            }
+          }
+          return {
+            title: setText(it),
+            subtitle: (it.itemName || '') + (it.inspectSiteName || ''),
+            code: it.sampleCode
+          }
+        })
         if (httpData.length) {
           proxy.$confirm('是否确定取样，请确认', '提示', {
             confirmButtonText: '确定',
@@ -653,6 +670,7 @@ export default defineComponent({
       samplingMessage,
       selectionData,
       addOrUpdateFormRule,
+      getTask,
       delRow,
       sampling,
       checkDate,
