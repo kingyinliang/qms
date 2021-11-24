@@ -39,14 +39,14 @@
         <el-table-column label="指标名称" prop="indexName" :show-overflow-tooltip="true" min-width="180" />
         <el-table-column label="单位" prop="indexUnit" :show-overflow-tooltip="true" min-width="100" />
         <el-table-column label="方法" prop="indexMethod" :show-overflow-tooltip="true" min-width="220" />
-        <el-table-column label="配合取样" prop="cooperate" :show-overflow-tooltip="true" min-width="108" >
-          <template #default="scope">
-            {{scope.row.cooperate}}
-          </template>
-        </el-table-column>
         <el-table-column label="取样部门" prop="sample" :show-overflow-tooltip="true" min-width="100" >
           <template #default="scope">
             {{scope.row.sample}}
+          </template>
+        </el-table-column>
+        <el-table-column label="配合取样" prop="cooperate" :show-overflow-tooltip="true" min-width="108" >
+          <template #default="scope">
+            {{scope.row.cooperate}}
           </template>
         </el-table-column>
         <el-table-column label="检验部门" prop="inspect.deptName" :show-overflow-tooltip="true" min-width="100" />

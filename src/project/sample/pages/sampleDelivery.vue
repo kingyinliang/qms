@@ -66,7 +66,7 @@ export default defineComponent({
       if (!data.data) {
         proxy.$errorToast('该样品码不存在')
       } else if (tableData.value.filter((it:any) => it.sampleCode === data.data.sampleCode).length) {
-        proxy.$errorToast('该样品码以在表格内')
+        proxy.$errorToast('该样品码已在表格内')
       } else if (data.data.taskStatus === 'SAMPLING') {
         tableData.value.push(data.data)
         multipleTableRef.value.toggleRowSelection(data.data)

@@ -18,17 +18,17 @@
             </span>
           </p>
           <div class="task__item__flex">
-            <div class="task__item__flex__item">
+            <div class="task__item__flex__item" @click.stop="changeTask(item.inspectClassify, 'execute')">
               <p class="task__item__flex__item--big">{{ item.execute }}</p>
               <p class="task__item__flex__item--small"><i class="qmsIconfont qms-daiwancheng"/>待完成</p>
             </div>
             <div class="task__item__flex__item--border"/>
-            <div class="task__item__flex__item">
+            <div class="task__item__flex__item" @click.stop="changeTask(item.inspectClassify, 'progressing')">
               <p class="task__item__flex__item--big">{{ item.progressing }}</p>
               <p class="task__item__flex__item--small"><i class="qmsIconfont qms-jinrushiyan"/>进行中</p>
             </div>
             <div class="task__item__flex__item--border"/>
-            <div class="task__item__flex__item">
+            <div class="task__item__flex__item" @click.stop="changeTask(item.inspectClassify, 'completed')">
               <p class="task__item__flex__item--big">{{ item.completed }}</p>
               <p class="task__item__flex__item--small"><i class="qmsIconfont qms-shenhetongguo"/>已完成</p>
             </div>
@@ -39,7 +39,7 @@
   </mds-card>
   <mds-card class="task-list" title="任务列表" :pack-up="false">
     <template #titleBtn>
-      <el-form :inline="true" size="small" style="float: right;display: flex" @keyup.enter="() => {queryForm.current = 1; query()}" @submit.prevent>
+      <el-form :inline="true" size="small" style="float: right;display: flex" @keyup.enter="() => {queryForm.current = 1; getTask(); query()}" @submit.prevent>
         <el-form-item label="取样码：">
           <el-input v-model="queryForm.sampleCode" placeholder="请输入" clearable style="width: 120px"></el-input>
         </el-form-item>
@@ -52,7 +52,7 @@
           </el-select>
         </el-form-item>
         <el-form-item>
-          <el-button icon="el-icon-search" @click="() => {queryForm.current = 1; query()}">查询</el-button>
+          <el-button icon="el-icon-search" @click="() => {queryForm.current = 1; query(); getTask()}">查询</el-button>
           <el-button v-if="task !== 'TEMP'" icon="el-icon-plus" @click="addOrUpdate()">新建</el-button>
           <el-button type="primary" @click="sampling()"><i class="qmsIconfont qms-jianyan3" /> 取样</el-button>
         </el-form-item>
@@ -84,7 +84,7 @@
       <el-table-column v-if="task === 'INCOMING'" label="物料批次" prop="inspectBatch" min-width="150" :show-overflow-tooltip="true" />
       <el-table-column v-if="task === 'INCOMING'" label="供应商" prop="supplier" min-width="165" :show-overflow-tooltip="true" />
       <el-table-column v-if="task === 'INCOMING' || task === 'ASSIST'" label="任务触发时间" prop="triggerDate" min-width="165" :show-overflow-tooltip="true" />
-      <el-table-column v-if="task === 'ASSIST'" label="取样截至时间" prop="sampleEndDate" min-width="165" :show-overflow-tooltip="true" />
+      <el-table-column v-if="task === 'ASSIST'" label="取样截至时间" prop="sampleDeadlineDate" min-width="165" :show-overflow-tooltip="true" />
       <el-table-column v-if="task === 'TEMP'" label="发布人" prop="triggerBy" min-width="165" :show-overflow-tooltip="true" />
       <el-table-column v-if="task === 'TEMP'" label="发布时间" prop="triggerDate" min-width="165" :show-overflow-tooltip="true" />
       <el-table-column label="操作" width="250" fixed="right">
@@ -305,6 +305,7 @@ export default defineComponent({
     const sampleInspectDialog = ref(false)
     const queryForm = reactive({
       taskSampleClassify: '',
+      sampleQuantityStatus: '',
       inspectContent: '',
       taskStatus: '',
       sampleCode: '',
@@ -348,20 +349,24 @@ export default defineComponent({
       }
     }
     // 查询
-    const query = async () => {
+    const query = async (status?: string) => {
       selectionData.value = []
       queryForm.taskSampleClassify = task.value
+      if (status) {
+        queryForm.sampleQuantityStatus = status
+      } else {
+        queryForm.sampleQuantityStatus = ''
+      }
       const res = await SAMPLE_SAMPLING_TASK_LIST(queryForm)
       tableData.value = res.data.data.records
       queryForm.size = res.data.data.size
       queryForm.current = res.data.data.current
       queryForm.total = res.data.data.total
     }
-    // 切换任务分类
-    const changeTask = (val: string) => {
+    const changeTask = (val: string, status?: string) => {
       task.value = val
       queryForm.current = 1
-      query()
+      query(status)
     }
     // 跳转历史任务
     const goHistory = () => {
@@ -553,15 +558,23 @@ export default defineComponent({
             await SAMPLE_SAMPLING_TASK_SAMPLING([row])
             query()
             getTask()
-            printModuleRef.value.print([{
-              title: row.inspectContent,
-              subtitle: row.inspectSiteName,
-              code: row.sampleCode
-            }])
+            if (task.value === 'TEMP') {
+              printModuleRef.value.print([{
+                title: row.inspectContent,
+                wrap: true,
+                code: row.sampleCode
+              }])
+            } else {
+              printModuleRef.value.print([{
+                title: setText(row),
+                subtitle: (row.itemName || '') + (row.inspectSiteName || ''),
+                code: row.sampleCode
+              }])
+            }
           })
         } else {
           printModuleRef.value.print([{
-            title: row.inspectContent,
+            title: setText(row),
             subtitle: (row.itemName || '') + (row.inspectSiteName || ''),
             code: row.sampleCode
           }])
@@ -573,11 +586,20 @@ export default defineComponent({
             httpData.push(it)
           }
         })
-        const data = selectionData.value.map(it => ({
-          title: it.inspectContent,
-          subtitle: (it.itemName || '') + (it.inspectSiteName || ''),
-          code: it.sampleCode
-        }))
+        const data = selectionData.value.map(it => {
+          if (task.value === 'TEMP') {
+            return {
+              title: it.inspectContent,
+              wrap: true,
+              code: it.sampleCode
+            }
+          }
+          return {
+            title: setText(it),
+            subtitle: (it.itemName || '') + (it.inspectSiteName || ''),
+            code: it.sampleCode
+          }
+        })
         if (httpData.length) {
           proxy.$confirm('是否确定取样，请确认', '提示', {
             confirmButtonText: '确定',
@@ -596,6 +618,17 @@ export default defineComponent({
         proxy.$warningToast('请选择数据')
       }
     }
+    const setText = (row: TableData):string => {
+      const inspectContent = (row.inspectContent as string).split('-')
+      if (inspectContent.length && inspectContent[1] && inspectContent[2]) {
+        let tmp = ''
+        inspectContent[2].indexOf('理') >= 0 ? tmp = '理'
+          : inspectContent[2].indexOf('微生物') >= 0 ? tmp = '菌' : tmp = ''
+        return `${inspectContent[1]}(${tmp})`
+      } else {
+        return ''
+      }
+    }
     const delRow = (row:TableData) => {
       proxy.$confirm('是否删除，请确认', '提示', {
         confirmButtonText: '确定',
@@ -609,10 +642,13 @@ export default defineComponent({
       })
     }
 
-    onMounted(() => {
+    onMounted(async () => {
       getSelect()
+      await getTask()
+      if (taskList.value.length) {
+        task.value = taskList.value[0].inspectClassify
+      }
       query()
-      getTask()
     })
 
     return {
@@ -634,6 +670,7 @@ export default defineComponent({
       samplingMessage,
       selectionData,
       addOrUpdateFormRule,
+      getTask,
       delRow,
       sampling,
       checkDate,
@@ -705,7 +742,12 @@ export default defineComponent({
     }
   }
   .active{
-    border: 1px solid #487BFF
+    border: 1px solid #487BFF;
+    color: #487BFF;
+    transform: scale(1.05);
+    .task__item--title{
+      color: #487BFF;
+    }
   }
 }
 .task-list{
