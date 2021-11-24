@@ -50,12 +50,12 @@ export default defineComponent({
     .print_item--div{
       margin: auto;
       background: white;
-      width: 100%;
+      width: 3cm;
+      height: 3cm;
       overflow: hidden;
       padding-top: 0.28cm;
     }
     .print_item{
-      width: 100%;
       &_title{
         white-space: nowrap;
         line-height: 0.6cm;
@@ -85,7 +85,7 @@ export default defineComponent({
   @media print {
     @page {
       size: landscape!important;
-      margin: 0!important;
+      margin: 0 auto;
     }
     .none_ele{
       display: block;
