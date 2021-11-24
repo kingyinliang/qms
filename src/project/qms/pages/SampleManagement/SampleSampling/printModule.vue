@@ -85,7 +85,7 @@ export default defineComponent({
   @media print {
     @page {
       size: landscape!important;
-      margin: 0 auto;
+      margin: 0;
     }
     .none_ele{
       display: block;
