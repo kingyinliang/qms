@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-11-11 16:30:07
  * @LastEditors: Telliex
- * @LastEditTime: 2021-11-26 13:39:58
+ * @LastEditTime: 2021-11-26 17:19:03
 -->
 <template>
   <el-dialog :title="title+subTitle" v-model="isDialogShow" width="90%" @close="onClose">
@@ -40,7 +40,7 @@
               </template>
               <el-form :inline="true" :model="subItem" :label-width="cssForformLabelWidth">
                 <el-form-item label="结果："  prop="inspectResult" >
-                  <el-input v-model="subItem.inspectResult" size="small" oninput ="value=value.replace(/[^\-\d.]/g, '')"   class="inputWidth" placeholder="请输入" autocomplete="off" :disabled="!subItem.canEditInspectResult" @input="actHandleIndexJudgeResult(subItem)" ></el-input>
+                  <el-input v-model="subItem.inspectResult" size="small" oninput ="value=value.replace(/[^\-\d.]/g, '')"   class="inputWidth" placeholder="请输入" autocomplete="off" :disabled="!subItem.canEditInspectResult" @change="actHandleIndexJudgeResult(subItem)" ></el-input>
                 </el-form-item>
                 <el-form-item label="依据方法："  prop="indexVersionMethod" >
                   <el-input v-model="subItem.indexVersionMethod" size="small"  class="inputWidth" placeholder="" autocomplete="off" :disabled="true"></el-input>
@@ -50,7 +50,7 @@
                     <el-radio v-model="subItem.indexJudgeResult" label="N" :disabled="true">不合格</el-radio>
                 </el-form-item>
                 <el-form-item label="标准："  prop="indexStandardString" >
-                    <el-input v-model="subItem.indexStandardString" size="small"  class="inputWidth" placeholder="e.x.1<S<10" autocomplete="off" oninput ="value=value.replace(/[^0-9S><=]/g, '')"   @change="actHandleIndexJudgeResult(subItem)"></el-input>
+                    <el-input v-model="subItem.indexStandardString" size="small"  class="inputWidth" placeholder="e.x.1<S<10" autocomplete="off" oninput ="value=value.replace(/[^0-9S><=]/g, '')"   @change="actHandleIndexStandardString(subItem)"></el-input>
                 </el-form-item>
 
                 <el-form-item label="检验过程："  prop="" v-if="subItem.canShowParameterList">
@@ -291,21 +291,25 @@ export default defineComponent({
       tempTaskInspectIndexList.forEach((item:any) => {
         const tempTaskInspectPhysicalList: any[] = []
         const tempUpdateInspectParameter: any[] = []
-        // if (item.inspectParameterTaskList.inspectMethodNameList[item.inspectMethodCodeWhichIndex].inspectParameterList) {
-        item.inspectMethodNameList[item.inspectMethodCodeWhichIndex].inspectParameterList.forEach((subItem:any) => {
-          tempTaskInspectPhysicalList.push({
-            id: subItem.id,
-            taskInspectIndexId: item.taskInspectIndexIdList[0], // ?? 是否應是 [] 形式
-            paramCode: subItem.paramCode,
-            paramName: subItem.paramName,
-            paramValue: subItem.defaultValue,
-            paramUnit: subItem.paramUnit,
-            hiddenValue: null, // ??
-            formula: subItem.formula
+        console.log('888888888888')
+        console.log(item)
+
+        if (item.inspectMethodNameList.length) {
+          item.inspectMethodNameList[item.inspectMethodCodeWhichIndex].inspectParameterList.forEach((subItem:any) => {
+            tempTaskInspectPhysicalList.push({
+              id: subItem.id,
+              taskInspectIndexId: item.taskInspectIndexIdList[0], // ?? 是否應是 [] 形式
+              paramCode: subItem.paramCode,
+              paramName: subItem.paramName,
+              paramValue: subItem.defaultValue,
+              paramUnit: subItem.paramUnit,
+              hiddenValue: null, // ??
+              formula: subItem.formula
+            })
+            tempUpdateInspectParameter.push(subItem)
           })
-          tempUpdateInspectParameter.push(subItem)
-        })
-        // }
+        }
+
         item.updateInspectParameter = tempUpdateInspectParameter
         item.taskInspectPhysicalList = tempTaskInspectPhysicalList
       })
@@ -377,6 +381,61 @@ export default defineComponent({
     }
 
     const actHandleIndexJudgeResult = (val:any) => {
+      if (val.indexStandardString === '') {
+        proxy.$infoToast('请输入标准公式')
+        return
+      }
+      const result = /(.*)S(.*)/.exec(val.indexStandardString)
+      console.log(result)
+      if (result === null) {
+        proxy.$warningToast('标准栏位式子错误')
+        val.indexStandardString = ''
+        return
+      }
+      if (result[1] === '' && result[2] === '') {
+        proxy.$warningToast('标准栏位式子错误')
+        val.indexStandardString = ''
+        return
+      }
+      const leftResult = /(.*)([><]=?)/.exec(result[1])
+      const rightResult = /([><]=?)(.*)/.exec(result[2])
+
+      if (!leftResult) {
+        val.indexInnerDown = ''
+        val.innerDownSymbol = ''
+      } else {
+        val.indexInnerDown = leftResult[1]
+        val.innerDownSymbol = leftResult[2]
+      }
+
+      if (!rightResult) {
+        val.indexInnerUp = ''
+        val.innerUpSymbol = ''
+      } else {
+        val.indexInnerUp = rightResult[2]
+        val.innerUpSymbol = rightResult[1]
+      }
+      console.log(val)
+
+      if (val.inspectResult && val.indexStandardString) {
+        try {
+          if (evil(`${result[1]}${val.inspectResult}`) && evil(`${val.inspectResult}${result[2]}`)) {
+            val.indexJudgeResult = 'Y'
+          } else {
+            val.indexJudgeResult = 'N'
+          }
+        } catch (err) {
+          console.log(err)
+          val.indexJudgeResult = 'N'
+        }
+      }
+    }
+
+    const actHandleIndexStandardString = (val:any) => {
+      if (val.inspectResult === '') {
+        proxy.$infoToast('请输入结果栏位')
+        return
+      }
       const result = /(.*)S(.*)/.exec(val.indexStandardString)
       console.log(result)
       if (result === null) {
@@ -516,9 +575,7 @@ export default defineComponent({
               })
 
               if (item.inspectMethodCode === subItem.inspectMethodCode) { // 带出预设的方法与过程参数
-                console.log('yyyyyyyyyyyyyyy')
                 if (subItem.inspectParameterListResult.length) {
-                  console.log('xxxxxxxxxxxxxxxxx')
                   item.filnalFormula = string2Formula(subItem.inspectParameterListResult[0].formulaDisplay)
                 } else {
                   item.filnalFormula = ''
@@ -537,6 +594,7 @@ export default defineComponent({
               sampleCode: state.idToSampleCode[item.taskInspectId]
             })
 
+            // if()
             // tempIndex.data.data.inspectMethodNameList.forEach((subItem:any, index:number) => {
             //   if (item.inspectMethodCode === subItem.inspectMethodCode) {
             //     item.inspectMethodCodeWhichIndex = index
@@ -743,6 +801,7 @@ export default defineComponent({
       btnSaveOrSubmitDataOfInspect,
       btnChangeMethodOfIndex,
       actHandleIndexJudgeResult,
+      actHandleIndexStandardString,
       actHandleInspectResult,
       // act
       // ref
