@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-10-15 20:07:53
  * @LastEditors: Telliex
- * @LastEditTime: 2021-11-19 17:52:06
+ * @LastEditTime: 2021-11-24 14:55:29
 -->
 <template>
 <div class="k-box-card" style="padding:20px 0;">
@@ -647,9 +647,9 @@ export default defineComponent({
           tempApplyNo: state.dataFormOfInspectRequest.tempApplyNo, // 任务单号
           applyStatus: state.dataFormOfInspectRequest.applyStatus, // 申请状态
           id: state.pageId,
-          needDeptId: tempNeedDept[0].id, // 需求单位
-          needDeptCode: tempNeedDept[0].deptCode,
-          needDeptName: tempNeedDept[0].deptName,
+          needDeptId: tempNeedDept.length ? tempNeedDept[0].id : '', // 需求单位
+          needDeptCode: tempNeedDept.length ? tempNeedDept[0].deptCode : '',
+          needDeptName: tempNeedDept.length ? tempNeedDept[0].deptName : '',
           taskTempDeptList: tempRefTaskTempDeptList, // 取样部门
           inspectContent: state.dataFormOfInspectRequest.inspectContent, // 检验内容
           handleExplain: state.dataFormOfInspectRequest.handleExplain, // 内容说明
