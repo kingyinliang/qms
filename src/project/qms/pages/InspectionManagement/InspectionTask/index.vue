@@ -210,8 +210,7 @@ export default defineComponent({
         return
       }
       store.commit('inspection/updateInspectionTask', selectionData.value)
-      console.log('selectionData.value')
-      console.log(selectionData.value)
+
       if (task.value === 'PROCESS') {
         store.commit('common/updateSampleObjToInspect', { type: 'PROCESS', obj: selectionData.value.length ? selectionData.value : [] })
       } else if (task.value === 'TEMP') {

@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-11-16 09:59:02
  * @LastEditors: Telliex
- * @LastEditTime: 2021-11-24 16:05:29
+ * @LastEditTime: 2021-11-26 09:16:40
 -->
 <template>
   <mds-area class="test_method" title="已选中样品" :pack-up="false" style="margin-bottom: 0; background: #fff; overflow:scroll">
@@ -12,7 +12,7 @@
           <el-checkbox v-model="searchFilter.merge" size="small" label="合并检" @change="btnCheckOfMergeOrNot"></el-checkbox>
         </div>
         <div style="padding-left: 12px;font-size:14px;"><span>取样码：</span>
-          <el-input size="small" style="margin-bottom:10px; width:200px;" clearable @keydown.enter="btnGetInspectList(searchFilter.sampleCode)"  v-model="searchFilter.sampleCode" placeholder="请输入" />
+          <el-input size="small" style="margin-bottom:10px; width:200px;" clearable @keydown.enter="btnGetInspectList(searchFilter.sampleCode)"  v-model="searchFilter.sampleCode" placeholder="请输入" autofocus />
         </div>
         <div style="padding-left: 12px;">
           <el-button icon="el-icon-search" size="small" class="topic-button" @click="btnReset" :disabled="!dataTableOfTopicMain.length">重置</el-button>
@@ -32,7 +32,7 @@
     </el-table>
   </mds-area>
 
-  <instection-dialog v-model="dialogVisible" :targetOgj="targetOgjList" :mainType="mainType" :subType="subType" @on-close="dialogVisible=false" @returnFromDialogAndOpenAgainHandle="returnFromDialogAndOpenAgainHandle" />
+  <instection-dialog v-model="dialogVisible" :targetOgj="targetOgjList" :mainType="mainType" :subType="subType" @on-close="dialogVisible=false" @openHandle="returnFromDialogAndOpenAgainHandle" />
 
 </template>
 
@@ -117,7 +117,7 @@ interface DataTableOfTopicMain {
 interface State {
   indexOfCurrentRowOnFocus: number
   subType: string
-  isDialogVisibleForAddTask: boolean
+
   targetOgjList: any[] // 检验物件
   currentGlobalActOgj: any
   dialogVisible: boolean
@@ -150,7 +150,6 @@ export default defineComponent({
     const state = reactive<State>({
       indexOfCurrentRowOnFocus: 0,
       dialogVisible: false,
-      isDialogVisibleForAddTask: false,
       currentGlobalActOgj: {},
       mainType: '',
       currentObj: {},
@@ -318,14 +317,14 @@ export default defineComponent({
     // [SELECT][Table] 选框选择
     const btnHandleOneSelectionChange = (val: DataTableOfTopicMain[]) => {
       if (val.length && val[val.length - 1].taskInspectClassify !== 'PROCESS') {
-        proxy.$warningToast('存在临时检验任务，无法勾选合并')
+        proxy.$warningToast('临时检验任务，无法勾选合并')
         refTableOfTopicMain.value.toggleRowSelection(val[val.length - 1], false)
       }
     }
     // [SELECT][Table] 选框 ALL 选择
     const btnHandleAllSelectionChange = (val: DataTableOfTopicMain[]) => {
       if (val.length && state.selectedListOfTopicMainData.some(item => item.taskInspectClassify !== 'PROCESS')) {
-        proxy.$warningToast('存在临时检验任务，无法勾选合并')
+        proxy.$warningToast('临时检验任务，无法勾选合并')
         refTableOfTopicMain.value.clearSelection()
       }
     }
@@ -356,15 +355,6 @@ export default defineComponent({
 
         }
       }
-    }
-
-    // [Dialog:任务新增][BTN:取消]
-    const btnCancelTaskAddOfDialog = () => {
-      state.isDialogVisibleForAddTask = false
-    }
-    // [Dialog:任务新增][BTN:取消]
-    const btnConfirmTaskAddOfDialog = () => {
-      state.isDialogVisibleForAddTask = false
     }
 
     /**  == 生命周期 ==  **/
@@ -410,8 +400,6 @@ export default defineComponent({
       handleCurrentChange,
       btnCheckOfMergeOrNot,
       actHandleSelectionChange,
-      btnCancelTaskAddOfDialog,
-      btnConfirmTaskAddOfDialog,
       btnHandleOneSelectionChange,
       btnHandleAllSelectionChange,
       returnFromDialogAndOpenAgainHandle,
