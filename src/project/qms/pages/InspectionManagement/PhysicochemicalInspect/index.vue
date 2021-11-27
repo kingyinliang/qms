@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-11-16 09:59:02
  * @LastEditors: Telliex
- * @LastEditTime: 2021-11-27 10:27:15
+ * @LastEditTime: 2021-11-27 12:18:56
 -->
 <template>
   <mds-area class="test_method" title="已选中样品" :pack-up="false" style="margin-bottom: 0; background: #fff; overflow:scroll">
@@ -261,7 +261,7 @@ export default defineComponent({
     // reload 任务表单
     const btnGetInspectListReload = (val: DataTableOfTopicMain[]) => {
       val.length && MANAGEMENT_INSPECTION_PHYSICOCHEMICAL_QUERY_BY_SAMPLE_CODE_API(
-        val.filter(item => item.sampleCode)
+        val.map(item => item.sampleCode)
       ).then(res => {
         state.dataTableOfTopicMain = []
         res.data.data.forEach((item:any) => {
@@ -336,28 +336,35 @@ export default defineComponent({
 
       if (val.act === 'save') {
         btnGetInspectListReload(state.dataTableOfTopicMain)
-        if (state.indexOfCurrentRowOnFocus + 1 < state.dataTableOfTopicMain.length) {
+        // TODO 判断会有问题
+        if (state.indexOfCurrentRowOnFocus + 1 < state.dataTableOfTopicMain.length) { // 剩多笔
           console.log('还有可开')
           state.indexOfCurrentRowOnFocus += 1
           setCurrentRowOnFocus(state.dataTableOfTopicMain[state.indexOfCurrentRowOnFocus])
           setTimeout(() => {
             actGetInspectDetail()
           }, 1000)
-        } else {
+        } else if (state.dataTableOfTopicMain.length === 1) { // 只剩一笔
+          state.dataTableOfTopicMain.length >= 1 && setCurrentRowOnFocus(state.dataTableOfTopicMain[0])
+          state.indexOfCurrentRowOnFocus = 0
+          state.currentGlobalActOgj = state.dataTableOfTopicMain[state.indexOfCurrentRowOnFocus]
+          console.log('没有可开')
+        } else { // 到底
           console.log('没有可开')
         }
       } else if (val.act === 'submit') {
         btnGetInspectListReload(state.dataTableOfTopicMain)
         if (val.target === 'ORIGINAL_RECHECK') { // 原样复检
           console.log('原样复检')
-          console.log(val)
         } else if (val.target === 'RESAMOLING') { // 重新取样
           console.log('重新取样')
-          console.log(val)
-        } else if (val.target === 'OTHER_SAMPLING') { // 其它取样
+        // } else if (val.target === 'OTHER_SAMPLING') { // 其它取样
         } else { // not chose
-
         }
+        console.log(val)
+        state.orderStyle = 'again'
+        state.dialogVisible = true
+        state.targetOgjList = val.obj
       }
     }
 

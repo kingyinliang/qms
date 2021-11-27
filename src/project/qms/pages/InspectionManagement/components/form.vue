@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-11-11 16:30:07
  * @LastEditors: Telliex
- * @LastEditTime: 2021-11-27 11:10:24
+ * @LastEditTime: 2021-11-27 11:32:03
 -->
 <template>
   <mds-area class="info" :title="subTitle">
@@ -57,17 +57,17 @@
 
       <template v-for="item in dataFormOfSampleItemUnit" :key="item">
         <mds-area :name="'org'" >
-            <el-form :inline="true" :model="item"  :label-width="cssForformLabelWidth" v-if="currentType==='HISTORY'">
-          <el-form-item label="检验开始："  prop="inspectStartDate">
-            <el-input v-model="item.inspectStartDate" size="small" class="inputWidth" placeholder="自动带入" autocomplete="off" :readonly="onlyRead"></el-input>
-          </el-form-item>
-          <el-form-item label="检验结束："  prop="inspectEndDate" >
-            <el-input v-model="item.inspectEndDate" size="small" class="inputWidth" placeholder="自动带入" autocomplete="off" :readonly="onlyRead"></el-input>
-          </el-form-item>
-          <el-form-item label="取样说明："  prop="sampleExplain" >
-            <el-input v-model="item.sampleExplain" size="small" class="inputWidth" placeholder="自动带入" autocomplete="off" :readonly="onlyRead"></el-input>
-          </el-form-item>
-        </el-form>
+          <el-form :inline="true" :model="item"  :label-width="cssForformLabelWidth" v-if="currentType==='HISTORY'">
+            <el-form-item label="检验开始："  prop="inspectStartDate">
+              <el-input v-model="item.inspectStartDate" size="small" class="inputWidth" placeholder="自动带入" autocomplete="off" :disabled="onlyRead"></el-input>
+            </el-form-item>
+            <el-form-item label="检验结束："  prop="inspectEndDate" >
+              <el-input v-model="item.inspectEndDate" size="small" class="inputWidth" placeholder="自动带入" autocomplete="off" :disabled="onlyRead"></el-input>
+            </el-form-item>
+            <el-form-item label="取样说明："  prop="sampleExplain" >
+              <el-input v-model="item.sampleExplain" size="small" class="inputWidth" placeholder="自动带入" autocomplete="off" :disabled="onlyRead"></el-input>
+            </el-form-item>
+          </el-form>
           <template v-for="subItem in item.taskInspectIndexList" :key="subItem">
             <mds-area :title="subItem.indexName" :name="'org'" :outline="true">
             <el-form :inline="true" :model="subItem" :label-width="cssForformLabelWidth">
@@ -105,9 +105,9 @@
             <el-radio v-model="item.judgeResult" label="N" :disabled="onlyRead">不合格</el-radio>
           </el-form-item>
           <el-form-item label="检验说明："  prop="inspectExplain" >
-            <el-tooltip effect="dark" :content="item.inspectExplain" :disabled="item.inspectExplain===''" placement="top">
-              <el-input v-model="item.inspectExplain" size="small" placeholder="自动带入" autocomplete="off" :readonly="onlyRead" :disabled="onlyRead" style="width:300px"></el-input>
-            </el-tooltip>
+            <!-- <el-tooltip effect="dark" :content="item.inspectExplain" :disabled="false" placement="top"> -->
+              <el-input v-model="item.inspectExplain" size="small" placeholder="自动带入" autocomplete="off" :disabled="onlyRead"  style="width:400px"></el-input>
+            <!-- </el-tooltip> -->
           </el-form-item>
         </el-form>
        </template>
@@ -128,7 +128,6 @@
 // import { defineComponent, toRefs, reactive, onMounted, getCurrentInstance, ComponentInternalInstance, watch } from 'vue'
 import { defineComponent, toRefs, ref, reactive, onMounted, getCurrentInstance, ComponentInternalInstance } from 'vue'
 import layoutTs from '@/components/layout/layoutTs'
-import { useRouter } from 'vue-router'
 import { useStore } from 'vuex'
 import {
   MANAGEMENT_INSPECTION_PHYSICOCHEMICAL_TASK_FORM_QUERY_API,
