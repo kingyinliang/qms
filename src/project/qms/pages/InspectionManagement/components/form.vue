@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-11-11 16:30:07
  * @LastEditors: Telliex
- * @LastEditTime: 2021-11-23 19:45:23
+ * @LastEditTime: 2021-11-27 11:10:24
 -->
 <template>
   <mds-area class="info" :title="subTitle">
@@ -72,29 +72,27 @@
             <mds-area :title="subItem.indexName" :name="'org'" :outline="true">
             <el-form :inline="true" :model="subItem" :label-width="cssForformLabelWidth">
               <el-form-item label="结果："  prop="inspectResult" >
-                <el-input v-model="subItem.inspectResult" size="small"  class="inputWidth" placeholder="自动带入" autocomplete="off" :readonly="onlyRead"></el-input>
+                <el-input v-model="subItem.inspectResult" size="small"  class="inputWidth" placeholder="自动带入" autocomplete="off" :disabled="onlyRead"></el-input>
               </el-form-item>
               <el-form-item label="依据方法："  prop="indexVersionMethod" >
-                <el-input v-model="subItem.indexVersionMethod" size="small"  class="inputWidth" placeholder="自动带入" autocomplete="off" :readonly="onlyRead"></el-input>
+                <el-input v-model="subItem.indexVersionMethod" size="small"  class="inputWidth" placeholder="自动带入" autocomplete="off" :disabled="onlyRead"></el-input>
               </el-form-item>
               <el-form-item label="判定："  prop="indexJudgeResult" >
                   <el-radio v-model="subItem.indexJudgeResult" label="Y" :disabled="onlyRead">合格</el-radio>
                   <el-radio v-model="subItem.indexJudgeResult" label="N" :disabled="onlyRead">不合格</el-radio>
               </el-form-item>
-              <el-form-item label="标准："  prop="column4" >
-                  <el-input v-model="subItem.column4" size="small"  class="inputWidth" placeholder="自动带入" autocomplete="off" :readonly="onlyRead" :disabled="onlyRead"></el-input>
+              <el-form-item label="标准："  prop="indexStandardString" >
+                  <el-input v-model="subItem.indexStandardString" size="small"  class="inputWidth" placeholder="自动带入" autocomplete="off" :readonly="onlyRead" :disabled="onlyRead"></el-input>
               </el-form-item>
               <el-form-item label="检验过程："  prop="" v-if="subItem.taskInspectPhysicalList.length">
                 <!-- <el-input v-model="subItem.taskInspectPhysical" size="small"  class="inputWidth" placeholder="自动带入" autocomplete="off" :readonly="onlyRead" :disabled="onlyRead"></el-input> -->
-                <template v-for="s in subItem.taskInspectPhysical" :key="s.id">
-                  <el-input v-model="s.value" type="text"  size="small" placeholder="自动带入" :readonly="onlyRead" style="width:100px;margin-right:10px">
-                    <template #prefix>
-                      {{s.paramCode.split('[')[0]}}<sub>{{s.paramCode.split('[')[1].replace(']','')}}</sub>=
-                    </template>
-                    <template #suffix>
-                      {{s.paramUnit}}
-                    </template>
-                  </el-input>
+                <template v-for="pars in subItem.taskInspectPhysicalList" :key="pars.id">
+                    {{pars.paramCode?pars.paramCode.split('[')[0]:'?'}}<sub>{{pars.paramCode?pars.paramCode.split('[')[1].replace(']',''):''}}</sub> =
+                      <el-input v-model="pars.paramValue" type="text"  size="small" placeholder="" style="width:100px;margin-right:10px" :disabled="onlyRead">
+                        <template #suffix>
+                          {{pars.paramUnit}}
+                        </template>
+                      </el-input>
                 </template>
               </el-form-item>
             </el-form>
@@ -202,10 +200,19 @@ export default defineComponent({
         Object.assign(state.dataFormOfSampleInfo, { inspectMaterial: `${state.dataFormOfSampleInfo.inspectMaterialName} ${state.dataFormOfSampleInfo.inspectMaterialCode}` })
 
         if (state.currentType === 'HISTORY') {
-          MANAGEMENT_INSPECTION_PHYSICOCHEMICAL_HISTORY_TASK_FORM_QUERY_API([state.currentObj.id]).then(res => {
+          MANAGEMENT_INSPECTION_PHYSICOCHEMICAL_HISTORY_TASK_FORM_QUERY_API([state.currentObj.sampleCode]).then(res => {
             console.log('HISTORY VIEW')
             console.log(res.data.data)
             state.dataFormOfSampleItemUnit = res.data.data
+            state.dataFormOfSampleItemUnit[0].taskInspectIndexList.forEach((item:any) => {
+              if (item.indexInnerStandard !== '') {
+                item.indexStandardString = `${!item.indexInnerDown ? '' : item.indexInnerDown}${!item.innerDownSymbol ? '' : item.innerDownSymbol.replace('>', '<')}S${!item.innerUpSymbol ? '' : item.innerUpSymbol}${!item.indexInnerUp ? '' : item.indexInnerUp}`
+              } else if (item.indexStandard !== '') {
+                item.indexStandardString = `${!item.indexDown ? '' : item.indexDown}${!item.downSymbol ? '' : item.downSymbol.replace('>', '<')}S${!item.upSymbol ? '' : item.upSymbol}${!item.indexUp ? '' : item.indexUp}`
+              } else {
+                item.indexStandardString = ''
+              }
+            })
           })
         } else {
           MANAGEMENT_INSPECTION_PHYSICOCHEMICAL_TASK_FORM_QUERY_API({
@@ -215,6 +222,15 @@ export default defineComponent({
             console.log('PROCESS or TEMP VIEW')
             console.log(res.data.data)
             state.dataFormOfSampleItemUnit = res.data.data
+            state.dataFormOfSampleItemUnit[0].taskInspectIndexList.forEach((item:any) => {
+              if (item.indexInnerStandard !== '') {
+                item.indexStandardString = `${!item.indexInnerDown ? '' : item.indexInnerDown}${!item.innerDownSymbol ? '' : item.innerDownSymbol.replace('>', '<')}S${!item.innerUpSymbol ? '' : item.innerUpSymbol}${!item.indexInnerUp ? '' : item.indexInnerUp}`
+              } else if (item.indexStandard !== '') {
+                item.indexStandardString = `${!item.indexDown ? '' : item.indexDown}${!item.downSymbol ? '' : item.downSymbol.replace('>', '<')}S${!item.upSymbol ? '' : item.upSymbol}${!item.indexUp ? '' : item.indexUp}`
+              } else {
+                item.indexStandardString = ''
+              }
+            })
           })
         }
       }
