@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-11-11 16:30:07
  * @LastEditors: Telliex
- * @LastEditTime: 2021-11-27 09:28:35
+ * @LastEditTime: 2021-11-27 10:48:09
 -->
 <template>
   <el-dialog :title="title+subTitle" v-model="isDialogShow" width="90%" @close="onClose">
@@ -425,65 +425,73 @@ export default defineComponent({
 
       console.log(checkRequiredData(state.dataFormOfSampleItemUnit))
 
-      // if (type !== 'save') { // 完成提交行为
-      //   proxy.$confirm('确认是否继续校验？', '提示', {
-      //     confirmButtonText: '确定',
-      //     cancelButtonText: '取消',
-      //     type: 'warning'
-      //   }).then(async (val:string) => {
-      //     if (val === 'confirm') {
-      //       // 需校验
-      //       if (checkRequiredData(state.dataFormOfSampleItemUnit)) {
-      //         if (state.dataFormOfSampleInfo.recheckMod === 'ORIGINAL_RECHECK') { // 原样复检
-      //           parent.emit('openHandle', { target: 'ORIGINAL_RECHECK', obj: obj })
-      //         } else if (state.dataFormOfSampleInfo.recheckMod === 'RESAMOLING') { // 重新取样
-      //           parent.emit('openHandle', { target: 'RESAMOLING', obj: obj })
-      //         } else if (state.dataFormOfSampleInfo.recheckMod === 'OTHER_SAMPLING') { // 其它取样
-      //           parent.emit('openHandle', { target: 'OTHER_SAMPLING', obj: obj })
-      //         } else { // not chose
+      if (type !== 'save') { // 完成提交行为
+        proxy.$confirm('确认是否继续校验？', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(async (val:string) => {
+          if (val === 'confirm') {
+            // 需校验
+            if (checkRequiredData(state.dataFormOfSampleItemUnit)) {
+              if (state.dataFormOfSampleInfo.recheckMod === 'ORIGINAL_RECHECK') { // 原样复检
+                parent.emit('openHandle', { target: 'ORIGINAL_RECHECK', obj: obj })
+              } else if (state.dataFormOfSampleInfo.recheckMod === 'RESAMOLING') { // 重新取样
+                parent.emit('openHandle', { target: 'RESAMOLING', obj: obj })
+              } else if (state.dataFormOfSampleInfo.recheckMod === 'OTHER_SAMPLING') { // 其它取样
+                parent.emit('openHandle', { target: 'OTHER_SAMPLING', obj: obj })
+              } else { // not chose
 
-      //         }
-      //       }
-      //     } else {
-      //       handleSaveData('save', obj)
-      //     }
+              }
+              handleSaveData('submit', obj)
+            }
+          } else {
+            handleSaveData('save', obj)
+          }
 
-      //     onClose()
-      //   }).catch(() => {
-      //     //
-      //   })
-      // } else { // 保存行为
-      //   // 不校验
-      //   // handleSaveData('save', obj)
-      // }
+          // onClose()
+        }).catch(() => {
+          //
+        })
+      } else { // 保存行为
+        // 不校验
+        handleSaveData('save', obj)
+      }
     }, 1000)
 
     // TODO
     // 校验操作
     const checkRequiredData = (obj:any) => {
+      console.log('222222222')
       console.log(obj)
+      let tempReturn = true
       if (state.currentOrderStyle === 'first') { // 初检
         obj.forEach((item:any) => {
           if (item.inspectResult === '') {
             proxy.$warningToast('请完成各指标结果')
-            return false
+            tempReturn = false
+            return
           }
           if (item.indexJudgeResult === '') {
             proxy.$warningToast('请完成各指标判定')
-            return false
+            tempReturn = false
+            return
           }
           if (item.indexStandardString === '') {
             proxy.$warningToast('请完成各指标标准')
-            return false
+            tempReturn = false
+            return
           }
-          // if (item.inspectMethodNameList[item.inspectMethodCodeWhichIndex].length && item.inspectMethodNameList[item.inspectMethodCodeWhichIndex].inspectParameterListShow.length) {
-          //   item.inspectMethodNameList[item.inspectMethodCodeWhichIndex].inspectParameterListShow.forEach((subItem:any) => {
-          //     if (subItem.defaultValue === '') {
-          //       proxy.$warningToast('请输入指标过程参数')
-          //       return false
-          //     }
-          //   })
-          // }
+          console.log('item.inspectMethodNameList[item.inspectMethodCodeWhichIndex]')
+          console.log(item.inspectMethodNameList)
+          if (item.inspectMethodNameList.length && item.inspectMethodNameList[item.inspectMethodCodeWhichIndex].inspectParameterListShow.length) {
+            const temp = item.inspectMethodNameList[item.inspectMethodCodeWhichIndex].inspectParameterListShow.every((subItem:any) => subItem.defaultValue !== '')
+
+            if (!temp) {
+              proxy.$warningToast('请输入指标过程参数')
+              tempReturn = false
+            }
+          }
         })
       } else { // 复检,校验指标录入的完整性
         obj.taskInspectList.forEach((item:any) => {
@@ -509,12 +517,12 @@ export default defineComponent({
 
           if (tempResult !== needResult) {
             proxy.$warningToast('请完整输入指标')
-            return false
+            tempReturn = false
           }
         })
       }
 
-      return true
+      return tempReturn
     }
 
     //  保存操作
@@ -738,7 +746,6 @@ export default defineComponent({
               filnalFormula: '', // 公式值
               inspectMethodCodeWhichIndex: 100 // 预设的方法的 index
             })
-            item.indexJudgeResult = 'N'
 
             if (tempIndex.data.data.inspectMethodNameList.length === 0) {
               item.canShowParameterList = false
