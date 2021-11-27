@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-11-16 09:59:02
  * @LastEditors: Telliex
- * @LastEditTime: 2021-11-26 09:16:40
+ * @LastEditTime: 2021-11-27 08:51:48
 -->
 <template>
   <mds-area class="test_method" title="已选中样品" :pack-up="false" style="margin-bottom: 0; background: #fff; overflow:scroll">
@@ -32,7 +32,7 @@
     </el-table>
   </mds-area>
 
-  <instection-dialog v-model="dialogVisible" :targetOgj="targetOgjList" :mainType="mainType" :subType="subType" @on-close="dialogVisible=false" @openHandle="returnFromDialogAndOpenAgainHandle" />
+  <instection-dialog v-model="dialogVisible" :targetOgj="targetOgjList" :mainType="mainType" :subType="subType" :orderStyle="orderStyle" @on-close="dialogVisible=false" @openHandle="returnFromDialogAndOpenAgainHandle" />
 
 </template>
 
@@ -116,12 +116,12 @@ interface DataTableOfTopicMain {
 
 interface State {
   indexOfCurrentRowOnFocus: number
-  subType: string
-
   targetOgjList: any[] // 检验物件
   currentGlobalActOgj: any
   dialogVisible: boolean
   mainType: string
+  subType: string
+  orderStyle: string
   currentObj:any
   dataTableOfTopicMain: DataTableOfTopicMain[]
   searchFilter: SearchFilter
@@ -152,6 +152,8 @@ export default defineComponent({
       dialogVisible: false,
       currentGlobalActOgj: {},
       mainType: '',
+      subType: '',
+      orderStyle: '',
       currentObj: {},
       searchFilter: {
         sampleCode: '',
@@ -162,7 +164,6 @@ export default defineComponent({
       // applyStatusOptions: {},
       selectedListOfTopicMainData: [],
       targetOgjList: [],
-      subType: '',
       formForTaskAdd: {},
       cssForformLabelWidth: '110px'
     })
@@ -204,7 +205,7 @@ export default defineComponent({
         state.subType = 'normal'
         state.targetOgjList = [state.currentGlobalActOgj]
       }
-
+      state.orderStyle = 'first'
       state.dialogVisible = true
     }
 
