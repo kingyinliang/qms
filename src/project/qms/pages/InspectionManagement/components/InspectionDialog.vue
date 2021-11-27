@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-11-11 16:30:07
  * @LastEditors: Telliex
- * @LastEditTime: 2021-11-27 10:48:09
+ * @LastEditTime: 2021-11-27 12:25:48
 -->
 <template>
   <el-dialog :title="title+subTitle" v-model="isDialogShow" width="90%" @close="onClose">
@@ -300,9 +300,6 @@ export default defineComponent({
       tempTaskInspectIndexList.forEach((item:any) => {
         const tempTaskInspectPhysicalList: any[] = []
         const tempUpdateInspectParameter: any[] = []
-        console.log('888888888888')
-        console.log(item)
-
         // 处理不等式
         if (item.indexStandardString !== '') {
           const result = /(.*)S(.*)/.exec(item.indexStandardString)
@@ -423,8 +420,6 @@ export default defineComponent({
       console.log('=====Save or Submit======')
       console.log(obj)
 
-      console.log(checkRequiredData(state.dataFormOfSampleItemUnit))
-
       if (type !== 'save') { // 完成提交行为
         proxy.$confirm('确认是否继续校验？', '提示', {
           confirmButtonText: '确定',
@@ -438,8 +433,8 @@ export default defineComponent({
                 parent.emit('openHandle', { target: 'ORIGINAL_RECHECK', obj: obj })
               } else if (state.dataFormOfSampleInfo.recheckMod === 'RESAMOLING') { // 重新取样
                 parent.emit('openHandle', { target: 'RESAMOLING', obj: obj })
-              } else if (state.dataFormOfSampleInfo.recheckMod === 'OTHER_SAMPLING') { // 其它取样
-                parent.emit('openHandle', { target: 'OTHER_SAMPLING', obj: obj })
+              // } else if (state.dataFormOfSampleInfo.recheckMod === 'OTHER_SAMPLING') { // 其它取样
+              //   parent.emit('openHandle', { target: 'OTHER_SAMPLING', obj: obj })
               } else { // not chose
 
               }
@@ -462,8 +457,6 @@ export default defineComponent({
     // TODO
     // 校验操作
     const checkRequiredData = (obj:any) => {
-      console.log('222222222')
-      console.log(obj)
       let tempReturn = true
       if (state.currentOrderStyle === 'first') { // 初检
         obj.forEach((item:any) => {
