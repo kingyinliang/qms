@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-11-16 09:59:02
  * @LastEditors: Telliex
- * @LastEditTime: 2021-11-27 08:51:48
+ * @LastEditTime: 2021-11-27 10:27:15
 -->
 <template>
   <mds-area class="test_method" title="已选中样品" :pack-up="false" style="margin-bottom: 0; background: #fff; overflow:scroll">
@@ -274,9 +274,9 @@ export default defineComponent({
         state.searchFilter.sampleCode = ''
         state.searchFilter.merge = false
         // R:highlight row
-        state.dataTableOfTopicMain.length >= 1 && setCurrentRowOnFocus(state.dataTableOfTopicMain[0])
-        state.indexOfCurrentRowOnFocus = 0
-        state.currentGlobalActOgj = state.dataTableOfTopicMain[state.indexOfCurrentRowOnFocus]
+        // state.dataTableOfTopicMain.length >= 1 && setCurrentRowOnFocus(state.dataTableOfTopicMain[0])
+        // state.indexOfCurrentRowOnFocus = 0
+        // state.currentGlobalActOgj = state.dataTableOfTopicMain[state.indexOfCurrentRowOnFocus]
       })
     }
 
@@ -335,6 +335,7 @@ export default defineComponent({
       console.log(val)
 
       if (val.act === 'save') {
+        btnGetInspectListReload(state.dataTableOfTopicMain)
         if (state.indexOfCurrentRowOnFocus + 1 < state.dataTableOfTopicMain.length) {
           console.log('还有可开')
           state.indexOfCurrentRowOnFocus += 1
@@ -348,9 +349,11 @@ export default defineComponent({
       } else if (val.act === 'submit') {
         btnGetInspectListReload(state.dataTableOfTopicMain)
         if (val.target === 'ORIGINAL_RECHECK') { // 原样复检
-          //
+          console.log('原样复检')
+          console.log(val)
         } else if (val.target === 'RESAMOLING') { // 重新取样
-          //
+          console.log('重新取样')
+          console.log(val)
         } else if (val.target === 'OTHER_SAMPLING') { // 其它取样
         } else { // not chose
 
