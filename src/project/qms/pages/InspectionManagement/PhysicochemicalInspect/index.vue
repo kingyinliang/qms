@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-11-16 09:59:02
  * @LastEditors: Telliex
- * @LastEditTime: 2021-11-27 12:18:56
+ * @LastEditTime: 2021-11-28 15:35:22
 -->
 <template>
   <mds-area class="test_method" title="已选中样品" :pack-up="false" style="margin-bottom: 0; background: #fff; overflow:scroll">
@@ -193,17 +193,25 @@ export default defineComponent({
           proxy.$warningToast('存在不同物料，无法合并检验')
           return
         }
-        state.subType = 'merge'
         console.log('merge')
+        state.mainType = 'PROCESS'
+        state.subType = 'merge'
         state.targetOgjList = state.selectedListOfTopicMainData
       } else if (state.searchFilter.merge && state.selectedListOfTopicMainData.length === 1) { // 勾选 1 个， 视为一般检
-        console.log('normal')
+        console.log('normal1')
+        state.mainType = 'PROCESS'
         state.subType = 'normal'
         state.targetOgjList = state.selectedListOfTopicMainData
       } else {
-        console.log('normal')
+        console.log('normal2')
+        console.log(state.mainType)
+        state.mainType = store.state.common.sampleObj.type
         state.subType = 'normal'
-        state.targetOgjList = [state.currentGlobalActOgj]
+        if (Object.keys(state.currentGlobalActOgj).length !== 0) {
+          state.targetOgjList = [state.currentGlobalActOgj]
+        } else {
+          proxy.$warningToast('请选取任务')
+        }
       }
       state.orderStyle = 'first'
       state.dialogVisible = true
@@ -330,27 +338,41 @@ export default defineComponent({
       }
     }
 
-    const returnFromDialogAndOpenAgainHandle = (val:any) => {
+    const returnFromDialogAndOpenAgainHandle = async (val:any) => {
       console.log('.............')
       console.log(val)
 
       if (val.act === 'save') {
-        btnGetInspectListReload(state.dataTableOfTopicMain)
+        await btnGetInspectListReload(state.dataTableOfTopicMain)
+        console.log('111111')
+        console.log(state.dataTableOfTopicMain)
         // TODO 判断会有问题
-        if (state.indexOfCurrentRowOnFocus + 1 < state.dataTableOfTopicMain.length) { // 剩多笔
-          console.log('还有可开')
-          state.indexOfCurrentRowOnFocus += 1
-          setCurrentRowOnFocus(state.dataTableOfTopicMain[state.indexOfCurrentRowOnFocus])
-          setTimeout(() => {
-            actGetInspectDetail()
-          }, 1000)
-        } else if (state.dataTableOfTopicMain.length === 1) { // 只剩一笔
-          state.dataTableOfTopicMain.length >= 1 && setCurrentRowOnFocus(state.dataTableOfTopicMain[0])
-          state.indexOfCurrentRowOnFocus = 0
-          state.currentGlobalActOgj = state.dataTableOfTopicMain[state.indexOfCurrentRowOnFocus]
-          console.log('没有可开')
-        } else { // 到底
-          console.log('没有可开')
+        if (state.subType !== 'merge') { // 只有保存会重开
+          if (state.indexOfCurrentRowOnFocus + 1 < state.dataTableOfTopicMain.length) { // 剩多笔
+            console.log('还有可开')
+            state.indexOfCurrentRowOnFocus += 1
+            setTimeout(() => {
+              setCurrentRowOnFocus(state.dataTableOfTopicMain[state.indexOfCurrentRowOnFocus]) // 一定要放在这, 放上面会收不到
+              console.log('state.currentGlobalActOgj')
+              console.log(state.currentGlobalActOgj)
+              actGetInspectDetail()
+            }, 1000)
+          } else if (state.dataTableOfTopicMain.length === 1) { // 只剩一笔
+            state.dataTableOfTopicMain.length >= 1 && setCurrentRowOnFocus(state.dataTableOfTopicMain[0])
+            state.indexOfCurrentRowOnFocus = 0
+            state.currentGlobalActOgj = state.dataTableOfTopicMain[state.indexOfCurrentRowOnFocus]
+            console.log('没有可开')
+          } else { // 到底
+            console.log('没有可开111111')
+
+            setTimeout(() => {
+              state.indexOfCurrentRowOnFocus = state.dataTableOfTopicMain.length - 1
+              console.log('state.indexOfCurrentRowOnFocus')
+              console.log(state.indexOfCurrentRowOnFocus)
+              setCurrentRowOnFocus(state.dataTableOfTopicMain[state.dataTableOfTopicMain.length - 1])
+              state.currentGlobalActOgj = state.dataTableOfTopicMain[state.indexOfCurrentRowOnFocus]
+            }, 1000)
+          }
         }
       } else if (val.act === 'submit') {
         btnGetInspectListReload(state.dataTableOfTopicMain)

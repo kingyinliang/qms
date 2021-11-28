@@ -587,8 +587,3 @@ export function MANAGEMENT_INSPECTION_PHYSICOCHEMICAL_TASK_INSPECT_QUERY_API (pa
 export function MANAGEMENT_INSPECTION_TASK_INSPECT_QUERY_BY_ID_API (params = {}):Promise<AxiosResponse> {
   return Http.post('/taskInspect/queryTaskInspectByIds', params, { baseURL: (process.env.VUE_APP_QMS_TASK_API as string) + (process.env.VUE_APP_API_V as string) })
 }
-
-// // 检验管理-[检验任务]- 分析
-// export function MANAGEMENT_INSPECTION_TASK_INSPECT_INDEX_QUERY_API (params = {}):Promise<AxiosResponse> {
-//   return Http.post('/taskInspectIndex/queryTaskInspectIndex', params, { baseURL: (process.env.VUE_APP_QMS_TASK_API as string) + (process.env.VUE_APP_API_V as string) })
-// }
