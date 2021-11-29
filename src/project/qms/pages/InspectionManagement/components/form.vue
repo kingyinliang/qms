@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-11-11 16:30:07
  * @LastEditors: Telliex
- * @LastEditTime: 2021-11-27 11:32:03
+ * @LastEditTime: 2021-11-27 14:51:19
 -->
 <template>
   <mds-area class="info" :title="subTitle">
@@ -112,7 +112,7 @@
         </el-form>
        </template>
       <el-form :inline="true"  :model="dataFormOfSampleInfo"  :label-width="cssForformLabelWidth" v-if="currentType==='PROCESS'">
-          <el-form-item label="复检综合判定："  prop="recheckMod" >
+          <el-form-item label="复检方式："  prop="recheckMod" >
             <el-radio v-model="dataFormOfSampleInfo.recheckMod" label="ORIGINAL_RECHECK" :disabled="onlyRead">原样复检</el-radio>
             <el-radio v-model="dataFormOfSampleInfo.recheckMod" label="RESAMOLING" :disabled="onlyRead">重新取样</el-radio>
             <el-radio v-model="dataFormOfSampleInfo.recheckMod" label="OTHER_SAMPLING" :disabled="onlyRead">其他取样</el-radio>
