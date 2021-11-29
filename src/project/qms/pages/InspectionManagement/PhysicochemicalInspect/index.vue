@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-11-16 09:59:02
  * @LastEditors: Telliex
- * @LastEditTime: 2021-11-29 14:35:59
+ * @LastEditTime: 2021-11-29 15:27:01
 -->
 <template>
   <mds-area class="test_method" title="已选中样品" :pack-up="false" style="margin-bottom: 0; background: #fff; overflow:scroll">
@@ -43,7 +43,8 @@ import {
 import MdsArea from '@/components/package/mds-area/src/mds-area.vue'
 import {
   MANAGEMENT_INSPECTION_PHYSICOCHEMICAL_QUERY_BY_SAMPLE_CODE_API, // 检验管理-[检验任务]- 根据样品码查询检验任务
-  MANAGEMENT_INSPECTION_TASK_INSPECT_QUERY_BY_ID_API // 检验管理-[检验任务]- 分析是否有合并检 /taskInspect/queryTaskInspectByIds
+  MANAGEMENT_INSPECTION_TASK_INSPECT_QUERY_BY_ID_API, // 检验管理-[检验任务]- 分析是否有合并检 /taskInspect/queryTaskInspectByIds
+  MANAGEMENT_INSPECTION_PHYSICOCHEMICAL_TASK_INSPECT_QUERY_API
 } from '@/api/api'
 import layoutTs from '@/components/layout/layoutTs'
 import { useStore } from 'vuex'
@@ -276,8 +277,10 @@ export default defineComponent({
 
     // reload 任务表单
     const btnGetInspectListReload = (val: DataTableOfTopicMain[]) => {
-      val.length && MANAGEMENT_INSPECTION_PHYSICOCHEMICAL_QUERY_BY_SAMPLE_CODE_API(
-        val.map(item => item.sampleCode)
+      // val.length && MANAGEMENT_INSPECTION_PHYSICOCHEMICAL_QUERY_BY_SAMPLE_CODE_API(
+      //   val.map(item => item.sampleCode)
+      val.length && MANAGEMENT_INSPECTION_TASK_INSPECT_QUERY_BY_ID_API(
+        val
       ).then(res => {
         state.dataTableOfTopicMain = []
         res.data.data.forEach((item:any) => {

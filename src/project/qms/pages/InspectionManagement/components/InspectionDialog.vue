@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-11-11 16:30:07
  * @LastEditors: Telliex
- * @LastEditTime: 2021-11-29 14:26:15
+ * @LastEditTime: 2021-11-29 15:05:21
 -->
 <template>
   <el-dialog :title="title+subTitle" v-model="isDialogShow" width="90%" @close="onClose">
@@ -516,7 +516,7 @@ export default defineComponent({
             if (val === 'confirm') {
             // 需校验
               if (checkRequiredData(state.dataFormOfSampleItemUnit)) {
-                // handleSaveData('submit', obj)
+                handleSaveData('submit', obj)
               }
             }
           // onClose()
@@ -532,7 +532,7 @@ export default defineComponent({
             if (val === 'confirm') {
             // 需校验
               if (checkRequiredData(state.dataFormOfSampleItemUnit)) {
-                // handleSaveData('submit', obj)
+                handleSaveData('submit', obj)
               }
             } else {
               handleSaveData('save', obj)
@@ -855,7 +855,6 @@ export default defineComponent({
           state.currentSubType = 'merge' // 合并检
         }
         // TODO [EB]？ 待确认 data 格式是否合并检时通用
-        state.dataFormOfSampleInfo.recheckMod = ''
         state.dataFormOfSampleInfo = val[0]
         state.currentOrderStyle = val[0].recheckFlag === 'N' ? 'first' : 'repeat'
         // add id2sampleCode obj
@@ -955,6 +954,10 @@ export default defineComponent({
     // [ACT]拼接不等式
     const joint = (obj:any) => {
       let indexStandardString = ''
+
+      // if (obj.indexInnerStandard) {
+      //   indexStandardString = 'S=obj.indexInnerStandard'
+      // }else if(obj.indexInnerDown&&obj.innerDownSymbol)
 
       if (obj.indexInnerStandard !== '') {
         indexStandardString = `${!obj.indexInnerDown ? '' : obj.indexInnerDown}${!obj.innerDownSymbol ? '' : obj.innerDownSymbol.replace('>', '<')}S${!obj.innerUpSymbol ? '' : obj.innerUpSymbol}${!obj.indexInnerUp ? '' : obj.indexInnerUp}`
