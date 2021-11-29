@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-11-11 16:30:07
  * @LastEditors: Telliex
- * @LastEditTime: 2021-11-28 13:30:11
+ * @LastEditTime: 2021-11-29 08:31:55
 -->
 <template>
   <el-dialog :title="title+subTitle" v-model="isDialogShow" width="90%" @close="onClose">
@@ -160,7 +160,7 @@ interface State {
 
 interface Props{
   dialogVisible: boolean
-  targetOgj: any
+  targetObj: any
   subType: string
   mainType: string
   orderStyle: string
@@ -173,7 +173,7 @@ export default defineComponent({
   },
 
   props: {
-    targetOgj: {
+    targetObj: {
       type: Object,
       default: () => {
         return {}
@@ -197,7 +197,7 @@ export default defineComponent({
     }
   },
   setup (props, context) {
-    const { targetOgj, dialogVisible, subType, mainType, orderStyle } = toRefs(props as Props)
+    const { targetObj, dialogVisible, subType, mainType, orderStyle } = toRefs(props as Props)
     const parent = { ...context }
 
     const { gotoPage, tabsCloseCurrentHandle } = layoutTs()
@@ -516,21 +516,15 @@ export default defineComponent({
           if (val === 'confirm') {
             // 需校验
             if (checkRequiredData(state.dataFormOfSampleItemUnit)) {
-              if (state.dataFormOfSampleInfo.recheckMod === 'ORIGINAL_RECHECK') { // 原样复检
-                parent.emit('openHandle', { target: 'ORIGINAL_RECHECK', obj: obj })
-              } else if (state.dataFormOfSampleInfo.recheckMod === 'RESAMOLING') { // 重新取样
-                parent.emit('openHandle', { target: 'RESAMOLING', obj: obj })
-              // } else if (state.dataFormOfSampleInfo.recheckMod === 'OTHER_SAMPLING') { // 其它取样
-              //   parent.emit('openHandle', { target: 'OTHER_SAMPLING', obj: obj })
-              } else { // not chose
-
+              if (state.dataFormOfSampleInfo.indexJudgeResult === 'N') {
+                proxy.$warningToast('此样品检验不合格，请确认是否复检')
+              } else {
+                handleSaveData('submit', obj)
               }
-              handleSaveData('submit', obj)
             }
           } else {
             handleSaveData('save', obj)
           }
-
           // onClose()
         }).catch(() => {
           //
@@ -548,17 +542,20 @@ export default defineComponent({
       if (state.currentOrderStyle === 'first') { // 初检
         obj.forEach((item:any) => {
           if (item.inspectResult === '') {
-            proxy.$warningToast('请完成各指标结果')
+            // proxy.$warningToast('请完成各指标结果')
+            proxy.$warningToast('检验还未完成不可操作')
             tempReturn = false
             return
           }
           if (item.indexJudgeResult === '') {
-            proxy.$warningToast('请完成各指标判定')
+            // proxy.$warningToast('请完成各指标判定')
+            proxy.$warningToast('检验还未完成不可操作')
             tempReturn = false
             return
           }
           if (item.indexStandardString === '') {
-            proxy.$warningToast('请完成各指标标准')
+            // proxy.$warningToast('请完成各指标标准')
+            proxy.$warningToast('检验还未完成不可操作')
             tempReturn = false
             return
           }
@@ -566,7 +563,8 @@ export default defineComponent({
             const temp = item.inspectMethodNameList[item.inspectMethodCodeWhichIndex].inspectParameterListShow.every((subItem:any) => subItem.defaultValue !== '')
 
             if (!temp) {
-              proxy.$warningToast('请输入指标过程参数')
+              // proxy.$warningToast('请输入指标过程参数')
+              proxy.$warningToast('检验还未完成不可操作')
               tempReturn = false
             }
           }
@@ -594,7 +592,8 @@ export default defineComponent({
           }
 
           if (tempResult !== needResult) {
-            proxy.$warningToast('请完整输入指标')
+            // proxy.$warningToast('请完整输入指标')
+            proxy.$warningToast('检验还未完成不可操作')
             tempReturn = false
           }
         })
@@ -613,11 +612,10 @@ export default defineComponent({
           tempList = tempList.concat(subItem.updateInspectParameter)
         })
       })
-
       await INSPECT_INDEX_PROCESS_PARAMETER_UPDATE_FOR_TASK_API(tempList)
 
       if (type !== 'save') {
-        proxy.$successToast('完成提交！')
+        proxy.$successToast('检验已完成！')
         parent.emit('openHandle', { act: 'submit', target: obj.recheckMod, obj: back })
       } else {
         proxy.$successToast('保存成功！')
@@ -629,6 +627,29 @@ export default defineComponent({
     const actHandleIndexJudgeResult = (val:any) => {
       if (val.inspectResult === '') {
         val.indexJudgeResult = 'N'
+      } else if (val.indexStandardString === 'S') {
+        let tempString = ''
+        if (val.indexInnerStandard !== '') {
+          tempString = val.indexInnerStandard
+        } else if (val.indexStandard !== '') {
+          tempString = val.indexStandard
+        } else {
+          proxy.$warningToast('无标准值')
+          val.indexJudgeResult = 'N'
+          return
+        }
+
+        if (evil(`${val.inspectResult}=${tempString}`)) {
+          val.indexJudgeResult = 'Y'
+        } else {
+          val.indexJudgeResult = 'N'
+        }
+      } else if (val.indexStandardString.split('=')[0] === 'S') {
+        if (evil(`${val.indexStandardString.split('=')[1]}===${val.inspectResult}`)) {
+          val.indexJudgeResult = 'Y'
+        } else {
+          val.indexJudgeResult = 'N'
+        }
       } else {
         if (val.indexStandardString === '' && val.inspectResult !== '') {
           proxy.$infoToast('请输入标准公式')
@@ -681,6 +702,31 @@ export default defineComponent({
     const actHandleIndexStandardString = (val:any) => {
       if (val.indexStandardString === '') {
         val.indexJudgeResult = 'N'
+      } else if (val.indexStandardString === 'S') {
+        if (val.inspectResult !== '') {
+          let tempString = ''
+          if (val.indexInnerStandard !== '') {
+            tempString = val.indexInnerStandard
+          } else if (val.indexStandard !== '') {
+            tempString = val.indexStandard
+          } else {
+            proxy.$warningToast('无标准值')
+            val.indexJudgeResult = 'N'
+            return
+          }
+          if (evil(`${val.inspectResult}=${tempString}`)) {
+            val.indexJudgeResult = 'Y'
+          } else {
+            val.indexJudgeResult = 'N'
+          }
+        }
+      } else if (val.indexStandardString.split('=')[0] === 'S') {
+        console.log('222222')
+        if (evil(`${val.indexStandardString.split('=')[1]}===${val.inspectResult}`)) {
+          val.indexJudgeResult = 'Y'
+        } else {
+          val.indexJudgeResult = 'N'
+        }
       } else {
         if (val.inspectResult === '' && val.indexStandardString !== '') {
           proxy.$infoToast('请输入结果栏位')
@@ -776,7 +822,7 @@ export default defineComponent({
       //   target.indexStandardString = joint(target.inspectIndexStandard)
       // }
     }
-    watch(targetOgj, (val) => {
+    watch(targetObj, (val) => {
       console.log('=== import object to dialog ===')
       console.log(val)
 
@@ -798,7 +844,7 @@ export default defineComponent({
         }
         // TODO [EB]？ 待确认 data 格式是否合并检时通用
         state.dataFormOfSampleInfo = val[0]
-
+        state.currentOrderStyle = val[0].recheckFlag === 'N' ? 'first' : 'repeat'
         // add id2sampleCode obj
         // TODO [BE]?
         MANAGEMENT_INSPECTION_PHYSICOCHEMICAL_TASK_INSPECT_QUERY_API( // /taskInspectIndex/queryTaskInspectIndex
