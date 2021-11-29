@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-11-16 09:59:02
  * @LastEditors: Telliex
- * @LastEditTime: 2021-11-28 22:50:07
+ * @LastEditTime: 2021-11-29 14:25:43
 -->
 <template>
   <mds-area class="test_method" title="已选中样品" :pack-up="false" style="margin-bottom: 0; background: #fff; overflow:scroll">
@@ -380,13 +380,14 @@ export default defineComponent({
 
         if (val.act === 'save') {
           if (state.subType !== 'merge') { // 只有保存会重开
+            console.log(state.dataTableOfTopicMain)
             if (nexItemIndex !== null && nexItemIndex < totalItemsNumber) { // 剩多笔
               console.log('还有可开')
               state.indexOfCurrentRowOnFocus = nexItemIndex
               setTimeout(() => {
                 setCurrentRowOnFocus(state.dataTableOfTopicMain[state.indexOfCurrentRowOnFocus])
+                actGetInspectDetail()
               }, 500)
-              actGetInspectDetail()
             } else if (totalItemsNumber === 1) { // 只剩一笔
               state.indexOfCurrentRowOnFocus = nowItemIndex
               setTimeout(() => {

@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-11-11 16:30:07
  * @LastEditors: Telliex
- * @LastEditTime: 2021-11-29 10:32:45
+ * @LastEditTime: 2021-11-29 14:26:15
 -->
 <template>
   <el-dialog :title="title+subTitle" v-model="isDialogShow" width="90%" @close="onClose">
@@ -305,7 +305,6 @@ export default defineComponent({
         // 处理不等式
         if (item.indexStandardString !== '') {
           const result = /(.*)S(.*)/.exec(item.indexStandardString)
-          console.log(result)
           if (state.currentMainType === 'TEMP') {
             if (result !== null) {
               if (item.indexInnerStandard === '' && item.indexStandard === '') {
@@ -508,27 +507,41 @@ export default defineComponent({
       console.log(obj)
 
       if (type !== 'save') { // 完成提交行为
-        proxy.$confirm('确认是否继续校验？', '提示', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          type: 'warning'
-        }).then(async (val:string) => {
-          if (val === 'confirm') {
+        if (state.dataFormOfSampleInfo.indexJudgeResult === 'N' && state.dataFormOfSampleInfo.recheckMod === '') {
+          proxy.$confirm('此样品检验不合格，请确认是否复检？', '提示', {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            type: 'warning'
+          }).then(async (val:string) => {
+            if (val === 'confirm') {
             // 需校验
-            if (checkRequiredData(state.dataFormOfSampleItemUnit)) {
-              if (state.dataFormOfSampleInfo.indexJudgeResult === 'N') {
-                proxy.$warningToast('此样品检验不合格，请确认是否复检')
-              } else {
-                handleSaveData('submit', obj)
+              if (checkRequiredData(state.dataFormOfSampleItemUnit)) {
+                // handleSaveData('submit', obj)
               }
             }
-          } else {
-            handleSaveData('save', obj)
-          }
           // onClose()
-        }).catch(() => {
+          }).catch(() => {
           //
-        })
+          })
+        } else {
+          proxy.$confirm('确认是否继续校验？', '提示', {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            type: 'warning'
+          }).then(async (val:string) => {
+            if (val === 'confirm') {
+            // 需校验
+              if (checkRequiredData(state.dataFormOfSampleItemUnit)) {
+                // handleSaveData('submit', obj)
+              }
+            } else {
+              handleSaveData('save', obj)
+            }
+          // onClose()
+          }).catch(() => {
+          //
+          })
+        }
       } else { // 保存行为
         // 不校验
         handleSaveData('save', obj)
@@ -721,7 +734,6 @@ export default defineComponent({
           }
         }
       } else if (val.indexStandardString.split('=')[0] === 'S') {
-        console.log('222222')
         if (evil(`${val.indexStandardString.split('=')[1]}===${val.inspectResult}`)) {
           val.indexJudgeResult = 'Y'
         } else {
@@ -843,6 +855,7 @@ export default defineComponent({
           state.currentSubType = 'merge' // 合并检
         }
         // TODO [EB]？ 待确认 data 格式是否合并检时通用
+        state.dataFormOfSampleInfo.recheckMod = ''
         state.dataFormOfSampleInfo = val[0]
         state.currentOrderStyle = val[0].recheckFlag === 'N' ? 'first' : 'repeat'
         // add id2sampleCode obj
@@ -1020,9 +1033,7 @@ export default defineComponent({
     }
 
     const actHandleInspectResult = (subItem:any) => {
-      console.log(subItem)
-      // 1.
-      if (subItem.canEditInspectResult === false && chechCanEditInspectResultOfFormula(subItem.filnalFormula, subItem.inspectParameterListResult[0].formula)) {
+      if (subItem.canEditInspectResult === false && chechCanEditInspectResultOfFormula(subItem.filnalFormula, subItem.inspectMethodNameList[subItem.inspectMethodCodeWhichIndex].inspectParameterListResult[0].formula)) {
         const result = runFormula(subItem.filnalFormula,
           subItem.inspectMethodNameList[subItem.inspectMethodCodeWhichIndex].inspectParameterListResult[0].formula,
           subItem.inspectMethodNameList[subItem.inspectMethodCodeWhichIndex].inspectParameterListShow,
