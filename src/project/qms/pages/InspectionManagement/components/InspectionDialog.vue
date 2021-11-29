@@ -3,17 +3,17 @@
  * @Anthor: Telliex
  * @Date: 2021-11-11 16:30:07
  * @LastEditors: Telliex
- * @LastEditTime: 2021-11-27 12:25:48
+ * @LastEditTime: 2021-11-29 08:31:55
 -->
 <template>
   <el-dialog :title="title+subTitle" v-model="isDialogShow" width="90%" @close="onClose">
   <mds-area class="info">
     <mds-area :title="infoSubTitle" :name="'org'" class="info">
         <el-form :inline="true" ref="refFormOfSampleInfo" :model="dataFormOfSampleInfo" :label-width="cssForformLabelWidth">
-          <el-form-item label="检验任务："  prop="taskSampleId" v-if="currentSubType==='temp'" >
+          <el-form-item label="检验任务："  prop="taskSampleId" v-if="currentMainType==='TEMP'" >
             <el-input v-model="dataFormOfSampleInfo.taskSampleId" size="small" class="inputWidth" placeholder="自动带入" autocomplete="off" :readonly="onlyRead"></el-input>
           </el-form-item>
-          <el-form-item label="取样部门："  prop="sampleDeptName" v-if="currentSubType==='temp'" >
+          <el-form-item label="取样部门："  prop="sampleDeptName" v-if="currentMainType==='TEMP'" >
             <el-input v-model="dataFormOfSampleInfo.sampleDeptName" size="small" class="inputWidth" placeholder="自动带入" autocomplete="off" :readonly="onlyRead"></el-input>
           </el-form-item>
           <el-form-item label="检验物料："  prop="inspectMaterialName" v-if="currentSubType==='normal' ||currentSubType==='checkagain' || currentSubType==='merge'" >
@@ -85,14 +85,14 @@
           </el-form-item>
         </el-form>
         <el-form :inline="true"  :model="dataFormOfSampleInfo"  :label-width="cssForformLabelWidth" >
-          <el-form-item label="复检综合判定："  prop="recheckMod" >
+          <el-form-item label="复检方式："  prop="recheckMod" >
             <el-radio v-model="dataFormOfSampleInfo.recheckMod" label="ORIGINAL_RECHECK">原样复检</el-radio>
             <el-radio v-model="dataFormOfSampleInfo.recheckMod" label="RESAMOLING">重新取样</el-radio>
             <el-radio v-model="dataFormOfSampleInfo.recheckMod" label="OTHER_SAMPLING">其他取样</el-radio>
           </el-form-item>
         </el-form>
         <div><span>检验时间:</span>{{!dataFormOfSampleInfo.finishDate?'':dataFormOfSampleInfo.finishDate}}</div>
-      <mds-area :title="'检验记录'" :name="'org'" class="info" >
+      <mds-area :title="'检验记录'" :name="'org'" class="info" v-if="false" >
         <div class="block" style="padding-top:10px">
           <el-timeline>
             <el-timeline-item
@@ -160,7 +160,7 @@ interface State {
 
 interface Props{
   dialogVisible: boolean
-  targetOgj: any
+  targetObj: any
   subType: string
   mainType: string
   orderStyle: string
@@ -173,7 +173,7 @@ export default defineComponent({
   },
 
   props: {
-    targetOgj: {
+    targetObj: {
       type: Object,
       default: () => {
         return {}
@@ -197,7 +197,7 @@ export default defineComponent({
     }
   },
   setup (props, context) {
-    const { targetOgj, dialogVisible, subType, mainType, orderStyle } = toRefs(props as Props)
+    const { targetObj, dialogVisible, subType, mainType, orderStyle } = toRefs(props as Props)
     const parent = { ...context }
 
     const { gotoPage, tabsCloseCurrentHandle } = layoutTs()
@@ -298,85 +298,157 @@ export default defineComponent({
       const tempTaskInspectIndexList = JSON.parse(JSON.stringify(state.dataFormOfSampleItemUnit))
 
       tempTaskInspectIndexList.forEach((item:any) => {
+        console.log('every item')
+        console.log(item)
         const tempTaskInspectPhysicalList: any[] = []
         const tempUpdateInspectParameter: any[] = []
         // 处理不等式
         if (item.indexStandardString !== '') {
           const result = /(.*)S(.*)/.exec(item.indexStandardString)
           console.log(result)
-          if (result !== null) {
-            if (item.inspectIndexStandard.indexInnerStandard === '' && item.inspectIndexStandard.indexStandard === '') {
-              // ?????
+          if (state.currentMainType === 'TEMP') {
+            if (result !== null) {
+              if (item.indexInnerStandard === '' && item.indexStandard === '') {
+                item.indexInnerStandard = '0'
+                item.indexStandard = ''
+              }
+
+              const leftResult = /(.*)([<]=?)/.exec(result[1])
+              const rightResult = /([<]=?)(.*)/.exec(result[2])
+
+              if (!leftResult) {
+                if (item.indexInnerStandard === '' && item.indexStandard === '') {
+                  item.indexInnerDown = null
+                  item.innerDownSymbol = ''
+                } else if (item.indexStandard !== '') {
+                  item.indexDown = null
+                  item.downSymbol = ''
+                } else {
+                  item.indexInnerDown = null
+                  item.innerDownSymbol = ''
+                }
+              } else {
+                if (item.indexInnerStandard === '' && item.indexStandard === '') {
+                  item.indexInnerDown = leftResult[1]
+                  item.innerDownSymbol = leftResult[2].replace('<', '>')
+                } else if (item.indexStandard !== '') {
+                  item.indexDown = leftResult[1]
+                  item.downSymbol = leftResult[2].replace('<', '>')
+                } else {
+                  item.indexInnerDown = leftResult[1]
+                  item.innerDownSymbol = leftResult[2].replace('<', '>')
+                }
+              }
+              if (!rightResult) {
+                if (item.indexInnerStandard === '' && item.indexStandard === '') {
+                  item.indexInnerUp = null
+                  item.innerUpSymbol = ''
+                } else if (item.indexStandard !== '') {
+                  item.indexUp = null
+                  item.upSymbol = ''
+                } else {
+                  item.indexInnerUp = null
+                  item.innerUpSymbol = ''
+                }
+              } else {
+                if (item.indexInnerStandard === '' && item.indexStandard === '') {
+                  item.indexInnerUp = rightResult[2]
+                  item.innerUpSymbol = rightResult[1]
+                } else if (item.indexStandard !== '') {
+                  item.indexUp = rightResult[2]
+                  item.upSymbol = rightResult[1]
+                } else {
+                  item.indexInnerUp = rightResult[2]
+                  item.innerUpSymbol = rightResult[1]
+                }
+              }
+            } else {
+              item.indexUp = null
+              item.upSymbol = ''
+              item.indexInnerUp = null
+              item.innerUpSymbol = ''
+              item.indexDown = null
+              item.downSymbol = ''
+              item.indexDown = null
+              item.downSymbol = ''
               item.indexInnerStandard = ''
               item.indexStandard = ''
-            } else if (item.inspectIndexStandard.indexStandard !== '') {
-              item.indexInnerStandard = ''
-              item.indexStandard = item.inspectIndexStandard.indexStandard
-            } else {
-              item.indexInnerStandard = item.inspectIndexStandard.indexInnerStandard
-              item.indexStandard = ''
-            }
-
-            const leftResult = /(.*)([<]=?)/.exec(result[1])
-            const rightResult = /([<]=?)(.*)/.exec(result[2])
-
-            if (!leftResult) {
-              if (item.inspectIndexStandard.indexInnerStandard === '' && item.inspectIndexStandard.indexStandard === '') {
-                item.indexInnerDown = null
-                item.innerDownSymbol = ''
-              } else if (item.inspectIndexStandard.indexStandard !== '') {
-                item.indexDown = null
-                item.downSymbol = ''
-              } else {
-                item.indexInnerDown = null
-                item.innerDownSymbol = ''
-              }
-            } else {
-              if (item.inspectIndexStandard.indexInnerStandard === '' && item.inspectIndexStandard.indexStandard === '') {
-                item.indexInnerDown = leftResult[1]
-                item.innerDownSymbol = leftResult[2].replace('<', '>')
-              } else if (item.inspectIndexStandard.indexStandard !== '') {
-                item.indexDown = leftResult[1]
-                item.downSymbol = leftResult[2].replace('<', '>')
-              } else {
-                item.indexInnerDown = leftResult[1]
-                item.innerDownSymbol = leftResult[2].replace('<', '>')
-              }
-            }
-            if (!rightResult) {
-              if (item.inspectIndexStandard.indexInnerStandard === '' && item.inspectIndexStandard.indexStandard === '') {
-                item.indexInnerUp = null
-                item.innerUpSymbol = ''
-              } else if (item.indexStandard !== '') {
-                item.indexUp = null
-                item.upSymbol = ''
-              } else {
-                item.indexInnerUp = null
-                item.innerUpSymbol = ''
-              }
-            } else {
-              if (item.inspectIndexStandard.indexInnerStandard === '' && item.inspectIndexStandard.indexStandard === '') {
-                item.indexInnerUp = rightResult[2]
-                item.innerUpSymbol = rightResult[1]
-              } else if (item.inspectIndexStandard.indexStandard !== '') {
-                item.indexUp = rightResult[2]
-                item.upSymbol = rightResult[1]
-              } else {
-                item.indexInnerUp = rightResult[2]
-                item.innerUpSymbol = rightResult[1]
-              }
             }
           } else {
-            item.indexUp = null
-            item.upSymbol = ''
-            item.indexInnerUp = null
-            item.innerUpSymbol = ''
-            item.indexDown = null
-            item.downSymbol = ''
-            item.indexDown = null
-            item.downSymbol = ''
-            item.indexInnerStandard = ''
-            item.indexStandard = ''
+            if (result !== null) {
+              if (item.inspectIndexStandard.indexInnerStandard === '' && item.inspectIndexStandard.indexStandard === '') {
+              // ?????
+                item.indexInnerStandard = '0'
+                item.indexStandard = ''
+              } else if (item.inspectIndexStandard.indexStandard !== '') {
+                item.indexInnerStandard = ''
+                item.indexStandard = item.inspectIndexStandard.indexStandard
+              } else {
+                item.indexInnerStandard = item.inspectIndexStandard.indexInnerStandard
+                item.indexStandard = ''
+              }
+
+              const leftResult = /(.*)([<]=?)/.exec(result[1])
+              const rightResult = /([<]=?)(.*)/.exec(result[2])
+
+              if (!leftResult) {
+                if (item.inspectIndexStandard.indexInnerStandard === '' && item.inspectIndexStandard.indexStandard === '') {
+                  item.indexInnerDown = null
+                  item.innerDownSymbol = ''
+                } else if (item.inspectIndexStandard.indexStandard !== '') {
+                  item.indexDown = null
+                  item.downSymbol = ''
+                } else {
+                  item.indexInnerDown = null
+                  item.innerDownSymbol = ''
+                }
+              } else {
+                if (item.inspectIndexStandard.indexInnerStandard === '' && item.inspectIndexStandard.indexStandard === '') {
+                  item.indexInnerDown = leftResult[1]
+                  item.innerDownSymbol = leftResult[2].replace('<', '>')
+                } else if (item.inspectIndexStandard.indexStandard !== '') {
+                  item.indexDown = leftResult[1]
+                  item.downSymbol = leftResult[2].replace('<', '>')
+                } else {
+                  item.indexInnerDown = leftResult[1]
+                  item.innerDownSymbol = leftResult[2].replace('<', '>')
+                }
+              }
+              if (!rightResult) {
+                if (item.inspectIndexStandard.indexInnerStandard === '' && item.inspectIndexStandard.indexStandard === '') {
+                  item.indexInnerUp = null
+                  item.innerUpSymbol = ''
+                } else if (item.indexStandard !== '') {
+                  item.indexUp = null
+                  item.upSymbol = ''
+                } else {
+                  item.indexInnerUp = null
+                  item.innerUpSymbol = ''
+                }
+              } else {
+                if (item.inspectIndexStandard.indexInnerStandard === '' && item.inspectIndexStandard.indexStandard === '') {
+                  item.indexInnerUp = rightResult[2]
+                  item.innerUpSymbol = rightResult[1]
+                } else if (item.inspectIndexStandard.indexStandard !== '') {
+                  item.indexUp = rightResult[2]
+                  item.upSymbol = rightResult[1]
+                } else {
+                  item.indexInnerUp = rightResult[2]
+                  item.innerUpSymbol = rightResult[1]
+                }
+              }
+            } else {
+              item.indexUp = null
+              item.upSymbol = ''
+              item.indexInnerUp = null
+              item.innerUpSymbol = ''
+              item.indexDown = null
+              item.downSymbol = ''
+              item.indexDown = null
+              item.downSymbol = ''
+              item.indexInnerStandard = ''
+              item.indexStandard = ''
+            }
           }
         }
 
@@ -384,8 +456,23 @@ export default defineComponent({
         if (item.inspectMethodNameList.length) {
           item.inspectMethodNameList[item.inspectMethodCodeWhichIndex].inspectParameterList.forEach((subItem:any) => {
             if (subItem.paramType !== '') {
+              // item.taskInspectPhysicalList.forEach((element:any) => {
+              //   if (element.paramCode === subItem.paramCode) {
+              //     tempTaskInspectPhysicalList.push({
+              //       id: element.id,
+              //       taskInspectIndexId: item.taskInspectIndexIdList[0], // ?? 是否應是 [] 形式
+              //       paramCode: subItem.paramCode,
+              //       paramName: subItem.paramName,
+              //       paramValue: subItem.defaultValue,
+              //       paramUnit: subItem.paramUnit,
+              //       hiddenValue: null, // ??
+              //       formula: subItem.formula
+              //     })
+              //   }
+              // })
+
               tempTaskInspectPhysicalList.push({
-                id: subItem.id,
+                id: item.taskInspectPhysicalList.filter((element:any) => element.paramCode === subItem.paramCode).length ? item.taskInspectPhysicalList.filter((element:any) => element.paramCode === subItem.paramCode)[0].id : '',
                 taskInspectIndexId: item.taskInspectIndexIdList[0], // ?? 是否應是 [] 形式
                 paramCode: subItem.paramCode,
                 paramName: subItem.paramName,
@@ -403,11 +490,11 @@ export default defineComponent({
         item.taskInspectPhysicalList = tempTaskInspectPhysicalList
       })
 
-      // 处理合并检
-      tempTaskInspectList.forEach((item:any) => {
+      // 处理合并检标示
+      tempTaskInspectList.forEach((item:any, index:number) => {
         item.taskStatus = type === 'save' ? 'CHECKING' : 'COMPLETED'
         item.taskStatusName = type === 'save' ? '检验中' : '已完成'
-        item.taskInspectIndexList = tempTaskInspectIndexList.filter((subItem:any) => item.sampleCode === subItem.sampleCode)
+        item.taskInspectIndexList = tempTaskInspectIndexList.filter((element:any) => element.sampleCode === item.sampleCode)
       })
 
       const obj = {
@@ -429,21 +516,15 @@ export default defineComponent({
           if (val === 'confirm') {
             // 需校验
             if (checkRequiredData(state.dataFormOfSampleItemUnit)) {
-              if (state.dataFormOfSampleInfo.recheckMod === 'ORIGINAL_RECHECK') { // 原样复检
-                parent.emit('openHandle', { target: 'ORIGINAL_RECHECK', obj: obj })
-              } else if (state.dataFormOfSampleInfo.recheckMod === 'RESAMOLING') { // 重新取样
-                parent.emit('openHandle', { target: 'RESAMOLING', obj: obj })
-              // } else if (state.dataFormOfSampleInfo.recheckMod === 'OTHER_SAMPLING') { // 其它取样
-              //   parent.emit('openHandle', { target: 'OTHER_SAMPLING', obj: obj })
-              } else { // not chose
-
+              if (state.dataFormOfSampleInfo.indexJudgeResult === 'N') {
+                proxy.$warningToast('此样品检验不合格，请确认是否复检')
+              } else {
+                handleSaveData('submit', obj)
               }
-              handleSaveData('submit', obj)
             }
           } else {
             handleSaveData('save', obj)
           }
-
           // onClose()
         }).catch(() => {
           //
@@ -461,27 +542,29 @@ export default defineComponent({
       if (state.currentOrderStyle === 'first') { // 初检
         obj.forEach((item:any) => {
           if (item.inspectResult === '') {
-            proxy.$warningToast('请完成各指标结果')
+            // proxy.$warningToast('请完成各指标结果')
+            proxy.$warningToast('检验还未完成不可操作')
             tempReturn = false
             return
           }
           if (item.indexJudgeResult === '') {
-            proxy.$warningToast('请完成各指标判定')
+            // proxy.$warningToast('请完成各指标判定')
+            proxy.$warningToast('检验还未完成不可操作')
             tempReturn = false
             return
           }
           if (item.indexStandardString === '') {
-            proxy.$warningToast('请完成各指标标准')
+            // proxy.$warningToast('请完成各指标标准')
+            proxy.$warningToast('检验还未完成不可操作')
             tempReturn = false
             return
           }
-          console.log('item.inspectMethodNameList[item.inspectMethodCodeWhichIndex]')
-          console.log(item.inspectMethodNameList)
           if (item.inspectMethodNameList.length && item.inspectMethodNameList[item.inspectMethodCodeWhichIndex].inspectParameterListShow.length) {
             const temp = item.inspectMethodNameList[item.inspectMethodCodeWhichIndex].inspectParameterListShow.every((subItem:any) => subItem.defaultValue !== '')
 
             if (!temp) {
-              proxy.$warningToast('请输入指标过程参数')
+              // proxy.$warningToast('请输入指标过程参数')
+              proxy.$warningToast('检验还未完成不可操作')
               tempReturn = false
             }
           }
@@ -509,7 +592,8 @@ export default defineComponent({
           }
 
           if (tempResult !== needResult) {
-            proxy.$warningToast('请完整输入指标')
+            // proxy.$warningToast('请完整输入指标')
+            proxy.$warningToast('检验还未完成不可操作')
             tempReturn = false
           }
         })
@@ -521,13 +605,17 @@ export default defineComponent({
     //  保存操作
     const handleSaveData = async (type:string, obj:any) => {
       const back = await MANAGEMENT_INSPECTION_PHYSICOCHEMICAL_RECHECK_TASK_INSPECT_API(obj)
+      let tempList:any[] = []
       obj.taskInspectList.forEach((item:any) => {
         item.taskInspectIndexList.forEach(async (subItem:any) => {
-          await INSPECT_INDEX_PROCESS_PARAMETER_UPDATE_FOR_TASK_API(subItem.updateInspectParameter)
+          // tempList.push(subItem.updateInspectParameter)
+          tempList = tempList.concat(subItem.updateInspectParameter)
         })
       })
+      await INSPECT_INDEX_PROCESS_PARAMETER_UPDATE_FOR_TASK_API(tempList)
+
       if (type !== 'save') {
-        proxy.$successToast('完成提交！')
+        proxy.$successToast('检验已完成！')
         parent.emit('openHandle', { act: 'submit', target: obj.recheckMod, obj: back })
       } else {
         proxy.$successToast('保存成功！')
@@ -539,13 +627,35 @@ export default defineComponent({
     const actHandleIndexJudgeResult = (val:any) => {
       if (val.inspectResult === '') {
         val.indexJudgeResult = 'N'
+      } else if (val.indexStandardString === 'S') {
+        let tempString = ''
+        if (val.indexInnerStandard !== '') {
+          tempString = val.indexInnerStandard
+        } else if (val.indexStandard !== '') {
+          tempString = val.indexStandard
+        } else {
+          proxy.$warningToast('无标准值')
+          val.indexJudgeResult = 'N'
+          return
+        }
+
+        if (evil(`${val.inspectResult}=${tempString}`)) {
+          val.indexJudgeResult = 'Y'
+        } else {
+          val.indexJudgeResult = 'N'
+        }
+      } else if (val.indexStandardString.split('=')[0] === 'S') {
+        if (evil(`${val.indexStandardString.split('=')[1]}===${val.inspectResult}`)) {
+          val.indexJudgeResult = 'Y'
+        } else {
+          val.indexJudgeResult = 'N'
+        }
       } else {
         if (val.indexStandardString === '' && val.inspectResult !== '') {
           proxy.$infoToast('请输入标准公式')
           return
         }
         const result = /(.*)S(.*)/.exec(val.indexStandardString)
-        console.log(result)
         if (result === null) {
           proxy.$warningToast('标准栏位式子错误')
           val.indexStandardString = ''
@@ -574,8 +684,6 @@ export default defineComponent({
           val.indexInnerUp = rightResult[2]
           val.innerUpSymbol = rightResult[1]
         }
-        console.log(val)
-
         if (val.inspectResult && val.indexStandardString) {
           try {
             if (evil(`${result[1]}${val.inspectResult}`) && evil(`${val.inspectResult}${result[2]}`)) {
@@ -594,13 +702,37 @@ export default defineComponent({
     const actHandleIndexStandardString = (val:any) => {
       if (val.indexStandardString === '') {
         val.indexJudgeResult = 'N'
+      } else if (val.indexStandardString === 'S') {
+        if (val.inspectResult !== '') {
+          let tempString = ''
+          if (val.indexInnerStandard !== '') {
+            tempString = val.indexInnerStandard
+          } else if (val.indexStandard !== '') {
+            tempString = val.indexStandard
+          } else {
+            proxy.$warningToast('无标准值')
+            val.indexJudgeResult = 'N'
+            return
+          }
+          if (evil(`${val.inspectResult}=${tempString}`)) {
+            val.indexJudgeResult = 'Y'
+          } else {
+            val.indexJudgeResult = 'N'
+          }
+        }
+      } else if (val.indexStandardString.split('=')[0] === 'S') {
+        console.log('222222')
+        if (evil(`${val.indexStandardString.split('=')[1]}===${val.inspectResult}`)) {
+          val.indexJudgeResult = 'Y'
+        } else {
+          val.indexJudgeResult = 'N'
+        }
       } else {
         if (val.inspectResult === '' && val.indexStandardString !== '') {
           proxy.$infoToast('请输入结果栏位')
           return
         }
         const result = /(.*)S(.*)/.exec(val.indexStandardString)
-        console.log(result)
         if (result === null) {
           proxy.$warningToast('标准栏位式子错误')
           val.indexStandardString = ''
@@ -629,7 +761,6 @@ export default defineComponent({
           val.indexInnerUp = rightResult[2]
           val.innerUpSymbol = rightResult[1]
         }
-        console.log(val)
 
         if (val.inspectResult && val.indexStandardString) {
           try {
@@ -691,9 +822,12 @@ export default defineComponent({
       //   target.indexStandardString = joint(target.inspectIndexStandard)
       // }
     }
-    watch(targetOgj, (val) => {
+    watch(targetObj, (val) => {
       console.log('=== import object to dialog ===')
       console.log(val)
+
+      state.currentMainType = mainType.value
+      console.log(state.currentMainType)
       state.mainObj = []
       val.forEach((item:any) => {
         state.idToSampleCode[item.id] = item.sampleCode
@@ -710,15 +844,27 @@ export default defineComponent({
         }
         // TODO [EB]？ 待确认 data 格式是否合并检时通用
         state.dataFormOfSampleInfo = val[0]
+        state.currentOrderStyle = val[0].recheckFlag === 'N' ? 'first' : 'repeat'
         // add id2sampleCode obj
-
         // TODO [BE]?
         MANAGEMENT_INSPECTION_PHYSICOCHEMICAL_TASK_INSPECT_QUERY_API( // /taskInspectIndex/queryTaskInspectIndex
           val.map((item:any) => item.id)
         ).then(async (res) => {
           console.log('=== query dialog data ===')
           console.log(res.data.data)
-          state.dataFormOfSampleItemUnit = JSON.parse(JSON.stringify(res.data.data))
+
+          // 处理合并，重新组合
+          const tempRes:any[] = []
+          res.data.data.forEach((element:any) => {
+            element.taskInspectIndexIdList.forEach((subElement:any, subElementIndex:number) => {
+              const copyItem = JSON.parse(JSON.stringify(element))
+              copyItem.id = subElement
+              copyItem.taskInspectId = element.taskInspectIdList[subElementIndex]
+              tempRes.push(copyItem)
+            })
+          })
+
+          state.dataFormOfSampleItemUnit = JSON.parse(JSON.stringify(tempRes))
 
           await state.dataFormOfSampleItemUnit.forEach(async (item) => {
             // 获取指标
@@ -902,11 +1048,6 @@ export default defineComponent({
       const tempDepend = depend.split(',')
       let tempFormula = formula
       const valueList = new Array(tempDepend.length)
-      console.log(formula)
-      console.log(depend)
-      console.log(showValue)
-      console.log(hiddenValue)
-
       const importValue:any = {}
 
       tempDepend.forEach((item, index) => {
@@ -950,12 +1091,6 @@ export default defineComponent({
       }
       return result
     }
-
-    watch(mainType, (val) => {
-      if (val) {
-        state.currentMainType = val
-      }
-    })
 
     watch(subType, (val) => {
       if (val) {
