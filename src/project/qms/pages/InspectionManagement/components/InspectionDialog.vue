@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-11-11 16:30:07
  * @LastEditors: Telliex
- * @LastEditTime: 2021-11-29 08:31:55
+ * @LastEditTime: 2021-11-29 10:32:45
 -->
 <template>
   <el-dialog :title="title+subTitle" v-model="isDialogShow" width="90%" @close="onClose">
@@ -376,7 +376,7 @@ export default defineComponent({
             }
           } else {
             if (result !== null) {
-              if (item.inspectIndexStandard.indexInnerStandard === '' && item.inspectIndexStandard.indexStandard === '') {
+              if (!item.inspectIndexStandard.indexInnerStandard && !item.inspectIndexStandard.indexStandard) {
               // ?????
                 item.indexInnerStandard = '0'
                 item.indexStandard = ''
@@ -392,7 +392,7 @@ export default defineComponent({
               const rightResult = /([<]=?)(.*)/.exec(result[2])
 
               if (!leftResult) {
-                if (item.inspectIndexStandard.indexInnerStandard === '' && item.inspectIndexStandard.indexStandard === '') {
+                if (!item.inspectIndexStandard.indexInnerStandard && !item.inspectIndexStandard.indexStandard) {
                   item.indexInnerDown = null
                   item.innerDownSymbol = ''
                 } else if (item.inspectIndexStandard.indexStandard !== '') {
@@ -403,7 +403,7 @@ export default defineComponent({
                   item.innerDownSymbol = ''
                 }
               } else {
-                if (item.inspectIndexStandard.indexInnerStandard === '' && item.inspectIndexStandard.indexStandard === '') {
+                if (!item.inspectIndexStandard.indexInnerStandard && !item.inspectIndexStandard.indexStandard) {
                   item.indexInnerDown = leftResult[1]
                   item.innerDownSymbol = leftResult[2].replace('<', '>')
                 } else if (item.inspectIndexStandard.indexStandard !== '') {
@@ -415,7 +415,7 @@ export default defineComponent({
                 }
               }
               if (!rightResult) {
-                if (item.inspectIndexStandard.indexInnerStandard === '' && item.inspectIndexStandard.indexStandard === '') {
+                if (!item.inspectIndexStandard.indexInnerStandard && !item.inspectIndexStandard.indexStandard) {
                   item.indexInnerUp = null
                   item.innerUpSymbol = ''
                 } else if (item.indexStandard !== '') {
@@ -426,7 +426,7 @@ export default defineComponent({
                   item.innerUpSymbol = ''
                 }
               } else {
-                if (item.inspectIndexStandard.indexInnerStandard === '' && item.inspectIndexStandard.indexStandard === '') {
+                if (!item.inspectIndexStandard.indexInnerStandard && !item.inspectIndexStandard.indexStandard) {
                   item.indexInnerUp = rightResult[2]
                   item.innerUpSymbol = rightResult[1]
                 } else if (item.inspectIndexStandard.indexStandard !== '') {
@@ -1035,11 +1035,6 @@ export default defineComponent({
           subItem.canEditInspectResult = false
         }
       }
-      // TODO  wait remove
-      // runFormula(subItem.filnalFormula,
-      //   subItem.inspectMethodNameList[subItem.inspectMethodCodeWhichIndex].inspectParameterListResult[0].formula,
-      //   subItem.inspectMethodNameList[subItem.inspectMethodCodeWhichIndex].inspectParameterListShow,
-      //   subItem.inspectMethodNameList[subItem.inspectMethodCodeWhichIndex].inspectParameterListHidden)
     }
 
     // 根据公式计算结果
