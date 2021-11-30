@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-11-11 16:30:07
  * @LastEditors: Telliex
- * @LastEditTime: 2021-11-29 15:05:21
+ * @LastEditTime: 2021-11-30 08:19:36
 -->
 <template>
   <el-dialog :title="title+subTitle" v-model="isDialogShow" width="90%" @close="onClose">
@@ -51,7 +51,7 @@
                     <el-radio v-model="subItem.indexJudgeResult" label="N" :disabled="true">不合格</el-radio>
                 </el-form-item>
                 <el-form-item label="标准："  prop="indexStandardString" >
-                    <el-input v-model="subItem.indexStandardString" size="small"  class="inputWidth" placeholder="e.x.1<S<10" autocomplete="off" oninput ="value=value.replace(/[^0-9S><=]/g, '')"   @change="actHandleIndexStandardString(subItem)"></el-input>
+                    <el-input v-model="subItem.indexStandardString" size="small"  class="inputWidth" placeholder="e.x.1<S<10" autocomplete="off" oninput ="value=value.replace(/[^0-9S><=]/g, '')" :disabled="!subItem.canEditIndexStandardString"  @blur="actHandleIndexStandardString(subItem)"></el-input>
                 </el-form-item>
 
                 <el-form-item label="检验过程："  prop="" v-if="subItem.canShowParameterList">
@@ -304,149 +304,83 @@ export default defineComponent({
         const tempUpdateInspectParameter: any[] = []
         // 处理不等式
         if (item.indexStandardString !== '') {
-          const result = /(.*)S(.*)/.exec(item.indexStandardString)
           if (state.currentMainType === 'TEMP') {
-            if (result !== null) {
-              if (item.indexInnerStandard === '' && item.indexStandard === '') {
-                item.indexInnerStandard = '0'
-                item.indexStandard = ''
-              }
-
-              const leftResult = /(.*)([<]=?)/.exec(result[1])
-              const rightResult = /([<]=?)(.*)/.exec(result[2])
-
-              if (!leftResult) {
-                if (item.indexInnerStandard === '' && item.indexStandard === '') {
-                  item.indexInnerDown = null
-                  item.innerDownSymbol = ''
-                } else if (item.indexStandard !== '') {
-                  item.indexDown = null
-                  item.downSymbol = ''
-                } else {
-                  item.indexInnerDown = null
-                  item.innerDownSymbol = ''
-                }
-              } else {
-                if (item.indexInnerStandard === '' && item.indexStandard === '') {
-                  item.indexInnerDown = leftResult[1]
-                  item.innerDownSymbol = leftResult[2].replace('<', '>')
-                } else if (item.indexStandard !== '') {
-                  item.indexDown = leftResult[1]
-                  item.downSymbol = leftResult[2].replace('<', '>')
-                } else {
-                  item.indexInnerDown = leftResult[1]
-                  item.innerDownSymbol = leftResult[2].replace('<', '>')
-                }
-              }
-              if (!rightResult) {
-                if (item.indexInnerStandard === '' && item.indexStandard === '') {
-                  item.indexInnerUp = null
-                  item.innerUpSymbol = ''
-                } else if (item.indexStandard !== '') {
-                  item.indexUp = null
-                  item.upSymbol = ''
-                } else {
-                  item.indexInnerUp = null
-                  item.innerUpSymbol = ''
-                }
-              } else {
-                if (item.indexInnerStandard === '' && item.indexStandard === '') {
-                  item.indexInnerUp = rightResult[2]
-                  item.innerUpSymbol = rightResult[1]
-                } else if (item.indexStandard !== '') {
-                  item.indexUp = rightResult[2]
-                  item.upSymbol = rightResult[1]
-                } else {
-                  item.indexInnerUp = rightResult[2]
-                  item.innerUpSymbol = rightResult[1]
-                }
-              }
-            } else {
-              item.indexUp = null
-              item.upSymbol = ''
+            if (item.indexStandardString.split('=')[0] === 'S') { // e.x. S=1
+              item.inspectIndexStandard = item.indexStandardString.split('=')[1]
               item.indexInnerUp = null
               item.innerUpSymbol = ''
-              item.indexDown = null
-              item.downSymbol = ''
-              item.indexDown = null
-              item.downSymbol = ''
-              item.indexInnerStandard = ''
-              item.indexStandard = ''
+              item.indexInnerDown = null
+              item.innerDownSymbol = ''
+            } else {
+              const result = /(.*)S(.*)/.exec(item.indexStandardString)
+
+              if (result !== null) {
+                const leftResult = /(.*)([<]=?)/.exec(result[1])
+                const rightResult = /([<]=?)(.*)/.exec(result[2])
+
+                item.inspectIndexStandard = ''
+
+                if (!leftResult) {
+                  item.indexInnerDown = null
+                  item.innerDownSymbol = ''
+                } else {
+                  item.indexInnerDown = leftResult[1]
+                  item.innerDownSymbol = leftResult[2].replace('<', '>')
+                }
+
+                if (!rightResult) {
+                  item.indexInnerUp = null
+                  item.innerUpSymbol = ''
+                } else {
+                  item.indexInnerUp = rightResult[2]
+                  item.innerUpSymbol = rightResult[1]
+                }
+              } else {
+                item.indexInnerUp = null
+                item.innerUpSymbol = ''
+                item.indexInnerDown = null
+                item.innerDownSymbol = ''
+                item.indexInnerStandard = ''
+              }
             }
           } else {
-            if (result !== null) {
-              if (!item.inspectIndexStandard.indexInnerStandard && !item.inspectIndexStandard.indexStandard) {
-              // ?????
-                item.indexInnerStandard = '0'
-                item.indexStandard = ''
-              } else if (item.inspectIndexStandard.indexStandard !== '') {
-                item.indexInnerStandard = ''
-                item.indexStandard = item.inspectIndexStandard.indexStandard
-              } else {
-                item.indexInnerStandard = item.inspectIndexStandard.indexInnerStandard
-                item.indexStandard = ''
-              }
-
-              const leftResult = /(.*)([<]=?)/.exec(result[1])
-              const rightResult = /([<]=?)(.*)/.exec(result[2])
-
-              if (!leftResult) {
-                if (!item.inspectIndexStandard.indexInnerStandard && !item.inspectIndexStandard.indexStandard) {
-                  item.indexInnerDown = null
-                  item.innerDownSymbol = ''
-                } else if (item.inspectIndexStandard.indexStandard !== '') {
-                  item.indexDown = null
-                  item.downSymbol = ''
-                } else {
-                  item.indexInnerDown = null
-                  item.innerDownSymbol = ''
-                }
-              } else {
-                if (!item.inspectIndexStandard.indexInnerStandard && !item.inspectIndexStandard.indexStandard) {
-                  item.indexInnerDown = leftResult[1]
-                  item.innerDownSymbol = leftResult[2].replace('<', '>')
-                } else if (item.inspectIndexStandard.indexStandard !== '') {
-                  item.indexDown = leftResult[1]
-                  item.downSymbol = leftResult[2].replace('<', '>')
-                } else {
-                  item.indexInnerDown = leftResult[1]
-                  item.innerDownSymbol = leftResult[2].replace('<', '>')
-                }
-              }
-              if (!rightResult) {
-                if (!item.inspectIndexStandard.indexInnerStandard && !item.inspectIndexStandard.indexStandard) {
-                  item.indexInnerUp = null
-                  item.innerUpSymbol = ''
-                } else if (item.indexStandard !== '') {
-                  item.indexUp = null
-                  item.upSymbol = ''
-                } else {
-                  item.indexInnerUp = null
-                  item.innerUpSymbol = ''
-                }
-              } else {
-                if (!item.inspectIndexStandard.indexInnerStandard && !item.inspectIndexStandard.indexStandard) {
-                  item.indexInnerUp = rightResult[2]
-                  item.innerUpSymbol = rightResult[1]
-                } else if (item.inspectIndexStandard.indexStandard !== '') {
-                  item.indexUp = rightResult[2]
-                  item.upSymbol = rightResult[1]
-                } else {
-                  item.indexInnerUp = rightResult[2]
-                  item.innerUpSymbol = rightResult[1]
-                }
-              }
-            } else {
-              item.indexUp = null
-              item.upSymbol = ''
+            if (item.indexStandardString.split('=')[0] === 'S') { // e.x. S=1
+              item.inspectIndexStandard = item.indexStandardString.split('=')[1]
               item.indexInnerUp = null
               item.innerUpSymbol = ''
-              item.indexDown = null
-              item.downSymbol = ''
-              item.indexDown = null
-              item.downSymbol = ''
-              item.indexInnerStandard = ''
-              item.indexStandard = ''
+              item.indexInnerDown = null
+              item.innerDownSymbol = ''
+            } else {
+              const result = /(.*)S(.*)/.exec(item.indexStandardString)
+
+              if (result !== null) {
+                const leftResult = /(.*)([<]=?)/.exec(result[1])
+                const rightResult = /([<]=?)(.*)/.exec(result[2])
+
+                item.inspectIndexStandard = ''
+
+                if (!leftResult) {
+                  item.indexInnerDown = null
+                  item.innerDownSymbol = ''
+                } else {
+                  item.indexInnerDown = leftResult[1]
+                  item.innerDownSymbol = leftResult[2].replace('<', '>')
+                }
+
+                if (!rightResult) {
+                  item.indexInnerUp = null
+                  item.innerUpSymbol = ''
+                } else {
+                  item.indexInnerUp = rightResult[2]
+                  item.innerUpSymbol = rightResult[1]
+                }
+              } else {
+                item.indexInnerUp = null
+                item.innerUpSymbol = ''
+                item.indexInnerDown = null
+                item.innerDownSymbol = ''
+                item.indexInnerStandard = ''
+              }
             }
           }
         }
@@ -455,21 +389,6 @@ export default defineComponent({
         if (item.inspectMethodNameList.length) {
           item.inspectMethodNameList[item.inspectMethodCodeWhichIndex].inspectParameterList.forEach((subItem:any) => {
             if (subItem.paramType !== '') {
-              // item.taskInspectPhysicalList.forEach((element:any) => {
-              //   if (element.paramCode === subItem.paramCode) {
-              //     tempTaskInspectPhysicalList.push({
-              //       id: element.id,
-              //       taskInspectIndexId: item.taskInspectIndexIdList[0], // ?? 是否應是 [] 形式
-              //       paramCode: subItem.paramCode,
-              //       paramName: subItem.paramName,
-              //       paramValue: subItem.defaultValue,
-              //       paramUnit: subItem.paramUnit,
-              //       hiddenValue: null, // ??
-              //       formula: subItem.formula
-              //     })
-              //   }
-              // })
-
               tempTaskInspectPhysicalList.push({
                 id: item.taskInspectPhysicalList.filter((element:any) => element.paramCode === subItem.paramCode).length ? item.taskInspectPhysicalList.filter((element:any) => element.paramCode === subItem.paramCode)[0].id : '',
                 taskInspectIndexId: item.taskInspectIndexIdList[0], // ?? 是否應是 [] 形式
@@ -514,8 +433,9 @@ export default defineComponent({
             type: 'warning'
           }).then(async (val:string) => {
             if (val === 'confirm') {
-            // 需校验
-              if (checkRequiredData(state.dataFormOfSampleItemUnit)) {
+              // 需校验
+              if (checkRequiredData(state.dataFormOfSampleItemUnit)) { // check the required
+                finalRunCheck(state.dataFormOfSampleItemUnit) // run count one time
                 handleSaveData('submit', obj)
               }
             }
@@ -530,8 +450,9 @@ export default defineComponent({
             type: 'warning'
           }).then(async (val:string) => {
             if (val === 'confirm') {
-            // 需校验
-              if (checkRequiredData(state.dataFormOfSampleItemUnit)) {
+              // 需校验
+              if (checkRequiredData(state.dataFormOfSampleItemUnit)) { // check the required
+                finalRunCheck(state.dataFormOfSampleItemUnit) // run count one time
                 handleSaveData('submit', obj)
               }
             } else {
@@ -552,7 +473,9 @@ export default defineComponent({
     // 校验操作
     const checkRequiredData = (obj:any) => {
       let tempReturn = true
+
       if (state.currentOrderStyle === 'first') { // 初检
+        console.log('first')
         obj.forEach((item:any) => {
           if (item.inspectResult === '') {
             // proxy.$warningToast('请完成各指标结果')
@@ -583,7 +506,10 @@ export default defineComponent({
           }
         })
       } else { // 复检,校验指标录入的完整性
-        obj.taskInspectList.forEach((item:any) => {
+        console.log('no first')
+        console.log(obj)
+        // obj.taskInspectList.forEach((item:any) => {
+        obj.forEach((item:any) => {
           let tempResult = 0
           let needResult = 0
           if (item.inspectResult === '') {
@@ -612,7 +538,21 @@ export default defineComponent({
         })
       }
 
+      console.log('tempReturn:' + tempReturn)
+
       return tempReturn
+    }
+
+    // TODO
+    const finalRunCheck = (obj:any) => {
+      obj.forEach((item:any) => {
+        if (item.canEditInspectResult) {
+          chechIndexStandardString(item)
+        } else {
+          actHandleInspectResult(item)
+          chechIndexStandardString(item)
+        }
+      })
     }
 
     //  保存操作
@@ -640,74 +580,9 @@ export default defineComponent({
     const actHandleIndexJudgeResult = (val:any) => {
       if (val.inspectResult === '') {
         val.indexJudgeResult = 'N'
-      } else if (val.indexStandardString === 'S') {
-        let tempString = ''
-        if (val.indexInnerStandard !== '') {
-          tempString = val.indexInnerStandard
-        } else if (val.indexStandard !== '') {
-          tempString = val.indexStandard
-        } else {
-          proxy.$warningToast('无标准值')
-          val.indexJudgeResult = 'N'
-          return
-        }
-
-        if (evil(`${val.inspectResult}=${tempString}`)) {
-          val.indexJudgeResult = 'Y'
-        } else {
-          val.indexJudgeResult = 'N'
-        }
-      } else if (val.indexStandardString.split('=')[0] === 'S') {
-        if (evil(`${val.indexStandardString.split('=')[1]}===${val.inspectResult}`)) {
-          val.indexJudgeResult = 'Y'
-        } else {
-          val.indexJudgeResult = 'N'
-        }
       } else {
-        if (val.indexStandardString === '' && val.inspectResult !== '') {
-          proxy.$infoToast('请输入标准公式')
-          return
-        }
-        const result = /(.*)S(.*)/.exec(val.indexStandardString)
-        if (result === null) {
-          proxy.$warningToast('标准栏位式子错误')
-          val.indexStandardString = ''
-          return
-        }
-        if (result[1] === '' && result[2] === '') {
-          proxy.$warningToast('标准栏位式子错误')
-          val.indexStandardString = ''
-          return
-        }
-        const leftResult = /(.*)([><]=?)/.exec(result[1])
-        const rightResult = /([><]=?)(.*)/.exec(result[2])
-
-        if (!leftResult) {
-          val.indexInnerDown = ''
-          val.innerDownSymbol = ''
-        } else {
-          val.indexInnerDown = leftResult[1]
-          val.innerDownSymbol = leftResult[2]
-        }
-
-        if (!rightResult) {
-          val.indexInnerUp = ''
-          val.innerUpSymbol = ''
-        } else {
-          val.indexInnerUp = rightResult[2]
-          val.innerUpSymbol = rightResult[1]
-        }
-        if (val.inspectResult && val.indexStandardString) {
-          try {
-            if (evil(`${result[1]}${val.inspectResult}`) && evil(`${val.inspectResult}${result[2]}`)) {
-              val.indexJudgeResult = 'Y'
-            } else {
-              val.indexJudgeResult = 'N'
-            }
-          } catch (err) {
-            console.log(err)
-            val.indexJudgeResult = 'N'
-          }
+        if (val.indexStandardString !== '') {
+          chechIndexStandardString(val)
         }
       }
     }
@@ -715,75 +590,96 @@ export default defineComponent({
     const actHandleIndexStandardString = (val:any) => {
       if (val.indexStandardString === '') {
         val.indexJudgeResult = 'N'
+      } else {
+        if (val.inspectResult !== '') {
+          chechIndexStandardString(val)
+        }
+      }
+    }
+
+    const chechIndexStandardString = (val:any) => {
+      if (val.indexStandardString.indexOf('S') === -1) {
+        proxy.$warningToast('缺少变数 S')
       } else if (val.indexStandardString === 'S') {
         if (val.inspectResult !== '') {
           let tempString = ''
-          if (val.indexInnerStandard !== '') {
+          if (val.indexInnerStandard) {
             tempString = val.indexInnerStandard
-          } else if (val.indexStandard !== '') {
+          } else if (val.indexStandard) {
             tempString = val.indexStandard
           } else {
             proxy.$warningToast('无标准值')
             val.indexJudgeResult = 'N'
             return
           }
-          if (evil(`${val.inspectResult}=${tempString}`)) {
+          if (evil(`${val.inspectResult}==${tempString}`)) {
+            console.log('val.indexJudgeResult = Y')
             val.indexJudgeResult = 'Y'
           } else {
+            console.log('val.indexJudgeResult = N')
             val.indexJudgeResult = 'N'
           }
         }
       } else if (val.indexStandardString.split('=')[0] === 'S') {
-        if (evil(`${val.indexStandardString.split('=')[1]}===${val.inspectResult}`)) {
-          val.indexJudgeResult = 'Y'
-        } else {
-          val.indexJudgeResult = 'N'
+        if (val.inspectResult !== '') {
+          if (evil(`${val.indexStandardString.split('=')[1]}==${val.inspectResult}`)) {
+            console.log('val.indexJudgeResult = Y')
+            val.indexJudgeResult = 'Y'
+          } else {
+            console.log('val.indexJudgeResult = N')
+            val.indexJudgeResult = 'N'
+          }
         }
       } else {
-        if (val.inspectResult === '' && val.indexStandardString !== '') {
-          proxy.$infoToast('请输入结果栏位')
-          return
-        }
-        const result = /(.*)S(.*)/.exec(val.indexStandardString)
-        if (result === null) {
-          proxy.$warningToast('标准栏位式子错误')
-          val.indexStandardString = ''
-          return
-        }
-        if (result[1] === '' && result[2] === '') {
-          proxy.$warningToast('标准栏位式子错误')
-          val.indexStandardString = ''
-          return
-        }
-        const leftResult = /(.*)([><]=?)/.exec(result[1])
-        const rightResult = /([><]=?)(.*)/.exec(result[2])
+        if (val.inspectResult !== '') {
+          const result = /(.*)S(.*)/.exec(val.indexStandardString)
+          if (result === null) {
+            proxy.$warningToast('标准栏位式子错误')
+            val.indexStandardString = ''
+            return
+          }
+          if (result[1] === '' && result[2] === '') {
+            proxy.$warningToast('标准栏位式子错误')
+            val.indexStandardString = ''
+            return
+          }
 
-        if (!leftResult) {
-          val.indexInnerDown = ''
-          val.innerDownSymbol = ''
-        } else {
-          val.indexInnerDown = leftResult[1]
-          val.innerDownSymbol = leftResult[2]
-        }
+          const leftResult = /(.*)([><]=?)/.exec(result[1])
+          const rightResult = /([><]=?)(.*)/.exec(result[2])
 
-        if (!rightResult) {
-          val.indexInnerUp = ''
-          val.innerUpSymbol = ''
-        } else {
-          val.indexInnerUp = rightResult[2]
-          val.innerUpSymbol = rightResult[1]
-        }
+          if (!leftResult) {
+            val.indexInnerDown = ''
+            val.innerDownSymbol = ''
+          } else {
+            val.indexInnerDown = leftResult[1]
+            val.innerDownSymbol = leftResult[2]
+          }
 
-        if (val.inspectResult && val.indexStandardString) {
-          try {
-            if (evil(`${result[1]}${val.inspectResult}`) && evil(`${val.inspectResult}${result[2]}`)) {
-              val.indexJudgeResult = 'Y'
-            } else {
+          if (!rightResult) {
+            val.indexInnerUp = ''
+            val.innerUpSymbol = ''
+          } else {
+            val.indexInnerUp = rightResult[2]
+            val.innerUpSymbol = rightResult[1]
+          }
+
+          if (val.inspectResult && val.indexStandardString) {
+            try {
+              console.log('zzzzzzzz')
+              console.log(`${result[1]}${val.inspectResult}`)
+              console.log(`${val.inspectResult}${result[2]}`)
+              if (evil(`${result[1]}${val.inspectResult}`) && evil(`${val.inspectResult}${result[2]}`)) {
+                console.log('val.indexJudgeResult = Y')
+                val.indexJudgeResult = 'Y'
+              } else {
+                console.log('val.indexJudgeResult = N')
+                val.indexJudgeResult = 'N'
+              }
+            } catch (err) {
+              console.log(err)
+              console.log('val.indexJudgeResult = N')
               val.indexJudgeResult = 'N'
             }
-          } catch (err) {
-            console.log(err)
-            val.indexJudgeResult = 'N'
           }
         }
       }
@@ -930,15 +826,48 @@ export default defineComponent({
             })
 
             // 拼标准不等式 (需先有inspectIndexStandard)
-            if (item.indexInnerStandard === '' && item.indexStandard === '') {
-              if (item.inspectIndexStandard && Object.keys(item.inspectIndexStandard).length) {
-                item.indexStandardString = joint(item.inspectIndexStandard)
-              } else { // 可能 inspectIndexStandard 是 null
-                item.indexStandardString = ''
-              }
+
+            console.log('7777777777')
+            console.log(item)
+
+            if (item.indexInnerStandard) {
+              item.indexStandardString = `S=${item.indexInnerStandard}`
+              item.canEditIndexStandardString = false
+            } else if ((item.indexInnerDown && item.innerDownSymbol) && (item.innerUpSymbol && item.indexInnerUp)) {
+              item.indexStandardString = `${item.indexInnerDown}${item.innerDownSymbol.replace('>', '<')}S${item.innerUpSymbol}${item.indexInnerUp}`
+              item.canEditIndexStandardString = false
+            } else if (item.indexInnerDown && item.innerDownSymbol) {
+              item.indexStandardString = `${item.indexInnerDown}${item.innerDownSymbol.replace('>', '<')}S`
+              item.canEditIndexStandardString = false
+            } else if (item.innerUpSymbol && item.indexInnerUp) {
+              item.indexStandardString = `S${item.innerUpSymbol}${item.indexInnerUp}`
+              item.canEditIndexStandardString = false
+            } else if (item.indexStandard) {
+              item.indexStandardString = `S=${item.indexStandard}`
+              item.canEditIndexStandardString = false
+            } else if ((item.indexDown && item.downSymbol) && (item.upSymbol && item.indexUp)) {
+              item.indexStandardString = `${item.indexDown}${item.downSymbol.replace('>', '<')}S${item.upSymbol}${item.indexUp}`
+              item.canEditIndexStandardString = false
+            } else if (item.indexDown && item.downSymbol) {
+              item.indexStandardString = `${item.indexDown}${item.downSymbol.replace('>', '<')}S`
+              item.canEditIndexStandardString = false
+            } else if (item.upSymbol && item.indexUp) {
+              item.indexStandardString = `S${item.upSymbol}${item.indexUp}`
+              item.canEditIndexStandardString = false
             } else {
-              item.indexStandardString = joint(item)
+              item.indexStandardString = ''
+              item.canEditIndexStandardString = true
             }
+
+            // if (item.indexInnerStandard === '' && item.indexStandard === '') {
+            //   if (item.inspectIndexStandard && Object.keys(item.inspectIndexStandard).length) {
+            //     item.indexStandardString = joint(item.inspectIndexStandard)
+            //   } else { // 可能 inspectIndexStandard 是 null
+            //     item.indexStandardString = ''
+            //   }
+            // } else {
+            //   item.indexStandardString = joint(item)
+            // }
 
             // 指标预设没有方法时，预设套入第一笔
             if (item.inspectMethodCode === '') {
@@ -957,7 +886,8 @@ export default defineComponent({
 
       // if (obj.indexInnerStandard) {
       //   indexStandardString = 'S=obj.indexInnerStandard'
-      // }else if(obj.indexInnerDown&&obj.innerDownSymbol)
+      // } else if ((obj.indexInnerDown && obj.innerDownSymbol || obj.innerDownSymbol && obj.indexInnerUp){}
+      //
 
       if (obj.indexInnerStandard !== '') {
         indexStandardString = `${!obj.indexInnerDown ? '' : obj.indexInnerDown}${!obj.innerDownSymbol ? '' : obj.innerDownSymbol.replace('>', '<')}S${!obj.innerUpSymbol ? '' : obj.innerUpSymbol}${!obj.indexInnerUp ? '' : obj.indexInnerUp}`

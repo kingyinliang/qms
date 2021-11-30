@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-11-16 09:59:02
  * @LastEditors: Telliex
- * @LastEditTime: 2021-11-29 15:27:01
+ * @LastEditTime: 2021-11-29 20:09:27
 -->
 <template>
   <mds-area class="test_method" title="已选中样品" :pack-up="false" style="margin-bottom: 0; background: #fff; overflow:scroll">
@@ -279,7 +279,7 @@ export default defineComponent({
     const btnGetInspectListReload = (val: DataTableOfTopicMain[]) => {
       // val.length && MANAGEMENT_INSPECTION_PHYSICOCHEMICAL_QUERY_BY_SAMPLE_CODE_API(
       //   val.map(item => item.sampleCode)
-      val.length && MANAGEMENT_INSPECTION_TASK_INSPECT_QUERY_BY_ID_API(
+      val.length && MANAGEMENT_INSPECTION_TASK_INSPECT_QUERY_BY_ID_API( // /taskInspect/queryTaskInspectByIds
         val
       ).then(res => {
         state.dataTableOfTopicMain = []
@@ -360,19 +360,43 @@ export default defineComponent({
         const totalItemsNumber = state.dataTableOfTopicMain.length // 3 status
         let nowItemIndex = -1
         let nexItemIndex = null
-
+        console.log('state.dataTableOfTopicMain======')
+        console.log(state.dataTableOfTopicMain)
+        console.log('state.currentGlobalActOgj=====')
+        console.log(state.currentGlobalActOgj)
         state.dataTableOfTopicMain.forEach((item:any, index:number) => {
+          console.log('iininininin')
           if (item.id === state.currentGlobalActOgj.id) {
+            console.log('iininininin again')
             nowItemIndex = index
             let tempNexItemIndex = nowItemIndex + 1
-            do {
+
+            console.log('nowItemIndex:' + nowItemIndex)
+            // do {
+            //   console.log('kokokokokokokookok')
+            //   console.log(tempNexItemIndex)
+            //   console.log(state.dataTableOfTopicMain[tempNexItemIndex])
+
+            //   if (state.dataTableOfTopicMain[tempNexItemIndex].taskStatus !== 'COMPLETED') {
+            //     nexItemIndex = tempNexItemIndex
+            //     break
+            //   } else {
+            //     tempNexItemIndex = tempNexItemIndex + 1
+            //   }
+            // } while (tempNexItemIndex < state.dataTableOfTopicMain.length - 1)
+
+            while (tempNexItemIndex < state.dataTableOfTopicMain.length) {
+              console.log('kokokokokokokookok')
+              console.log(tempNexItemIndex)
+              console.log(state.dataTableOfTopicMain[tempNexItemIndex])
+
               if (state.dataTableOfTopicMain[tempNexItemIndex].taskStatus !== 'COMPLETED') {
                 nexItemIndex = tempNexItemIndex
                 break
               } else {
                 tempNexItemIndex = tempNexItemIndex + 1
               }
-            } while (tempNexItemIndex < state.dataTableOfTopicMain.length - 1)
+            }
           }
 
           if (item.taskStatus === 'COMPLETED') {
