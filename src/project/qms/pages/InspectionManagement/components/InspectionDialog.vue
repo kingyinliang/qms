@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-11-11 16:30:07
  * @LastEditors: Telliex
- * @LastEditTime: 2021-11-30 08:19:36
+ * @LastEditTime: 2021-11-30 10:18:20
 -->
 <template>
   <el-dialog :title="title+subTitle" v-model="isDialogShow" width="90%" @close="onClose">
@@ -408,11 +408,26 @@ export default defineComponent({
         item.taskInspectPhysicalList = tempTaskInspectPhysicalList
       })
 
+      console.log('eeeeeeeeeeeee')
+      console.log(tempTaskInspectIndexList)
+
+      const tempRes:any[] = []
+      tempTaskInspectIndexList.forEach((element:any) => {
+        element.taskInspectIndexIdList.forEach((subElement:any, subElementIndex:number) => {
+          const copyItem = JSON.parse(JSON.stringify(element))
+          copyItem.id = subElement
+          copyItem.taskInspectId = element.taskInspectIdList[subElementIndex]
+          copyItem.sampleCode = state.idToSampleCode[copyItem.taskInspectId]
+          tempRes.push(copyItem)
+        })
+      })
+      // let  = JSON.parse(JSON.stringify(tempRes))
+
       // 处理合并检标示
       tempTaskInspectList.forEach((item:any, index:number) => {
         item.taskStatus = type === 'save' ? 'CHECKING' : 'COMPLETED'
         item.taskStatusName = type === 'save' ? '检验中' : '已完成'
-        item.taskInspectIndexList = tempTaskInspectIndexList.filter((element:any) => element.sampleCode === item.sampleCode)
+        item.taskInspectIndexList = tempRes.filter((element:any) => element.sampleCode === item.sampleCode)
       })
 
       const obj = {
@@ -557,7 +572,7 @@ export default defineComponent({
 
     //  保存操作
     const handleSaveData = async (type:string, obj:any) => {
-      const back = await MANAGEMENT_INSPECTION_PHYSICOCHEMICAL_RECHECK_TASK_INSPECT_API(obj)
+      const back = await MANAGEMENT_INSPECTION_PHYSICOCHEMICAL_RECHECK_TASK_INSPECT_API(obj) // /taskInspect/recheckTaskInspect
       let tempList:any[] = []
       obj.taskInspectList.forEach((item:any) => {
         item.taskInspectIndexList.forEach(async (subItem:any) => {
@@ -761,18 +776,18 @@ export default defineComponent({
           console.log('=== query dialog data ===')
           console.log(res.data.data)
 
-          // 处理合并，重新组合
-          const tempRes:any[] = []
-          res.data.data.forEach((element:any) => {
-            element.taskInspectIndexIdList.forEach((subElement:any, subElementIndex:number) => {
-              const copyItem = JSON.parse(JSON.stringify(element))
-              copyItem.id = subElement
-              copyItem.taskInspectId = element.taskInspectIdList[subElementIndex]
-              tempRes.push(copyItem)
-            })
-          })
-
-          state.dataFormOfSampleItemUnit = JSON.parse(JSON.stringify(tempRes))
+          // // 处理合并，重新组合
+          // const tempRes:any[] = []
+          // res.data.data.forEach((element:any) => {
+          //   element.taskInspectIndexIdList.forEach((subElement:any, subElementIndex:number) => {
+          //     const copyItem = JSON.parse(JSON.stringify(element))
+          //     copyItem.id = subElement
+          //     copyItem.taskInspectId = element.taskInspectIdList[subElementIndex]
+          //     tempRes.push(copyItem)
+          //   })
+          // })
+          // state.dataFormOfSampleItemUnit = JSON.parse(JSON.stringify(tempRes))
+          state.dataFormOfSampleItemUnit = JSON.parse(JSON.stringify(res.data.data))
 
           await state.dataFormOfSampleItemUnit.forEach(async (item) => {
             // 获取指标
