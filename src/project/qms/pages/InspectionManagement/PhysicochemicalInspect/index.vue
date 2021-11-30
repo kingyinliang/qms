@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-11-16 09:59:02
  * @LastEditors: Telliex
- * @LastEditTime: 2021-11-30 10:23:02
+ * @LastEditTime: 2021-11-30 11:11:31
 -->
 <template>
   <mds-area class="test_method" title="已选中样品" :pack-up="false" style="margin-bottom: 0; background: #fff; overflow:scroll">
@@ -355,6 +355,10 @@ export default defineComponent({
       console.log(val)
 
       setTimeout(async () => {
+        if (val.obj && val.obj.taskInspectIdList) {
+          console.log(val.obj.taskInspectIdList)
+        }
+
         // 重新加载后 list
         await btnGetInspectListReload(state.dataTableOfTopicMain)
         const totalItemsNumber = state.dataTableOfTopicMain.length // 3 status

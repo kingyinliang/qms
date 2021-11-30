@@ -61,9 +61,9 @@
       <el-table-column type="index" fixed="left" :index="(index) => index + 1 + (queryForm.current - 1) * queryForm.size" label="序号" width="50" />
       <el-table-column label="样品码" prop="sampleCode" min-width="120" :show-overflow-tooltip="true" >
         <template #default="scope">
-         <el-button type="text" class="role__btn" @click="btnConfigulationReadOnly(scope.row)">
+         <div type="text" class="text_btn" @click="btnConfigulationReadOnly(scope.row)">
             <em>{{scope.row.sampleCode}}</em>
-          </el-button>
+          </div>
         </template>
       </el-table-column>
       <el-table-column label="状态" prop="taskStatusName" min-width="120" :show-overflow-tooltip="true">
@@ -210,7 +210,6 @@ export default defineComponent({
         return
       }
       store.commit('inspection/updateInspectionTask', selectionData.value)
-
       if (task.value === 'PROCESS') {
         store.commit('common/updateSampleObjToInspect', { type: 'PROCESS', obj: selectionData.value.length ? selectionData.value : [] })
       } else if (task.value === 'TEMP') {

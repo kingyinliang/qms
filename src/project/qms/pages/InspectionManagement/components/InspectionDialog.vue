@@ -584,10 +584,10 @@ export default defineComponent({
 
       if (type !== 'save') {
         proxy.$successToast('检验已完成！')
-        parent.emit('openHandle', { act: 'submit', target: obj.recheckMod, obj: back })
+        parent.emit('openHandle', { act: 'submit', target: obj.recheckMod, obj: back.data.data })
       } else {
         proxy.$successToast('保存成功！')
-        parent.emit('openHandle', { act: 'save', target: '', obj: back })
+        parent.emit('openHandle', { act: 'save', target: '', obj: back.data.data })
       }
       onClose()
     }
