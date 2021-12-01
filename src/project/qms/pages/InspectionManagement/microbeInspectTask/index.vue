@@ -5,13 +5,12 @@
     </template>
     <el-row :gutter="16">
       <el-col :span="4" style="min-width: 255px" v-for="(item, index) in taskList" :key="index">
-        <div class="task__item" :class="{active: task === item.inspectClassify}"  @click="changeTask(item.inspectClassify)">
+        <div class="task__item" :class="{active: task === item.inspectClassify}"  @click="changeTask(item.inspectClassify,item.inspectClassifyName)">
           <p class="task__item--title">
             <svg class="qmsIconfont" aria-hidden="true">
-              <use xlink:href="#qms-lailiaofujian" v-if="item.inspectClassify === 'INCOMING'"></use>
-              <use xlink:href="#qms-zhichengjianyan1" v-if="item.inspectClassify === 'PROCESS'"></use>
-              <use xlink:href="#qms-shengchanfuzhujiancha" v-if="item.inspectClassify === 'ASSIST'"></use>
-              <use xlink:href="#qms-linjian" v-if="item.inspectClassify === 'TEMP'"></use>
+              <use xlink:href="#qms-colonynum" v-if="item.inspectClassify === 'COLONYNUM'"></use>
+              <use xlink:href="#qms-coliformgroup" v-if="item.inspectClassify === 'COLIFORMGROUP'"></use>
+              <use xlink:href="#qms-yeast" v-if="item.inspectClassify === 'YEAST'"></use>
             </svg>
             <span>
               {{ item.inspectClassifyName }}
@@ -40,19 +39,35 @@
   <mds-card class="task-list" title="任务列表" :pack-up="false">
     <template #titleBtn>
       <el-form :inline="true" size="small" style="float: right;display: flex" @keyup.enter="() => {queryForm.current = 1; query()}" @submit.prevent>
-        <el-form-item label="取样码：">
-          <el-input v-model="queryForm.sampleCode" placeholder="请输入" style="width: 120px"></el-input>
+        <el-form-item label="样品码：">
+          <el-input v-model="queryForm.sampleCode" placeholder="请输入" style="width: 120px" clearable></el-input>
         </el-form-item>
         <el-form-item label="检验内容：">
-          <el-input v-model="queryForm.inspectContent" placeholder="请输入" style="width: 120px"></el-input>
+          <el-input v-model="queryForm.inspectContent" placeholder="请输入" style="width: 120px" clearable></el-input>
         </el-form-item>
-        <el-form-item label="取样信息：" v-if="task === 'PROCESS'">
-          <el-input v-model="queryForm.inspectSiteName" placeholder="请输入" style="width: 120px"></el-input>
-        </el-form-item>
+        <el-form-item label="培养日期">
+        <el-date-picker
+          v-model="queryForm.inspectDateBegin"
+          type="date"
+          format="YYYY-MM-DD"
+          value-format="YYYY-MM-DD"
+          placeholder="请选选择日期"
+          style="width: 140px"
+        />
+        -
+        <el-date-picker
+          v-model="queryForm.inspectDateEnd"
+          type="date"
+          format="YYYY-MM-DD"
+          value-format="YYYY-MM-DD"
+          placeholder="请选选择日期"
+          style="width: 140px"
+        />
+      </el-form-item>
         <el-form-item>
           <el-button icon="el-icon-search" @click="() => {queryForm.current = 1; query()}">查询</el-button>
-          <el-button @click="goInspect()"><i class="qmsIconfont qms-jianyan"/> 检验</el-button>
-          <el-button type="primary" @click="goPrint()"><i class="qmsIconfont qms-dayin" /> 打印</el-button>
+          <el-button @click="goInspect()"><i class="qmsIconfont qms-jianyan"/> 培养</el-button>
+          <el-button type="primary" @click="goCount()"><i class="qmsIconfont qms-dayin" /> 计数</el-button>
         </el-form-item>
       </el-form>
     </template>
@@ -79,21 +94,26 @@
         </template>
       </el-table-column>
       <el-table-column label="检验内容" prop="inspectContent" min-width="150" :show-overflow-tooltip="true" />
-      <el-table-column v-if="task === 'PROCESS'" label="生产物料" min-width="165" :show-overflow-tooltip="true">
+      <el-table-column  label="订单" prop="orderNo" v-if="task !== 'COLONYNUM'" min-width="150" :show-overflow-tooltip="true" />
+      <el-table-column label="物料信息" min-width="165" :show-overflow-tooltip="true">
         <template #default="scope">{{ `${scope.row.inspectMaterialCode} ${scope.row.inspectMaterialName}` }}</template>
       </el-table-column>
-      <el-table-column v-if="task === 'PROCESS'" label="订单" prop="orderNo" min-width="150" :show-overflow-tooltip="true" />
-      <el-table-column v-if="task === 'PROCESS'" label="品项" prop="itemName" min-width="150" :show-overflow-tooltip="true" />
-      <el-table-column v-if="task === 'PROCESS'" label="取样信息" prop="inspectSiteName" min-width="150" :show-overflow-tooltip="true" />
-      <el-table-column v-if="task === 'ASSIST'" label="取样说明" prop="sampleExplain" min-width="150" :show-overflow-tooltip="true" />
-      <el-table-column v-if="task === 'ASSIST'" label="检验频次" prop="inspectFrequency" min-width="150" :show-overflow-tooltip="true" />
-      <el-table-column label="取样部门" prop="sampleDeptName" min-width="150" :show-overflow-tooltip="true" />
-      <el-table-column label="送达时间" prop="deliveryDate" min-width="150" :show-overflow-tooltip="true" />
+      <el-table-column  label="批次" prop="inspectBatch" v-if="task === 'COLONYNUM'" min-width="150"  :show-overflow-tooltip="true" />
+      <el-table-column  label="品项" prop="itemName"  v-if="task !== 'COLONYNUM'" min-width="150" :show-overflow-tooltip="true" />
+      <el-table-column  label="取样信息" prop="inspectSiteName"  min-width="150" :show-overflow-tooltip="true" />
+      <el-table-column label="取样说明" prop="sampleExplain" v-if="task !== 'COLONYNUM'"  min-width="150" :show-overflow-tooltip="true" />
+      <el-table-column label="检验频次" prop="inspectFrequency" v-if="task !== 'COLONYNUM'"  min-width="150" :show-overflow-tooltip="true" />
+      <el-table-column label="培养日期" prop="inspectDate" v-if="task === 'COLONYNUM'"  min-width="150" :show-overflow-tooltip="true" />
+      <el-table-column label="取样单位" prop="sampleDeptName" v-if="task !== 'COLONYNUM'" min-width="150" :show-overflow-tooltip="true" />
+      <el-table-column label="送样时间" prop="deliveryDate" min-width="150" :show-overflow-tooltip="true" />
       <el-table-column label="收样时间" prop="receiveDate" min-width="150" :show-overflow-tooltip="true" />
-      <el-table-column label="操作" width="140" fixed="right" v-if="task !== 'TEMP'">
+      <el-table-column label="操作" width="140" fixed="right">
         <template #default="scope">
-          <el-button v-if="scope.row.taskStatus === 'RECEIVED'" type="text" icon="qmsIconfont qms-jianyan3" class="role__btn" @click="retentionSample(scope.row)">
-            留样
+          <el-button  type="text" icon="qmsIconfont qms-jianyan3" class="role__btn" @click="cultivateSample(scope.row)">
+            培养
+          </el-button>
+          <el-button type="text" icon="qmsIconfont qms-jianyan3" class="role__btn" @click="inspectSample(scope.row)">
+            检验
           </el-button>
         </template>
       </el-table-column>
@@ -110,7 +130,6 @@
       />
     </el-row>
   </mds-card>
-  <printModule ref="printModuleRef"/>
 </template>
 
 <script lang="ts">
@@ -122,10 +141,9 @@ import {
   reactive,
   ref
 } from 'vue'
-import { INSPECT_TASK_LIST, INSPECT_TASK_LIST_QUERY, INSPECT_TASK_RETENTION } from '@/api/api'
+import { TASK_INSPECT_MICROBE_TODO_LIST_QUERY, TASK_INSPECT_MICROBE_INSPECT_TASK_LIST_QUERY, INSPECT_TASK_RETENTION } from '@/api/api'
 import layoutTs from '@/components/layout/layoutTs'
 import { useStore } from 'vuex'
-import printModule from '@/project/qms/pages/SampleManagement/SampleSampling/printModule.vue'
 interface TableData{
   id?: string
   taskStatus?: string
@@ -136,43 +154,47 @@ interface TableData{
 }
 
 export default defineComponent({
-  name: 'inspectionTask',
+  name: 'MicrobeInspectionTask',
   components: {
-    printModule
   },
   setup () {
     const ctx = getCurrentInstance() as ComponentInternalInstance
     const proxy = ctx.proxy as any
     const store = useStore()
     const { gotoPage } = layoutTs()
-    const printModuleRef = ref()
-    const task = ref('PROCESS') // 选择任务
+
+    const task = ref('COLONYNUM') // 选择任务
     const taskList = ref<any[]>([]) // 任务汇总
     const queryForm = reactive({
-      taskInspectClassify: '',
-      inspectContent: '',
-      inspectSiteName: '',
       sampleCode: '',
+      inspectContent: '',
+      indexName: '',
+      inspectDateBegin: '',
+      inspectDateEnd: '',
       current: 1,
       size: 10,
       total: 0
     }) // 查询表单数据
+    const inspectClassifyObj = reactive({
+      inspectClassifyName: '菌落总数',
+      inspectClassify: 'COLONYNUM'
+    })
+    const mappingClassifyName = reactive({})
     const tableData = ref<TableData[]>([]) // 表格数据
     const selectionData = ref<TableData[]>([]) // 选中数据
 
-    // 获取任务数
+    // 获取代办任务类别
     const getTask = async () => {
-      const { data } = await INSPECT_TASK_LIST()
+      const { data } = await TASK_INSPECT_MICROBE_TODO_LIST_QUERY()
+      console.log('获取代办任务类别')
+      console.log(data.data)
       taskList.value = []
       for (const key in data.data) {
         if (data.data[key]) {
           switch (key.toString().toUpperCase()) {
-            case 'SAFETY': data.data[key].inspectClassifyName = '（食）委外检验'; data.data[key].inspectClassify = key.toString().toUpperCase(); break
-            case 'COMPETITOR': data.data[key].inspectClassifyName = '竞品检验'; data.data[key].inspectClassify = key.toString().toUpperCase(); break
-            case 'INCOMING': data.data[key].inspectClassifyName = '来料检验'; data.data[key].inspectClassify = key.toString().toUpperCase(); break
-            case 'PROCESS': data.data[key].inspectClassifyName = '制程检验'; data.data[key].inspectClassify = key.toString().toUpperCase(); break
-            case 'ASSIST': data.data[key].inspectClassifyName = '生产辅助检验'; data.data[key].inspectClassify = key.toString().toUpperCase(); break
-            case 'TEMP': data.data[key].inspectClassifyName = '临时检验'; data.data[key].inspectClassify = key.toString().toUpperCase(); break
+            case 'COLONYNUM': data.data[key].inspectClassifyName = '菌落总数'; data.data[key].inspectClassify = key.toString().toUpperCase(); break
+            case 'COLIFORMGROUP': data.data[key].inspectClassifyName = '大肠菌群'; data.data[key].inspectClassify = key.toString().toUpperCase(); break
+            case 'YEAST': data.data[key].inspectClassifyName = '酵母菌'; data.data[key].inspectClassify = key.toString().toUpperCase(); break
           }
           taskList.value.push(data.data[key])
         }
@@ -181,21 +203,23 @@ export default defineComponent({
     // 跳转历史任务
     const goHistory = () => {
       gotoPage({
-        path: 'qms-pages-InspectionManagement-InspectionTask-historyTask'
+        path: 'qms-pages-InspectionManagement-microbeInspectTask-historyTask'
       })
     }
     // 查询
     const query = async () => {
-      queryForm.taskInspectClassify = task.value
-      const { data } = await INSPECT_TASK_LIST_QUERY(queryForm)
+      queryForm.indexName = inspectClassifyObj.inspectClassifyName
+      const { data } = await TASK_INSPECT_MICROBE_INSPECT_TASK_LIST_QUERY(queryForm)
       tableData.value = data.data.records
       queryForm.size = data.data.size
       queryForm.current = data.data.current
       queryForm.total = data.data.total
     }
     // 切换任务分类
-    const changeTask = (val: string) => {
-      task.value = val
+    const changeTask = (inspectClassify: string, inspectClassifyName: string) => {
+      task.value = inspectClassify
+      inspectClassifyObj.inspectClassifyName = inspectClassifyName
+      inspectClassifyObj.inspectClassify = inspectClassify
       queryForm.current = 1
       query()
     }
@@ -211,8 +235,8 @@ export default defineComponent({
         return
       }
       store.commit('inspection/updateInspectionTask', selectionData.value)
-      if (task.value === 'PROCESS') {
-        store.commit('common/updateSampleObjToInspect', { type: 'PROCESS', obj: selectionData.value.length ? selectionData.value : [] })
+      if (task.value === 'COLONYNUM') {
+        store.commit('common/updateSampleObjToInspect', { type: 'COLONYNUM', obj: selectionData.value.length ? selectionData.value : [] })
       } else if (task.value === 'TEMP') {
         store.commit('common/updateSampleObjToInspect', { type: 'TEMP', obj: selectionData.value.length ? selectionData.value : [] })
       }
@@ -233,17 +257,8 @@ export default defineComponent({
       }
     }
     // 打印
-    const goPrint = () => {
-      if (selectionData.value.length) {
-        const data = selectionData.value.map(it => ({
-          title: setText(it),
-          subtitle: (it.itemName || '') + (it.inspectSiteName || ''),
-          code: it.sampleCode
-        }))
-        printModuleRef.value.print(data)
-      } else {
-        proxy.$warningToast('请选择数据')
-      }
+    const goCount = () => {
+      //
     }
     // 表格复选框能否被选中逻辑
     const checkDate = () => {
@@ -256,9 +271,22 @@ export default defineComponent({
     const selectionChange = (val: TableData[]) => {
       selectionData.value = val
     }
-    // 留样
-    const retentionSample = (row: TableData) => {
-      proxy.$confirm('是否留样，请确认', '提示', {
+    // 培养 from row
+    const cultivateSample = (row: TableData) => {
+      proxy.$confirm('是否培养，请确认', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(async () => {
+        await INSPECT_TASK_RETENTION(row)
+        proxy.$successToast('操作成功')
+        await query()
+        await getTask()
+      })
+    }
+    // 检验 from row
+    const inspectSample = (row: TableData) => {
+      proxy.$confirm('是否检验，请确认', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
@@ -276,9 +304,9 @@ export default defineComponent({
         console.log('TEMP')
         console.log(row)
         store.commit('common/updateSampleObjForView', { type: 'TEMP', obj: [row] })
-      } else if (task.value === 'PROCESS') {
-        store.commit('common/updateSampleObjForView', { type: 'PROCESS', obj: [row] })
-        console.log('PROCESS')
+      } else if (task.value === 'COLONYNUM') {
+        store.commit('common/updateSampleObjForView', { type: 'COLONYNUM', obj: [row] })
+        console.log('COLONYNUM')
         console.log(row)
       }
 
@@ -291,6 +319,8 @@ export default defineComponent({
       await getTask()
       if (taskList.value.length) {
         task.value = taskList.value[0].inspectClassify
+        inspectClassifyObj.inspectClassifyName = taskList.value[0].inspectClassifyName
+        inspectClassifyObj.inspectClassify = taskList.value[0].inspectClassify
       }
       query()
     })
@@ -300,15 +330,15 @@ export default defineComponent({
       taskList,
       queryForm,
       tableData,
-      printModuleRef,
       goHistory,
       changeTask,
       query,
       goInspect,
-      goPrint,
+      goCount,
       checkDate,
       selectionChange,
-      retentionSample,
+      cultivateSample,
+      inspectSample,
       btnConfigulationReadOnly
     }
   }
