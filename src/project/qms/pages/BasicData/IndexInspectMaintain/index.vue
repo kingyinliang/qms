@@ -6,7 +6,7 @@
     :rightTitle="pageRightColumnTitle"
     :treeData="treeData"
     :searchPlaceHolder="'输入检验名称搜索'"
-    :nodeKey="'inspectMethodId'"
+    :nodeKey="'focusId'"
     :treeProps="{ label: 'inspect',children:'inspectGroups' }"
     :filterWoekLevel="3"
     @treeNodeClick="val=>{return getMaterialDetail('default',val,'')}"
@@ -208,6 +208,8 @@ interface TreeItemData { // 物料分类 API
   inspectMethodId?: string
   inspectProperty?: string
   inspectPropertyName?: string
+  focusId? :string
+  focusParentId? :string
 }
 
 interface ParameterTreeData {
@@ -297,6 +299,7 @@ interface State {
   multipleSelection: string[]
   importObj: TopicMainData | null
   inspectPropertyOptions: any
+  currentFocusTarget: string
 }
 
 export default defineComponent({
@@ -313,6 +316,7 @@ export default defineComponent({
     const visible = ref(false)
     /**  == 变量 ==  **/
     const state = reactive<State>({
+      currentFocusTarget: '1a0',
       globalMainObj: {}, // 点击 Tree node 带出的全局 obj
       isImportTableDataShow: false, // import table show ?
       pageMainTitle: '检验方法明细',
@@ -405,19 +409,10 @@ export default defineComponent({
       INSPECT_INDEX_METHOD_QUERY_API({
       }).then((res) => {
         state.textParameterGroupSearch = ''
-        console.log('res.data.data')
-        console.log(res.data.data)
         state.treeData = treeDataTranslater(JSON.parse(JSON.stringify(res.data.data))) // 转换结构
-        console.log('state.treeData')
-        console.log(state.treeData)
         state.topicMainData = []
-        // 默认 Tree-Data 第一笔 给 id
-        // state.treeData[0].inspectGroups[0].inspectMethodId = '1a0'
-        // console.log('state.treeData[0].inspectGroups[0].inspectMethodId')
-        // console.log(JSON.parse(JSON.stringify(state.treeData[0].inspectGroups[0].inspectMethodId)))
-
         setTimeout(() => {
-          treeModule.value.focusCurrentNodeNumber = '1a0'
+          treeModule.value.focusCurrentNodeNumber = state.currentFocusTarget
         }, 2000)
       })
     }
@@ -431,7 +426,8 @@ export default defineComponent({
         data[i]._level = 1
         // 数据缺省 id , 前端赋予 id , 避免 tree 高亮问题
         if (data[i].inspectMethodId === '') {
-          data[i].inspectMethodId = data[i]._level + 'a' + i
+          // data[i].inspectMethodId = data[i]._level + 'a' + i
+          data[i].focusId = data[i]._level + 'a' + i
         }
         data[i].isTooltip = false
         for (let j = 0; j < data[i].inspectGroups.length; j++) {
@@ -441,11 +437,14 @@ export default defineComponent({
           data[i].inspectGroups[j].canEdit = true
           // 数据缺省 id , 前端赋予 id , 避免 tree 高亮问题
           if (data[i].inspectGroups[j].inspectMethodId === '') {
-            data[i].inspectGroups[j].inspectMethodId = data[i].inspectGroups[j]._level + 'b' + j
+            // data[i].inspectGroups[j].inspectMethodId = data[i].inspectGroups[j]._level + 'b' + j
+            data[i].inspectGroups[j].focusId = data[i].inspectGroups[j]._level + 'b' + i + j
           }
           for (let k = 0; k < data[i].inspectGroups[j].inspectGroups.length; k++) {
             data[i].inspectGroups[j].inspectGroups[k]._level = 3
             data[i].inspectGroups[j].inspectGroups[k].canEdit = true
+            data[i].inspectGroups[j].inspectGroups[k].focusId = data[i].inspectGroups[j].inspectGroups[k]._level + 'c' + i + j + data[i].inspectGroups[j].inspectGroups[k].inspectMethodId
+            data[i].inspectGroups[j].inspectGroups[k].focusParentId = data[i].inspectGroups[j]._level + 'b' + i + j
           }
         }
       }
@@ -453,8 +452,6 @@ export default defineComponent({
     }
     // [指标检验方法明细] 触发
     const treeNodeContextMenuHandle = (val:TreeItemData) => {
-      console.log('8888888')
-      console.log(val.inspectMethodId)
       treeModule.value.focusCurrentNodeNumber = ''
       setTimeout(() => {
         treeModule.value.focusCurrentNodeNumber = '659447186223812608'
@@ -504,6 +501,7 @@ export default defineComponent({
         })
         if (res.data.code === 200) {
           proxy.$successToast('操作成功')
+          state.currentFocusTarget = state.globalMainObj.focusParentId as string
           // reload
           await getMainTreeData()
         }
@@ -516,7 +514,6 @@ export default defineComponent({
         proxy.$warningToast('请录入必填栏位')
         return
       }
-
       if (!state.globalMainObj.id) { // 新增
         INSPECT_INDEX_METHOD_ADD_API({
           id: state.globalMainObj.id,
@@ -524,6 +521,7 @@ export default defineComponent({
           inspectMethodId: val
         }).then(() => {
           proxy.$successToast('操作成功')
+          state.currentFocusTarget = '3c' + state.globalMainObj.focusId?.substring(2) + val
           state.isDialogVisibleForItemControl = false
           getMainTreeData()
         })
@@ -534,6 +532,7 @@ export default defineComponent({
           inspectMethodId: val
         }).then(() => {
           proxy.$successToast('操作成功')
+          state.currentFocusTarget = '3c' + state.globalMainObj.focusParentId?.substring(2) + val
           state.isDialogVisibleForItemControl = false
           getMainTreeData()
         })
