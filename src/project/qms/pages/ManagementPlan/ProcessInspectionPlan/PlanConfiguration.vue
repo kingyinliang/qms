@@ -1151,7 +1151,7 @@ export default defineComponent({
           if (state.formGlobleItem.title === '计划明细-新增') { // 新增
             const tempCoInspectObj = await refCoInspect.value.getCheckedNodes()
             state.formGlobleItem.coInspect = tempCoInspectObj.length ? {
-              deptId: tempCoInspectObj[0],
+              deptId: tempCoInspectObj[0].id,
               deptName: tempCoInspectObj[0].deptName
             } : null
             const tempinspectObj = await refInspect.value.getCheckedNodes()
