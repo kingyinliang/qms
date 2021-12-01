@@ -70,11 +70,12 @@
         <template #default="scope">
           <span class="status"
                 :class="{
-                yellow: scope.row.taskStatusName === '待取样',
-                green: scope.row.taskStatusName === '已收样',
-                blue: scope.row.taskStatusName === '取样中' || scope.row.taskStatusName === '已送达',
+                yellow: scope.row.taskStatusName === '已收样',
+                green: scope.row.taskStatusName === '已完成',
+                blue: scope.row.taskStatusName === '检验中',
+                silver: scope.row.taskStatusName ==='待取样' || scope.row.taskStatusName ==='取样中' || scope.row.taskStatusName === '已送达' || scope.row.taskStatusName === '已取消'
              }"
-          >{{ scope.row.taskStatusName }}</span>
+          v-if="scope.row.taskStatusName!==''">{{ scope.row.taskStatusName }}</span>
         </template>
       </el-table-column>
       <el-table-column label="检验内容" prop="inspectContent" min-width="150" :show-overflow-tooltip="true" />
@@ -406,5 +407,8 @@ export default defineComponent({
   }
   .green::before{
     background: #7ED321;
+  }
+  .silver::before{
+    background: #AAA;
   }
 </style>
