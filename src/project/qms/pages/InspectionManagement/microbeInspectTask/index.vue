@@ -1,0 +1,444 @@
+<template>
+  <mds-card class="task" title="待办任务" :pack-up="false">
+    <template #titleBtn>
+      <div style="float: right; color: #333333;font-size: 14px;font-weight: bold;cursor: pointer" @click="goHistory"><i class="qmsIconfont qms-lishirenwu1" style="color: #487BFF"/> 历史任务</div>
+    </template>
+    <el-row :gutter="16">
+      <el-col :span="4" style="min-width: 255px" v-for="(item, index) in taskList" :key="index">
+        <div class="task__item" :class="{active: task === item.inspectClassify}"  @click="changeTask(item.inspectClassify,item.inspectClassifyName)">
+          <p class="task__item--title">
+            <svg class="qmsIconfont" aria-hidden="true">
+              <use xlink:href="#qms-colonynum" v-if="item.inspectClassify === 'COLONYNUM'"></use>
+              <use xlink:href="#qms-coliformgroup" v-if="item.inspectClassify === 'COLIFORMGROUP'"></use>
+              <use xlink:href="#qms-yeast" v-if="item.inspectClassify === 'YEAST'"></use>
+            </svg>
+            <span>
+              {{ item.inspectClassifyName }}
+            </span>
+          </p>
+          <div class="task__item__flex">
+            <div class="task__item__flex__item">
+              <p class="task__item__flex__item--big"><span>{{ item.execute }}</span><span style="font-size: 18px;margin-left: 3px">/{{ item.executeInvisible }}</span></p>
+              <p class="task__item__flex__item--small"><i class="qmsIconfont qms-daiwancheng"/>待完成</p>
+            </div>
+            <div class="task__item__flex__item--border"/>
+            <div class="task__item__flex__item">
+              <p class="task__item__flex__item--big">{{ item.progressing }}</p>
+              <p class="task__item__flex__item--small"><i class="qmsIconfont qms-jinrushiyan"/>进行中</p>
+            </div>
+            <div class="task__item__flex__item--border"/>
+            <div class="task__item__flex__item">
+              <p class="task__item__flex__item--big">{{ item.completed }}</p>
+              <p class="task__item__flex__item--small"><i class="qmsIconfont qms-shenhetongguo"/>已完成</p>
+            </div>
+          </div>
+        </div>
+      </el-col>
+    </el-row>
+  </mds-card>
+  <mds-card class="task-list" title="任务列表" :pack-up="false">
+    <template #titleBtn>
+      <el-form :inline="true" size="small" style="float: right;display: flex" @keyup.enter="() => {queryForm.current = 1; query()}" @submit.prevent>
+        <el-form-item label="样品码：">
+          <el-input v-model="queryForm.sampleCode" placeholder="请输入" style="width: 120px" clearable></el-input>
+        </el-form-item>
+        <el-form-item label="检验内容：">
+          <el-input v-model="queryForm.inspectContent" placeholder="请输入" style="width: 120px" clearable></el-input>
+        </el-form-item>
+        <el-form-item label="培养日期">
+        <el-date-picker
+          v-model="queryForm.inspectDateBegin"
+          type="date"
+          format="YYYY-MM-DD"
+          value-format="YYYY-MM-DD"
+          placeholder="请选选择日期"
+          style="width: 140px"
+        />
+        -
+        <el-date-picker
+          v-model="queryForm.inspectDateEnd"
+          type="date"
+          format="YYYY-MM-DD"
+          value-format="YYYY-MM-DD"
+          placeholder="请选选择日期"
+          style="width: 140px"
+        />
+      </el-form-item>
+        <el-form-item>
+          <el-button icon="el-icon-search" @click="() => {queryForm.current = 1; query()}">查询</el-button>
+          <el-button @click="goInspect()"><i class="qmsIconfont qms-jianyan"/> 培养</el-button>
+          <el-button type="primary" @click="goCount()"><i class="qmsIconfont qms-dayin" /> 计数</el-button>
+        </el-form-item>
+      </el-form>
+    </template>
+    <el-table border :cell-style="{'text-align':'center'}" :data="tableData" tooltip-effect="dark" style="width: 100%" @selection-change="selectionChange">
+      <el-table-column type="selection" width="45" :selectable="checkDate" />
+      <el-table-column type="index" fixed="left" :index="(index) => index + 1 + (queryForm.current - 1) * queryForm.size" label="序号" width="50" />
+      <el-table-column label="样品码" prop="sampleCode" min-width="120" :show-overflow-tooltip="true" >
+        <template #default="scope">
+         <div type="text" class="text_btn" @click="btnConfigulationReadOnly(scope.row)">
+            <em>{{scope.row.sampleCode}}</em>
+          </div>
+        </template>
+      </el-table-column>
+      <el-table-column label="状态" prop="taskStatusName" min-width="120" :show-overflow-tooltip="true">
+        <template #default="scope">
+          <span class="status"
+                :class="{
+                yellow: scope.row.taskStatusName === '已收样',
+                green: scope.row.taskStatusName === '已完成',
+                blue: scope.row.taskStatusName === '检验中',
+                silver: scope.row.taskStatusName ==='待取样' || scope.row.taskStatusName ==='取样中' || scope.row.taskStatusName === '已送达' || scope.row.taskStatusName === '已取消'
+             }"
+          v-if="scope.row.taskStatusName!==''">{{ scope.row.taskStatusName }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="检验内容" prop="inspectContent" min-width="150" :show-overflow-tooltip="true" />
+      <el-table-column  label="订单" prop="orderNo" v-if="task !== 'COLONYNUM'" min-width="150" :show-overflow-tooltip="true" />
+      <el-table-column label="物料信息" min-width="165" :show-overflow-tooltip="true">
+        <template #default="scope">{{ `${scope.row.inspectMaterialCode} ${scope.row.inspectMaterialName}` }}</template>
+      </el-table-column>
+      <el-table-column  label="批次" prop="inspectBatch" v-if="task === 'COLONYNUM'" min-width="150"  :show-overflow-tooltip="true" />
+      <el-table-column  label="品项" prop="itemName"  v-if="task !== 'COLONYNUM'" min-width="150" :show-overflow-tooltip="true" />
+      <el-table-column  label="取样信息" prop="inspectSiteName"  min-width="150" :show-overflow-tooltip="true" />
+      <el-table-column label="取样说明" prop="sampleExplain" v-if="task !== 'COLONYNUM'"  min-width="150" :show-overflow-tooltip="true" />
+      <el-table-column label="检验频次" prop="inspectFrequency" v-if="task !== 'COLONYNUM'"  min-width="150" :show-overflow-tooltip="true" />
+      <el-table-column label="培养日期" prop="inspectDate" v-if="task === 'COLONYNUM'"  min-width="150" :show-overflow-tooltip="true" />
+      <el-table-column label="取样单位" prop="sampleDeptName" v-if="task !== 'COLONYNUM'" min-width="150" :show-overflow-tooltip="true" />
+      <el-table-column label="送样时间" prop="deliveryDate" min-width="150" :show-overflow-tooltip="true" />
+      <el-table-column label="收样时间" prop="receiveDate" min-width="150" :show-overflow-tooltip="true" />
+      <el-table-column label="操作" width="140" fixed="right">
+        <template #default="scope">
+          <el-button  type="text" icon="qmsIconfont qms-jianyan3" class="role__btn" @click="cultivateSample(scope.row)">
+            培养
+          </el-button>
+          <el-button type="text" icon="qmsIconfont qms-jianyan3" class="role__btn" @click="inspectSample(scope.row)">
+            检验
+          </el-button>
+        </template>
+      </el-table-column>
+    </el-table>
+    <el-row style="float: right">
+      <el-pagination
+        :page-size="queryForm.size"
+        :current-page="queryForm.current"
+        :total="queryForm.total"
+        :page-sizes="[10, 20, 50]"
+        layout="total, sizes, prev, pager, next, jumper"
+        @size-change="val => {queryForm.size = val;query()}"
+        @current-change="val => {queryForm.current = val; query()}"
+      />
+    </el-row>
+  </mds-card>
+</template>
+
+<script lang="ts">
+import {
+  ComponentInternalInstance,
+  defineComponent,
+  getCurrentInstance,
+  onMounted,
+  reactive,
+  ref
+} from 'vue'
+import { TASK_INSPECT_MICROBE_TODO_LIST_QUERY, TASK_INSPECT_MICROBE_INSPECT_TASK_LIST_QUERY, INSPECT_TASK_RETENTION } from '@/api/api'
+import layoutTs from '@/components/layout/layoutTs'
+import { useStore } from 'vuex'
+interface TableData{
+  id?: string
+  taskStatus?: string
+  inspectContent?: string
+  itemName?: string
+  inspectSiteName?: string
+  sampleCode?: string
+}
+
+export default defineComponent({
+  name: 'MicrobeInspectionTask',
+  components: {
+  },
+  setup () {
+    const ctx = getCurrentInstance() as ComponentInternalInstance
+    const proxy = ctx.proxy as any
+    const store = useStore()
+    const { gotoPage } = layoutTs()
+
+    const task = ref('COLONYNUM') // 选择任务
+    const taskList = ref<any[]>([]) // 任务汇总
+    const queryForm = reactive({
+      sampleCode: '',
+      inspectContent: '',
+      indexName: '',
+      inspectDateBegin: '',
+      inspectDateEnd: '',
+      current: 1,
+      size: 10,
+      total: 0
+    }) // 查询表单数据
+    const inspectClassifyObj = reactive({
+      inspectClassifyName: '菌落总数',
+      inspectClassify: 'COLONYNUM'
+    })
+    const mappingClassifyName = reactive({})
+    const tableData = ref<TableData[]>([]) // 表格数据
+    const selectionData = ref<TableData[]>([]) // 选中数据
+
+    // 获取代办任务类别
+    const getTask = async () => {
+      const { data } = await TASK_INSPECT_MICROBE_TODO_LIST_QUERY()
+      console.log('获取代办任务类别')
+      console.log(data.data)
+      taskList.value = []
+      for (const key in data.data) {
+        if (data.data[key]) {
+          switch (key.toString().toUpperCase()) {
+            case 'COLONYNUM': data.data[key].inspectClassifyName = '菌落总数'; data.data[key].inspectClassify = key.toString().toUpperCase(); break
+            case 'COLIFORMGROUP': data.data[key].inspectClassifyName = '大肠菌群'; data.data[key].inspectClassify = key.toString().toUpperCase(); break
+            case 'YEAST': data.data[key].inspectClassifyName = '酵母菌'; data.data[key].inspectClassify = key.toString().toUpperCase(); break
+          }
+          taskList.value.push(data.data[key])
+        }
+      }
+    }
+    // 跳转历史任务
+    const goHistory = () => {
+      gotoPage({
+        path: 'qms-pages-InspectionManagement-microbeInspectTask-historyTask'
+      })
+    }
+    // 查询
+    const query = async () => {
+      queryForm.indexName = inspectClassifyObj.inspectClassifyName
+      const { data } = await TASK_INSPECT_MICROBE_INSPECT_TASK_LIST_QUERY(queryForm)
+      tableData.value = data.data.records
+      queryForm.size = data.data.size
+      queryForm.current = data.data.current
+      queryForm.total = data.data.total
+    }
+    // 切换任务分类
+    const changeTask = (inspectClassify: string, inspectClassifyName: string) => {
+      task.value = inspectClassify
+      inspectClassifyObj.inspectClassifyName = inspectClassifyName
+      inspectClassifyObj.inspectClassify = inspectClassify
+      queryForm.current = 1
+      query()
+    }
+    // 检验
+    const goInspect = (row?: TableData) => {
+      if (!selectionData.value.length) {
+        proxy.$warningToast('请选择数据')
+        return
+      }
+      const data = selectionData.value.filter(it => it.taskStatus === 'RECEIVED' || it.taskStatus === 'CHECKING')
+      if (selectionData.value.length && data.length !== selectionData.value.length) {
+        proxy.$warningToast('存在不可检验任务请重新选择')
+        return
+      }
+      store.commit('inspection/updateInspectionTask', selectionData.value)
+      if (task.value === 'COLONYNUM') {
+        store.commit('common/updateSampleObjToInspect', { type: 'COLONYNUM', obj: selectionData.value.length ? selectionData.value : [] })
+      } else if (task.value === 'TEMP') {
+        store.commit('common/updateSampleObjToInspect', { type: 'TEMP', obj: selectionData.value.length ? selectionData.value : [] })
+      }
+
+      gotoPage({
+        path: 'qms-pages-InspectionManagement-PhysicochemicalInspect-index'
+      })
+    }
+    const setText = (row: TableData):string => {
+      const inspectContent = (row.inspectContent as string).split('-')
+      if (inspectContent.length && inspectContent[1] && inspectContent[2]) {
+        let tmp = ''
+        inspectContent[2].indexOf('理') >= 0 ? tmp = '理'
+          : inspectContent[2].indexOf('微生物') >= 0 ? tmp = '菌' : tmp = ''
+        return `${inspectContent[1]}(${tmp})`
+      } else {
+        return ''
+      }
+    }
+    // 打印
+    const goCount = () => {
+      //
+    }
+    // 表格复选框能否被选中逻辑
+    const checkDate = () => {
+      // if (row.taskStatus !== 'RECEIVED' && row.taskStatus !== 'CHECKING') {
+      //   return false
+      // }
+      return true
+    }
+    // 表格复选框改变
+    const selectionChange = (val: TableData[]) => {
+      selectionData.value = val
+    }
+    // 培养 from row
+    const cultivateSample = (row: TableData) => {
+      proxy.$confirm('是否培养，请确认', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(async () => {
+        await INSPECT_TASK_RETENTION(row)
+        proxy.$successToast('操作成功')
+        await query()
+        await getTask()
+      })
+    }
+    // 检验 from row
+    const inspectSample = (row: TableData) => {
+      proxy.$confirm('是否检验，请确认', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(async () => {
+        await INSPECT_TASK_RETENTION(row)
+        proxy.$successToast('操作成功')
+        await query()
+        await getTask()
+      })
+    }
+
+    // [BTN:只读]
+    const btnConfigulationReadOnly = async (row:TableData) => {
+      if (task.value === 'TEMP') {
+        console.log('TEMP')
+        console.log(row)
+        store.commit('common/updateSampleObjForView', { type: 'TEMP', obj: [row] })
+      } else if (task.value === 'COLONYNUM') {
+        store.commit('common/updateSampleObjForView', { type: 'COLONYNUM', obj: [row] })
+        console.log('COLONYNUM')
+        console.log(row)
+      }
+
+      gotoPage({
+        path: 'qms-pages-InspectionManagement-components-form'
+      })
+    }
+
+    onMounted(async () => {
+      await getTask()
+      if (taskList.value.length) {
+        task.value = taskList.value[0].inspectClassify
+        inspectClassifyObj.inspectClassifyName = taskList.value[0].inspectClassifyName
+        inspectClassifyObj.inspectClassify = taskList.value[0].inspectClassify
+      }
+      query()
+    })
+
+    return {
+      task,
+      taskList,
+      queryForm,
+      tableData,
+      goHistory,
+      changeTask,
+      query,
+      goInspect,
+      goCount,
+      checkDate,
+      selectionChange,
+      cultivateSample,
+      inspectSample,
+      btnConfigulationReadOnly
+    }
+  }
+})
+</script>
+
+<style lang="scss" scoped>
+  .task{
+    border: none;
+    box-shadow: none;
+    padding: 0!important;
+    &__item{
+      min-width: 255px;
+      cursor: pointer;
+      height: 140px;
+      background: white;
+      padding: 14px 10px;
+      box-shadow: 3px 3px 4px 0px rgba(0, 0, 0, 0.1);
+      border-radius: 8px;
+      border: 1px solid rgba(171, 171, 171, 0.5);
+      &--title{
+        font-size: 16px;
+        font-weight: bold;
+        color: #333333;
+        display: flex;
+        line-height: 22px;
+        .qmsIconfont{
+          width: 22px;
+          height: 22px;
+          margin-right: 3px;
+        }
+      }
+      &__flex{
+        display: flex;
+        align-items: center;
+        margin-top: 23px;
+        &__item{
+          flex: 1;
+          text-align: center;
+          &--big{
+            font-size: 32px;
+            font-weight: bold;
+          }
+          &--small{
+            font-size: 14px;
+          }
+          &--border{
+            width: 2px;
+            height: 30px;
+            background: #999999;
+          }
+          i{
+            color: #487BFF;
+            margin-right: 4px;
+          }
+        }
+      }
+    }
+    .active{
+      border: 1px solid #487BFF;
+      color: #487BFF;
+      transform: scale(1.05);
+      .task__item--title{
+        color: #487BFF;
+      }
+    }
+  }
+  .task-list{
+    background: white;
+    .el-form-item{
+      margin-bottom: 11px;
+    }
+  }
+  .status{
+    position: relative;
+    padding-left: 15px;
+    &::before {
+      content: "";
+      display: block;
+      border-radius: 50%;
+      position: absolute;
+      top: 7px;
+      left: 0;
+      width: 6px;
+      height: 6px;
+    }
+  }
+  .yellow::before{
+    background: #FFBF00;
+  }
+  .blue::before{
+    background: #487BFF;
+  }
+  .grey::before{
+    background: #D8D8D8;
+  }
+  .green::before{
+    background: #7ED321;
+  }
+  .silver::before{
+    background: #AAA;
+  }
+</style>
