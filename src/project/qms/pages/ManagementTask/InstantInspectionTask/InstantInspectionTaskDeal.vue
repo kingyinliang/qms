@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-10-15 20:07:53
  * @LastEditors: Telliex
- * @LastEditTime: 2021-11-24 14:55:29
+ * @LastEditTime: 2021-12-01 19:07:12
 -->
 <template>
 <div class="k-box-card" style="padding:20px 0;">
@@ -91,14 +91,14 @@
             <em>{{scope.row.indexMethod}}</em>
         </template>
       </el-table-column>
-      <el-table-column label="检验方法" show-overflow-tooltip prop="inspectMethodName" min-width="150">
+      <el-table-column label="检验方法" show-overflow-tooltip prop="inspectMethodCode" min-width="150">
         <template #default="scope">
-          <el-select v-model="scope.row.inspectMethodName" placeholder="请选择" size="small" clearable @visible-change="val=>actFocusGetInspectMethodOptions(val,scope.row)" @change="val=>actChangeGetInspectMethodOptions(val,scope.row)">
+          <el-select v-model="scope.row.inspectMethodCode" placeholder="请选择" size="small" clearable @visible-change="val=>actFocusGetInspectMethodOptions(val,scope.row)" @change="val=>actChangeGetInspectMethodOptions(val,scope.row)">
             <el-option
               v-for="item in scope.row.inspectMethodOptions"
               :key="item.id"
               :label="item.inspectMethodGroupName"
-              :value="item.inspectMethodName"
+              :value="item.inspectMethodCode"
             >
             </el-option>
           </el-select>
@@ -165,17 +165,17 @@
       <el-table-column label="指标名称" show-overflow-tooltip prop="indexName" width="100" />
       <el-table-column label="单位" show-overflow-tooltip prop="indexUnit" width="80" />
       <el-table-column label="方法" show-overflow-tooltip prop="indexMethod" width="260" />
-      <el-table-column label="检验方法" show-overflow-tooltip prop="inspectMethodName" min-width="150">
+      <el-table-column label="检验方法" show-overflow-tooltip prop="inspectMethodCode" min-width="150">
         <template #header>
           <span class="required">检验方法</span>
         </template>
         <template #default="scope">
-          <el-select v-model="scope.row.inspectMethodName" placeholder="请选择" size="small" clearable @visible-change="val=>actFocusGetInspectMethodOptions(val,scope.row)" @change="val=>actChangeGetInspectMethodOptions(val,scope.row)">
+          <el-select v-model="scope.row.inspectMethodCode" placeholder="请选择" size="small" clearable @visible-change="val=>actFocusGetInspectMethodOptions(val,scope.row)" @change="val=>actChangeGetInspectMethodOptions(val,scope.row)">
             <el-option
               v-for="item in scope.row.inspectMethodOptions"
               :key="item.id"
               :label="item.inspectMethodGroupName"
-              :value="item.inspectMethodName"
+              :value="item.inspectMethodCode"
             >
             </el-option>
           </el-select>
@@ -854,24 +854,33 @@ export default defineComponent({
     }
 
     const actFocusGetInspectMethodOptions = (val:boolean, row: any) => {
-      row.inspectMethodOptions = []
+      console.log('111111')
+
       // 检验方法下拉
       if (val && row.indexCode !== '') {
+        console.log('22222222')
+        row.inspectMethodOptions = []
         MANAGEMENT_PROCESS_INSPECTION_TASK_METHOD_DROPDOWN_API({
           inspectIndexId: row.indexId
         }).then((res) => {
         // state.inspectMethodOptions = res.data.data
+          console.log('333333')
+          console.log(res.data.data)
           row.inspectMethodOptions = res.data.data
         })
       }
     }
 
     const actChangeGetInspectMethodOptions = (val:string, row:any) => {
+      console.log('4444444')
+      console.log(val)
+      console.log(row)
       row.inspectMethodOptions.forEach((item:any) => {
-        if (val === item.inspectMethodName) {
-          row.inspectMethodCode = item.inspectMethodCode
+        if (val === item.inspectMethodCode) {
+          // row.inspectMethodCode = item.inspectMethodCode
           row.inspectParameterGroupId = item.inspectParameterGroupId
-          // row.inspectMethodName = item.inspectMethodName
+          row.inspectMethodName = item.inspectMethodName
+          row.inspectMethodGroupName = item.inspectMethodGroupName
         }
       })
     }
@@ -896,6 +905,8 @@ export default defineComponent({
         state.inspectIndexItemSize = res.data.data.length
         state.dataOrgTableOfInspectIndexBuild = JSON.parse(JSON.stringify(res.data.data))
         state.dataTableOfInspectIndexBuild.forEach((item) => {
+          item.inspectMethodGroupName = item.inspectMethodName
+          actFocusGetInspectMethodOptions(true, item)
           item.isRedact = false
         })
       })
@@ -909,9 +920,11 @@ export default defineComponent({
         console.log('分配-检验指标 table 加载')
         console.log(res.data.data)
         state.dataTableOfInspectIndexAssign = res.data.data
-        state.dataTableOfInspectIndexAssign.forEach(item => {
+        state.dataTableOfInspectIndexAssign.forEach(async (item) => {
           item.inspectDeptIdList = [item.inspectDeptId]
           item.isDialogVisibleForGlobleItem = false
+          // item.inspectMethodGroupName = item.inspectMethodName
+          actFocusGetInspectMethodOptions(true, item)
         })
 
         state.inspectIndexItemSize = res.data.data.length

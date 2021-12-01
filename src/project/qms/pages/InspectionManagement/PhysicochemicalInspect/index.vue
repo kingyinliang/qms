@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-11-16 09:59:02
  * @LastEditors: Telliex
- * @LastEditTime: 2021-11-30 11:11:31
+ * @LastEditTime: 2021-12-01 19:29:50
 -->
 <template>
   <mds-area class="test_method" title="已选中样品" :pack-up="false" style="margin-bottom: 0; background: #fff; overflow:scroll">
@@ -114,6 +114,7 @@ interface DataTableOfTopicMain {
   tempApplyNo: string;
   temporaryFlag: string;
   delFlag: number
+  mergeFlag: string
 }
 
 interface State {
@@ -355,12 +356,26 @@ export default defineComponent({
       console.log(val)
 
       setTimeout(async () => {
-        if (val.obj && val.obj.taskInspectIdList) {
+        const tempContainer:any[] = []
+        let isOpenCopy = false
+        state.dataTableOfTopicMain.forEach(item => {
+          tempContainer.push({
+            id: item.id,
+            mergeFlag: item.mergeFlag
+          })
+        })
+
+        if (val.obj && val.obj.taskInspectIdList.length) {
           console.log(val.obj.taskInspectIdList)
+          isOpenCopy = true
+          tempContainer.push({
+            id: val.obj.taskInspectIdList[0],
+            mergeFlag: ''
+          })
         }
 
         // 重新加载后 list
-        await btnGetInspectListReload(state.dataTableOfTopicMain)
+        await btnGetInspectListReload(tempContainer)
         const totalItemsNumber = state.dataTableOfTopicMain.length // 3 status
         let nowItemIndex = -1
         let nexItemIndex = null

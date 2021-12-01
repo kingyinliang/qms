@@ -3,11 +3,11 @@
  * @Anthor: Telliex
  * @Date: 2021-11-11 16:30:07
  * @LastEditors: Telliex
- * @LastEditTime: 2021-11-30 10:18:20
+ * @LastEditTime: 2021-12-01 19:32:46
 -->
 <template>
   <el-dialog :title="title+subTitle" v-model="isDialogShow" width="90%" @close="onClose">
-  <mds-area class="info">
+  <mds-area class="info" style="height:60vh;overflow:auto">
     <mds-area :title="infoSubTitle" :name="'org'" class="info">
         <el-form :inline="true" ref="refFormOfSampleInfo" :model="dataFormOfSampleInfo" :label-width="cssForformLabelWidth">
           <el-form-item label="检验任务："  prop="taskSampleId" v-if="currentMainType==='TEMP'" >
@@ -28,94 +28,94 @@
         </el-form>
     </mds-area>
 
-        <mds-area :title="'检验录入'" :name="'org'" >
-          <template v-for="subItem in dataFormOfSampleItemUnit" :key="subItem">
-            <mds-area :title="subItem.indexName+' ('+subItem.sampleCode+')'" :name="'org'" :outline="true">
-              <!-- <template #titleBtn v-if="subItem.inspectMethodCodeWhichIndex!==null|| subItem.inspectMethodCodeWhichIndex!==100 || subItem.inspectMethodNameList.length==2"> -->
-              <template #titleBtn v-if="subItem.inspectMethodNameList?.length==2">
-                <div class="btn-group">
-                    <template v-for="(btnItem,index) in subItem.inspectMethodNameList" :key="btnItem.inspectMethodCode">
-                        <button   size="mini" class="btn-titm" :class="{focus:subItem.inspectMethodCode===btnItem.inspectMethodCode}" @click="btnChangeMethodOfIndex(index,subItem)">{{btnItem.inspectMethodName.substring(0,btnItem.inspectMethodName.length-1)}}</button>
-                    </template>
-                </div>
-              </template>
-              <el-form :inline="true" :model="subItem" :label-width="cssForformLabelWidth">
-                <el-form-item label="结果："  prop="inspectResult" >
-                  <el-input v-model="subItem.inspectResult" size="small" oninput ="value=value.replace(/[^\-\d.]/g, '')"   class="inputWidth" placeholder="请输入" autocomplete="off" :disabled="!subItem.canEditInspectResult" @change="actHandleIndexJudgeResult(subItem)" ></el-input>
-                </el-form-item>
-                <el-form-item label="依据方法："  prop="indexVersionMethod" >
-                  <el-input v-model="subItem.indexVersionMethod" size="small"  class="inputWidth" placeholder="" autocomplete="off" :disabled="true"></el-input>
-                </el-form-item>
-                <el-form-item label="判定："  prop="indexJudgeResult" >
-                    <el-radio v-model="subItem.indexJudgeResult" label="Y" :disabled="true">合格</el-radio>
-                    <el-radio v-model="subItem.indexJudgeResult" label="N" :disabled="true">不合格</el-radio>
-                </el-form-item>
-                <el-form-item label="标准："  prop="indexStandardString" >
-                    <el-input v-model="subItem.indexStandardString" size="small"  class="inputWidth" placeholder="e.x.1<S<10" autocomplete="off" oninput ="value=value.replace(/[^0-9S><=]/g, '')" :disabled="!subItem.canEditIndexStandardString"  @blur="actHandleIndexStandardString(subItem)"></el-input>
-                </el-form-item>
-
-                <el-form-item label="检验过程："  prop="" v-if="subItem.canShowParameterList">
-                  <template v-if="subItem.inspectMethodNameList">
-                    <template v-for="(para,index) in subItem.inspectMethodNameList[subItem.inspectMethodCodeWhichIndex]?.inspectParameterListShow" :key="index">
-                      {{para.paramCode?para.paramCode.split('[')[0]:'?'}}<sub>{{para.paramCode?para.paramCode.split('[')[1].replace(']',''):''}}</sub> =
-                      <el-input v-model="para.defaultValue" type="text"  size="small" placeholder=""  oninput ="value=value.replace(/[^\d.]/g, '').replace(/^(\d+)\.(\d\d).*$/, '$1.$2')" style="width:140px;margin-right:10px" @blur="actHandleInspectResult(subItem)">
-                        <template #suffix>
-                          {{para.paramUnit}}
-                        </template>
-                      </el-input>
-                    </template>
-                  </template>
-                </el-form-item>
-
-                <!-- <el-form-item label="检验过程："  prop="" v-if="subItem.inspectMethodCodeWhichIndex===null">
-                    <el-input v-model="subItem.inspectParameterOnlyText" type="text"  size="small" placeholder=""  style="width:300px;margin-right:10px"/>
-                </el-form-item> -->
-              </el-form>
-            </mds-area>
+    <mds-area :title="'检验录入'" :name="'org'" >
+      <template v-for="subItem in dataFormOfSampleItemUnit" :key="subItem">
+        <mds-area :title="subItem.indexName+' ('+subItem.sampleCode+')'" :name="'org'" :outline="true">
+          <!-- <template #titleBtn v-if="subItem.inspectMethodCodeWhichIndex!==null|| subItem.inspectMethodCodeWhichIndex!==100 || subItem.inspectMethodNameList.length==2"> -->
+          <template #titleBtn v-if="subItem.inspectMethodNameList?.length==2">
+            <div class="btn-group">
+                <template v-for="(btnItem,index) in subItem.inspectMethodNameList" :key="btnItem.inspectMethodCode">
+                    <button   size="mini" class="btn-titm" :class="{focus:subItem.inspectMethodCode===btnItem.inspectMethodCode}" @click="btnChangeMethodOfIndex(index,subItem)">{{btnItem.inspectMethodName.substring(0,btnItem.inspectMethodName.length-1)}}</button>
+                </template>
+            </div>
           </template>
-        </mds-area>
-        <el-form :inline="true" :model="dataFormOfSampleInfo"  :label-width="cssForformLabelWidth" >
-          <el-form-item label="综合判定："  prop="indexJudgeResult" >
-            <el-radio v-model="indexJudgeResult" label="Y" :disabled="true">合格</el-radio>
-            <el-radio v-model="indexJudgeResult" label="N" :disabled="true">不合格</el-radio>
-          </el-form-item>
+          <el-form :inline="true" :model="subItem" :label-width="cssForformLabelWidth">
+            <el-form-item label="结果："  prop="inspectResult" >
+              <el-input v-model="subItem.inspectResult" size="small" oninput ="value=value.replace(/[^\-\d.]/g, '')"   class="inputWidth" placeholder="请输入" autocomplete="off" :disabled="!subItem.canEditInspectResult" @change="actHandleIndexJudgeResult(subItem)" ></el-input>
+            </el-form-item>
+            <el-form-item label="依据方法："  prop="indexVersionMethod" >
+              <el-input v-model="subItem.indexVersionMethod" size="small"  class="inputWidth" placeholder="" autocomplete="off" :disabled="true"></el-input>
+            </el-form-item>
+            <el-form-item label="判定："  prop="indexJudgeResult" >
+                <el-radio v-model="subItem.indexJudgeResult" label="Y" :disabled="true">合格</el-radio>
+                <el-radio v-model="subItem.indexJudgeResult" label="N" :disabled="true">不合格</el-radio>
+            </el-form-item>
+            <el-form-item label="标准："  prop="indexStandardString" >
+                <el-input v-model="subItem.indexStandardString" size="small"  class="inputWidth" placeholder="e.x.1<S<10" autocomplete="off" oninput ="value=value.replace(/[^0-9S><=]/g, '')" :disabled="!subItem.canEditIndexStandardString"  @blur="actHandleIndexStandardString(subItem)"></el-input>
+            </el-form-item>
 
-          <el-form-item label="检验说明："  prop="inspectExplain" >
-            <el-input v-model="dataFormOfSampleInfo.inspectExplain" size="small" placeholder="自动带入" autocomplete="off" style="width:300px"></el-input>
-          </el-form-item>
-        </el-form>
-        <el-form :inline="true"  :model="dataFormOfSampleInfo"  :label-width="cssForformLabelWidth" >
-          <el-form-item label="复检方式："  prop="recheckMod" >
-            <el-radio v-model="dataFormOfSampleInfo.recheckMod" label="ORIGINAL_RECHECK">原样复检</el-radio>
-            <el-radio v-model="dataFormOfSampleInfo.recheckMod" label="RESAMOLING">重新取样</el-radio>
-            <el-radio v-model="dataFormOfSampleInfo.recheckMod" label="OTHER_SAMPLING">其他取样</el-radio>
-          </el-form-item>
-        </el-form>
-        <div><span>检验时间:</span>{{!dataFormOfSampleInfo.finishDate?'':dataFormOfSampleInfo.finishDate}}</div>
-      <mds-area :title="'检验记录'" :name="'org'" class="info" v-if="false" >
-        <div class="block" style="padding-top:10px">
-          <el-timeline>
-            <el-timeline-item
-              v-for="(item, index) in timeLineData"
-              :key="index"
-              :size="'large'"
-              :color="'#467BFF'"
-              :hide-timestamp="true"
-            >
-              <div class="time-log">
-                <ul>
-                  <li v-for="(element, index) in item.indexList" :key="index"><div>> <span>指标：</span><em>{{element.indexName}}</em></div><div><span>样品码：</span><em>{{element.sampleCode}}</em></div><div><span>结果：</span><em :style="{color:element.indexJudgeResult==='N'?'#ff0000':'inherit'}">{{element.inspectResult}}</em></div></li>
-                </ul>
-              </div>
-              <template #dot>
-                <div class="dot">
-                  {{item.indexList.length-index-1}}
-                </div>
+            <el-form-item label="检验过程："  prop="" v-if="subItem.canShowParameterList">
+              <template v-if="subItem.inspectMethodNameList">
+                <template v-for="(para,index) in subItem.inspectMethodNameList[subItem.inspectMethodCodeWhichIndex]?.inspectParameterListShow" :key="index">
+                  {{para.paramCode?para.paramCode.split('[')[0]:'?'}}<sub>{{para.paramCode?para.paramCode.split('[')[1].replace(']',''):''}}</sub> =
+                  <el-input v-model="para.defaultValue" type="text"  size="small" placeholder=""  oninput ="value=value.replace(/[^\d.]/g, '').replace(/^(\d+)\.(\d\d).*$/, '$1.$2')" style="width:140px;margin-right:10px" @blur="actHandleInspectResult(subItem)">
+                    <template #suffix>
+                      {{para.paramUnit}}
+                    </template>
+                  </el-input>
+                </template>
               </template>
-            </el-timeline-item>
-          </el-timeline>
-        </div>
-      </mds-area>
+            </el-form-item>
+
+            <!-- <el-form-item label="检验过程："  prop="" v-if="subItem.inspectMethodCodeWhichIndex===null">
+                <el-input v-model="subItem.inspectParameterOnlyText" type="text"  size="small" placeholder=""  style="width:300px;margin-right:10px"/>
+            </el-form-item> -->
+          </el-form>
+        </mds-area>
+      </template>
+    </mds-area>
+    <el-form :inline="true" :model="dataFormOfSampleInfo"  :label-width="cssForformLabelWidth" >
+      <el-form-item label="综合判定："  prop="indexJudgeResult" >
+        <el-radio v-model="indexJudgeResult" label="Y" :disabled="true">合格</el-radio>
+        <el-radio v-model="indexJudgeResult" label="N" :disabled="true">不合格</el-radio>
+      </el-form-item>
+
+      <el-form-item label="检验说明："  prop="inspectExplain" >
+        <el-input v-model="dataFormOfSampleInfo.inspectExplain" size="small" placeholder="自动带入" autocomplete="off" style="width:300px"></el-input>
+      </el-form-item>
+    </el-form>
+    <el-form :inline="true"  :model="dataFormOfSampleInfo"  :label-width="cssForformLabelWidth" >
+      <el-form-item label="复检方式："  prop="recheckMod" >
+        <el-radio v-model="dataFormOfSampleInfo.recheckMod" label="ORIGINAL_RECHECK">原样复检</el-radio>
+        <el-radio v-model="dataFormOfSampleInfo.recheckMod" label="RESAMOLING">重新取样</el-radio>
+        <el-radio v-model="dataFormOfSampleInfo.recheckMod" label="OTHER_SAMPLING">其他取样</el-radio>
+      </el-form-item>
+    </el-form>
+    <div><span>检验时间:</span>{{!dataFormOfSampleInfo.finishDate?'':dataFormOfSampleInfo.finishDate}}</div>
+    <mds-area :title="'检验记录'" :name="'org'" class="info" v-if="false" >
+      <div class="block" style="padding-top:10px">
+        <el-timeline>
+          <el-timeline-item
+            v-for="(item, index) in timeLineData"
+            :key="index"
+            :size="'large'"
+            :color="'#467BFF'"
+            :hide-timestamp="true"
+          >
+            <div class="time-log">
+              <ul>
+                <li v-for="(element, index) in item.indexList" :key="index"><div>> <span>指标：</span><em>{{element.indexName}}</em></div><div><span>样品码：</span><em>{{element.sampleCode}}</em></div><div><span>结果：</span><em :style="{color:element.indexJudgeResult==='N'?'#ff0000':'inherit'}">{{element.inspectResult}}</em></div></li>
+              </ul>
+            </div>
+            <template #dot>
+              <div class="dot">
+                {{item.indexList.length-index-1}}
+              </div>
+            </template>
+          </el-timeline-item>
+        </el-timeline>
+      </div>
+    </mds-area>
     <div style="display: flex; margin:20px 0px;justify-content: flex-end;">
       <el-button  icon="el-icon-circle-close" type="primary" size="small" class="topic-button" @click="onClose">取消</el-button>
       <el-button  icon="el-icon-circle-check" type="primary" size="small" class="topic-button"  @click="btnSaveOrSubmitDataOfInspect('save')">保存</el-button>
@@ -1132,7 +1132,6 @@ export default defineComponent({
 
 }
 .dot{
-
     border-radius: 10px;
     background: rgb(238, 238, 238);
     width: 20px;
