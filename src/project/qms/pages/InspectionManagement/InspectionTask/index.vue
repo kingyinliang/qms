@@ -272,15 +272,16 @@ export default defineComponent({
 
     // [BTN:只读]
     const btnConfigulationReadOnly = async (row:TableData) => {
-      if (task.value === 'TEMP') {
-        console.log('TEMP')
-        console.log(row)
-        store.commit('common/updateSampleObjForView', { type: 'TEMP', obj: [row] })
-      } else if (task.value === 'PROCESS') {
-        store.commit('common/updateSampleObjForView', { type: 'PROCESS', obj: [row] })
-        console.log('PROCESS')
-        console.log(row)
-      }
+      // if (task.value === 'TEMP') {
+      //   console.log('TEMP')
+      //   console.log(row)
+      //   store.commit('common/updateSampleObjForView', { type: 'TEMP', obj: [row] })
+      // } else if (task.value === 'PROCESS') {
+      //   store.commit('common/updateSampleObjForView', { type: 'PROCESS', obj: [row] })
+      //   console.log('PROCESS')
+      //   console.log(row)
+      // }
+      store.commit('common/updateSampleObjForView', { type: task.value, obj: [row] })
 
       gotoPage({
         path: 'qms-pages-InspectionManagement-components-form'

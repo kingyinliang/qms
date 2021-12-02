@@ -3,34 +3,42 @@
  * @Anthor: Telliex
  * @Date: 2021-11-11 16:30:07
  * @LastEditors: Telliex
- * @LastEditTime: 2021-12-01 19:32:46
+ * @LastEditTime: 2021-12-02 19:44:25
 -->
 <template>
   <el-dialog :title="title+subTitle" v-model="isDialogShow" width="90%" @close="onClose">
   <mds-area class="info" style="height:60vh;overflow:auto">
     <mds-area :title="infoSubTitle" :name="'org'" class="info">
         <el-form :inline="true" ref="refFormOfSampleInfo" :model="dataFormOfSampleInfo" :label-width="cssForformLabelWidth">
-          <el-form-item label="检验任务："  prop="taskSampleId" v-if="currentMainType==='TEMP'" >
-            <el-input v-model="dataFormOfSampleInfo.taskSampleId" size="small" class="inputWidth" placeholder="自动带入" autocomplete="off" :readonly="onlyRead"></el-input>
+          <el-form-item label="检验任务："  prop="inspectContent" v-if="currentMainType==='TEMP'" >
+            <el-tooltip class="item" effect="dark" :content="dataFormOfSampleInfo.inspectContent" placement="top-start" :disabled="!dataFormOfSampleInfo.inspectContent">
+              <el-input v-model="dataFormOfSampleInfo.inspectContent" size="small" class="inputWidth" placeholder="自动带入" autocomplete="off" :readonly="onlyRead"></el-input>
+            </el-tooltip>
           </el-form-item>
           <el-form-item label="取样部门："  prop="sampleDeptName" v-if="currentMainType==='TEMP'" >
-            <el-input v-model="dataFormOfSampleInfo.sampleDeptName" size="small" class="inputWidth" placeholder="自动带入" autocomplete="off" :readonly="onlyRead"></el-input>
+            <el-tooltip class="item" effect="dark" :content="dataFormOfSampleInfo.sampleDeptName" placement="top-start" :disabled="!dataFormOfSampleInfo.sampleDeptName">
+              <el-input v-model="dataFormOfSampleInfo.sampleDeptName" size="small" class="inputWidth" placeholder="自动带入" autocomplete="off" :readonly="onlyRead"></el-input>
+            </el-tooltip>
           </el-form-item>
-          <el-form-item label="检验物料："  prop="inspectMaterialName" v-if="currentSubType==='normal' ||currentSubType==='checkagain' || currentSubType==='merge'" >
-            <el-input v-model="dataFormOfSampleInfo.inspectMaterialName" size="small"  class="inputWidth" placeholder="自动带入" autocomplete="off" :readonly="onlyRead"></el-input>
+          <el-form-item label="检验物料："  prop="inspectMaterialNameString" v-if="currentMainType==='PROCESS'" >
+            <el-tooltip class="item" effect="dark" :content="dataFormOfSampleInfo.inspectMaterialNameString" placement="top-start" :disabled="!dataFormOfSampleInfo.inspectMaterialNameString">
+              <el-input v-model="dataFormOfSampleInfo.inspectMaterialNameString" size="small"  class="inputWidth" placeholder="自动带入" autocomplete="off" :readonly="onlyRead"></el-input>
+            </el-tooltip>
           </el-form-item>
-          <el-form-item label="取样信息："  prop="inspectSiteName" v-if="currentSubType==='normal' ||currentSubType==='merge' || currentSubType==='checkagain'" >
-            <el-input v-model="dataFormOfSampleInfo.inspectSiteName" size="small" class="inputWidth" placeholder="自动带入" autocomplete="off" :readonly="onlyRead"></el-input>
+          <el-form-item label="取样信息："  prop="inspectSiteNameString" v-if="currentMainType==='PROCESS'" >
+            <el-tooltip class="item" effect="dark" :content="dataFormOfSampleInfo.inspectSiteNameString" placement="top-start" :disabled="!dataFormOfSampleInfo.inspectSiteNameString">
+              <el-input v-model="dataFormOfSampleInfo.inspectSiteNameString" size="small" class="inputWidth" placeholder="自动带入" autocomplete="off" :readonly="onlyRead"></el-input>
+            </el-tooltip>
           </el-form-item>
-          <el-form-item label="取样消息："  prop="sampleExplain" v-if="currentSubType==='normal' ||currentSubType==='merge' || currentSubType==='checkagain'" >
+          <!-- <el-form-item label="取样消息："  prop="sampleExplain" >
             <el-input v-model="dataFormOfSampleInfo.sampleExplain" size="small" class="inputWidth" placeholder="自动带入" autocomplete="off" ></el-input>
-          </el-form-item>
+          </el-form-item> -->
         </el-form>
     </mds-area>
 
     <mds-area :title="'检验录入'" :name="'org'" >
       <template v-for="subItem in dataFormOfSampleItemUnit" :key="subItem">
-        <mds-area :title="subItem.indexName+' ('+subItem.sampleCode+')'" :name="'org'" :outline="true">
+        <mds-area :title="subItem.taskInspectIdList.length===1 ? subItem.indexName:subItem.indexName+' ('+subItem.sampleCode+')'" :name="'org'" :outline="true">
           <!-- <template #titleBtn v-if="subItem.inspectMethodCodeWhichIndex!==null|| subItem.inspectMethodCodeWhichIndex!==100 || subItem.inspectMethodNameList.length==2"> -->
           <template #titleBtn v-if="subItem.inspectMethodNameList?.length==2">
             <div class="btn-group">
@@ -41,28 +49,36 @@
           </template>
           <el-form :inline="true" :model="subItem" :label-width="cssForformLabelWidth">
             <el-form-item label="结果："  prop="inspectResult" >
-              <el-input v-model="subItem.inspectResult" size="small" oninput ="value=value.replace(/[^\-\d.]/g, '')"   class="inputWidth" placeholder="请输入" autocomplete="off" :disabled="!subItem.canEditInspectResult" @change="actHandleIndexJudgeResult(subItem)" ></el-input>
+              <el-tooltip class="item" effect="dark" :content="subItem.inspectResult" placement="top-start" :disabled="!subItem.inspectResult">
+                <el-input v-model="subItem.inspectResult" size="small" oninput ="value=value.replace(/[^\-\d.]/g, '')"   class="inputWidth" placeholder="请输入" autocomplete="off" :disabled="!subItem.canEditInspectResult" @change="actHandleIndexJudgeResult(subItem)" ></el-input>
+              </el-tooltip>
             </el-form-item>
             <el-form-item label="依据方法："  prop="indexVersionMethod" >
-              <el-input v-model="subItem.indexVersionMethod" size="small"  class="inputWidth" placeholder="" autocomplete="off" :disabled="true"></el-input>
+              <el-tooltip class="item" effect="dark" :content="subItem.indexVersionMethod" placement="top-start" :disabled="!subItem.indexVersionMethod">
+                <el-input v-model="subItem.indexVersionMethod" size="small"  class="inputWidth" placeholder="" autocomplete="off" :disabled="true"></el-input>
+              </el-tooltip>
             </el-form-item>
             <el-form-item label="判定："  prop="indexJudgeResult" >
-                <el-radio v-model="subItem.indexJudgeResult" label="Y" :disabled="true">合格</el-radio>
-                <el-radio v-model="subItem.indexJudgeResult" label="N" :disabled="true">不合格</el-radio>
+                <el-radio v-model="subItem.indexJudgeResult" label="Y" :disabled="subItem.indexStandardString!==''">合格</el-radio>
+                <el-radio v-model="subItem.indexJudgeResult" label="N" :disabled="subItem.indexStandardString!==''">不合格</el-radio>
             </el-form-item>
             <el-form-item label="标准："  prop="indexStandardString" >
-                <el-input v-model="subItem.indexStandardString" size="small"  class="inputWidth" placeholder="e.x.1<S<10" autocomplete="off" oninput ="value=value.replace(/[^0-9S><=]/g, '')" :disabled="!subItem.canEditIndexStandardString"  @blur="actHandleIndexStandardString(subItem)"></el-input>
+              <el-tooltip class="item" effect="dark" :content="subItem.indexStandardString" placement="top-start" :disabled="!subItem.indexStandardString">
+                <el-input v-model="subItem.indexStandardString" size="small"  class="inputWidth" placeholder="请输入" autocomplete="off" oninput ="value=value.replace(/[^0-9S><=]/g, '')" :disabled="!subItem.canEditIndexStandardString"  @blur="actHandleIndexStandardString(subItem)"></el-input>
+              </el-tooltip>
             </el-form-item>
 
             <el-form-item label="检验过程："  prop="" v-if="subItem.canShowParameterList">
               <template v-if="subItem.inspectMethodNameList">
                 <template v-for="(para,index) in subItem.inspectMethodNameList[subItem.inspectMethodCodeWhichIndex]?.inspectParameterListShow" :key="index">
                   {{para.paramCode?para.paramCode.split('[')[0]:'?'}}<sub>{{para.paramCode?para.paramCode.split('[')[1].replace(']',''):''}}</sub> =
-                  <el-input v-model="para.defaultValue" type="text"  size="small" placeholder=""  oninput ="value=value.replace(/[^\d.]/g, '').replace(/^(\d+)\.(\d\d).*$/, '$1.$2')" style="width:140px;margin-right:10px" @blur="actHandleInspectResult(subItem)">
-                    <template #suffix>
-                      {{para.paramUnit}}
-                    </template>
-                  </el-input>
+                  <el-tooltip class="item" effect="dark" :content="para.defaultValue" placement="top-start" :disabled="!para.defaultValue">
+                    <el-input v-model="para.defaultValue" type="text"  size="small" placeholder=""  oninput ="value=value.replace(/[^\d.]/g, '').replace(/^(\d+)\.(\d\d).*$/, '$1.$2')" style="width:180px;margin-right:10px" @blur="actHandleInspectResult(subItem)">
+                      <template #suffix>
+                        {{para.paramUnit}}
+                      </template>
+                    </el-input>
+                  </el-tooltip>
                 </template>
               </template>
             </el-form-item>
@@ -81,17 +97,24 @@
       </el-form-item>
 
       <el-form-item label="检验说明："  prop="inspectExplain" >
-        <el-input v-model="dataFormOfSampleInfo.inspectExplain" size="small" placeholder="自动带入" autocomplete="off" style="width:300px"></el-input>
+        <el-tooltip class="item" effect="dark" :content="dataFormOfSampleInfo.inspectExplain" placement="top-start" :disabled="!dataFormOfSampleInfo.inspectExplain">
+          <el-input v-model="dataFormOfSampleInfo.inspectExplain" size="small" class="text-ellipsis" placeholder="请输入" autocomplete="off" style="width:100px"></el-input>
+        </el-tooltip>
       </el-form-item>
     </el-form>
     <el-form :inline="true"  :model="dataFormOfSampleInfo"  :label-width="cssForformLabelWidth" >
       <el-form-item label="复检方式："  prop="recheckMod" >
         <el-radio v-model="dataFormOfSampleInfo.recheckMod" label="ORIGINAL_RECHECK">原样复检</el-radio>
-        <el-radio v-model="dataFormOfSampleInfo.recheckMod" label="RESAMOLING">重新取样</el-radio>
+        <el-radio v-model="dataFormOfSampleInfo.recheckMod" label="RESAMOLING">取样复检</el-radio>
         <el-radio v-model="dataFormOfSampleInfo.recheckMod" label="OTHER_SAMPLING">其他取样</el-radio>
       </el-form-item>
+      <el-form-item label="取样说明："  prop="sampleExplain" >
+        <el-tooltip class="item" effect="dark" :content="dataFormOfSampleInfo.sampleExplain" placement="top-start" :disabled="!dataFormOfSampleInfo.sampleExplain">
+          <el-input v-model="dataFormOfSampleInfo.sampleExplain" size="small" class="inputWidth" placeholder="请输入" autocomplete="off" style="width:500px" ></el-input>
+        </el-tooltip>
+      </el-form-item>
     </el-form>
-    <div><span>检验时间:</span>{{!dataFormOfSampleInfo.finishDate?'':dataFormOfSampleInfo.finishDate}}</div>
+    <div v-if="dataFormOfSampleInfo.finishDate"><span>检验时间:</span>{{!dataFormOfSampleInfo.finishDate?'':dataFormOfSampleInfo.finishDate}}</div>
     <mds-area :title="'检验记录'" :name="'org'" class="info" v-if="false" >
       <div class="block" style="padding-top:10px">
         <el-timeline>
@@ -408,9 +431,6 @@ export default defineComponent({
         item.taskInspectPhysicalList = tempTaskInspectPhysicalList
       })
 
-      console.log('eeeeeeeeeeeee')
-      console.log(tempTaskInspectIndexList)
-
       const tempRes:any[] = []
       tempTaskInspectIndexList.forEach((element:any) => {
         element.taskInspectIndexIdList.forEach((subElement:any, subElementIndex:number) => {
@@ -494,28 +514,28 @@ export default defineComponent({
         obj.forEach((item:any) => {
           if (item.inspectResult === '') {
             // proxy.$warningToast('请完成各指标结果')
-            proxy.$warningToast('检验还未完成不可操作')
+            // proxy.$warningToast('检验还未完成不可操作')
             tempReturn = false
-            return
+            // return
           }
           if (item.indexJudgeResult === '') {
             // proxy.$warningToast('请完成各指标判定')
-            proxy.$warningToast('检验还未完成不可操作')
+            // proxy.$warningToast('检验还未完成不可操作')
             tempReturn = false
-            return
+            // return
           }
           if (item.indexStandardString === '') {
             // proxy.$warningToast('请完成各指标标准')
-            proxy.$warningToast('检验还未完成不可操作')
+            // proxy.$warningToast('检验还未完成不可操作')
             tempReturn = false
-            return
+            // return
           }
           if (item.inspectMethodNameList.length && item.inspectMethodNameList[item.inspectMethodCodeWhichIndex].inspectParameterListShow.length) {
             const temp = item.inspectMethodNameList[item.inspectMethodCodeWhichIndex].inspectParameterListShow.every((subItem:any) => subItem.defaultValue !== '')
 
             if (!temp) {
               // proxy.$warningToast('请输入指标过程参数')
-              proxy.$warningToast('检验还未完成不可操作')
+              // proxy.$warningToast('检验还未完成不可操作')
               tempReturn = false
             }
           }
@@ -547,13 +567,15 @@ export default defineComponent({
 
           if (tempResult !== needResult) {
             // proxy.$warningToast('请完整输入指标')
-            proxy.$warningToast('检验还未完成不可操作')
+            // proxy.$warningToast('检验还未完成不可操作')
             tempReturn = false
           }
         })
       }
 
-      console.log('tempReturn:' + tempReturn)
+      if (!tempReturn) {
+        proxy.$warningToast('检验还未完成不可操作')
+      }
 
       return tempReturn
     }
@@ -761,13 +783,19 @@ export default defineComponent({
         if (val.length === 1) {
           state.subTitle = val[0].inspectContent
           state.currentSubType = 'normal' // 一般检
+          state.dataFormOfSampleInfo = val[0]
+          state.dataFormOfSampleInfo.inspectMaterialNameString = val.map((item:any) => item.inspectMaterialName).join(',')
+          state.dataFormOfSampleInfo.inspectSiteNameString = val.map((item:any) => item.inspectSiteName).join(',')
+          state.currentOrderStyle = val[0].recheckFlag === 'N' ? 'first' : 'repeat'
         } else {
           state.subTitle = '合并'
           state.currentSubType = 'merge' // 合并检
+          state.dataFormOfSampleInfo = val[0]
+          state.dataFormOfSampleInfo.inspectMaterialNameString = val.map((item:any) => item.inspectMaterialName).join(',')
+          state.dataFormOfSampleInfo.inspectSiteNameString = val.map((item:any) => item.inspectSiteName).join(',')
+          state.currentOrderStyle = val[0].recheckFlag === 'N' ? 'first' : 'repeat'
         }
-        // TODO [EB]？ 待确认 data 格式是否合并检时通用
-        state.dataFormOfSampleInfo = val[0]
-        state.currentOrderStyle = val[0].recheckFlag === 'N' ? 'first' : 'repeat'
+
         // add id2sampleCode obj
         // TODO [BE]?
         MANAGEMENT_INSPECTION_PHYSICOCHEMICAL_TASK_INSPECT_QUERY_API( // /taskInspectIndex/queryTaskInspectIndex
@@ -841,9 +869,6 @@ export default defineComponent({
             })
 
             // 拼标准不等式 (需先有inspectIndexStandard)
-
-            console.log('7777777777')
-            console.log(item)
 
             if (item.indexInnerStandard) {
               item.indexStandardString = `S=${item.indexInnerStandard}`
@@ -936,11 +961,13 @@ export default defineComponent({
       }
       const transList = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z']
       const tempDepend = args.split(',')
-
       for (let i = 0; i < tempDepend.length; i++) {
-        formulaString = formulaString.replace(`/${tempDepend[i]}/ig`, transList[i])
+        const re = new RegExp(tempDepend[i].replace('[', '\\[').replace(']', '\\]'), 'g')
+        console.log(re)
+        console.log(transList[i])
+        formulaString = formulaString.replace(re, transList[i])
+        console.log(formulaString)
       }
-      console.log(formulaString)
 
       // 公式错误表示可编辑
       let result = false
@@ -981,17 +1008,19 @@ export default defineComponent({
     }
 
     const actHandleInspectResult = (subItem:any) => {
-      if (subItem.canEditInspectResult === false && chechCanEditInspectResultOfFormula(subItem.filnalFormula, subItem.inspectMethodNameList[subItem.inspectMethodCodeWhichIndex].inspectParameterListResult[0].formula)) {
-        const result = runFormula(subItem.filnalFormula,
-          subItem.inspectMethodNameList[subItem.inspectMethodCodeWhichIndex].inspectParameterListResult[0].formula,
-          subItem.inspectMethodNameList[subItem.inspectMethodCodeWhichIndex].inspectParameterListShow,
-          subItem.inspectMethodNameList[subItem.inspectMethodCodeWhichIndex].inspectParameterListHidden)
-        if (!result) {
-          subItem.inspectResult = 0
-          subItem.canEditInspectResult = true
-        } else {
-          subItem.inspectResult = result
-          subItem.canEditInspectResult = false
+      if (subItem.canEditInspectResult === false) { // 判定是否依靠过程参数计算
+        if (subItem.inspectMethodNameList[subItem.inspectMethodCodeWhichIndex]?.inspectParameterListShow.every((item:any) => item.defaultValue !== '')) { // 过程参数都不为空才触发
+          const result = runFormula(subItem.filnalFormula,
+            subItem.inspectMethodNameList[subItem.inspectMethodCodeWhichIndex].inspectParameterListResult[0].formula,
+            subItem.inspectMethodNameList[subItem.inspectMethodCodeWhichIndex].inspectParameterListShow,
+            subItem.inspectMethodNameList[subItem.inspectMethodCodeWhichIndex].inspectParameterListHidden)
+          if (!result) {
+            subItem.inspectResult = 0
+            // subItem.canEditInspectResult = true
+          } else {
+            subItem.inspectResult = result
+            // subItem.canEditInspectResult = false
+          }
         }
       }
     }
@@ -1000,12 +1029,23 @@ export default defineComponent({
     const runFormula = (formula:string, depend:string, showValue:any[], hiddenValue:any[]) => {
       const transList = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z']
       const tempDepend = depend.split(',')
+      console.log('tempDepend')
+      console.log(tempDepend)
       let tempFormula = formula
+      console.log('formula')
+      console.log(formula)
       const valueList = new Array(tempDepend.length)
       const importValue:any = {}
 
+      console.log('showValue')
+      console.log(showValue)
+      console.log('hiddenValue')
+      console.log(hiddenValue)
       tempDepend.forEach((item, index) => {
-        tempFormula = tempFormula.replace(`/${item}/ig`, transList[index])
+        const re = new RegExp(item.replace('[', '\\[').replace(']', '\\]'), 'g')
+
+        tempFormula = tempFormula.replace(re, transList[index])
+
         showValue.forEach(subItem => {
           if (item === subItem.paramCode) {
             importValue[transList[index]] = !subItem.defaultValue ? 0 : Number(subItem.defaultValue)
@@ -1014,33 +1054,59 @@ export default defineComponent({
         })
       })
 
+      console.log('tempFormula=======')
+      console.log(tempFormula)
+
+      console.log('valueList=======')
+      console.log(valueList)
+
+      console.log('importValue=======')
+      console.log(importValue)
+
       tempDepend.forEach((item, index) => {
         if (hiddenValue.length) {
           hiddenValue.forEach(subItem => {
             if (item === subItem.paramCode) {
-              const value = importValue[transList[index]]
+              console.log('index:' + index)
+              const thisIndex = tempDepend.indexOf(subItem.parentParamCode)
+              const value = importValue[transList[thisIndex]]
+              console.log(value)
+              let canFindIt = false
               subItem.inspectAssociateList.forEach((element:any) => {
                 if (element.associate === value) {
+                  console.log('lololololol')
+                  canFindIt = true
                   importValue[transList[index]] = !element.value ? 0 : Number(element.value)
                   valueList[index] = !element.value ? 0 : Number(element.value)
-                } else {
-                  // 没找到话,提示错误
-                  proxy.$warningToast('没有相关的参数，无法计算，请手动输入结果')
                 }
               })
+              if (!canFindIt) {
+                proxy.$warningToast('没有相关参数内没找到对映的值')
+              }
             }
           })
         }
       })
 
+      console.log('valueList=====4444==')
+      console.log(valueList)
+
+      console.log('importValue===4444====')
+      console.log(importValue)
+
       let expr:any
       let result:any
 
       try {
-        expr = parser.parse(formula)
+        console.log('tempFormula')
+        console.log(tempFormula)
+        console.log('importValue')
+        console.log(importValue)
+        expr = parser.parse(tempFormula)
         result = expr.evaluate(importValue)
       } catch (err) {
-        proxy.$warningToast('公式错误，无法计算。请改手动输入结果，以进行判定')
+        console.log(err)
+        proxy.$warningToast('公式或参数值有错误，无法计算。请改手动输入结果，以进行判定')
         result = null
       }
       return result
@@ -1141,5 +1207,9 @@ export default defineComponent({
     margin-top: -4px;
     text-align: center;
 
+}
+
+.el-form-item {
+    margin-bottom: 5px;
 }
 </style>
