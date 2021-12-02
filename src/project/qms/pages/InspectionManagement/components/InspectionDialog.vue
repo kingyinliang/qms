@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-11-11 16:30:07
  * @LastEditors: Telliex
- * @LastEditTime: 2021-12-02 19:44:25
+ * @LastEditTime: 2021-12-02 20:35:52
 -->
 <template>
   <el-dialog :title="title+subTitle" v-model="isDialogShow" width="90%" @close="onClose">
@@ -104,9 +104,11 @@
     </el-form>
     <el-form :inline="true"  :model="dataFormOfSampleInfo"  :label-width="cssForformLabelWidth" >
       <el-form-item label="复检方式："  prop="recheckMod" >
-        <el-radio v-model="dataFormOfSampleInfo.recheckMod" label="ORIGINAL_RECHECK">原样复检</el-radio>
-        <el-radio v-model="dataFormOfSampleInfo.recheckMod" label="RESAMOLING">取样复检</el-radio>
-        <el-radio v-model="dataFormOfSampleInfo.recheckMod" label="OTHER_SAMPLING">其他取样</el-radio>
+        <el-radio-group v-model="dataFormOfSampleInfo.recheckMod">
+          <el-radio label="ORIGINAL_RECHECK">原样复检</el-radio>
+          <el-radio label="RESAMOLING">取样复检</el-radio>
+          <el-radio label="OTHER_SAMPLING">其他取样</el-radio>
+        </el-radio-group>
       </el-form-item>
       <el-form-item label="取样说明："  prop="sampleExplain" >
         <el-tooltip class="item" effect="dark" :content="dataFormOfSampleInfo.sampleExplain" placement="top-start" :disabled="!dataFormOfSampleInfo.sampleExplain">
