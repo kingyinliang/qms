@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-11-16 09:59:02
  * @LastEditors: Telliex
- * @LastEditTime: 2021-12-01 19:29:50
+ * @LastEditTime: 2021-12-02 20:06:44
 -->
 <template>
   <mds-area class="test_method" title="已选中样品" :pack-up="false" style="margin-bottom: 0; background: #fff; overflow:scroll">
@@ -16,7 +16,7 @@
         </div>
         <div style="padding-left: 12px;">
           <el-button icon="el-icon-search" size="small" class="topic-button" @click="btnReset" :disabled="!dataTableOfTopicMain.filter(element=>element.taskStatus !== 'COMPLETED').length">重置</el-button>
-          <el-button icon="el-icon-search" size="small" class="topic-button" @click="actGetInspectDetail()" :disabled="!dataTableOfTopicMain.filter(element=>element.taskStatus !== 'COMPLETED').length">检验</el-button>
+          <el-button icon="el-icon-search" type="primary" size="small" class="topic-button" @click="actGetInspectDetail()" :disabled="!dataTableOfTopicMain.filter(element=>element.taskStatus !== 'COMPLETED').length">检验</el-button>
         </div>
     </template>
     <el-table border ref="refTableOfTopicMain" :cell-style="{'text-align':'center'}" :data="dataTableOfTopicMain" :row-class-name="markRowWithDelFlag" tooltip-effect="dark" style="width: 100%" max-height="500" highlight-current-row @row-click="handleCurrentChange" @selection-change="actHandleSelectionChange" @select="btnHandleOneSelectionChange" @select-all="btnHandleAllSelectionChange">
@@ -175,7 +175,9 @@ export default defineComponent({
     //
     const checkIfMergeByMaterialCode = (val:DataTableOfTopicMain[]) => {
       const tempInspectMaterialCode = val[0].inspectMaterialCode
-      return val.every(item => item.taskInspectClassify === 'PROCESS' && item.inspectMaterialCode === tempInspectMaterialCode)
+      const tempInspectContent = val[0].inspectContent
+      const tempInspectProperty = val[0].inspectProperty
+      return val.every(item => item.taskInspectClassify === 'PROCESS' && item.inspectMaterialCode === tempInspectMaterialCode && item.inspectContent === tempInspectContent && item.inspectProperty === tempInspectProperty)
     }
 
     const checkIfMergeByClassify = (val:DataTableOfTopicMain[]) => {
@@ -193,7 +195,7 @@ export default defineComponent({
         }
 
         if (!checkIfMergeByMaterialCode(state.selectedListOfTopicMainData)) {
-          proxy.$warningToast('存在不同物料，无法合并检验')
+          proxy.$warningToast('存在不同物料、属性或检验内容，无法合并检验')
           return
         }
         console.log('merge')
@@ -254,7 +256,10 @@ export default defineComponent({
               proxy.$warningToast('列表中已存在欲添加的检验码')
             }
           })
-          proxy.$infoToast('已滤掉非[已收样][检验中]及[已完成]状态任务')
+          // 提示所查找的样品码没有所要查找的状态 （RECEIVED、CHECKING、COMPLETED）
+          if (res.data.data.every((item:any) => item.taskStatus !== 'RECEIVED' || item.taskStatus !== 'CHECKING' || item.taskStatus !== 'COMPLETED')) {
+            proxy.$warningToast('样品码非[已收样][检验中][已完成]状态，不可操作')
+          }
 
           state.searchFilter.merge = false
           state.searchFilter.sampleCode = ''
@@ -303,7 +308,7 @@ export default defineComponent({
     // 重置 table data
     const btnReset = () => {
       state.dataTableOfTopicMain = []
-      proxy.$infoToast('表单已清空')
+      proxy.$successToast('表单已清空')
       store.commit('common/updateSampleObjToInspect', { type: 'EMPTY', obj: [] })
     }
 
@@ -410,11 +415,9 @@ export default defineComponent({
             item.delFlag = 1
           }
         })
-        console.log(state.dataTableOfTopicMain)
 
         if (val.act === 'save') {
           if (state.subType !== 'merge') { // 只有保存会重开
-            console.log(state.dataTableOfTopicMain)
             if (nexItemIndex !== null && nexItemIndex < totalItemsNumber) { // 剩多笔
               console.log('还有可开')
               state.indexOfCurrentRowOnFocus = nexItemIndex
@@ -505,6 +508,8 @@ export default defineComponent({
         // 除去非已收样或检验中状态任务3
         state.dataTableOfTopicMain = []
         await MANAGEMENT_INSPECTION_TASK_INSPECT_QUERY_BY_ID_API(store.state.common.sampleObj.obj).then((res) => { // /taskInspect/queryTaskInspectByIds
+          console.log('99999==999999')
+          console.log(res.data.data)
           res.data.data.forEach((item:DataTableOfTopicMain) => {
             // 只收 'RECEIVED' & 'CHECKING' 状态
             if (item.taskStatus === 'RECEIVED' || item.taskStatus === 'CHECKING') {
