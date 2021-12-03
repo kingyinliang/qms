@@ -66,8 +66,8 @@
       </el-form-item>
         <el-form-item>
           <el-button icon="el-icon-search" @click="() => {queryForm.current = 1; query()}">查询</el-button>
-          <el-button @click="goInspect()"><i class="qmsIconfont qms-jianyan"/> 培养</el-button>
-          <el-button type="primary" @click="goCount()"><i class="qmsIconfont qms-dayin" /> 计数</el-button>
+          <el-button @click="goCultivate"><i class="qmsIconfont qms-jianyan"/> 培养</el-button>
+          <el-button type="primary" @click="goCalculate"><i class="qmsIconfont qms-dayin" /> 计数</el-button>
         </el-form-item>
       </el-form>
     </template>
@@ -223,26 +223,28 @@ export default defineComponent({
       queryForm.current = 1
       query()
     }
-    // 检验
-    const goInspect = (row?: TableData) => {
+    // 培养
+    const goCultivate = () => {
       if (!selectionData.value.length) {
         proxy.$warningToast('请选择数据')
         return
       }
-      const data = selectionData.value.filter(it => it.taskStatus === 'RECEIVED' || it.taskStatus === 'CHECKING')
-      if (selectionData.value.length && data.length !== selectionData.value.length) {
-        proxy.$warningToast('存在不可检验任务请重新选择')
-        return
-      }
-      store.commit('inspection/updateInspectionTask', selectionData.value)
+      // const data = selectionData.value.filter(it => it.taskStatus === 'RECEIVED' || it.taskStatus === 'CHECKING')
+      // if (selectionData.value.length && data.length !== selectionData.value.length) {
+      //   proxy.$warningToast('存在不可检验任务请重新选择')
+      //   return
+      // }
+      // store.commit('inspection/updateInspectionTask', selectionData.value)
       if (task.value === 'COLONYNUM') {
-        store.commit('common/updateSampleObjToInspect', { type: 'COLONYNUM', obj: selectionData.value.length ? selectionData.value : [] })
-      } else if (task.value === 'TEMP') {
-        store.commit('common/updateSampleObjToInspect', { type: 'TEMP', obj: selectionData.value.length ? selectionData.value : [] })
+        store.commit('inspection/updateMicrobeInspectionTask', { type: 'CULTIVATE', class: 'COLONYNUM', obj: selectionData.value.length ? selectionData.value : [] })
+      } else if (task.value === 'COLIFORMGROUP') {
+        store.commit('inspection/updateMicrobeInspectionTask', { type: 'CULTIVATE', class: 'COLIFORMGROUP', obj: selectionData.value.length ? selectionData.value : [] })
+      } else if (task.value === 'YEAST') {
+        store.commit('inspection/updateMicrobeInspectionTask', { type: 'CULTIVATE', class: 'YEAST', obj: selectionData.value.length ? selectionData.value : [] })
       }
 
       gotoPage({
-        path: 'qms-pages-InspectionManagement-PhysicochemicalInspect-index'
+        path: 'qms-pages-InspectionManagement-microbeInspect-index'
       })
     }
     const setText = (row: TableData):string => {
@@ -256,9 +258,29 @@ export default defineComponent({
         return ''
       }
     }
-    // 打印
-    const goCount = () => {
-      //
+    // 计算
+    const goCalculate = () => {
+      if (!selectionData.value.length) {
+        proxy.$warningToast('请选择数据')
+        return
+      }
+      // const data = selectionData.value.filter(it => it.taskStatus === 'RECEIVED' || it.taskStatus === 'CHECKING')
+      // if (selectionData.value.length && data.length !== selectionData.value.length) {
+      //   proxy.$warningToast('存在不可检验任务请重新选择')
+      //   return
+      // }
+      // store.commit('inspection/updateInspectionTask', selectionData.value)
+      if (task.value === 'COLONYNUM') {
+        store.commit('inspection/updateMicrobeInspectionTask', { type: 'CALCULATE', class: 'COLONYNUM', obj: selectionData.value.length ? selectionData.value : [] })
+      } else if (task.value === 'COLIFORMGROUP') {
+        store.commit('inspection/updateMicrobeInspectionTask', { type: 'CALCULATE', class: 'COLIFORMGROUP', obj: selectionData.value.length ? selectionData.value : [] })
+      } else if (task.value === 'YEAST') {
+        store.commit('inspection/updateMicrobeInspectionTask', { type: 'CALCULATE', class: 'YEAST', obj: selectionData.value.length ? selectionData.value : [] })
+      }
+
+      gotoPage({
+        path: 'qms-pages-InspectionManagement-microbeInspect-index'
+      })
     }
     // 表格复选框能否被选中逻辑
     const checkDate = () => {
@@ -333,8 +355,8 @@ export default defineComponent({
       goHistory,
       changeTask,
       query,
-      goInspect,
-      goCount,
+      goCultivate,
+      goCalculate,
       checkDate,
       selectionChange,
       cultivateSample,
