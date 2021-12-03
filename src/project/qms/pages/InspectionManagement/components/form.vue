@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-11-11 16:30:07
  * @LastEditors: Telliex
- * @LastEditTime: 2021-12-02 19:13:53
+ * @LastEditTime: 2021-12-02 20:36:33
 -->
 <template>
   <mds-area class="info" :title="subTitle">
@@ -153,9 +153,11 @@
        </template>
       <el-form :inline="true"  :model="dataFormOfSampleInfo"  :label-width="cssForformLabelWidth" v-if="currentType==='PROCESS'">
           <el-form-item label="复检方式："  prop="recheckMod" >
-            <el-radio v-model="dataFormOfSampleInfo.recheckMod" label="ORIGINAL_RECHECK" :disabled="onlyRead">原样复检</el-radio>
-            <el-radio v-model="dataFormOfSampleInfo.recheckMod" label="RESAMOLING" :disabled="onlyRead">取样复检</el-radio>
-            <el-radio v-model="dataFormOfSampleInfo.recheckMod" label="OTHER_SAMPLING" :disabled="onlyRead">其他取样</el-radio>
+            <el-radio-group v-model="dataFormOfSampleInfo.recheckMod">
+              <el-radio label="ORIGINAL_RECHECK" :disabled="onlyRead">原样复检</el-radio>
+              <el-radio label="RESAMOLING" :disabled="onlyRead">取样复检</el-radio>
+              <el-radio label="OTHER_SAMPLING" :disabled="onlyRead">其他取样</el-radio>
+            </el-radio-group>
           </el-form-item>
         </el-form>
     <div style="display: flex; margin:20px 0px;justify-content: flex-end;">
