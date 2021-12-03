@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-11-11 16:30:07
  * @LastEditors: Telliex
- * @LastEditTime: 2021-12-02 20:35:52
+ * @LastEditTime: 2021-12-03 10:23:22
 -->
 <template>
   <el-dialog :title="title+subTitle" v-model="isDialogShow" width="90%" @close="onClose">
@@ -82,10 +82,9 @@
                 </template>
               </template>
             </el-form-item>
-
-            <!-- <el-form-item label="检验过程："  prop="" v-if="subItem.inspectMethodCodeWhichIndex===null">
-                <el-input v-model="subItem.inspectParameterOnlyText" type="text"  size="small" placeholder=""  style="width:300px;margin-right:10px"/>
-            </el-form-item> -->
+            <el-form-item label="检验时间："  prop="finishDate" v-if="subItem.finishDate">
+              <div ><span>检验时间:</span>{{!subItem.finishDate?'':subItem.finishDate}}</div>
+            </el-form-item>
           </el-form>
         </mds-area>
       </template>
@@ -107,7 +106,6 @@
         <el-radio-group v-model="dataFormOfSampleInfo.recheckMod">
           <el-radio label="ORIGINAL_RECHECK">原样复检</el-radio>
           <el-radio label="RESAMOLING">取样复检</el-radio>
-          <el-radio label="OTHER_SAMPLING">其他取样</el-radio>
         </el-radio-group>
       </el-form-item>
       <el-form-item label="取样说明："  prop="sampleExplain" >
@@ -116,7 +114,6 @@
         </el-tooltip>
       </el-form-item>
     </el-form>
-    <div v-if="dataFormOfSampleInfo.finishDate"><span>检验时间:</span>{{!dataFormOfSampleInfo.finishDate?'':dataFormOfSampleInfo.finishDate}}</div>
     <mds-area :title="'检验记录'" :name="'org'" class="info" v-if="false" >
       <div class="block" style="padding-top:10px">
         <el-timeline>
