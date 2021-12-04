@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-11-11 16:30:07
  * @LastEditors: Telliex
- * @LastEditTime: 2021-12-02 19:13:53
+ * @LastEditTime: 2021-12-04 16:48:33
 -->
 <template>
   <mds-area class="info" :title="subTitle">
@@ -15,16 +15,12 @@
               <el-input v-model="dataFormOfSampleInfo.tempApplyNo" size="small" class="inputWidth" placeholder="自动带入" autocomplete="off" :readonly="onlyRead" :disabled="onlyRead"></el-input>
             </el-tooltip>
           </el-form-item>
-          <el-form-item label="检验内容："  prop="inspectSampleContent" v-if="currentType==='TEMP'" >
-            <el-tooltip class="item" effect="dark" :content="dataFormOfSampleInfo.inspectSampleContent" placement="top-start" :disabled="!dataFormOfSampleInfo.inspectSampleContent">
-              <el-input v-model="dataFormOfSampleInfo.inspectSampleContent" size="small" class="inputWidth" placeholder="自动带入" autocomplete="off" :readonly="onlyRead" :disabled="onlyRead"></el-input>
-            </el-tooltip>
-          </el-form-item>
           <el-form-item label="样品码："  prop="sampleCode" v-if="currentType==='HISTORY'||currentType==='PROCESS'||currentType==='TEMP'" >
             <el-tooltip class="item" effect="dark" :content="dataFormOfSampleInfo.sampleCode" placement="top-start" :disabled="!dataFormOfSampleInfo.sampleCode">
               <el-input v-model="dataFormOfSampleInfo.sampleCode" size="small"  class="inputWidth" placeholder="自动带入" autocomplete="off" :readonly="onlyRead" :disabled="onlyRead"></el-input>
             </el-tooltip>
           </el-form-item>
+
           <el-form-item label="物料："  prop="inspectMaterial" v-if="currentType==='HISTORY'||currentType==='PROCESS'" >
             <el-tooltip class="item" effect="dark" :content="dataFormOfSampleInfo.inspectMaterial" placement="top-start" :disabled="!dataFormOfSampleInfo.inspectMaterial">
               <el-input v-model="dataFormOfSampleInfo.inspectMaterial" size="small" class="inputWidth" placeholder="自动带入" autocomplete="off" :readonly="onlyRead" :disabled="onlyRead"></el-input>
@@ -72,12 +68,17 @@
           </el-form-item>
           <el-form-item label="取样说明："  prop="sampleExplain" v-if="currentType==='PROCESS'" >
             <el-tooltip class="item" effect="dark" :content="dataFormOfSampleInfo.sampleExplain" placement="top-start" :disabled="!dataFormOfSampleInfo.sampleExplain">
-              <el-input v-model="dataFormOfSampleInfo.sampleExplain" size="small" class="inputWidth" placeholder="自动带入" autocomplete="off" :readonly="onlyRead" :disabled="onlyRead"></el-input>
+              <el-input v-model="dataFormOfSampleInfo.sampleExplain" size="small" class="inputWidth" placeholder="自动带入" autocomplete="off" :readonly="onlyRead" :disabled="onlyRead" style="width:420px"></el-input>
+            </el-tooltip>
+          </el-form-item>
+          <el-form-item label="检验内容："  prop="inspectSampleContent" v-if="currentType==='TEMP'" >
+            <el-tooltip class="item" effect="dark" :content="dataFormOfSampleInfo.inspectSampleContent" placement="top-start" :disabled="!dataFormOfSampleInfo.inspectSampleContent">
+              <el-input v-model="dataFormOfSampleInfo.inspectSampleContent" size="small" class="inputWidth" placeholder="自动带入" autocomplete="off" :readonly="onlyRead" :disabled="onlyRead" style="width:420px;"></el-input>
             </el-tooltip>
           </el-form-item>
           <el-form-item label="内容说明："  prop="handleExplain" v-if="currentType==='TEMP'" >
             <el-tooltip effect="dark" :content="dataFormOfSampleInfo.handleExplain" :disabled="!dataFormOfSampleInfo.handleExplain" placement="top">
-              <el-input v-model="dataFormOfSampleInfo.handleExplain" size="small" class="inputWidth" placeholder="自动带入" autocomplete="off" :readonly="onlyRead" :disabled="onlyRead" style="width:478px"></el-input>
+              <el-input v-model="dataFormOfSampleInfo.handleExplain" size="small" class="inputWidth" placeholder="自动带入" autocomplete="off" :readonly="onlyRead" :disabled="onlyRead" style="width:420px"></el-input>
             </el-tooltip>
           </el-form-item>
         </el-form>
@@ -144,19 +145,28 @@
             <el-radio v-model="item.judgeResult" label="Y" :disabled="onlyRead">合格</el-radio>
             <el-radio v-model="item.judgeResult" label="N" :disabled="onlyRead">不合格</el-radio>
           </el-form-item>
-          <el-form-item label="检验说明："  prop="inspectExplain" >
+        </el-form>
+        <el-form :inline="true" :model="item"  :label-width="cssForformLabelWidth" v-if="currentType==='PROCESS'|| currentType==='HISTORY'">
+          <el-form-item label="检验说明："  prop="inspectExplain"  >
             <el-tooltip effect="dark" :content="item.inspectExplain" :disabled="!item.inspectExplain" placement="top">
-              <el-input v-model="item.inspectExplain" size="small" placeholder="自动带入" autocomplete="off" :disabled="onlyRead"  style="width:400px"></el-input>
+              <el-input v-model="item.inspectExplain" size="small" placeholder="自动带入" autocomplete="off"  type="textarea" :rows="2" :disabled="onlyRead"  style="width:810px"></el-input>
             </el-tooltip>
           </el-form-item>
         </el-form>
        </template>
       <el-form :inline="true"  :model="dataFormOfSampleInfo"  :label-width="cssForformLabelWidth" v-if="currentType==='PROCESS'">
           <el-form-item label="复检方式："  prop="recheckMod" >
-            <el-radio v-model="dataFormOfSampleInfo.recheckMod" label="ORIGINAL_RECHECK" :disabled="onlyRead">原样复检</el-radio>
-            <el-radio v-model="dataFormOfSampleInfo.recheckMod" label="RESAMOLING" :disabled="onlyRead">取样复检</el-radio>
-            <el-radio v-model="dataFormOfSampleInfo.recheckMod" label="OTHER_SAMPLING" :disabled="onlyRead">其他取样</el-radio>
+            <el-radio-group v-model="dataFormOfSampleInfo.recheckMod">
+              <el-radio label="ORIGINAL_RECHECK" :disabled="onlyRead">原样复检</el-radio>
+              <el-radio label="RESAMOLING" :disabled="onlyRead">取样复检</el-radio>
+              <!-- <el-radio label="OTHER_SAMPLING" :disabled="onlyRead">其他取样</el-radio> -->
+            </el-radio-group>
           </el-form-item>
+              <el-form-item label="取样说明："  prop="sampleExplain">
+        <el-tooltip class="item" effect="dark" :content="dataFormOfSampleInfo.sampleExplain" placement="top-start" :disabled="!dataFormOfSampleInfo.sampleExplain">
+          <el-input v-model="dataFormOfSampleInfo.sampleExplain" size="small" class="inputWidth" placeholder="自动带入" autocomplete="off" style="width:500px" :disabled="onlyRead"></el-input>
+        </el-tooltip>
+      </el-form-item>
         </el-form>
     <div style="display: flex; margin:20px 0px;justify-content: flex-end;">
       <el-button  icon="el-icon-circle-close" type="primary" size="small" class="topic-button" @click="btnCancelOfInspect">离开</el-button>

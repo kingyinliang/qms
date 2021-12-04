@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-11-16 09:59:02
  * @LastEditors: Telliex
- * @LastEditTime: 2021-12-02 20:06:44
+ * @LastEditTime: 2021-12-04 19:50:03
 -->
 <template>
   <mds-area class="test_method" title="已选中样品" :pack-up="false" style="margin-bottom: 0; background: #fff; overflow:scroll">
@@ -32,7 +32,7 @@
     </el-table>
   </mds-area>
 
-  <instection-dialog v-model="dialogVisible" :targetObj="targetObjList" :mainType="mainType" :subType="subType" :orderStyle="orderStyle" @on-close="dialogVisible=false" @openHandle="returnFromDialogAndOpenAgainHandle" />
+  <instection-dialog v-model="dialogVisible" :targetObj="targetObjList" :mainType="mainType" :subType="subType"  @on-close="dialogVisible=false" @openHandle="returnFromDialogAndOpenAgainHandle" />
 
 </template>
 
@@ -40,6 +40,7 @@
 import {
   defineComponent, toRefs, reactive, onMounted, ComponentInternalInstance, getCurrentInstance, ref
 } from 'vue'
+import { useRouter } from 'vue-router'
 import MdsArea from '@/components/package/mds-area/src/mds-area.vue'
 import {
   MANAGEMENT_INSPECTION_PHYSICOCHEMICAL_QUERY_BY_SAMPLE_CODE_API, // 检验管理-[检验任务]- 根据样品码查询检验任务
@@ -124,8 +125,7 @@ interface State {
   dialogVisible: boolean
   mainType: string
   subType: string
-  orderStyle: string
-  currentObj:any
+  currentObj: any
   dataTableOfTopicMain: DataTableOfTopicMain[]
   searchFilter: SearchFilter
   applyStatusNameObj: any
@@ -133,6 +133,7 @@ interface State {
   selectedListOfTopicMainData: DataTableOfTopicMain[]
   formForTaskAdd: any
   cssForformLabelWidth: string
+  correntWayInto: boolean
 }
 
 export default defineComponent({
@@ -146,17 +147,30 @@ export default defineComponent({
     const ctx = getCurrentInstance() as ComponentInternalInstance
     const proxy = ctx.proxy as any
     const store = useStore()
-    const { gotoPage, tabsCloseCurrentHandle } = layoutTs()
+    const router = useRouter()
+    // const { gotoPage, tabsCloseCurrentHandle } = layoutTs()
     const refTableOfTopicMain = ref()
+
+    // router.afterEach((to, from) => {
+    //   console.log('33333333333')
+    //   console.log(to)
+    //   console.log('from.path')
+    //   console.log(from.path)
+    //   console.log('to.path')
+    //   console.log(to.path)
+    //   if (to.path === '/qms-pages-InspectionManagement-PhysicochemicalInspect-index' && from.path === '/qms-pages-InspectionManagement-InspectionTask-index') {
+    //     console.log('get')
+    //   }
+    // })
 
     /**  == 变量 ==  **/
     const state = reactive<State>({
+      correntWayInto: false,
       indexOfCurrentRowOnFocus: 0,
       dialogVisible: false,
       currentGlobalActOgj: {},
       mainType: '',
       subType: '',
-      orderStyle: '',
       currentObj: {},
       searchFilter: {
         sampleCode: '',
@@ -188,6 +202,7 @@ export default defineComponent({
 
     // TODO
     const actGetInspectDetail = () => {
+      state.targetObjList = []
       if (state.searchFilter.merge && state.selectedListOfTopicMainData.length > 1) { // 勾选 2 个以上， 视为合并检
         if (checkIfMergeByClassify(state.selectedListOfTopicMainData)) {
           proxy.$warningToast('存在临时检验任务，无法合并检验')
@@ -199,29 +214,33 @@ export default defineComponent({
           return
         }
         console.log('merge')
-        state.mainType = 'PROCESS'
+        state.mainType = state.selectedListOfTopicMainData[0].taskInspectClassify
         state.subType = 'merge'
-        state.targetObjList = state.selectedListOfTopicMainData
+        state.targetObjList = JSON.parse(JSON.stringify(state.selectedListOfTopicMainData))
       } else if (state.searchFilter.merge && state.selectedListOfTopicMainData.length === 1) { // 勾选 1 个， 视为一般检
+        console.log(state.selectedListOfTopicMainData[0].taskInspectClassify)
         console.log('normal1')
-        state.mainType = 'PROCESS'
+        state.mainType = state.selectedListOfTopicMainData[0].taskInspectClassify
         state.subType = 'normal'
-        // state.orderStyle = 'first'
-        state.targetObjList = state.selectedListOfTopicMainData
+
+        state.targetObjList = JSON.parse(JSON.stringify(state.selectedListOfTopicMainData))
       } else {
         console.log('normal2')
-        console.log(state.mainType)
-        state.mainType = store.state.common.sampleObj.type
+        console.log(state.currentGlobalActOgj.taskInspectClassify)
+        state.mainType = state.currentGlobalActOgj.taskInspectClassify
         state.subType = 'normal'
-        // state.orderStyle = 'first'
+
         if (Object.keys(state.currentGlobalActOgj).length !== 0) {
-          state.targetObjList = [state.currentGlobalActOgj]
+          state.targetObjList = [JSON.parse(JSON.stringify(state.currentGlobalActOgj))]
         } else {
           proxy.$warningToast('请选取任务')
         }
       }
 
-      state.dialogVisible = true
+      // 有传送物件才开 Dialog
+      if (state.targetObjList.length) {
+        state.dialogVisible = true
+      }
     }
 
     const actReGetInspectDetail = () => {
@@ -257,7 +276,7 @@ export default defineComponent({
             }
           })
           // 提示所查找的样品码没有所要查找的状态 （RECEIVED、CHECKING、COMPLETED）
-          if (res.data.data.every((item:any) => item.taskStatus !== 'RECEIVED' || item.taskStatus !== 'CHECKING' || item.taskStatus !== 'COMPLETED')) {
+          if (res.data.data.some((item:any) => item.taskStatus !== 'RECEIVED' && item.taskStatus !== 'CHECKING' && item.taskStatus !== 'COMPLETED')) {
             proxy.$warningToast('样品码非[已收样][检验中][已完成]状态，不可操作')
           }
 
@@ -265,16 +284,16 @@ export default defineComponent({
           state.searchFilter.sampleCode = ''
 
           setCurrentRowOnFocus({})
-          // R:highlight row
-          if (!state.searchFilter.merge) {
-            state.dataTableOfTopicMain.filter(element => element.taskStatus !== 'COMPLETED').length >= 1 && setCurrentRowOnFocus(state.dataTableOfTopicMain.filter(element => element.taskStatus !== 'COMPLETED')[0])
-            state.currentGlobalActOgj = state.dataTableOfTopicMain.filter(element => element.taskStatus !== 'COMPLETED')[0]
-          } else {
-          // R:合併檢掃碼新增時帶上勾選
-            for (let i = 1; i <= tempLength; i++) {
-              refTableOfTopicMain.value.toggleRowSelection(state.dataTableOfTopicMain.filter(element => element.taskStatus !== 'COMPLETED')[state.dataTableOfTopicMain.filter(element => element.taskStatus !== 'COMPLETED').length - i])
-            }
-          }
+          // R:highlight row # 此功能不需要
+          // if (!state.searchFilter.merge) {
+          //   state.dataTableOfTopicMain.filter(element => element.taskStatus !== 'COMPLETED').length >= 1 && setCurrentRowOnFocus(state.dataTableOfTopicMain.filter(element => element.taskStatus !== 'COMPLETED')[0])
+          //   state.currentGlobalActOgj = state.dataTableOfTopicMain.filter(element => element.taskStatus !== 'COMPLETED')[0]
+          // } else {
+          // // R:合併檢掃碼新增時帶上勾選
+          //   for (let i = 1; i <= tempLength; i++) {
+          //     refTableOfTopicMain.value.toggleRowSelection(state.dataTableOfTopicMain.filter(element => element.taskStatus !== 'COMPLETED')[state.dataTableOfTopicMain.filter(element => element.taskStatus !== 'COMPLETED').length - i])
+          //   }
+          // }
         }
       }).catch(() => {
         proxy.$infoToast('您无权限执行此样品检验，请选择其它样品')
@@ -359,124 +378,138 @@ export default defineComponent({
     const returnFromDialogAndOpenAgainHandle = (val:any) => {
       console.log('.............')
       console.log(val)
-
+      // val.act==='save && val.target === '' => 保存 没有复检
+      // val.act==='submit && val.target === '' => 提交 没有复检
+      // val.act==='submit && val.target === 'ORIGINAL_RECHECK' => 提交 原样复检
+      // val.act==='submit && val.target === 'RESAMOLING' => 提交 取样复检
       setTimeout(async () => {
-        const tempContainer:any[] = []
-        let isOpenCopy = false
-        state.dataTableOfTopicMain.forEach(item => {
-          tempContainer.push({
-            id: item.id,
-            mergeFlag: item.mergeFlag
+        // 1. 是否刷新 list
+        if (val.act === 'save' && state.subType === 'merge') { // 不刷新
+          state.selectedListOfTopicMainData.forEach((item:any) => { item.taskStatus = 'CHECKING' })
+        } else { // 刷新
+          const tempContainer:any[] = []
+          let isOpenCopy = false
+          // 将原来的 list 提取
+          state.dataTableOfTopicMain.forEach(item => {
+            tempContainer.push({
+              id: item.id,
+              mergeFlag: item.mergeFlag
+            })
           })
-        })
 
-        if (val.obj && val.obj.taskInspectIdList.length) {
-          console.log(val.obj.taskInspectIdList)
-          isOpenCopy = true
-          tempContainer.push({
-            id: val.obj.taskInspectIdList[0],
-            mergeFlag: ''
-          })
-        }
+          // 后来复检提交会返 string[] =>id
+          if (val.obj && val.obj.taskInspectIdList.length) {
+            console.log(val.obj.taskInspectIdList)
+            isOpenCopy = true
+            tempContainer.push({
+              id: val.obj.taskInspectIdList[0],
+              mergeFlag: ''
+            })
+          }
 
-        // 重新加载后 list
-        await btnGetInspectListReload(tempContainer)
-        const totalItemsNumber = state.dataTableOfTopicMain.length // 3 status
-        let nowItemIndex = -1
-        let nexItemIndex = null
-        console.log('state.dataTableOfTopicMain======')
-        console.log(state.dataTableOfTopicMain)
-        console.log('state.currentGlobalActOgj=====')
-        console.log(state.currentGlobalActOgj)
-        state.dataTableOfTopicMain.forEach((item:any, index:number) => {
-          console.log('iininininin')
-          if (item.id === state.currentGlobalActOgj.id) {
-            console.log('iininininin again')
-            nowItemIndex = index
-            let tempNexItemIndex = nowItemIndex + 1
+          // 重新加载后 list
+          await btnGetInspectListReload(tempContainer)
+          console.log('state.dataTableOfTopicMain')
+          console.log(state.dataTableOfTopicMain)
 
-            console.log('nowItemIndex:' + nowItemIndex)
+          const totalItemsNumber = state.dataTableOfTopicMain.length // 3 status
+          let nowItemIndex = -1
+          let nexItemIndex = null
 
-            while (tempNexItemIndex < state.dataTableOfTopicMain.length) {
-              console.log('kokokokokokokookok')
-              console.log(tempNexItemIndex)
-              console.log(state.dataTableOfTopicMain[tempNexItemIndex])
+          if (isOpenCopy) { // run 复检
+            console.log('$$$$$$$$$$复检$$$$$$$$$$$')
+            state.dataTableOfTopicMain.forEach((item:any, index:number) => {
+            // 找出原先的 sample
+              if (item.id === state.currentGlobalActOgj.id) {
+                nowItemIndex = index
+              }
+              // 复检 copy 出来的 sample
+              if (item.id === val.obj.taskInspectIdList[0]) {
+                nexItemIndex = index
+              }
 
-              if (state.dataTableOfTopicMain[tempNexItemIndex].taskStatus !== 'COMPLETED') {
-                nexItemIndex = tempNexItemIndex
-                break
-              } else {
-                tempNexItemIndex = tempNexItemIndex + 1
+              if (item.taskStatus === 'COMPLETED') {
+                item.delFlag = 1
+              }
+            })
+          } else { // run 非复检
+            console.log('$$$$$$$$$$非复检$$$$$$$$$$$')
+            state.dataTableOfTopicMain.forEach((item:any, index:number) => {
+              if (item.id === state.currentGlobalActOgj.id) {
+                nowItemIndex = index
+                let tempNexItemIndex = nowItemIndex + 1
+
+                console.log('nowItemIndex:' + nowItemIndex)
+
+                while (tempNexItemIndex < state.dataTableOfTopicMain.length) {
+                  console.log(tempNexItemIndex)
+                  console.log(state.dataTableOfTopicMain[tempNexItemIndex])
+
+                  if (state.dataTableOfTopicMain[tempNexItemIndex].taskStatus !== 'COMPLETED') {
+                    nexItemIndex = tempNexItemIndex
+                    break
+                  } else {
+                    tempNexItemIndex = tempNexItemIndex + 1
+                  }
+                }
+              }
+
+              if (item.taskStatus === 'COMPLETED') {
+                item.delFlag = 1
+              }
+            })
+          }
+
+          // 3.跑再开启
+          if (val.act === 'save') {
+            console.log('$$$$$$$$$$save$$$$$$$$$$$')
+            if (state.subType !== 'merge') { // 只有保存会重开
+              if (nexItemIndex !== null && nexItemIndex < totalItemsNumber) { // 剩多笔
+                console.log('还有可开')
+                state.indexOfCurrentRowOnFocus = nexItemIndex
+                setTimeout(() => {
+                  setCurrentRowOnFocus(state.dataTableOfTopicMain[state.indexOfCurrentRowOnFocus])
+                  actGetInspectDetail()
+                }, 500)
+              } else if (totalItemsNumber === 1) { // 只剩一笔
+                state.indexOfCurrentRowOnFocus = nowItemIndex
+                setTimeout(() => {
+                  setCurrentRowOnFocus(state.dataTableOfTopicMain[state.indexOfCurrentRowOnFocus])
+                }, 500)
+                console.log('没有可再开')
+              } else { // 到底
+                state.indexOfCurrentRowOnFocus = nowItemIndex
+                setTimeout(() => {
+                  setCurrentRowOnFocus(state.dataTableOfTopicMain[state.indexOfCurrentRowOnFocus])
+                }, 500)
+                console.log('到底，没有可开')
+              }
+            }
+          } else if (val.act === 'submit') {
+            console.log('$$$$$$$$$$submit$$$$$$$$$$$')
+            if (state.subType !== 'merge') { // 只有保存会重开
+              if (nexItemIndex !== null && nexItemIndex < totalItemsNumber) { // 剩多笔
+                console.log('还有可开')
+                state.indexOfCurrentRowOnFocus = nexItemIndex
+                setTimeout(() => {
+                  setCurrentRowOnFocus(state.dataTableOfTopicMain[state.indexOfCurrentRowOnFocus])
+                  actGetInspectDetail()
+                }, 500)
+              } else if (totalItemsNumber === 1) { // 只剩一笔
+                state.indexOfCurrentRowOnFocus = nowItemIndex
+                setTimeout(() => {
+                  setCurrentRowOnFocus(state.dataTableOfTopicMain[state.indexOfCurrentRowOnFocus])
+                }, 500)
+                console.log('没有可再开')
+              } else { // 到底
+                state.indexOfCurrentRowOnFocus = nowItemIndex
+                setTimeout(() => {
+                  setCurrentRowOnFocus(state.dataTableOfTopicMain[state.indexOfCurrentRowOnFocus])
+                }, 500)
+                console.log('到底，没有可开')
               }
             }
           }
-
-          if (item.taskStatus === 'COMPLETED') {
-            item.delFlag = 1
-          }
-        })
-
-        if (val.act === 'save') {
-          if (state.subType !== 'merge') { // 只有保存会重开
-            if (nexItemIndex !== null && nexItemIndex < totalItemsNumber) { // 剩多笔
-              console.log('还有可开')
-              state.indexOfCurrentRowOnFocus = nexItemIndex
-              setTimeout(() => {
-                setCurrentRowOnFocus(state.dataTableOfTopicMain[state.indexOfCurrentRowOnFocus])
-                actGetInspectDetail()
-              }, 500)
-            } else if (totalItemsNumber === 1) { // 只剩一笔
-              state.indexOfCurrentRowOnFocus = nowItemIndex
-              setTimeout(() => {
-                setCurrentRowOnFocus(state.dataTableOfTopicMain[state.indexOfCurrentRowOnFocus])
-              }, 500)
-              console.log('没有可再开')
-            } else { // 到底
-              state.indexOfCurrentRowOnFocus = nowItemIndex
-              setTimeout(() => {
-                setCurrentRowOnFocus(state.dataTableOfTopicMain[state.indexOfCurrentRowOnFocus])
-              }, 500)
-              console.log('到底，没有可开')
-            }
-          }
-        } else if (val.act === 'submit') {
-          if (state.subType !== 'merge') { // 只有保存会重开
-            if (nexItemIndex !== null && nexItemIndex < totalItemsNumber) { // 剩多笔
-              console.log('还有可开')
-              state.indexOfCurrentRowOnFocus = nexItemIndex
-              setTimeout(() => {
-                setCurrentRowOnFocus(state.dataTableOfTopicMain[state.indexOfCurrentRowOnFocus])
-                actGetInspectDetail()
-              }, 500)
-            } else if (totalItemsNumber === 1) { // 只剩一笔
-              state.indexOfCurrentRowOnFocus = nowItemIndex
-              setTimeout(() => {
-                setCurrentRowOnFocus(state.dataTableOfTopicMain[state.indexOfCurrentRowOnFocus])
-              }, 500)
-              console.log('没有可再开')
-            } else { // 到底
-              state.indexOfCurrentRowOnFocus = nowItemIndex
-              setTimeout(() => {
-                setCurrentRowOnFocus(state.dataTableOfTopicMain[state.indexOfCurrentRowOnFocus])
-              }, 500)
-              console.log('到底，没有可开')
-            }
-          }
-
-          // if (val.target === 'ORIGINAL_RECHECK') { // 原样复检
-          //   console.log('原样复检')
-          //   state.orderStyle = 'again'
-          //   state.targetObjList = val.obj
-          //   state.dialogVisible = true
-          // } else if (val.target === 'RESAMOLING') { // 重新取样
-          //   console.log('重新取样')
-          //   state.orderStyle = 'again'
-          //   state.targetObjList = val.obj
-          //   state.dialogVisible = true
-          //   // } else if (val.target === 'OTHER_SAMPLING') { // 其它取样
-          // } else { // not chose
-
-          // }
         }
       }, 1000)
     }
@@ -491,39 +524,59 @@ export default defineComponent({
 
     /**  == 生命周期 ==  **/
     onMounted(async () => {
-      state.mainType = store.state.common.sampleObj.type //  TEMP | PROCESS
-      state.currentObj = store.state.common.sampleObj.obj
+      // state.mainType = store.state.common.sampleObj.type //  TEMP | PROCESS
+      state.mainType = ''
+      // state.currentObj = store.state.common.sampleObj.obj
+      state.currentObj = null
+
+      if (router.currentRoute.value.params.wayInto) {
+        state.correntWayInto = true
+        const temp:any = JSON.parse(router.currentRoute.value.params.transferObj as string)
+        console.log('temp')
+        console.log(temp)
+        state.currentObj = temp.obj
+        state.mainType = temp.type
+      }
       console.log('==TYPE===========')
-      console.log(store.state.common.sampleObj.type)
-      console.log(store.state.common.sampleObj.obj)
+      console.log(state.mainType)
+      console.log(state.currentObj)
       console.log('==OBJ============')
 
-      if (!state.mainType) {
-        tabsCloseCurrentHandle()
-        proxy.$warningToast('操作过时，请重新选择！')
-        gotoPage({
-          path: 'qms-pages-InspectionManagement-InspectionTask-index'
-        })
-      } else {
-        // 除去非已收样或检验中状态任务3
-        state.dataTableOfTopicMain = []
-        await MANAGEMENT_INSPECTION_TASK_INSPECT_QUERY_BY_ID_API(store.state.common.sampleObj.obj).then((res) => { // /taskInspect/queryTaskInspectByIds
-          console.log('99999==999999')
-          console.log(res.data.data)
-          res.data.data.forEach((item:DataTableOfTopicMain) => {
-            // 只收 'RECEIVED' & 'CHECKING' 状态
-            if (item.taskStatus === 'RECEIVED' || item.taskStatus === 'CHECKING') {
-              state.dataTableOfTopicMain.push(item)
-            }
-          })
-        })
+      console.log('state.correntWayInto')
+      console.log(state.correntWayInto)
+      console.log('state.currentObj')
+      console.log(state.currentObj)
 
-        // 没勾选合并检下，focus 第一条 (其实一进来默认不会勾选 state.searchFilter.merge ===false)
-        if (!state.searchFilter.merge) {
-          state.indexOfCurrentRowOnFocus = 0
-          state.dataTableOfTopicMain.length >= 1 && setCurrentRowOnFocus(state.dataTableOfTopicMain[state.indexOfCurrentRowOnFocus])
+      // if (!state.mainType) {
+      //   tabsCloseCurrentHandle()
+      //   proxy.$warningToast('操作过时，请重新选择！')
+      //   gotoPage({
+      //     path: 'qms-pages-InspectionManagement-InspectionTask-index'
+      //   })
+      // } else {
+      // 清空重整
+      state.dataTableOfTopicMain = []
+      if (state.correntWayInto) {
+        if (state.currentObj.length) {
+          await MANAGEMENT_INSPECTION_TASK_INSPECT_QUERY_BY_ID_API(state.currentObj).then((res) => { // /taskInspect/queryTaskInspectByIds
+            console.log('==转进来的数据加工后==')
+            console.log(res.data.data)
+            res.data.data.forEach((item:DataTableOfTopicMain) => {
+              // 只收 'RECEIVED' & 'CHECKING' 状态
+              if (item.taskStatus === 'RECEIVED' || item.taskStatus === 'CHECKING') {
+                state.dataTableOfTopicMain.push(item)
+              }
+            })
+          })
         }
       }
+
+      // 没勾选合并检下，focus 第一条 (其实一进来默认不会勾选 state.searchFilter.merge ===false)
+      if (!state.searchFilter.merge) {
+        state.indexOfCurrentRowOnFocus = 0
+        state.dataTableOfTopicMain.length >= 1 && setCurrentRowOnFocus(state.dataTableOfTopicMain[state.indexOfCurrentRowOnFocus])
+      }
+      // }
     })
 
     return {
