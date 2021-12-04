@@ -211,14 +211,21 @@ export default defineComponent({
         return
       }
       store.commit('inspection/updateInspectionTask', selectionData.value)
-      if (task.value === 'PROCESS') {
-        store.commit('common/updateSampleObjToInspect', { type: 'PROCESS', obj: selectionData.value.length ? selectionData.value : [] })
-      } else if (task.value === 'TEMP') {
-        store.commit('common/updateSampleObjToInspect', { type: 'TEMP', obj: selectionData.value.length ? selectionData.value : [] })
-      }
+
+      const transferObj = { type: task.value, obj: selectionData.value.length ? selectionData.value : [] }
+      // if (task.value === 'PROCESS') {
+      // store.commit('common/updateSampleObjToInspect', transferObj)
+      // } else if (task.value === 'TEMP') {
+      //   store.commit('common/updateSampleObjToInspect', { type: 'TEMP', obj: selectionData.value.length ? selectionData.value : [] })
+      // }
 
       gotoPage({
-        path: 'qms-pages-InspectionManagement-PhysicochemicalInspect-index'
+        // path: 'qms-pages-InspectionManagement-PhysicochemicalInspect-index'
+        name: 'qms-pages-InspectionManagement-PhysicochemicalInspect-index',
+        params: {
+          wayInto: true,
+          transferObj: JSON.stringify(transferObj)
+        }
       })
     }
     const setText = (row: TableData):string => {
