@@ -3,12 +3,13 @@
  * @Anthor: Telliex
  * @Date: 2021-11-11 16:30:07
  * @LastEditors: Telliex
- * @LastEditTime: 2021-12-02 19:44:25
+ * @LastEditTime: 2021-12-04 20:42:15
 -->
 <template>
-  <el-dialog :title="title+subTitle" v-model="isDialogShow" width="90%" @close="onClose">
+  <el-dialog :title="title" v-model="isDialogShow" width="90%" @close="onClose">
+  <h2 style="font-size:20px;text-align:center;">{{subTitle}}</h2>
   <mds-area class="info" style="height:60vh;overflow:auto">
-    <mds-area :title="infoSubTitle" :name="'org'" class="info">
+    <mds-area :title="infoSubTitle" :name="'org'" class="info" style="margin-bottom:0">
         <el-form :inline="true" ref="refFormOfSampleInfo" :model="dataFormOfSampleInfo" :label-width="cssForformLabelWidth">
           <el-form-item label="检验任务："  prop="inspectContent" v-if="currentMainType==='TEMP'" >
             <el-tooltip class="item" effect="dark" :content="dataFormOfSampleInfo.inspectContent" placement="top-start" :disabled="!dataFormOfSampleInfo.inspectContent">
@@ -48,9 +49,9 @@
             </div>
           </template>
           <el-form :inline="true" :model="subItem" :label-width="cssForformLabelWidth">
-            <el-form-item label="结果："  prop="inspectResult" >
+            <el-form-item label="结果："  prop="inspectResult" label-width="70px">
               <el-tooltip class="item" effect="dark" :content="subItem.inspectResult" placement="top-start" :disabled="!subItem.inspectResult">
-                <el-input v-model="subItem.inspectResult" size="small" oninput ="value=value.replace(/[^\-\d.]/g, '')"   class="inputWidth" placeholder="请输入" autocomplete="off" :disabled="!subItem.canEditInspectResult" @change="actHandleIndexJudgeResult(subItem)" ></el-input>
+                <el-input v-model="subItem.inspectResult" size="small"   class="inputWidth" placeholder="请输入" autocomplete="off" :disabled="!subItem.canEditInspectResult" @change="actHandleIndexJudgeResult(subItem)" ></el-input>
               </el-tooltip>
             </el-form-item>
             <el-form-item label="依据方法："  prop="indexVersionMethod" >
@@ -58,22 +59,35 @@
                 <el-input v-model="subItem.indexVersionMethod" size="small"  class="inputWidth" placeholder="" autocomplete="off" :disabled="true"></el-input>
               </el-tooltip>
             </el-form-item>
-            <el-form-item label="判定："  prop="indexJudgeResult" >
-                <el-radio v-model="subItem.indexJudgeResult" label="Y" :disabled="subItem.indexStandardString!==''">合格</el-radio>
-                <el-radio v-model="subItem.indexJudgeResult" label="N" :disabled="subItem.indexStandardString!==''">不合格</el-radio>
+            <el-form-item label="判定："  prop="indexJudgeResult" label-width="70px" >
+               <el-radio-group v-model="subItem.indexJudgeResult" :disabled="!subItem.canEditIndexStandardString">
+                  <el-radio label="Y">合格</el-radio>
+                  <el-radio label="N">不合格</el-radio>
+                </el-radio-group>
             </el-form-item>
-            <el-form-item label="标准："  prop="indexStandardString" >
+            <el-form-item label="标准："  prop="indexStandardString" label-width="70px" >
               <el-tooltip class="item" effect="dark" :content="subItem.indexStandardString" placement="top-start" :disabled="!subItem.indexStandardString">
-                <el-input v-model="subItem.indexStandardString" size="small"  class="inputWidth" placeholder="请输入" autocomplete="off" oninput ="value=value.replace(/[^0-9S><=]/g, '')" :disabled="!subItem.canEditIndexStandardString"  @blur="actHandleIndexStandardString(subItem)"></el-input>
+                <el-input v-model="subItem.indexStandardString" size="small"  class="inputWidth" placeholder="请输入" autocomplete="off" :disabled="!subItem.canEditIndexStandardString"  @blur="actHandleIndexStandardString(subItem)"></el-input>
               </el-tooltip>
             </el-form-item>
-
+          </el-form>
+          <el-form :inline="true" :model="subItem" :label-width="cssForformLabelWidth">
             <el-form-item label="检验过程："  prop="" v-if="subItem.canShowParameterList">
               <template v-if="subItem.inspectMethodNameList">
                 <template v-for="(para,index) in subItem.inspectMethodNameList[subItem.inspectMethodCodeWhichIndex]?.inspectParameterListShow" :key="index">
                   {{para.paramCode?para.paramCode.split('[')[0]:'?'}}<sub>{{para.paramCode?para.paramCode.split('[')[1].replace(']',''):''}}</sub> =
                   <el-tooltip class="item" effect="dark" :content="para.defaultValue" placement="top-start" :disabled="!para.defaultValue">
-                    <el-input v-model="para.defaultValue" type="text"  size="small" placeholder=""  oninput ="value=value.replace(/[^\d.]/g, '').replace(/^(\d+)\.(\d\d).*$/, '$1.$2')" style="width:180px;margin-right:10px" @blur="actHandleInspectResult(subItem)">
+                    <el-input v-if="para.paramDataType==='FLOAT_POINT'" v-model="para.defaultValue" type="text"  size="small" placeholder=""  oninput ="value=value.replace(/[^\d.]/g, '').replace(/^(\d+)\.(\d\d).*$/, '$1.$2')" style="width:15%;margin-right:10px" @blur="actHandleInspectResult(subItem)">
+                      <template #suffix>
+                        {{para.paramUnit}}
+                      </template>
+                    </el-input>
+                    <el-input v-if="para.paramDataType==='INTEGER'" v-model="para.defaultValue" type="text"  size="small" placeholder=""  oninput ="value=value.replace(/[^\-\d.]/g, '')" style="width:15%;margin-right:10px" @blur="actHandleInspectResult(subItem)">
+                      <template #suffix>
+                        {{para.paramUnit}}
+                      </template>
+                    </el-input>
+                    <el-input v-if="para.paramDataType===''" v-model="para.defaultValue" type="text"  size="small" placeholder=""  style="width:15%;margin-right:10px" @blur="actHandleInspectResult(subItem)">
                       <template #suffix>
                         {{para.paramUnit}}
                       </template>
@@ -82,10 +96,9 @@
                 </template>
               </template>
             </el-form-item>
-
-            <!-- <el-form-item label="检验过程："  prop="" v-if="subItem.inspectMethodCodeWhichIndex===null">
-                <el-input v-model="subItem.inspectParameterOnlyText" type="text"  size="small" placeholder=""  style="width:300px;margin-right:10px"/>
-            </el-form-item> -->
+            <el-form-item label="检验时间："  prop="finishDate" v-if="subItem.finishDate">
+              <div ><span>检验时间:</span>{{!subItem.finishDate?'':subItem.finishDate}}</div>
+            </el-form-item>
           </el-form>
         </mds-area>
       </template>
@@ -95,26 +108,27 @@
         <el-radio v-model="indexJudgeResult" label="Y" :disabled="true">合格</el-radio>
         <el-radio v-model="indexJudgeResult" label="N" :disabled="true">不合格</el-radio>
       </el-form-item>
-
+    </el-form>
+    <el-form :inline="true" :model="dataFormOfSampleInfo"  :label-width="cssForformLabelWidth" >
       <el-form-item label="检验说明："  prop="inspectExplain" >
         <el-tooltip class="item" effect="dark" :content="dataFormOfSampleInfo.inspectExplain" placement="top-start" :disabled="!dataFormOfSampleInfo.inspectExplain">
-          <el-input v-model="dataFormOfSampleInfo.inspectExplain" size="small" class="text-ellipsis" placeholder="请输入" autocomplete="off" style="width:100px"></el-input>
+          <el-input v-model="dataFormOfSampleInfo.inspectExplain" size="small" :rows="2" type="textarea" class="text-ellipsis" placeholder="请输入" autocomplete="off" style="width:800px"></el-input>
         </el-tooltip>
       </el-form-item>
     </el-form>
     <el-form :inline="true"  :model="dataFormOfSampleInfo"  :label-width="cssForformLabelWidth" >
       <el-form-item label="复检方式："  prop="recheckMod" >
-        <el-radio v-model="dataFormOfSampleInfo.recheckMod" label="ORIGINAL_RECHECK">原样复检</el-radio>
-        <el-radio v-model="dataFormOfSampleInfo.recheckMod" label="RESAMOLING">取样复检</el-radio>
-        <el-radio v-model="dataFormOfSampleInfo.recheckMod" label="OTHER_SAMPLING">其他取样</el-radio>
+        <el-radio-group v-model="dataFormOfSampleInfo.recheckMod">
+          <el-radio label="ORIGINAL_RECHECK">原样复检</el-radio>
+          <el-radio label="RESAMOLING">取样复检</el-radio>
+        </el-radio-group>
       </el-form-item>
-      <el-form-item label="取样说明："  prop="sampleExplain" >
+      <el-form-item label="取样说明："  prop="sampleExplain">
         <el-tooltip class="item" effect="dark" :content="dataFormOfSampleInfo.sampleExplain" placement="top-start" :disabled="!dataFormOfSampleInfo.sampleExplain">
           <el-input v-model="dataFormOfSampleInfo.sampleExplain" size="small" class="inputWidth" placeholder="请输入" autocomplete="off" style="width:500px" ></el-input>
         </el-tooltip>
       </el-form-item>
     </el-form>
-    <div v-if="dataFormOfSampleInfo.finishDate"><span>检验时间:</span>{{!dataFormOfSampleInfo.finishDate?'':dataFormOfSampleInfo.finishDate}}</div>
     <mds-area :title="'检验记录'" :name="'org'" class="info" v-if="false" >
       <div class="block" style="padding-top:10px">
         <el-timeline>
@@ -139,7 +153,7 @@
         </el-timeline>
       </div>
     </mds-area>
-    <div style="display: flex; margin:20px 0px;justify-content: flex-end;">
+    <div style="display: flex; margin:0;justify-content: flex-end;">
       <el-button  icon="el-icon-circle-close" type="primary" size="small" class="topic-button" @click="onClose">取消</el-button>
       <el-button  icon="el-icon-circle-check" type="primary" size="small" class="topic-button"  @click="btnSaveOrSubmitDataOfInspect('save')">保存</el-button>
       <el-button  type="primary" icon="el-icon-circle-check" size="small" class="role__btn topic-button"  @click="btnSaveOrSubmitDataOfInspect('submit')">完成</el-button>
@@ -186,7 +200,6 @@ interface Props{
   targetObj: any
   subType: string
   mainType: string
-  orderStyle: string
 }
 
 export default defineComponent({
@@ -213,14 +226,10 @@ export default defineComponent({
     mainType: {
       type: String,
       default: ''
-    },
-    orderStyle: {
-      type: String,
-      default: 'first'
     }
   },
   setup (props, context) {
-    const { targetObj, dialogVisible, subType, mainType, orderStyle } = toRefs(props as Props)
+    const { targetObj, dialogVisible, subType, mainType } = toRefs(props as Props)
     const parent = { ...context }
 
     const { gotoPage, tabsCloseCurrentHandle } = layoutTs()
@@ -233,24 +242,25 @@ export default defineComponent({
     const Parser = expreval.Parser
     const parser = new Parser()
 
-    /**  == 变量 ==  **/
+    /**  == 变量 ==
+    / currentSubType: 标示 一般检 or 合并检
+    **/
     const state = reactive<State>({
       isDialogShow: dialogVisible.value,
-      title: '样品检验-',
+      title: '样品检验',
       subTitle: '',
       currentMainType: '',
-      currentSubType: 'normal', // normal, temp , checkagain, merge
+      currentSubType: 'normal', // normal, merge
       currentOrderStyle: 'first',
       currentObj: {},
       infoSubTitle: '样品信息',
       onlyRead: true,
-      cssForformLabelWidth: '110px',
+      cssForformLabelWidth: '100px',
       dataFormOfSampleInfo: {},
       idToSampleCode: {},
       mainObj: [],
       formForTaskAdd: {},
       dataFormOfSampleItemUnit: [],
-
       timeLineData: [
         {
           indexName: 'Custom icon',
@@ -301,6 +311,7 @@ export default defineComponent({
       ]
     })
 
+    // Run 判定总结果
     const indexJudgeResult = computed(() => {
       // state.dataFormOfSampleInfo.indexJudgeResult = temp
       return state.dataFormOfSampleItemUnit.every(item => item.indexJudgeResult === 'Y') ? 'Y' : 'N'
@@ -325,6 +336,7 @@ export default defineComponent({
         console.log(item)
         const tempTaskInspectPhysicalList: any[] = []
         const tempUpdateInspectParameter: any[] = []
+
         // 处理不等式
         if (item.indexStandardString !== '') {
           if (state.currentMainType === 'TEMP') {
@@ -541,7 +553,7 @@ export default defineComponent({
           }
         })
       } else { // 复检,校验指标录入的完整性
-        console.log('no first')
+        console.log('repeat')
         console.log(obj)
         // obj.taskInspectList.forEach((item:any) => {
         obj.forEach((item:any) => {
@@ -609,7 +621,7 @@ export default defineComponent({
         parent.emit('openHandle', { act: 'submit', target: obj.recheckMod, obj: back.data.data })
       } else {
         proxy.$successToast('保存成功！')
-        parent.emit('openHandle', { act: 'save', target: '', obj: back.data.data })
+        parent.emit('openHandle', { act: 'save', target: '', obj: null }) //  因为成功回返 null
       }
       onClose()
     }
@@ -733,7 +745,7 @@ export default defineComponent({
       console.log(target)
       // 1. 该方法下一定要有过程参数 data
       // 2. 同方法不做再点击
-      if (target.inspectMethodNameList.length) { // 1.
+      if (target.inspectMethodNameList && target.inspectMethodNameList.length) { // 1.
         if (target.inspectMethodCodeWhichIndex !== index) { // 2.
           console.log('come in')
           target.inspectMethodCodeWhichIndex = index
@@ -767,158 +779,6 @@ export default defineComponent({
       //   target.indexStandardString = joint(target.inspectIndexStandard)
       // }
     }
-    watch(targetObj, (val) => {
-      console.log('=== import object to dialog ===')
-      console.log(val)
-
-      state.currentMainType = mainType.value
-      console.log(state.currentMainType)
-      state.mainObj = []
-      val.forEach((item:any) => {
-        state.idToSampleCode[item.id] = item.sampleCode
-        state.mainObj.push(item)
-      })
-      if (val.length) {
-        // 加入标题
-        if (val.length === 1) {
-          state.subTitle = val[0].inspectContent
-          state.currentSubType = 'normal' // 一般检
-          state.dataFormOfSampleInfo = val[0]
-          state.dataFormOfSampleInfo.inspectMaterialNameString = val.map((item:any) => item.inspectMaterialName).join(',')
-          state.dataFormOfSampleInfo.inspectSiteNameString = val.map((item:any) => item.inspectSiteName).join(',')
-          state.currentOrderStyle = val[0].recheckFlag === 'N' ? 'first' : 'repeat'
-        } else {
-          state.subTitle = '合并'
-          state.currentSubType = 'merge' // 合并检
-          state.dataFormOfSampleInfo = val[0]
-          state.dataFormOfSampleInfo.inspectMaterialNameString = val.map((item:any) => item.inspectMaterialName).join(',')
-          state.dataFormOfSampleInfo.inspectSiteNameString = val.map((item:any) => item.inspectSiteName).join(',')
-          state.currentOrderStyle = val[0].recheckFlag === 'N' ? 'first' : 'repeat'
-        }
-
-        // add id2sampleCode obj
-        // TODO [BE]?
-        MANAGEMENT_INSPECTION_PHYSICOCHEMICAL_TASK_INSPECT_QUERY_API( // /taskInspectIndex/queryTaskInspectIndex
-          val.map((item:any) => item.id)
-        ).then(async (res) => {
-          console.log('=== query dialog data ===')
-          console.log(res.data.data)
-
-          // // 处理合并，重新组合
-          // const tempRes:any[] = []
-          // res.data.data.forEach((element:any) => {
-          //   element.taskInspectIndexIdList.forEach((subElement:any, subElementIndex:number) => {
-          //     const copyItem = JSON.parse(JSON.stringify(element))
-          //     copyItem.id = subElement
-          //     copyItem.taskInspectId = element.taskInspectIdList[subElementIndex]
-          //     tempRes.push(copyItem)
-          //   })
-          // })
-          // state.dataFormOfSampleItemUnit = JSON.parse(JSON.stringify(tempRes))
-          state.dataFormOfSampleItemUnit = JSON.parse(JSON.stringify(res.data.data))
-
-          await state.dataFormOfSampleItemUnit.forEach(async (item) => {
-            // 获取指标
-            const tempIndex = await INSPECT_INDEX_PROCESS_PARAMETER_QUERY_FOR_TASK_API({
-              inspectMaterialCode: state.dataFormOfSampleInfo.taskInspectClassify !== 'TEMP' ? state.dataFormOfSampleInfo.inspectMaterialCode : '',
-              inspectTypeId: state.dataFormOfSampleInfo.taskInspectClassify !== 'TEMP' ? state.dataFormOfSampleInfo.inspectTypeId : '',
-              inspectIndexId: state.dataFormOfSampleInfo.taskInspectClassify !== 'TEMP' ? item.indexId : '',
-              inspectParameterGroupId: state.dataFormOfSampleInfo.taskInspectClassify === 'TEMP' ? item.inspectParameterGroupId : ''
-              // inspectMaterialCode: 'SS02050003', inspectTypeId: '659445268915179520', inspectIndexId: '1000009957', inspectParameterGroupId: ''
-            })
-            console.log('指标')
-            console.log(tempIndex.data.data)
-
-            // 指标栏位初始化
-            Object.assign(item, {
-              canShowParameterList: false, // 过程参数是否显示
-              canEditInspectResult: true, // 结果是否可编辑
-              filnalFormula: '', // 公式值
-              inspectMethodCodeWhichIndex: 100 // 预设的方法的 index
-            })
-
-            if (tempIndex.data.data.inspectMethodNameList.length === 0) {
-              item.canShowParameterList = false
-            }
-
-            tempIndex.data.data.inspectMethodNameList.forEach((subItem:any, index:number) => {
-              Object.assign(subItem, { // 滤掉 id 为空
-                inspectParameterListShow: subItem.inspectParameterList.filter((element:any) => element.id !== '' && element.paramType === 'SHOW'),
-                inspectParameterListHidden: subItem.inspectParameterList.filter((element:any) => element.id !== '' && element.paramType === 'HIDDEN'),
-                inspectParameterListResult: subItem.inspectParameterList.filter((element:any) => element.id !== '' && element.paramType === 'RESULT')
-              })
-
-              if (item.inspectMethodCode === subItem.inspectMethodCode) { // 带出预设的方法与过程参数
-                if (subItem.inspectParameterListResult.length) {
-                  item.filnalFormula = string2Formula(subItem.inspectParameterListResult[0].formulaDisplay)
-                } else {
-                  item.filnalFormula = ''
-                }
-
-                item.canEditInspectResult = chechCanEditInspectResultOfData(subItem) || chechCanEditInspectResultOfFormula(item.filnalFormula, subItem.inspectParameterListResult[0].formula) // [结果]是否可编辑
-                item.canShowParameterList = subItem.inspectParameterListShow.length !== 0
-                item.inspectMethodCodeWhichIndex = index
-              }
-            })
-
-            Object.assign(item, {
-              inspectIndexStandard: tempIndex.data.data.inspectIndexStandard,
-              inspectMethodNameList: tempIndex.data.data.inspectMethodNameList,
-              inspectParameterOnlyText: '',
-              sampleCode: state.idToSampleCode[item.taskInspectId]
-            })
-
-            // 拼标准不等式 (需先有inspectIndexStandard)
-
-            if (item.indexInnerStandard) {
-              item.indexStandardString = `S=${item.indexInnerStandard}`
-              item.canEditIndexStandardString = false
-            } else if ((item.indexInnerDown && item.innerDownSymbol) && (item.innerUpSymbol && item.indexInnerUp)) {
-              item.indexStandardString = `${item.indexInnerDown}${item.innerDownSymbol.replace('>', '<')}S${item.innerUpSymbol}${item.indexInnerUp}`
-              item.canEditIndexStandardString = false
-            } else if (item.indexInnerDown && item.innerDownSymbol) {
-              item.indexStandardString = `${item.indexInnerDown}${item.innerDownSymbol.replace('>', '<')}S`
-              item.canEditIndexStandardString = false
-            } else if (item.innerUpSymbol && item.indexInnerUp) {
-              item.indexStandardString = `S${item.innerUpSymbol}${item.indexInnerUp}`
-              item.canEditIndexStandardString = false
-            } else if (item.indexStandard) {
-              item.indexStandardString = `S=${item.indexStandard}`
-              item.canEditIndexStandardString = false
-            } else if ((item.indexDown && item.downSymbol) && (item.upSymbol && item.indexUp)) {
-              item.indexStandardString = `${item.indexDown}${item.downSymbol.replace('>', '<')}S${item.upSymbol}${item.indexUp}`
-              item.canEditIndexStandardString = false
-            } else if (item.indexDown && item.downSymbol) {
-              item.indexStandardString = `${item.indexDown}${item.downSymbol.replace('>', '<')}S`
-              item.canEditIndexStandardString = false
-            } else if (item.upSymbol && item.indexUp) {
-              item.indexStandardString = `S${item.upSymbol}${item.indexUp}`
-              item.canEditIndexStandardString = false
-            } else {
-              item.indexStandardString = ''
-              item.canEditIndexStandardString = true
-            }
-
-            // if (item.indexInnerStandard === '' && item.indexStandard === '') {
-            //   if (item.inspectIndexStandard && Object.keys(item.inspectIndexStandard).length) {
-            //     item.indexStandardString = joint(item.inspectIndexStandard)
-            //   } else { // 可能 inspectIndexStandard 是 null
-            //     item.indexStandardString = ''
-            //   }
-            // } else {
-            //   item.indexStandardString = joint(item)
-            // }
-
-            // 指标预设没有方法时，预设套入第一笔
-            if (item.inspectMethodCode === '') {
-              btnChangeMethodOfIndex(0, item)
-            }
-          })
-          console.log('state.dataFormOfSampleItemUnit')
-          console.log(state.dataFormOfSampleItemUnit)
-        })
-      }
-    })
 
     // [ACT]拼接不等式
     const joint = (obj:any) => {
@@ -986,6 +846,7 @@ export default defineComponent({
       return str.replace(/(&lt|&gt|&nbsp|&amp|&quot);/ig, (c:string) => { return arrEntiries[c] as string })
     }
 
+    // 解析未解码之公式
     const string2Formula = (str:string) => {
       const formulaList = escape2Html(str).split(',')
       let formulaLine = ''
@@ -1112,15 +973,166 @@ export default defineComponent({
       return result
     }
 
-    watch(subType, (val) => {
-      if (val) {
-        state.currentSubType = val
+    // TODO watch
+    watch(targetObj, (val) => {
+      console.log('=== import object to dialog ===')
+      console.log(val)
+
+      state.currentMainType = mainType.value !== 'ASSIST' ? mainType.value : 'PROCESS'
+      console.log('state.currentMainType')
+      console.log(state.currentMainType)
+      state.mainObj = []
+      val.forEach((item:any) => {
+        state.idToSampleCode[item.id] = item.sampleCode
+        state.mainObj.push(item)
+      })
+      if (val.length) {
+        state.currentSubType = val.length === 1 ? 'normal' : 'merge' // 一般检 or 合并检
+        // 加入标题
+        state.subTitle = val[0].inspectContent
+        state.dataFormOfSampleInfo = val[0]
+        state.dataFormOfSampleInfo.inspectMaterialNameString = val[0].inspectMaterialName
+        state.dataFormOfSampleInfo.inspectSiteNameString = val.map((item:any) => item.inspectSiteName).join(',')
+        state.currentOrderStyle = val[0].recheckFlag === 'N' ? 'first' : 'repeat'
+
+        // add id2sampleCode obj 获取指标
+        // TODO [BE]?
+        MANAGEMENT_INSPECTION_PHYSICOCHEMICAL_TASK_INSPECT_QUERY_API( // /taskInspectIndex/queryTaskInspectIndex
+          val.map((item:any) => item.id)
+        ).then(async (res) => {
+          console.log('=== query dialog data ===')
+          console.log(res.data.data)
+
+          // // 处理合并，重新组合
+          // const tempRes:any[] = []
+          // res.data.data.forEach((element:any) => {
+          //   element.taskInspectIndexIdList.forEach((subElement:any, subElementIndex:number) => {
+          //     const copyItem = JSON.parse(JSON.stringify(element))
+          //     copyItem.id = subElement
+          //     copyItem.taskInspectId = element.taskInspectIdList[subElementIndex]
+          //     tempRes.push(copyItem)
+          //   })
+          // })
+          // state.dataFormOfSampleItemUnit = JSON.parse(JSON.stringify(tempRes))
+          state.dataFormOfSampleItemUnit = JSON.parse(JSON.stringify(res.data.data))
+          // 获取指标
+          await state.dataFormOfSampleItemUnit.forEach(async (item) => {
+            // 区分1临时、2其他
+            const tempIndex = await INSPECT_INDEX_PROCESS_PARAMETER_QUERY_FOR_TASK_API({
+              inspectMaterialCode: state.dataFormOfSampleInfo.taskInspectClassify !== 'TEMP' ? state.dataFormOfSampleInfo.inspectMaterialCode : '',
+              inspectTypeId: state.dataFormOfSampleInfo.taskInspectClassify !== 'TEMP' ? state.dataFormOfSampleInfo.inspectTypeId : '',
+              inspectIndexId: state.dataFormOfSampleInfo.taskInspectClassify !== 'TEMP' ? item.indexId : '',
+              inspectParameterGroupId: state.dataFormOfSampleInfo.taskInspectClassify === 'TEMP' ? item.inspectParameterGroupId : ''
+              // inspectMaterialCode: 'SS02050003', inspectTypeId: '659445268915179520', inspectIndexId: '1000009957', inspectParameterGroupId: ''
+            })
+            console.log('指标')
+            console.log(tempIndex.data.data)
+
+            // 指标栏位初始化
+            Object.assign(item, {
+              canShowParameterList: false, // 过程参数是否显示
+              canEditInspectResult: true, // 结果是否可编辑
+              filnalFormula: '', // 公式值
+              inspectMethodCodeWhichIndex: 100 // 预设的方法 index
+            })
+
+            if (!tempIndex.data.data.inspectMethodNameList && tempIndex.data.data.inspectMethodNameList.length === 0) {
+              item.canShowParameterList = false // 没有任何过程参数讯息
+            } else {
+              tempIndex.data.data.inspectMethodNameList.forEach((subItem:any, index:number) => {
+                Object.assign(subItem, { // 滤掉 id 为空
+                  inspectParameterListShow: subItem.inspectParameterList.filter((element:any) => element.id !== '' && element.paramType === 'SHOW'),
+                  inspectParameterListHidden: subItem.inspectParameterList.filter((element:any) => element.id !== '' && element.paramType === 'HIDDEN'),
+                  inspectParameterListResult: subItem.inspectParameterList.filter((element:any) => element.id !== '' && element.paramType === 'RESULT')
+                })
+
+                if (item.inspectMethodCode === subItem.inspectMethodCode) { // 带出预设的方法与过程参数
+                  if (subItem.inspectParameterListResult.length && subItem.inspectParameterListResult[0].formulaDisplay) {
+                    item.filnalFormula = string2Formula(subItem.inspectParameterListResult[0].formulaDisplay)
+                  } else {
+                    item.filnalFormula = ''
+                  }
+
+                  item.canEditInspectResult = chechCanEditInspectResultOfData(subItem) || chechCanEditInspectResultOfFormula(item.filnalFormula, subItem.inspectParameterListResult[0].formula) // [结果]是否可编辑
+                  item.canShowParameterList = subItem.inspectParameterListShow.length !== 0
+                  item.inspectMethodCodeWhichIndex = index
+                }
+              })
+            }
+
+            // TODO 需将 inspectIndexStandardText 除去
+            Object.assign(item, {
+              inspectIndexStandard: tempIndex.data.data.inspectIndexStandard,
+              inspectMethodNameList: tempIndex.data.data.inspectMethodNameList,
+              inspectIndexStandardText: '', // 暂时
+              sampleCode: state.idToSampleCode[item.taskInspectId]
+            })
+
+            // 拼标准不等式 (需先有inspectIndexStandard)
+            // 1.有【字串】参数时，可自由编辑
+            // 2.有标准值时，带出标准值 ，不可自由编辑
+            // 3.有不等式时，带出不等式 ，不可自由编辑
+
+            if (item.inspectIndexStandardText) {
+              item.indexStandardString = item.inspectIndexStandardText
+              item.canEditIndexStandardString = true
+            } else {
+              if (item.indexInnerStandard) {
+                item.indexStandardString = `S=${item.indexInnerStandard}`
+                item.canEditIndexStandardString = false
+              } else if ((item.indexInnerDown && item.innerDownSymbol) && (item.innerUpSymbol && item.indexInnerUp)) {
+                item.indexStandardString = `${item.indexInnerDown}${item.innerDownSymbol.replace('>', '<')}S${item.innerUpSymbol}${item.indexInnerUp}`
+                item.canEditIndexStandardString = false
+              } else if (item.indexInnerDown && item.innerDownSymbol) {
+                item.indexStandardString = `${item.indexInnerDown}${item.innerDownSymbol.replace('>', '<')}S`
+                item.canEditIndexStandardString = false
+              } else if (item.innerUpSymbol && item.indexInnerUp) {
+                item.indexStandardString = `S${item.innerUpSymbol}${item.indexInnerUp}`
+                item.canEditIndexStandardString = false
+              } else if (item.indexStandard) {
+                item.indexStandardString = `S=${item.indexStandard}`
+                item.canEditIndexStandardString = false
+              } else if ((item.indexDown && item.downSymbol) && (item.upSymbol && item.indexUp)) {
+                item.indexStandardString = `${item.indexDown}${item.downSymbol.replace('>', '<')}S${item.upSymbol}${item.indexUp}`
+                item.canEditIndexStandardString = false
+              } else if (item.indexDown && item.downSymbol) {
+                item.indexStandardString = `${item.indexDown}${item.downSymbol.replace('>', '<')}S`
+                item.canEditIndexStandardString = false
+              } else if (item.upSymbol && item.indexUp) {
+                item.indexStandardString = `S${item.upSymbol}${item.indexUp}`
+                item.canEditIndexStandardString = false
+              } else {
+                item.indexStandardString = ''
+                item.canEditIndexStandardString = true
+              }
+            }
+
+            // if (item.indexInnerStandard === '' && item.indexStandard === '') {
+            //   if (item.inspectIndexStandard && Object.keys(item.inspectIndexStandard).length) {
+            //     item.indexStandardString = joint(item.inspectIndexStandard)
+            //   } else { // 可能 inspectIndexStandard 是 null
+            //     item.indexStandardString = ''
+            //   }
+            // } else {
+            //   item.indexStandardString = joint(item)
+            // }
+
+            // 指标预设没有方法时，预设套入第一笔
+            if (item.inspectMethodCode === '' && tempIndex.data.data.inspectMethodNameList) {
+              btnChangeMethodOfIndex(0, item)
+            }
+          })
+          console.log('state.dataFormOfSampleItemUnit')
+          console.log(state.dataFormOfSampleItemUnit)
+        })
+      } else {
+        onClose()
       }
     })
 
-    watch(orderStyle, (val) => {
+    watch(subType, (val) => {
       if (val) {
-        state.currentOrderStyle = val
+        state.currentSubType = val
       }
     })
 
@@ -1128,14 +1140,14 @@ export default defineComponent({
       // state.currentSubType = store.state.common.sampleObj.type
       // state.currentObj = store.state.common.sampleObj.obj
 
-      if (!state.currentSubType) {
-        tabsCloseCurrentHandle()
-        proxy.$warningToast('操作过时，请重新选择！')
-        gotoPage({
-          path: 'qms-pages-InspectionManagement-InspectionTask-index'
-        })
-      } else {
-      }
+      // if (!state.currentSubType) {
+      //   tabsCloseCurrentHandle()
+      //   proxy.$warningToast('操作过时，请重新选择！')
+      //   gotoPage({
+      //     path: 'qms-pages-InspectionManagement-InspectionTask-index'
+      //   })
+      // } else {
+      // }
     })
 
     return {
@@ -1210,6 +1222,17 @@ export default defineComponent({
 }
 
 .el-form-item {
-    margin-bottom: 5px;
+    margin-bottom: 0px;
 }
+
+.el-form-item__label {
+    padding: 0 6px 0 0;
+}
+.t-box-area {
+    padding: 12px 16px 6px 16px !important;
+    border-radius: 8px;
+    margin-bottom: 5px;
+    background: #fff;
+}
+
 </style>
