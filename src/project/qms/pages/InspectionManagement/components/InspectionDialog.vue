@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-11-11 16:30:07
  * @LastEditors: Telliex
- * @LastEditTime: 2021-12-04 20:42:15
+ * @LastEditTime: 2021-12-06 21:13:05
 -->
 <template>
   <el-dialog :title="title" v-model="isDialogShow" width="90%" @close="onClose">
@@ -67,7 +67,7 @@
             </el-form-item>
             <el-form-item label="标准："  prop="indexStandardString" label-width="70px" >
               <el-tooltip class="item" effect="dark" :content="subItem.indexStandardString" placement="top-start" :disabled="!subItem.indexStandardString">
-                <el-input v-model="subItem.indexStandardString" size="small"  class="inputWidth" placeholder="请输入" autocomplete="off" :disabled="!subItem.canEditIndexStandardString"  @blur="actHandleIndexStandardString(subItem)"></el-input>
+                <el-input v-model="subItem.indexStandardString" size="small"  class="inputWidth" placeholder="请输入" autocomplete="off" :disabled="!subItem.canEditIndexStandardString" ></el-input>
               </el-tooltip>
             </el-form-item>
           </el-form>
@@ -76,18 +76,22 @@
               <template v-if="subItem.inspectMethodNameList">
                 <template v-for="(para,index) in subItem.inspectMethodNameList[subItem.inspectMethodCodeWhichIndex]?.inspectParameterListShow" :key="index">
                   {{para.paramCode?para.paramCode.split('[')[0]:'?'}}<sub>{{para.paramCode?para.paramCode.split('[')[1].replace(']',''):''}}</sub> =
-                  <el-tooltip class="item" effect="dark" :content="para.defaultValue" placement="top-start" :disabled="!para.defaultValue">
-                    <el-input v-if="para.paramDataType==='FLOAT_POINT'" v-model="para.defaultValue" type="text"  size="small" placeholder=""  oninput ="value=value.replace(/[^\d.]/g, '').replace(/^(\d+)\.(\d\d).*$/, '$1.$2')" style="width:15%;margin-right:10px" @blur="actHandleInspectResult(subItem)">
+                  <el-tooltip v-if="para.paramDataType==='INTEGER'" class="item" effect="dark" :content="para.defaultValue" placement="top-start" :disabled="!para.defaultValue">
+                    <el-input  v-model="para.defaultValue" type="text" :maxlength="para.paramStandard" size="small"  placeholder="" oninput="value=value.replace(/[^\d]/g,'')"  style="width:300px;margin-right:10px" @blur="actHandleInspectResult(subItem)">
                       <template #suffix>
                         {{para.paramUnit}}
                       </template>
                     </el-input>
-                    <el-input v-if="para.paramDataType==='INTEGER'" v-model="para.defaultValue" type="text"  size="small" placeholder=""  oninput ="value=value.replace(/[^\-\d.]/g, '')" style="width:15%;margin-right:10px" @blur="actHandleInspectResult(subItem)">
+                    </el-tooltip>
+                  <el-tooltip v-else-if="para.paramDataType==='FLOAT_POINT'" class="item" effect="dark" :content="para.defaultValue" placement="top-start" :disabled="!para.defaultValue">
+                    <el-input v-model="para.defaultValue" type="text" size="small" placeholder="" oninput ="value=value.replace(/[^\-\d.]/g, '').replace(/^(\d+)\.(\d+).*$/, '$1.$2')"  style="width:300px;margin-right:10px" @blur="actHandleInspectResult(subItem)">
                       <template #suffix>
                         {{para.paramUnit}}
                       </template>
                     </el-input>
-                    <el-input v-if="para.paramDataType===''" v-model="para.defaultValue" type="text"  size="small" placeholder=""  style="width:15%;margin-right:10px" @blur="actHandleInspectResult(subItem)">
+                    </el-tooltip>
+                  <el-tooltip v-else v-model="para.defaultValue" type="text" class="item" effect="dark" :content="para.defaultValue" placement="top-start" :disabled="!para.defaultValue">
+                    <el-input   size="small" placeholder=""  style="width:300px;margin-right:10px" @blur="actHandleInspectResult(subItem)">
                       <template #suffix>
                         {{para.paramUnit}}
                       </template>
@@ -232,7 +236,7 @@ export default defineComponent({
     const { targetObj, dialogVisible, subType, mainType } = toRefs(props as Props)
     const parent = { ...context }
 
-    const { gotoPage, tabsCloseCurrentHandle } = layoutTs()
+    // const { gotoPage, tabsCloseCurrentHandle } = layoutTs()
 
     const ctx = getCurrentInstance() as ComponentInternalInstance
     const proxy = ctx.proxy as any
@@ -339,52 +343,42 @@ export default defineComponent({
 
         // 处理不等式
         if (item.indexStandardString !== '') {
-          if (state.currentMainType === 'TEMP') {
-            if (item.indexStandardString.split('=')[0] === 'S') { // e.x. S=1
-              item.inspectIndexStandard = item.indexStandardString.split('=')[1]
-              item.indexInnerUp = null
-              item.innerUpSymbol = ''
-              item.indexInnerDown = null
-              item.innerDownSymbol = ''
-            } else {
-              const result = /(.*)S(.*)/.exec(item.indexStandardString)
-
-              if (result !== null) {
-                const leftResult = /(.*)([<]=?)/.exec(result[1])
-                const rightResult = /([<]=?)(.*)/.exec(result[2])
-
-                item.inspectIndexStandard = ''
-
-                if (!leftResult) {
-                  item.indexInnerDown = null
-                  item.innerDownSymbol = ''
-                } else {
-                  item.indexInnerDown = leftResult[1]
-                  item.innerDownSymbol = leftResult[2].replace('<', '>')
-                }
-
-                if (!rightResult) {
-                  item.indexInnerUp = null
-                  item.innerUpSymbol = ''
-                } else {
-                  item.indexInnerUp = rightResult[2]
-                  item.innerUpSymbol = rightResult[1]
-                }
-              } else {
-                item.indexInnerUp = null
-                item.innerUpSymbol = ''
-                item.indexInnerDown = null
-                item.innerDownSymbol = ''
-                item.indexInnerStandard = ''
-              }
-            }
+          if (item.manualStandard !== null) {
+            item.manualStandard = item.indexStandardString
           } else {
+            // if (item.indexInnerStandard) {
+            //   item.indexStandardString = `S=${item.indexInnerStandard}`
+            // } else if ((item.indexInnerDown && item.innerDownSymbol) && (item.innerUpSymbol && item.indexInnerUp)) {
+            //   item.indexStandardString = `${item.indexInnerDown}${item.innerDownSymbol.replace('>', '<')}S${item.innerUpSymbol}${item.indexInnerUp}`
+            // } else if (item.indexInnerDown && item.innerDownSymbol) {
+            //   item.indexStandardString = `${item.indexInnerDown}${item.innerDownSymbol.replace('>', '<')}S`
+            // } else if (item.innerUpSymbol && item.indexInnerUp) {
+            //   item.indexStandardString = `S${item.innerUpSymbol}${item.indexInnerUp}`
+            // } else if (item.indexStandard) {
+            //   item.indexStandardString = `S=${item.indexStandard}`
+            // } else if ((item.indexDown && item.downSymbol) && (item.upSymbol && item.indexUp)) {
+            //   item.indexStandardString = `${item.indexDown}${item.downSymbol.replace('>', '<')}S${item.upSymbol}${item.indexUp}`
+            // } else if (item.indexDown && item.downSymbol) {
+            //   item.indexStandardString = `${item.indexDown}${item.downSymbol.replace('>', '<')}S`
+            // } else if (item.upSymbol && item.indexUp) {
+            //   item.indexStandardString = `S${item.upSymbol}${item.indexUp}`
+            // } else {
+            //   item.indexStandardString = ''
+            //   item.canEditIndexStandardString = true
+            // }
+
             if (item.indexStandardString.split('=')[0] === 'S') { // e.x. S=1
-              item.inspectIndexStandard = item.indexStandardString.split('=')[1]
-              item.indexInnerUp = null
-              item.innerUpSymbol = ''
-              item.indexInnerDown = null
-              item.innerDownSymbol = ''
+              if (item.indexInnerStandard) {
+                item.indexInnerStandard = item.indexStandardString.split('=')[1]
+              } else if (item.indexStandard) {
+                item.indexStandard = item.indexStandardString.split('=')[1]
+              }
+
+              // item.inspectIndexStandard = item.indexStandardString.split('=')[1]
+              // item.indexInnerUp = null
+              // item.innerUpSymbol = ''
+              // item.indexInnerDown = null
+              // item.innerDownSymbol = ''
             } else {
               const result = /(.*)S(.*)/.exec(item.indexStandardString)
 
@@ -392,32 +386,38 @@ export default defineComponent({
                 const leftResult = /(.*)([<]=?)/.exec(result[1])
                 const rightResult = /([<]=?)(.*)/.exec(result[2])
 
-                item.inspectIndexStandard = ''
+                // item.inspectIndexStandard = ''
 
-                if (!leftResult) {
-                  item.indexInnerDown = null
-                  item.innerDownSymbol = ''
-                } else {
-                  item.indexInnerDown = leftResult[1]
-                  item.innerDownSymbol = leftResult[2].replace('<', '>')
+                if (item.indexInnerDown) {
+                  if (leftResult) {
+                    item.indexInnerDown = leftResult[1]
+                    item.innerDownSymbol = leftResult[2].replace('<', '>')
+                  }
+                } else if (item.indexDown) {
+                  if (leftResult) {
+                    item.indexDown = leftResult[1]
+                    item.downSymbol = leftResult[2].replace('<', '>')
+                  }
                 }
 
-                if (!rightResult) {
-                  item.indexInnerUp = null
-                  item.innerUpSymbol = ''
-                } else {
-                  item.indexInnerUp = rightResult[2]
-                  item.innerUpSymbol = rightResult[1]
+                if (item.indexInnerUp) {
+                  if (rightResult) {
+                    item.indexInnerUp = rightResult[2]
+                    item.innerUpSymbol = rightResult[1]
+                  }
+                } else if (item.indexUp) {
+                  if (rightResult) {
+                    item.indexUp = rightResult[2]
+                    item.upSymbol = rightResult[1]
+                  }
                 }
-              } else {
-                item.indexInnerUp = null
-                item.innerUpSymbol = ''
-                item.indexInnerDown = null
-                item.innerDownSymbol = ''
-                item.indexInnerStandard = ''
               }
             }
           }
+        }
+        // 将手动结果传入 manualResult 变数
+        if (item.canEditInspectResult === true) {
+          item.manualResult = item.inspectResult
         }
 
         // 处理过程参数
@@ -647,87 +647,89 @@ export default defineComponent({
     }
 
     const chechIndexStandardString = (val:any) => {
-      if (val.indexStandardString.indexOf('S') === -1) {
-        proxy.$warningToast('缺少变数 S')
-      } else if (val.indexStandardString === 'S') {
-        if (val.inspectResult !== '') {
-          let tempString = ''
-          if (val.indexInnerStandard) {
-            tempString = val.indexInnerStandard
-          } else if (val.indexStandard) {
-            tempString = val.indexStandard
-          } else {
-            proxy.$warningToast('无标准值')
-            val.indexJudgeResult = 'N'
-            return
+      if (val.manualStandard === null) {
+        if (val.indexStandardString.indexOf('S') === -1) {
+          proxy.$warningToast('缺少变数 S')
+        } else if (val.indexStandardString === 'S') {
+          if (val.inspectResult !== '') {
+            let tempString = ''
+            if (val.indexInnerStandard) {
+              tempString = val.indexInnerStandard
+            } else if (val.indexStandard) {
+              tempString = val.indexStandard
+            } else {
+              proxy.$warningToast('无标准值')
+              val.indexJudgeResult = 'N'
+              return
+            }
+            if (evil(`${val.inspectResult}==${tempString}`)) {
+              console.log('val.indexJudgeResult = Y')
+              val.indexJudgeResult = 'Y'
+            } else {
+              console.log('val.indexJudgeResult = N')
+              val.indexJudgeResult = 'N'
+            }
           }
-          if (evil(`${val.inspectResult}==${tempString}`)) {
-            console.log('val.indexJudgeResult = Y')
-            val.indexJudgeResult = 'Y'
-          } else {
-            console.log('val.indexJudgeResult = N')
-            val.indexJudgeResult = 'N'
+        } else if (val.indexStandardString.split('=')[0] === 'S') {
+          if (val.inspectResult !== '') {
+            if (evil(`${val.indexStandardString.split('=')[1]}==${val.inspectResult}`)) {
+              console.log('val.indexJudgeResult = Y')
+              val.indexJudgeResult = 'Y'
+            } else {
+              console.log('val.indexJudgeResult = N')
+              val.indexJudgeResult = 'N'
+            }
           }
-        }
-      } else if (val.indexStandardString.split('=')[0] === 'S') {
-        if (val.inspectResult !== '') {
-          if (evil(`${val.indexStandardString.split('=')[1]}==${val.inspectResult}`)) {
-            console.log('val.indexJudgeResult = Y')
-            val.indexJudgeResult = 'Y'
-          } else {
-            console.log('val.indexJudgeResult = N')
-            val.indexJudgeResult = 'N'
-          }
-        }
-      } else {
-        if (val.inspectResult !== '') {
-          const result = /(.*)S(.*)/.exec(val.indexStandardString)
-          if (result === null) {
-            proxy.$warningToast('标准栏位式子错误')
-            val.indexStandardString = ''
-            return
-          }
-          if (result[1] === '' && result[2] === '') {
-            proxy.$warningToast('标准栏位式子错误')
-            val.indexStandardString = ''
-            return
-          }
+        } else {
+          if (val.inspectResult !== '') {
+            const result = /(.*)S(.*)/.exec(val.indexStandardString)
+            if (result === null) {
+              proxy.$warningToast('标准栏位式子错误')
+              val.indexStandardString = ''
+              return
+            }
+            if (result[1] === '' && result[2] === '') {
+              proxy.$warningToast('标准栏位式子错误')
+              val.indexStandardString = ''
+              return
+            }
 
-          const leftResult = /(.*)([><]=?)/.exec(result[1])
-          const rightResult = /([><]=?)(.*)/.exec(result[2])
+            const leftResult = /(.*)([><]=?)/.exec(result[1])
+            const rightResult = /([><]=?)(.*)/.exec(result[2])
 
-          if (!leftResult) {
-            val.indexInnerDown = ''
-            val.innerDownSymbol = ''
-          } else {
-            val.indexInnerDown = leftResult[1]
-            val.innerDownSymbol = leftResult[2]
-          }
+            if (!leftResult) {
+              val.indexInnerDown = ''
+              val.innerDownSymbol = ''
+            } else {
+              val.indexInnerDown = leftResult[1]
+              val.innerDownSymbol = leftResult[2]
+            }
 
-          if (!rightResult) {
-            val.indexInnerUp = ''
-            val.innerUpSymbol = ''
-          } else {
-            val.indexInnerUp = rightResult[2]
-            val.innerUpSymbol = rightResult[1]
-          }
+            if (!rightResult) {
+              val.indexInnerUp = ''
+              val.innerUpSymbol = ''
+            } else {
+              val.indexInnerUp = rightResult[2]
+              val.innerUpSymbol = rightResult[1]
+            }
 
-          if (val.inspectResult && val.indexStandardString) {
-            try {
-              console.log('zzzzzzzz')
-              console.log(`${result[1]}${val.inspectResult}`)
-              console.log(`${val.inspectResult}${result[2]}`)
-              if (evil(`${result[1]}${val.inspectResult}`) && evil(`${val.inspectResult}${result[2]}`)) {
-                console.log('val.indexJudgeResult = Y')
-                val.indexJudgeResult = 'Y'
-              } else {
+            if (val.inspectResult && val.indexStandardString) {
+              try {
+                console.log('zzzzzzzz')
+                console.log(`${result[1]}${val.inspectResult}`)
+                console.log(`${val.inspectResult}${result[2]}`)
+                if (evil(`${result[1]}${val.inspectResult}`) && evil(`${val.inspectResult}${result[2]}`)) {
+                  console.log('val.indexJudgeResult = Y')
+                  val.indexJudgeResult = 'Y'
+                } else {
+                  console.log('val.indexJudgeResult = N')
+                  val.indexJudgeResult = 'N'
+                }
+              } catch (err) {
+                console.log(err)
                 console.log('val.indexJudgeResult = N')
                 val.indexJudgeResult = 'N'
               }
-            } catch (err) {
-              console.log(err)
-              console.log('val.indexJudgeResult = N')
-              val.indexJudgeResult = 'N'
             }
           }
         }
@@ -800,21 +802,26 @@ export default defineComponent({
       return indexStandardString
     }
 
-    const chechCanEditInspectResultOfData = (subItem:any) => {
+    // 查看
+    const chechCanEditInspectResultOfData = (subItem:any) => { // 此 function 不包含公式错误
+      // 没有【展示】过程参数
       if (subItem.inspectParameterListShow.length === 0) {
         return true
       }
 
+      // 没有【结果】过程参数
       if (!subItem.inspectParameterListResult.length) {
         return true
       }
 
+      // 有【结果】过程参数，公式为空
       if (subItem.inspectParameterListResult.length && subItem.inspectParameterListResult[0].formula === '') {
         return true
       }
       return false
     }
 
+    // 判断是否公式可行
     const chechCanEditInspectResultOfFormula = (formulaString:string, args:string) => {
       if (formulaString === '') { // 公式不能為空
         return false
@@ -868,20 +875,29 @@ export default defineComponent({
       return formulaLine
     }
 
+    // key in trigger 过程参数栏位出来的结果
     const actHandleInspectResult = (subItem:any) => {
-      if (subItem.canEditInspectResult === false) { // 判定是否依靠过程参数计算
+      console.log('subItem')
+      console.log(subItem)
+
+      if (!subItem.canEditInspectResult && subItem.canChangeAgainWithProcessParameter) { // 判定是否依靠过程参数计算
         if (subItem.inspectMethodNameList[subItem.inspectMethodCodeWhichIndex]?.inspectParameterListShow.every((item:any) => item.defaultValue !== '')) { // 过程参数都不为空才触发
           const result = runFormula(subItem.filnalFormula,
             subItem.inspectMethodNameList[subItem.inspectMethodCodeWhichIndex].inspectParameterListResult[0].formula,
             subItem.inspectMethodNameList[subItem.inspectMethodCodeWhichIndex].inspectParameterListShow,
             subItem.inspectMethodNameList[subItem.inspectMethodCodeWhichIndex].inspectParameterListHidden)
+
+          console.log('kakakkakakkaka')
+          console.log(result)
           if (!result) {
-            subItem.inspectResult = 0
-            // subItem.canEditInspectResult = true
+            console.log('11111')
+            subItem.inspectResult = ''
           } else {
-            subItem.inspectResult = result
-            // subItem.canEditInspectResult = false
+            console.log('22222')
+            subItem.inspectResult = result.toString()
           }
+        } else {
+          subItem.inspectResult = ''
         }
       }
     }
@@ -890,11 +906,13 @@ export default defineComponent({
     const runFormula = (formula:string, depend:string, showValue:any[], hiddenValue:any[]) => {
       const transList = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z']
       const tempDepend = depend.split(',')
+
       console.log('tempDepend')
       console.log(tempDepend)
       let tempFormula = formula
-      console.log('formula')
-      console.log(formula)
+      console.log('tempFormula')
+      console.log(tempFormula)
+
       const valueList = new Array(tempDepend.length)
       const importValue:any = {}
 
@@ -958,23 +976,50 @@ export default defineComponent({
       let expr:any
       let result:any
 
-      try {
-        console.log('tempFormula')
-        console.log(tempFormula)
-        console.log('importValue')
-        console.log(importValue)
-        expr = parser.parse(tempFormula)
-        result = expr.evaluate(importValue)
-      } catch (err) {
-        console.log(err)
-        proxy.$warningToast('公式或参数值有错误，无法计算。请改手动输入结果，以进行判定')
-        result = null
+      if (depend.split(',').length === 1 && depend.split(',')[0].trim().toString() === formula.trim().toString()) { // 仅一个展示的过程参数且 S=该过程参数
+        console.log('yyyyyyyyyy')
+        console.log(showValue)
+        showValue.forEach((item) => {
+          if (item.paramCode === depend.split(',')[0].trim().toString()) {
+            console.log('xxxxxx')
+            console.log(item.defaultValue)
+            result = item.defaultValue
+          }
+        })
+      } else {
+        if (showValue.some(item => item.paramDataType === '')) { // 多个过程参数没类型
+          console.log('多个过程参数没类型')
+          proxy.$warningToast('公式或参数值有错误，无法计算。请改手动输入结果，以进行判定')
+          result = null
+        } else {
+          try {
+            // 加入字串形态
+            console.log('tempFormula')
+            console.log(tempFormula)
+            console.log('importValue')
+            console.log(importValue)
+            expr = parser.parse(tempFormula)
+            result = expr.evaluate(importValue)
+          } catch (err) {
+            console.log(err)
+            proxy.$warningToast('公式或参数值有错误，无法计算。请改手动输入结果，以进行判定')
+            result = null
+          }
+        }
       }
+
       return result
     }
 
     // TODO watch
     watch(targetObj, (val) => {
+      // console.log('9999999999999999')
+      // try {
+      //   console.log(parser.parse('A+B'))
+      // } catch (err) {
+      //   console.log('error')
+      // }
+      // console.log('9999999999999999')
       console.log('=== import object to dialog ===')
       console.log(val)
 
@@ -1001,7 +1046,7 @@ export default defineComponent({
           val.map((item:any) => item.id)
         ).then(async (res) => {
           console.log('=== query dialog data ===')
-          console.log(res.data.data)
+          console.log(JSON.parse(JSON.stringify(res.data.data)))
 
           // // 处理合并，重新组合
           // const tempRes:any[] = []
@@ -1023,21 +1068,28 @@ export default defineComponent({
               inspectTypeId: state.dataFormOfSampleInfo.taskInspectClassify !== 'TEMP' ? state.dataFormOfSampleInfo.inspectTypeId : '',
               inspectIndexId: state.dataFormOfSampleInfo.taskInspectClassify !== 'TEMP' ? item.indexId : '',
               inspectParameterGroupId: state.dataFormOfSampleInfo.taskInspectClassify === 'TEMP' ? item.inspectParameterGroupId : ''
-              // inspectMaterialCode: 'SS02050003', inspectTypeId: '659445268915179520', inspectIndexId: '1000009957', inspectParameterGroupId: ''
             })
-            console.log('指标')
+            console.log('指标下标准 & 过程参数')
             console.log(tempIndex.data.data)
 
             // 指标栏位初始化
             Object.assign(item, {
               canShowParameterList: false, // 过程参数是否显示
-              canEditInspectResult: true, // 结果是否可编辑
+              canEditInspectResult: false, // 结果是否可编辑
+              canChangeAgainWithProcessParameter: true, // 可再改值过程参数触发结果
               filnalFormula: '', // 公式值
               inspectMethodCodeWhichIndex: 100 // 预设的方法 index
             })
 
+            if (item.manualResult !== null) {
+              item.canEditInspectResult = true
+              item.canChangeAgainWithProcessParameter = false
+              item.inspectResult = item.manualResult
+            }
+
             if (!tempIndex.data.data.inspectMethodNameList && tempIndex.data.data.inspectMethodNameList.length === 0) {
               item.canShowParameterList = false // 没有任何过程参数讯息
+              item.canEditInspectResult = true
             } else {
               tempIndex.data.data.inspectMethodNameList.forEach((subItem:any, index:number) => {
                 Object.assign(subItem, { // 滤掉 id 为空
@@ -1053,18 +1105,20 @@ export default defineComponent({
                     item.filnalFormula = ''
                   }
 
-                  item.canEditInspectResult = chechCanEditInspectResultOfData(subItem) || chechCanEditInspectResultOfFormula(item.filnalFormula, subItem.inspectParameterListResult[0].formula) // [结果]是否可编辑
+                  //  查看并设定【结果】栏位， 是否可编辑
+                  // TODO 需检查 manualResult 空的情况是否符合预期
+                  if (item.manualResult === null) {
+                    item.canEditInspectResult = chechCanEditInspectResultOfData(subItem) || chechCanEditInspectResultOfFormula(item.filnalFormula, subItem.inspectParameterListResult[0].formula) // [结果]是否可编辑
+                  }
                   item.canShowParameterList = subItem.inspectParameterListShow.length !== 0
                   item.inspectMethodCodeWhichIndex = index
                 }
               })
             }
 
-            // TODO 需将 inspectIndexStandardText 除去
             Object.assign(item, {
               inspectIndexStandard: tempIndex.data.data.inspectIndexStandard,
               inspectMethodNameList: tempIndex.data.data.inspectMethodNameList,
-              inspectIndexStandardText: '', // 暂时
               sampleCode: state.idToSampleCode[item.taskInspectId]
             })
 
@@ -1073,8 +1127,8 @@ export default defineComponent({
             // 2.有标准值时，带出标准值 ，不可自由编辑
             // 3.有不等式时，带出不等式 ，不可自由编辑
 
-            if (item.inspectIndexStandardText) {
-              item.indexStandardString = item.inspectIndexStandardText
+            if (item.manualStandard !== null) {
+              item.indexStandardString = item.manualStandard
               item.canEditIndexStandardString = true
             } else {
               if (item.indexInnerStandard) {
@@ -1107,16 +1161,6 @@ export default defineComponent({
               }
             }
 
-            // if (item.indexInnerStandard === '' && item.indexStandard === '') {
-            //   if (item.inspectIndexStandard && Object.keys(item.inspectIndexStandard).length) {
-            //     item.indexStandardString = joint(item.inspectIndexStandard)
-            //   } else { // 可能 inspectIndexStandard 是 null
-            //     item.indexStandardString = ''
-            //   }
-            // } else {
-            //   item.indexStandardString = joint(item)
-            // }
-
             // 指标预设没有方法时，预设套入第一笔
             if (item.inspectMethodCode === '' && tempIndex.data.data.inspectMethodNameList) {
               btnChangeMethodOfIndex(0, item)
@@ -1137,17 +1181,7 @@ export default defineComponent({
     })
 
     onMounted(async () => {
-      // state.currentSubType = store.state.common.sampleObj.type
-      // state.currentObj = store.state.common.sampleObj.obj
-
-      // if (!state.currentSubType) {
-      //   tabsCloseCurrentHandle()
-      //   proxy.$warningToast('操作过时，请重新选择！')
-      //   gotoPage({
-      //     path: 'qms-pages-InspectionManagement-InspectionTask-index'
-      //   })
-      // } else {
-      // }
+      //
     })
 
     return {
