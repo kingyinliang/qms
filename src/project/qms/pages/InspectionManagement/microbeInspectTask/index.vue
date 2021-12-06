@@ -68,6 +68,7 @@
           <el-button icon="el-icon-search" @click="() => {queryForm.current = 1; query()}">查询</el-button>
           <el-button @click="goCultivate"><i class="qmsIconfont qms-jianyan"/> 培养</el-button>
           <el-button type="primary" @click="goCalculate"><i class="qmsIconfont qms-dayin" /> 计数</el-button>
+          <el-button v-if="task !== 'COLONYNUM'" type="primary" @click="goInspect"><i class="qmsIconfont qms-dayin" /> 检验</el-button>
         </el-form-item>
       </el-form>
     </template>
@@ -109,10 +110,10 @@
       <el-table-column label="收样时间" prop="receiveDate" min-width="150" :show-overflow-tooltip="true" />
       <el-table-column label="操作" width="140" fixed="right">
         <template #default="scope">
-          <el-button  type="text" icon="qmsIconfont qms-jianyan3" class="role__btn" @click="cultivateSample(scope.row)">
+          <el-button v-if="scope.row.inspectMethodGroupNameList.includes('培养法')"  type="text" icon="qmsIconfont qms-jianyan3" class="role__btn" @click="cultivateSample(scope.row)">
             培养
           </el-button>
-          <el-button type="text" icon="qmsIconfont qms-jianyan3" class="role__btn" @click="inspectSample(scope.row)">
+          <el-button v-if="scope.row.inspectMethodGroupNameList.includes('直接法')" type="text" icon="qmsIconfont qms-jianyan3" class="role__btn" @click="inspectSample(scope.row)">
             检验
           </el-button>
         </template>
@@ -141,7 +142,7 @@ import {
   reactive,
   ref
 } from 'vue'
-import { TASK_INSPECT_MICROBE_TODO_LIST_QUERY, TASK_INSPECT_MICROBE_INSPECT_TASK_LIST_QUERY, INSPECT_TASK_RETENTION } from '@/api/api'
+import { TASK_INSPECT_MICROBE_TODO_LIST_QUERY, TASK_INSPECT_MICROBE_INSPECT_TASK_LIST_QUERY, INSPECT_TASK_RETENTION, TASK_INSPECT_MICROBE_INSPECT_MICROBE_PARAMETER_QUERY } from '@/api/api'
 import layoutTs from '@/components/layout/layoutTs'
 import { useStore } from 'vuex'
 interface TableData{
@@ -208,12 +209,20 @@ export default defineComponent({
     }
     // 查询
     const query = async () => {
+      let tempTableData:any[] = []
       queryForm.indexName = inspectClassifyObj.inspectClassifyName
       const { data } = await TASK_INSPECT_MICROBE_INSPECT_TASK_LIST_QUERY(queryForm)
-      tableData.value = data.data.records
+      tempTableData = data.data.records
+
       queryForm.size = data.data.size
       queryForm.current = data.data.current
       queryForm.total = data.data.total
+
+      const temp = await TASK_INSPECT_MICROBE_INSPECT_MICROBE_PARAMETER_QUERY(data.data.records)
+      tempTableData.forEach((item:any, index:number) => {
+        item.inspectMethodGroupNameList = temp.data.data[index].inspectMethodGroupNameList.map((element:any) => element.inspectMethodName)
+      })
+      tableData.value = tempTableData
     }
     // 切换任务分类
     const changeTask = (inspectClassify: string, inspectClassifyName: string) => {
@@ -320,6 +329,10 @@ export default defineComponent({
       })
     }
 
+    const goInspect = () => {
+      //
+    }
+
     // [BTN:只读]
     const btnConfigulationReadOnly = async (row:TableData) => {
       if (task.value === 'TEMP') {
@@ -361,7 +374,8 @@ export default defineComponent({
       selectionChange,
       cultivateSample,
       inspectSample,
-      btnConfigulationReadOnly
+      btnConfigulationReadOnly,
+      goInspect
     }
   }
 })

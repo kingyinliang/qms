@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-11-26 14:30:22
  * @LastEditors: Telliex
- * @LastEditTime: 2021-11-30 14:58:27
+ * @LastEditTime: 2021-12-06 21:25:09
  */
 import { AxiosResponse } from 'axios'
 import Http from '../http/axios'
@@ -31,4 +31,9 @@ export function TASK_INSPECT_MICROBE_TODO_LIST_QUERY (params = {}):Promise<Axios
 // 检验管理-[微生物检验] 微生物检验任务查询
 export function TASK_INSPECT_MICROBE_INSPECT_TASK_LIST_QUERY (params = {}):Promise<AxiosResponse> {
   return Http.post('/taskInspect/queryMicrobeTaskInspect', params, { baseURL })
+}
+
+// 检验管理-[微生物检验] 查询参数组及方法
+export function TASK_INSPECT_MICROBE_INSPECT_MICROBE_PARAMETER_QUERY (params = {}):Promise<AxiosResponse> {
+  return Http.post('/inspectParameter/queryInspectParameterMicrobeTask', params, { baseURL: (process.env.VUE_APP_QMS_API as string) + (process.env.VUE_APP_API_V as string) })
 }
