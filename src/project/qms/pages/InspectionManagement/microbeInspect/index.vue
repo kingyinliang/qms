@@ -1,10 +1,3 @@
-<!--
- * @Description:
- * @Anthor: Telliex
- * @Date: 2021-11-16 09:59:02
- * @LastEditors: Telliex
- * @LastEditTime: 2021-12-03 09:14:11
--->
 <template>
   <mds-area class="test_method" title="检验列表" :pack-up="false" style="margin-bottom: 0; background: #fff; overflow:scroll">
     <template #titleBtn>
@@ -60,8 +53,8 @@ import {
 
 } from '@/api/api'
 import layoutTs from '@/components/layout/layoutTs'
+import { useRouter } from 'vue-router'
 import { useStore } from 'vuex'
-// import InstectionDialog from '../components/InspectionDialog.vue'
 
 interface SearchFilter{
   inspectClassify: string;
@@ -132,6 +125,8 @@ interface DataTableOfTopicMain {
 }
 
 interface State {
+  correntWayInto: boolean
+  isCultivateDialigShow: boolean
   indexOfCurrentRowOnFocus: number
   targetObjList: any[] // 检验物件
   currentGlobalActOgj: any
@@ -153,17 +148,20 @@ export default defineComponent({
   name: 'MicrobeInspectInspect',
   components: {
     MdsArea
+    // dialogDevice
   },
 
   setup () {
     const ctx = getCurrentInstance() as ComponentInternalInstance
     const proxy = ctx.proxy as any
-    const store = useStore()
-    const { gotoPage, tabsCloseCurrentHandle } = layoutTs()
     const refTableOfTopicMain = ref()
+
+    const router = useRouter()
 
     /**  == 变量 ==  **/
     const state = reactive<State>({
+      correntWayInto: false,
+      isCultivateDialigShow: false,
       indexOfCurrentRowOnFocus: 0,
       dialogVisible: false,
       currentGlobalActOgj: {},
@@ -235,37 +233,27 @@ export default defineComponent({
         //
       })
     }
+
     /**  == 生命周期 ==  **/
     onMounted(async () => {
-      state.mainType = store.state.inspection.microbeInspectTask.type //
-      state.currentObj = store.state.inspection.microbeInspectTask.obj
-      state.mainClass = store.state.inspection.microbeInspectTask.class
-      console.log('==TYPE===========')
-      console.log(state.mainType)
-      console.log(state.currentObj)
-      console.log(state.mainClass)
-      console.log('==OBJ============')
+      state.mainType = ''
+      state.currentObj = null
 
-      if (!state.mainType) {
-        tabsCloseCurrentHandle()
-        proxy.$warningToast('操作过时，请重新选择！')
-        gotoPage({
-          path: 'qms-pages-InspectionManagement-microbeInspectTask-index'
-        })
-      } else {
-        // 除去非已收样或检验中状态任务3
-        state.dataTableOfTopicMain = state.currentObj.length ? state.currentObj.length : []
-        state.searchFilter.inspectClassify = state.mainClass
-        // await MANAGEMENT_INSPECTION_TASK_INSPECT_QUERY_BY_ID_API(store.state.common.sampleObj.obj).then((res) => { // /taskInspect/queryTaskInspectByIds
-        //   console.log('99999==999999')
-        //   console.log(res.data.data)
-        //   res.data.data.forEach((item:DataTableOfTopicMain) => {
-        //     // 只收 'RECEIVED' & 'CHECKING' 状态
-        //     if (item.taskStatus === 'RECEIVED' || item.taskStatus === 'CHECKING') {
-        //       state.dataTableOfTopicMain.push(item)
-        //     }
-        //   })
-        // })
+      if (router.currentRoute.value.params.wayInto) {
+        state.correntWayInto = true
+        const temp:any = JSON.parse(router.currentRoute.value.params.transferObj as string)
+
+        state.currentObj = temp.obj
+        state.mainType = temp.type
+        state.searchFilter.inspectClassify = temp.class
+      }
+
+      // 清空重整
+      state.dataTableOfTopicMain = []
+      if (state.correntWayInto) {
+        if (state.currentObj.length) {
+          state.dataTableOfTopicMain = state.currentObj
+        }
       }
     })
 

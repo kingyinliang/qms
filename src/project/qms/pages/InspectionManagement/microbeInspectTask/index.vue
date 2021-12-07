@@ -66,8 +66,8 @@
       </el-form-item>
         <el-form-item>
           <el-button icon="el-icon-search" @click="() => {queryForm.current = 1; query()}">查询</el-button>
-          <el-button @click="goCultivate"><i class="qmsIconfont qms-jianyan"/> 培养</el-button>
-          <el-button type="primary" @click="goCalculate"><i class="qmsIconfont qms-dayin" /> 计数</el-button>
+          <el-button @click="goDetail('CULTIVATE')"><i class="qmsIconfont qms-jianyan"/> 培养</el-button>
+          <el-button type="primary" @click="goDetail('CALCULATE')"><i class="qmsIconfont qms-dayin" /> 计数</el-button>
           <el-button v-if="task !== 'COLONYNUM'" type="primary" @click="goInspect"><i class="qmsIconfont qms-dayin" /> 检验</el-button>
         </el-form-item>
       </el-form>
@@ -142,7 +142,7 @@ import {
   reactive,
   ref
 } from 'vue'
-import { TASK_INSPECT_MICROBE_TODO_LIST_QUERY, TASK_INSPECT_MICROBE_INSPECT_TASK_LIST_QUERY, INSPECT_TASK_RETENTION, TASK_INSPECT_MICROBE_INSPECT_MICROBE_PARAMETER_QUERY } from '@/api/api'
+import { TASK_INSPECT_MICROBE_TODO_LIST_QUERY, TASK_INSPECT_MICROBE_INSPECT_TASK_LIST_QUERY, TASK_INSPECT_MICROBE_INSPECT_MICROBE_PARAMETER_QUERY } from '@/api/api'
 import layoutTs from '@/components/layout/layoutTs'
 import { useStore } from 'vuex'
 interface TableData{
@@ -232,63 +232,22 @@ export default defineComponent({
       queryForm.current = 1
       query()
     }
-    // 培养
-    const goCultivate = () => {
+
+    // 计算 & 培养
+    const goDetail = (type:string) => {
       if (!selectionData.value.length) {
         proxy.$warningToast('请选择数据')
         return
       }
-      // const data = selectionData.value.filter(it => it.taskStatus === 'RECEIVED' || it.taskStatus === 'CHECKING')
-      // if (selectionData.value.length && data.length !== selectionData.value.length) {
-      //   proxy.$warningToast('存在不可检验任务请重新选择')
-      //   return
-      // }
-      // store.commit('inspection/updateInspectionTask', selectionData.value)
-      if (task.value === 'COLONYNUM') {
-        store.commit('inspection/updateMicrobeInspectionTask', { type: 'CULTIVATE', class: 'COLONYNUM', obj: selectionData.value.length ? selectionData.value : [] })
-      } else if (task.value === 'COLIFORMGROUP') {
-        store.commit('inspection/updateMicrobeInspectionTask', { type: 'CULTIVATE', class: 'COLIFORMGROUP', obj: selectionData.value.length ? selectionData.value : [] })
-      } else if (task.value === 'YEAST') {
-        store.commit('inspection/updateMicrobeInspectionTask', { type: 'CULTIVATE', class: 'YEAST', obj: selectionData.value.length ? selectionData.value : [] })
-      }
+
+      const transferObj = { type: type, class: task.value, obj: selectionData.value.length ? selectionData.value : [] }
 
       gotoPage({
-        path: 'qms-pages-InspectionManagement-microbeInspect-index'
-      })
-    }
-    const setText = (row: TableData):string => {
-      const inspectContent = (row.inspectContent as string).split('-')
-      if (inspectContent.length && inspectContent[1] && inspectContent[2]) {
-        let tmp = ''
-        inspectContent[2].indexOf('理') >= 0 ? tmp = '理'
-          : inspectContent[2].indexOf('微生物') >= 0 ? tmp = '菌' : tmp = ''
-        return `${inspectContent[1]}(${tmp})`
-      } else {
-        return ''
-      }
-    }
-    // 计算
-    const goCalculate = () => {
-      if (!selectionData.value.length) {
-        proxy.$warningToast('请选择数据')
-        return
-      }
-      // const data = selectionData.value.filter(it => it.taskStatus === 'RECEIVED' || it.taskStatus === 'CHECKING')
-      // if (selectionData.value.length && data.length !== selectionData.value.length) {
-      //   proxy.$warningToast('存在不可检验任务请重新选择')
-      //   return
-      // }
-      // store.commit('inspection/updateInspectionTask', selectionData.value)
-      if (task.value === 'COLONYNUM') {
-        store.commit('inspection/updateMicrobeInspectionTask', { type: 'CALCULATE', class: 'COLONYNUM', obj: selectionData.value.length ? selectionData.value : [] })
-      } else if (task.value === 'COLIFORMGROUP') {
-        store.commit('inspection/updateMicrobeInspectionTask', { type: 'CALCULATE', class: 'COLIFORMGROUP', obj: selectionData.value.length ? selectionData.value : [] })
-      } else if (task.value === 'YEAST') {
-        store.commit('inspection/updateMicrobeInspectionTask', { type: 'CALCULATE', class: 'YEAST', obj: selectionData.value.length ? selectionData.value : [] })
-      }
-
-      gotoPage({
-        path: 'qms-pages-InspectionManagement-microbeInspect-index'
+        name: 'qms-pages-InspectionManagement-microbeInspect-index',
+        params: {
+          wayInto: true,
+          transferObj: JSON.stringify(transferObj)
+        }
       })
     }
     // 表格复选框能否被选中逻辑
@@ -309,7 +268,6 @@ export default defineComponent({
         cancelButtonText: '取消',
         type: 'warning'
       }).then(async () => {
-        await INSPECT_TASK_RETENTION(row)
         proxy.$successToast('操作成功')
         await query()
         await getTask()
@@ -322,7 +280,6 @@ export default defineComponent({
         cancelButtonText: '取消',
         type: 'warning'
       }).then(async () => {
-        await INSPECT_TASK_RETENTION(row)
         proxy.$successToast('操作成功')
         await query()
         await getTask()
@@ -368,8 +325,7 @@ export default defineComponent({
       goHistory,
       changeTask,
       query,
-      goCultivate,
-      goCalculate,
+      goDetail,
       checkDate,
       selectionChange,
       cultivateSample,
