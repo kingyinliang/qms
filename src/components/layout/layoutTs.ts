@@ -201,8 +201,8 @@ export default function (): LayoutTs<any> {
   }
 
   // 菜单点击
-  const gotoRouteHandle = (menu: { id: '', menuUrl: '' }) => {
-    if (/^http[s]?:\/\/.*/.test(menu.menuUrl)) {
+  const gotoRouteHandle = (menu: { id: '', menuUrl: '', menuName: '' }) => {
+    if (/系统管理/.test(menu.menuName)) {
       window.location.href = menu.menuUrl + '&token=' + VueCookies.get('token') + '&tenant=qms'
     } else {
       const route = dynamicMenuRoutes.value.filter(item => item && item.meta.menuId === menu.id)
@@ -231,11 +231,11 @@ export default function (): LayoutTs<any> {
         await nextTick()
         tab = {
           // componentName: route.meta.componentName as string,
-          componentName: require('@/project/' + (route.name as string).replace(/-/g, '/') + '.vue').default.name,
+          componentName: /^http[s]?:\/\/.*/.test((route.meta.iframeUrl as string)) ? route.meta.iframeUrl : require('@/project/' + (route.name as string).replace(/-/g, '/') + '.vue').default.name,
           menuId: (route.meta.menuId || route.name) as string,
           name: route.name as string,
           title: route.meta.title as string,
-          type: 'module',
+          type: /^http[s]?:\/\/.*/.test((route.meta.iframeUrl as string)) ? 'iframe' : 'module',
           iframeUrl: (route.meta.iframeUrl || '') as string
         }
         mainTabs.value = mainTabs.value.concat(tab)

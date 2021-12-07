@@ -85,14 +85,13 @@ export default defineComponent({
   @media print {
     @page {
       size: landscape!important;
-      margin: 0 auto;
+      margin: 0;
     }
     .none_ele{
       display: block;
     }
     #print_ele__module_Three{
       .print_item{
-        width: 100%;
         page-break-after:always;
         page-break-before: always;
       }

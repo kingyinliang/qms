@@ -360,6 +360,7 @@ export default defineComponent({
       addLevelInfo.cooperate = []
       addLevelInfo.manualFlag = 'N'
       addLevelInfo.sampleAmount = ''
+      addLevelInfo.cycleDefinition = ''
       addLevelInfo.inspectTypeName = ''
     }
     // 新增下级
