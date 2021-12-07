@@ -32,11 +32,17 @@ export function fnAddDynamicMenuRoutes (menuList: MenuList[] = [], routes: Route
           iframeUrl: ''
         }
       }
-      try {
-        route.component = importTarget(`${menuList[i].menuUrl}`) || null;
-        (route.meta as RouteMeta).componentName = route.component.name
-      } catch (e) {
-        //
+      if (/^http[s]?:\/\/.*/.test(menuList[i].menuUrl)) {
+        route.path = `i-${menuList[i].id}`
+        route.name = `i-${menuList[i].id}`;
+        (route.meta as RouteMeta).iframeUrl = menuList[i].menuUrl
+      } else {
+        try {
+          route.component = importTarget(`${menuList[i].menuUrl}`) || null;
+          (route.meta as RouteMeta).componentName = route.component.name
+        } catch (e) {
+          //
+        }
       }
       routes.push(route)
     }
