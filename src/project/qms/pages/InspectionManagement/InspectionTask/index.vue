@@ -18,17 +18,17 @@
             </span>
           </p>
           <div class="task__item__flex">
-            <div class="task__item__flex__item">
+            <div class="task__item__flex__item" @click.stop="changeTask(item.inspectClassify, 'execute')">
               <p class="task__item__flex__item--big"><span>{{ item.execute }}</span><span style="font-size: 18px;margin-left: 3px">/{{ item.executeInvisible }}</span></p>
               <p class="task__item__flex__item--small"><i class="qmsIconfont qms-daiwancheng"/>待完成</p>
             </div>
             <div class="task__item__flex__item--border"/>
-            <div class="task__item__flex__item">
+            <div class="task__item__flex__item" @click.stop="changeTask(item.inspectClassify, 'progressing')">
               <p class="task__item__flex__item--big">{{ item.progressing }}</p>
               <p class="task__item__flex__item--small"><i class="qmsIconfont qms-jinrushiyan"/>进行中</p>
             </div>
             <div class="task__item__flex__item--border"/>
-            <div class="task__item__flex__item">
+            <div class="task__item__flex__item" @click.stop="changeTask(item.inspectClassify, 'completed')">
               <p class="task__item__flex__item--big">{{ item.completed }}</p>
               <p class="task__item__flex__item--small"><i class="qmsIconfont qms-shenhetongguo"/>已完成</p>
             </div>
@@ -151,6 +151,7 @@ export default defineComponent({
     const queryForm = reactive({
       taskInspectClassify: '',
       inspectContent: '',
+      inspectQuantityStatus: '',
       inspectSiteName: '',
       sampleCode: '',
       current: 1,
@@ -185,8 +186,13 @@ export default defineComponent({
       })
     }
     // 查询
-    const query = async () => {
+    const query = async (status?: string) => {
       queryForm.taskInspectClassify = task.value
+      if (status) {
+        queryForm.inspectQuantityStatus = status
+      } else {
+        queryForm.inspectQuantityStatus = ''
+      }
       const { data } = await INSPECT_TASK_LIST_QUERY(queryForm)
       tableData.value = data.data.records
       queryForm.size = data.data.size
@@ -194,10 +200,10 @@ export default defineComponent({
       queryForm.total = data.data.total
     }
     // 切换任务分类
-    const changeTask = (val: string) => {
+    const changeTask = (val: string, status?: string) => {
       task.value = val
       queryForm.current = 1
-      query()
+      query(status)
     }
     // 检验
     const goInspect = (row?: TableData) => {

@@ -35,6 +35,11 @@
       />
     </el-tabs>
     <div class="SystemLayout__container--scroll">
+      <iframe
+        v-if="mainTabs.find(it => it.name === mainTabsActiveName) && mainTabs.find(it => it.name === mainTabsActiveName).type === 'iframe'"
+        :src="mainTabs.find(it => it.name === mainTabsActiveName).iframeUrl"
+        width="100%" height="100%" frameborder="0" scrolling="yes">
+      </iframe>
       <router-view v-slot="{ Component }">
         <keep-alive :include="keepAlivePages">
           <component :is="Component" />
