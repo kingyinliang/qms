@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-11-11 16:30:07
  * @LastEditors: Telliex
- * @LastEditTime: 2021-12-04 16:48:33
+ * @LastEditTime: 2021-12-07 20:51:34
 -->
 <template>
   <mds-area class="info" :title="subTitle">
@@ -85,7 +85,8 @@
     </mds-area>
 
       <template v-for="item in dataFormOfSampleItemUnit" :key="item">
-        <mds-area :name="'org'" >
+        <mds-area :name="'org'" style="margin-top:-30px">
+          <div style="padding-bottom:10px">
           <el-form :inline="true" :model="item"  :label-width="cssForformLabelWidth" v-if="currentType==='HISTORY'">
             <el-form-item label="检验开始："  prop="inspectStartDate">
               <el-tooltip class="item" effect="dark" :content="item.inspectStartDate" placement="top-start" :disabled="!item.inspectStartDate">
@@ -103,6 +104,7 @@
               </el-tooltip>
             </el-form-item>
           </el-form>
+          </div>
           <template v-for="subItem in item.taskInspectIndexList" :key="subItem">
             <mds-area :title="subItem.indexName" :name="'org'" :outline="true">
             <el-form :inline="true" :model="subItem" :label-width="cssForformLabelWidth">
@@ -123,19 +125,28 @@
                     <el-input v-model="subItem.indexStandardString" size="small"  class="inputWidth" placeholder="自动带入" autocomplete="off" :readonly="onlyRead" :disabled="onlyRead"></el-input>
                   </el-tooltip>
               </el-form-item>
-              <el-form-item label="检验过程："  prop="" v-if="subItem.taskInspectPhysicalList.length">
-                <!-- <el-input v-model="subItem.taskInspectPhysical" size="small"  class="inputWidth" placeholder="自动带入" autocomplete="off" :readonly="onlyRead" :disabled="onlyRead"></el-input> -->
-                <template v-for="pars in subItem.taskInspectPhysicalList" :key="pars.id">
-                    {{pars.paramCode?pars.paramCode.split('[')[0]:'?'}}<sub>{{pars.paramCode?pars.paramCode.split('[')[1].replace(']',''):''}}</sub> =
-                      <el-tooltip class="item" effect="dark" :content="pars.paramValue" placement="top-start" :disabled="!pars.paramValue">
-                        <el-input v-model="pars.paramValue" type="text"  size="small" placeholder="" style="width:100px;margin-right:10px" :disabled="onlyRead">
-                          <template #suffix>
-                            {{pars.paramUnit}}
-                          </template>
-                        </el-input>
-                      </el-tooltip>
-                </template>
-              </el-form-item>
+              <el-form  :model="subItem" :label-width="cssForformLabelWidth">
+              <el-form-item label="检验过程："  prop="" v-if="subItem.inspectParameterList.length">
+                <div class="fixlocation">
+                  <template v-for="pars in subItem.inspectParameterList" :key="pars.id">
+                      <div class="subitem" :style="{
+                        width:`calc((100%)/${subItem.inspectParameterList.length>=6?6:subItem.inspectParameterList.length})`,
+                        minWidth: `calc((100%)/${subItem.inspectParameterList.length>=6?6:subItem.inspectParameterList.length})`,
+                        maxWidth:`calc((100%)/${subItem.inspectParameterList.length>=6?6:subItem.inspectParameterList.length})`
+                        }">
+                        <span style="min-width:50px;overflow: hidden;text-align: right;padding-right:5px;white-space: nowrap;"> {{pars.paramCode?pars.paramCode.split('[')[0]:'?'}}<sub>{{pars.paramCode?pars.paramCode.split('[')[1].replace(']',''):''}}</sub> =</span>
+                        <el-tooltip class="item" effect="dark" :content="pars.defaultValue" placement="top-start" :disabled="!pars.defaultValue">
+                          <el-input v-model="pars.defaultValue" type="text"  size="small" placeholder="" style="width:100px;margin-right:10px" :disabled="onlyRead">
+                            <template #suffix>
+                              {{pars.paramUnit}}
+                            </template>
+                          </el-input>
+                        </el-tooltip>
+                      </div>
+                  </template>
+                </div>
+                </el-form-item>
+              </el-form>
             </el-form>
             </mds-area>
           </template>
@@ -145,11 +156,10 @@
             <el-radio v-model="item.judgeResult" label="Y" :disabled="onlyRead">合格</el-radio>
             <el-radio v-model="item.judgeResult" label="N" :disabled="onlyRead">不合格</el-radio>
           </el-form-item>
-        </el-form>
-        <el-form :inline="true" :model="item"  :label-width="cssForformLabelWidth" v-if="currentType==='PROCESS'|| currentType==='HISTORY'">
+
           <el-form-item label="检验说明："  prop="inspectExplain"  >
             <el-tooltip effect="dark" :content="item.inspectExplain" :disabled="!item.inspectExplain" placement="top">
-              <el-input v-model="item.inspectExplain" size="small" placeholder="自动带入" autocomplete="off"  type="textarea" :rows="2" :disabled="onlyRead"  style="width:810px"></el-input>
+              <el-input v-model="item.inspectExplain" size="small" placeholder="自动带入" autocomplete="off"  :disabled="onlyRead"  style="width:540px"></el-input>
             </el-tooltip>
           </el-form-item>
         </el-form>
@@ -159,7 +169,6 @@
             <el-radio-group v-model="dataFormOfSampleInfo.recheckMod">
               <el-radio label="ORIGINAL_RECHECK" :disabled="onlyRead">原样复检</el-radio>
               <el-radio label="RESAMOLING" :disabled="onlyRead">取样复检</el-radio>
-              <!-- <el-radio label="OTHER_SAMPLING" :disabled="onlyRead">其他取样</el-radio> -->
             </el-radio-group>
           </el-form-item>
               <el-form-item label="取样说明："  prop="sampleExplain">
@@ -181,7 +190,8 @@ import layoutTs from '@/components/layout/layoutTs'
 import { useStore } from 'vuex'
 import {
   MANAGEMENT_INSPECTION_PHYSICOCHEMICAL_TASK_FORM_QUERY_API,
-  MANAGEMENT_INSPECTION_PHYSICOCHEMICAL_HISTORY_TASK_FORM_QUERY_API
+  MANAGEMENT_INSPECTION_PHYSICOCHEMICAL_HISTORY_TASK_FORM_QUERY_API,
+  INSPECT_INDEX_PROCESS_PARAMETER_QUERY_FOR_TASK_API
 } from '@/api/api'
 
 interface State {
@@ -251,37 +261,107 @@ export default defineComponent({
         Object.assign(state.dataFormOfSampleInfo, { inspectMaterial: `${state.dataFormOfSampleInfo.inspectMaterialName} ${state.dataFormOfSampleInfo.inspectMaterialCode}` })
 
         if (state.currentType === 'HISTORY') {
-          MANAGEMENT_INSPECTION_PHYSICOCHEMICAL_HISTORY_TASK_FORM_QUERY_API([state.currentObj.sampleCode]).then(res => {
+          MANAGEMENT_INSPECTION_PHYSICOCHEMICAL_HISTORY_TASK_FORM_QUERY_API([state.currentObj.sampleCode]).then(async (res) => {
             console.log('HISTORY VIEW')
             console.log(res.data.data)
-            state.dataFormOfSampleItemUnit = res.data.data
-            state.dataFormOfSampleItemUnit[0].taskInspectIndexList.forEach((item:any) => {
-              if (item.indexInnerStandard !== '') {
-                item.indexStandardString = `${!item.indexInnerDown ? '' : item.indexInnerDown}${!item.innerDownSymbol ? '' : item.innerDownSymbol.replace('>', '<')}S${!item.innerUpSymbol ? '' : item.innerUpSymbol}${!item.indexInnerUp ? '' : item.indexInnerUp}`
-              } else if (item.indexStandard !== '') {
-                item.indexStandardString = `${!item.indexDown ? '' : item.indexDown}${!item.downSymbol ? '' : item.downSymbol.replace('>', '<')}S${!item.upSymbol ? '' : item.upSymbol}${!item.indexUp ? '' : item.indexUp}`
+            for (const item of res.data.data[0].taskInspectIndexList) {
+              const tempIndex = await INSPECT_INDEX_PROCESS_PARAMETER_QUERY_FOR_TASK_API({
+                inspectMaterialCode: state.currentType !== 'TEMP' ? state.dataFormOfSampleInfo.inspectMaterialCode : '',
+                inspectTypeId: state.currentType !== 'TEMP' ? state.dataFormOfSampleInfo.inspectTypeId : '',
+                inspectIndexId: state.currentType !== 'TEMP' ? item.indexId : '',
+                inspectParameterGroupId: state.currentType === 'TEMP' ? item.inspectParameterGroupId : ''
+              })
+              console.log('指标下标准 & 过程参数')
+              console.log(tempIndex.data.data)
+              item.inspectIndexStandard = tempIndex.data.data.inspectIndexStandard
+
+              if (item.manualStandard !== '') {
+                item.indexStandardString = item.manualStandard
               } else {
-                item.indexStandardString = ''
+                if (item.inspectIndexStandard.indexInnerStandard) {
+                  item.indexStandardString = `S=${item.inspectIndexStandard.indexInnerStandard}`
+                } else if ((item.inspectIndexStandard.indexInnerDown && item.inspectIndexStandard.innerDownSymbol) && (item.inspectIndexStandard.innerUpSymbol && item.inspectIndexStandard.indexInnerUp)) {
+                  item.indexStandardString = `${item.inspectIndexStandard.indexInnerDown}${item.inspectIndexStandard.innerDownSymbol.replace('>', '<')}S${item.inspectIndexStandard.innerUpSymbol}${item.inspectIndexStandard.indexInnerUp}`
+                } else if (item.inspectIndexStandard.indexInnerDown && item.inspectIndexStandard.innerDownSymbol) {
+                  item.indexStandardString = `${item.inspectIndexStandard.indexInnerDown}${item.inspectIndexStandard.innerDownSymbol.replace('>', '<')}S`
+                } else if (item.inspectIndexStandard.innerUpSymbol && item.inspectIndexStandard.indexInnerUp) {
+                  item.indexStandardString = `S${item.inspectIndexStandard.innerUpSymbol}${item.inspectIndexStandard.indexInnerUp}`
+                } else if (item.inspectIndexStandard.indexStandard) {
+                  item.indexStandardString = `S=${item.inspectIndexStandard.indexStandard}`
+                } else if ((item.inspectIndexStandard.indexDown && item.inspectIndexStandard.downSymbol) && (item.inspectIndexStandard.upSymbol && item.inspectIndexStandard.indexUp)) {
+                  item.indexStandardString = `${item.inspectIndexStandard.indexDown}${item.inspectIndexStandard.downSymbol.replace('>', '<')}S${item.inspectIndexStandard.upSymbol}${item.inspectIndexStandard.indexUp}`
+                } else if (item.inspectIndexStandard.indexDown && item.inspectIndexStandard.downSymbol) {
+                  item.indexStandardString = `${item.inspectIndexStandard.indexDown}${item.inspectIndexStandard.downSymbol.replace('>', '<')}S`
+                } else if (item.inspectIndexStandard.upSymbol && item.inspectIndexStandard.indexUp) {
+                  item.indexStandardString = `S${item.inspectIndexStandard.upSymbol}${item.inspectIndexStandard.indexUp}`
+                } else {
+                  item.indexStandardString = ''
+                }
               }
-            })
+
+              item.inspectParameterList = []
+              if (tempIndex.data.data.inspectMethodNameList.length) {
+                tempIndex.data.data.inspectMethodNameList.forEach((element:any) => {
+                  if (element.inspectMethodCode === item.inspectMethodCode) {
+                    item.inspectParameterList = element.inspectParameterList.filter((subElement:any) => subElement.id !== '' && subElement.paramType === 'SHOW')
+                  }
+                })
+              }
+            }
+            state.dataFormOfSampleItemUnit = res.data.data
           })
         } else {
-          MANAGEMENT_INSPECTION_PHYSICOCHEMICAL_TASK_FORM_QUERY_API({
+          MANAGEMENT_INSPECTION_PHYSICOCHEMICAL_TASK_FORM_QUERY_API({ // /taskInspect/formTaskInspect
             id: state.currentObj.id,
             recheckBatch: ''
-          }).then(res => {
+          }).then(async (res) => {
             console.log('PROCESS or TEMP VIEW')
             console.log(res.data.data)
-            state.dataFormOfSampleItemUnit = res.data.data
-            state.dataFormOfSampleItemUnit[0].taskInspectIndexList.forEach((item:any) => {
-              if (item.indexInnerStandard !== '') {
-                item.indexStandardString = `${!item.indexInnerDown ? '' : item.indexInnerDown}${!item.innerDownSymbol ? '' : item.innerDownSymbol.replace('>', '<')}S${!item.innerUpSymbol ? '' : item.innerUpSymbol}${!item.indexInnerUp ? '' : item.indexInnerUp}`
-              } else if (item.indexStandard !== '') {
-                item.indexStandardString = `${!item.indexDown ? '' : item.indexDown}${!item.downSymbol ? '' : item.downSymbol.replace('>', '<')}S${!item.upSymbol ? '' : item.upSymbol}${!item.indexUp ? '' : item.indexUp}`
+            for (const item of res.data.data[0].taskInspectIndexList) {
+              const tempIndex = await INSPECT_INDEX_PROCESS_PARAMETER_QUERY_FOR_TASK_API({
+                inspectMaterialCode: state.currentType !== 'TEMP' ? state.dataFormOfSampleInfo.inspectMaterialCode : '',
+                inspectTypeId: state.currentType !== 'TEMP' ? state.dataFormOfSampleInfo.inspectTypeId : '',
+                inspectIndexId: state.currentType !== 'TEMP' ? item.indexId : '',
+                inspectParameterGroupId: state.currentType === 'TEMP' ? item.inspectParameterGroupId : ''
+              })
+              console.log('指标下标准 & 过程参数')
+              console.log(tempIndex.data.data)
+              item.inspectIndexStandard = tempIndex.data.data.inspectIndexStandard
+
+              if (item.manualStandard !== '') {
+                item.indexStandardString = item.manualStandard
               } else {
-                item.indexStandardString = ''
+                if (item.inspectIndexStandard.indexInnerStandard) {
+                  item.indexStandardString = `S=${item.inspectIndexStandard.indexInnerStandard}`
+                } else if ((item.inspectIndexStandard.indexInnerDown && item.inspectIndexStandard.innerDownSymbol) && (item.inspectIndexStandard.innerUpSymbol && item.inspectIndexStandard.indexInnerUp)) {
+                  item.indexStandardString = `${item.inspectIndexStandard.indexInnerDown}${item.inspectIndexStandard.innerDownSymbol.replace('>', '<')}S${item.inspectIndexStandard.innerUpSymbol}${item.inspectIndexStandard.indexInnerUp}`
+                } else if (item.inspectIndexStandard.indexInnerDown && item.inspectIndexStandard.innerDownSymbol) {
+                  item.indexStandardString = `${item.inspectIndexStandard.indexInnerDown}${item.inspectIndexStandard.innerDownSymbol.replace('>', '<')}S`
+                } else if (item.inspectIndexStandard.innerUpSymbol && item.inspectIndexStandard.indexInnerUp) {
+                  item.indexStandardString = `S${item.inspectIndexStandard.innerUpSymbol}${item.inspectIndexStandard.indexInnerUp}`
+                } else if (item.inspectIndexStandard.indexStandard) {
+                  item.indexStandardString = `S=${item.inspectIndexStandard.indexStandard}`
+                } else if ((item.inspectIndexStandard.indexDown && item.inspectIndexStandard.downSymbol) && (item.inspectIndexStandard.upSymbol && item.inspectIndexStandard.indexUp)) {
+                  item.indexStandardString = `${item.inspectIndexStandard.indexDown}${item.inspectIndexStandard.downSymbol.replace('>', '<')}S${item.inspectIndexStandard.upSymbol}${item.inspectIndexStandard.indexUp}`
+                } else if (item.inspectIndexStandard.indexDown && item.inspectIndexStandard.downSymbol) {
+                  item.indexStandardString = `${item.inspectIndexStandard.indexDown}${item.inspectIndexStandard.downSymbol.replace('>', '<')}S`
+                } else if (item.inspectIndexStandard.upSymbol && item.inspectIndexStandard.indexUp) {
+                  item.indexStandardString = `S${item.inspectIndexStandard.upSymbol}${item.inspectIndexStandard.indexUp}`
+                } else {
+                  item.indexStandardString = ''
+                }
               }
-            })
+
+              item.inspectParameterList = []
+              if (tempIndex.data.data.inspectMethodNameList.length) {
+                tempIndex.data.data.inspectMethodNameList.forEach((element:any) => {
+                  if (element.inspectMethodCode === item.inspectMethodCode) {
+                    item.inspectParameterList = element.inspectParameterList.filter((subElement:any) => subElement.id !== '' && subElement.paramType === 'SHOW')
+                  }
+                })
+              }
+            }
+            state.dataFormOfSampleItemUnit = res.data.data
           })
         }
       }
@@ -307,4 +387,17 @@ export default defineComponent({
 .inputWidth{
   width:150px;
 }
+.fixlocation{
+  display: flex;
+  width: 100%;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+
+  .subitem{
+    display: flex;
+    align-items: center;
+    flex:1;
+  }
+}
+
 </style>
