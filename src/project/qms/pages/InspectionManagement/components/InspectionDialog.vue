@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-11-11 16:30:07
  * @LastEditors: Telliex
- * @LastEditTime: 2021-12-06 21:13:05
+ * @LastEditTime: 2021-12-07 14:09:58
 -->
 <template>
   <el-dialog :title="title" v-model="isDialogShow" width="90%" @close="onClose">
@@ -71,34 +71,44 @@
               </el-tooltip>
             </el-form-item>
           </el-form>
-          <el-form :inline="true" :model="subItem" :label-width="cssForformLabelWidth">
-            <el-form-item label="检验过程："  prop="" v-if="subItem.canShowParameterList">
-              <template v-if="subItem.inspectMethodNameList">
-                <template v-for="(para,index) in subItem.inspectMethodNameList[subItem.inspectMethodCodeWhichIndex]?.inspectParameterListShow" :key="index">
-                  {{para.paramCode?para.paramCode.split('[')[0]:'?'}}<sub>{{para.paramCode?para.paramCode.split('[')[1].replace(']',''):''}}</sub> =
-                  <el-tooltip v-if="para.paramDataType==='INTEGER'" class="item" effect="dark" :content="para.defaultValue" placement="top-start" :disabled="!para.defaultValue">
-                    <el-input  v-model="para.defaultValue" type="text" :maxlength="para.paramStandard" size="small"  placeholder="" oninput="value=value.replace(/[^\d]/g,'')"  style="width:300px;margin-right:10px" @blur="actHandleInspectResult(subItem)">
-                      <template #suffix>
-                        {{para.paramUnit}}
-                      </template>
-                    </el-input>
-                    </el-tooltip>
-                  <el-tooltip v-else-if="para.paramDataType==='FLOAT_POINT'" class="item" effect="dark" :content="para.defaultValue" placement="top-start" :disabled="!para.defaultValue">
-                    <el-input v-model="para.defaultValue" type="text" size="small" placeholder="" oninput ="value=value.replace(/[^\-\d.]/g, '').replace(/^(\d+)\.(\d+).*$/, '$1.$2')"  style="width:300px;margin-right:10px" @blur="actHandleInspectResult(subItem)">
-                      <template #suffix>
-                        {{para.paramUnit}}
-                      </template>
-                    </el-input>
-                    </el-tooltip>
-                  <el-tooltip v-else v-model="para.defaultValue" type="text" class="item" effect="dark" :content="para.defaultValue" placement="top-start" :disabled="!para.defaultValue">
-                    <el-input   size="small" placeholder=""  style="width:300px;margin-right:10px" @blur="actHandleInspectResult(subItem)">
-                      <template #suffix>
-                        {{para.paramUnit}}
-                      </template>
-                    </el-input>
-                  </el-tooltip>
+          <el-form  :model="subItem" :label-width="cssForformLabelWidth">
+            <el-form-item label="检验过程："  prop="" v-if="subItem.canShowParameterList" style="margin-top:10px">
+              <div class="fixlocation">
+                <template v-if="subItem.inspectMethodNameList">
+                  <template v-for="(para,index) in subItem.inspectMethodNameList[subItem.inspectMethodCodeWhichIndex]?.inspectParameterListShow" :key="index">
+                    <div class="subitem" v-if="para.paramDataType==='INTEGER'">
+                      <span style="min-width:50px;overflow: hidden;text-align: right;padding-right:5px;">{{para.paramCode?para.paramCode.split('[')[0]:'?'}}<sub>{{para.paramCode?para.paramCode.split('[')[1].replace(']',''):''}}</sub> = </span>
+                      <el-tooltip  class="item" effect="dark" :content="para.defaultValue" placement="top-start" :disabled="!para.defaultValue">
+                        <el-input  v-model="para.defaultValue" type="text" :maxlength="para.paramStandard" size="small"  placeholder="" oninput="value=value.replace(/[^\d]/g,'')"  style="margin-right:10px" @blur="actHandleInspectResult(subItem)">
+                          <template #suffix>
+                            {{para.paramUnit}}
+                          </template>
+                        </el-input>
+                      </el-tooltip>
+                    </div>
+                    <div class="subitem" v-else-if="para.paramDataType==='FLOAT_POINT'">
+                      <span style="min-width:50px;overflow: hidden;text-align: right;padding-right:5px;"> {{para.paramCode?para.paramCode.split('[')[0]:'?'}}<sub>{{para.paramCode?para.paramCode.split('[')[1].replace(']',''):''}}</sub> = </span>
+                      <el-tooltip  class="item" effect="dark" :content="para.defaultValue" placement="top-start" :disabled="!para.defaultValue">
+                        <el-input v-model="para.defaultValue" type="text" size="small" placeholder="" oninput ="value=value.replace(/[^\-\d.]/g, '').replace(/^(\d+)\.(\d+).*$/, '$1.$2')"  style="margin-right:10px" @blur="actHandleInspectResult(subItem)">
+                          <template #suffix>
+                            {{para.paramUnit}}
+                          </template>
+                        </el-input>
+                      </el-tooltip>
+                    </div>
+                    <div class="subitem" v-else>
+                      <span style="min-width:50px;overflow: hidden;text-align: right;padding-right:5px;">{{para.paramCode?para.paramCode.split('[')[0]:'?'}}<sub>{{para.paramCode?para.paramCode.split('[')[1].replace(']',''):''}}</sub> = </span>
+                      <el-tooltip  class="item" effect="dark" :content="para.defaultValue" placement="top-start" :disabled="!para.defaultValue">
+                        <el-input  v-model="para.defaultValue" size="small" placeholder=""  type="text" style="margin-right:10px" @blur="actHandleInspectResult(subItem)">
+                          <template #suffix>
+                            {{para.paramUnit}}
+                          </template>
+                        </el-input>
+                      </el-tooltip>
+                    </div>
+                  </template>
                 </template>
-              </template>
+              </div>
             </el-form-item>
             <el-form-item label="检验时间："  prop="finishDate" v-if="subItem.finishDate">
               <div ><span>检验时间:</span>{{!subItem.finishDate?'':subItem.finishDate}}</div>
@@ -109,14 +119,14 @@
     </mds-area>
     <el-form :inline="true" :model="dataFormOfSampleInfo"  :label-width="cssForformLabelWidth" >
       <el-form-item label="综合判定："  prop="indexJudgeResult" >
-        <el-radio v-model="indexJudgeResult" label="Y" :disabled="true">合格</el-radio>
-        <el-radio v-model="indexJudgeResult" label="N" :disabled="true">不合格</el-radio>
+        <el-radio-group v-model="dataFormOfSampleInfo.indexJudgeResult">
+          <el-radio label="Y" :disabled="true">合格</el-radio>
+          <el-radio label="N" :disabled="true">不合格</el-radio>
+        </el-radio-group>
       </el-form-item>
-    </el-form>
-    <el-form :inline="true" :model="dataFormOfSampleInfo"  :label-width="cssForformLabelWidth" >
       <el-form-item label="检验说明："  prop="inspectExplain" >
         <el-tooltip class="item" effect="dark" :content="dataFormOfSampleInfo.inspectExplain" placement="top-start" :disabled="!dataFormOfSampleInfo.inspectExplain">
-          <el-input v-model="dataFormOfSampleInfo.inspectExplain" size="small" :rows="2" type="textarea" class="text-ellipsis" placeholder="请输入" autocomplete="off" style="width:800px"></el-input>
+          <el-input v-model="dataFormOfSampleInfo.inspectExplain" size="small"  class="inputWidth" placeholder="请输入" autocomplete="off" style="width:540px"></el-input>
         </el-tooltip>
       </el-form-item>
     </el-form>
@@ -129,7 +139,7 @@
       </el-form-item>
       <el-form-item label="取样说明："  prop="sampleExplain">
         <el-tooltip class="item" effect="dark" :content="dataFormOfSampleInfo.sampleExplain" placement="top-start" :disabled="!dataFormOfSampleInfo.sampleExplain">
-          <el-input v-model="dataFormOfSampleInfo.sampleExplain" size="small" class="inputWidth" placeholder="请输入" autocomplete="off" style="width:500px" ></el-input>
+          <el-input v-model="dataFormOfSampleInfo.sampleExplain" size="small" class="inputWidth" placeholder="请输入" autocomplete="off" style="width:500px"></el-input>
         </el-tooltip>
       </el-form-item>
     </el-form>
@@ -415,10 +425,6 @@ export default defineComponent({
             }
           }
         }
-        // 将手动结果传入 manualResult 变数
-        if (item.canEditInspectResult === true) {
-          item.manualResult = item.inspectResult
-        }
 
         // 处理过程参数
         if (item.inspectMethodNameList.length) {
@@ -516,38 +522,20 @@ export default defineComponent({
       }
     }, 1000)
 
-    // TODO
-    // 校验操作
+    // 必填校验操作（初检，复检）
     const checkRequiredData = (obj:any) => {
       let tempReturn = true
 
       if (state.currentOrderStyle === 'first') { // 初检
         console.log('first')
         obj.forEach((item:any) => {
-          if (item.inspectResult === '') {
-            // proxy.$warningToast('请完成各指标结果')
-            // proxy.$warningToast('检验还未完成不可操作')
+          if (item.inspectResult === '' || item.indexJudgeResult === '' || item.indexStandardString === '') {
             tempReturn = false
-            // return
-          }
-          if (item.indexJudgeResult === '') {
-            // proxy.$warningToast('请完成各指标判定')
-            // proxy.$warningToast('检验还未完成不可操作')
-            tempReturn = false
-            // return
-          }
-          if (item.indexStandardString === '') {
-            // proxy.$warningToast('请完成各指标标准')
-            // proxy.$warningToast('检验还未完成不可操作')
-            tempReturn = false
-            // return
           }
           if (item.inspectMethodNameList.length && item.inspectMethodNameList[item.inspectMethodCodeWhichIndex].inspectParameterListShow.length) {
             const temp = item.inspectMethodNameList[item.inspectMethodCodeWhichIndex].inspectParameterListShow.every((subItem:any) => subItem.defaultValue !== '')
 
             if (!temp) {
-              // proxy.$warningToast('请输入指标过程参数')
-              // proxy.$warningToast('检验还未完成不可操作')
               tempReturn = false
             }
           }
@@ -578,8 +566,6 @@ export default defineComponent({
           }
 
           if (tempResult !== needResult) {
-            // proxy.$warningToast('请完整输入指标')
-            // proxy.$warningToast('检验还未完成不可操作')
             tempReturn = false
           }
         })
@@ -617,10 +603,10 @@ export default defineComponent({
       await INSPECT_INDEX_PROCESS_PARAMETER_UPDATE_FOR_TASK_API(tempList)
 
       if (type !== 'save') {
-        proxy.$successToast('检验已完成！')
+        proxy.$successToast('检验已完成')
         parent.emit('openHandle', { act: 'submit', target: obj.recheckMod, obj: back.data.data })
       } else {
-        proxy.$successToast('保存成功！')
+        proxy.$successToast('保存成功')
         parent.emit('openHandle', { act: 'save', target: '', obj: null }) //  因为成功回返 null
       }
       onClose()
@@ -646,6 +632,7 @@ export default defineComponent({
       }
     }
 
+    // 标准值栏位处理
     const chechIndexStandardString = (val:any) => {
       if (val.manualStandard === null) {
         if (val.indexStandardString.indexOf('S') === -1) {
@@ -1013,18 +1000,11 @@ export default defineComponent({
 
     // TODO watch
     watch(targetObj, (val) => {
-      // console.log('9999999999999999')
-      // try {
-      //   console.log(parser.parse('A+B'))
-      // } catch (err) {
-      //   console.log('error')
-      // }
-      // console.log('9999999999999999')
       console.log('=== import object to dialog ===')
       console.log(val)
 
       state.currentMainType = mainType.value !== 'ASSIST' ? mainType.value : 'PROCESS'
-      console.log('state.currentMainType')
+      console.log('=== state.currentMainType ===')
       console.log(state.currentMainType)
       state.mainObj = []
       val.forEach((item:any) => {
@@ -1041,24 +1021,12 @@ export default defineComponent({
         state.currentOrderStyle = val[0].recheckFlag === 'N' ? 'first' : 'repeat'
 
         // add id2sampleCode obj 获取指标
-        // TODO [BE]?
         MANAGEMENT_INSPECTION_PHYSICOCHEMICAL_TASK_INSPECT_QUERY_API( // /taskInspectIndex/queryTaskInspectIndex
           val.map((item:any) => item.id)
         ).then(async (res) => {
           console.log('=== query dialog data ===')
           console.log(JSON.parse(JSON.stringify(res.data.data)))
 
-          // // 处理合并，重新组合
-          // const tempRes:any[] = []
-          // res.data.data.forEach((element:any) => {
-          //   element.taskInspectIndexIdList.forEach((subElement:any, subElementIndex:number) => {
-          //     const copyItem = JSON.parse(JSON.stringify(element))
-          //     copyItem.id = subElement
-          //     copyItem.taskInspectId = element.taskInspectIdList[subElementIndex]
-          //     tempRes.push(copyItem)
-          //   })
-          // })
-          // state.dataFormOfSampleItemUnit = JSON.parse(JSON.stringify(tempRes))
           state.dataFormOfSampleItemUnit = JSON.parse(JSON.stringify(res.data.data))
           // 获取指标
           await state.dataFormOfSampleItemUnit.forEach(async (item) => {
@@ -1081,13 +1049,11 @@ export default defineComponent({
               inspectMethodCodeWhichIndex: 100 // 预设的方法 index
             })
 
-            if (item.manualResult !== null) {
+            if (item.manualFlag === 'Y') {
               item.canEditInspectResult = true
-              item.canChangeAgainWithProcessParameter = false
-              item.inspectResult = item.manualResult
+              item.canChangeAgainWithProcessParameter = false // 标示是否过程参数改变触发
             }
-
-            if (!tempIndex.data.data.inspectMethodNameList && tempIndex.data.data.inspectMethodNameList.length === 0) {
+            if (!tempIndex.data.data.inspectMethodNameList || tempIndex.data.data.inspectMethodNameList.length === 0) {
               item.canShowParameterList = false // 没有任何过程参数讯息
               item.canEditInspectResult = true
             } else {
@@ -1106,8 +1072,8 @@ export default defineComponent({
                   }
 
                   //  查看并设定【结果】栏位， 是否可编辑
-                  // TODO 需检查 manualResult 空的情况是否符合预期
-                  if (item.manualResult === null) {
+                  // TODO 需检查 manualFlag 空的情况是否符合预期
+                  if (item.manualFlag === 'N' || item.manualFlag === '') {
                     item.canEditInspectResult = chechCanEditInspectResultOfData(subItem) || chechCanEditInspectResultOfFormula(item.filnalFormula, subItem.inspectParameterListResult[0].formula) // [结果]是否可编辑
                   }
                   item.canShowParameterList = subItem.inspectParameterListShow.length !== 0
@@ -1267,6 +1233,21 @@ export default defineComponent({
     border-radius: 8px;
     margin-bottom: 5px;
     background: #fff;
+}
+.fixlocation{
+  display: flex;
+  width: 100%;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+
+  .subitem{
+    display: flex;
+    align-items: center;
+    flex:1;
+    width:calc((100%)/6);
+    min-width: calc((100%)/6);
+    max-width:calc((100%)/6);
+  }
 }
 
 </style>
