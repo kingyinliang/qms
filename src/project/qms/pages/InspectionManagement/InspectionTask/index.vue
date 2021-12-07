@@ -213,14 +213,8 @@ export default defineComponent({
       store.commit('inspection/updateInspectionTask', selectionData.value)
 
       const transferObj = { type: task.value, obj: selectionData.value.length ? selectionData.value : [] }
-      // if (task.value === 'PROCESS') {
-      // store.commit('common/updateSampleObjToInspect', transferObj)
-      // } else if (task.value === 'TEMP') {
-      //   store.commit('common/updateSampleObjToInspect', { type: 'TEMP', obj: selectionData.value.length ? selectionData.value : [] })
-      // }
 
       gotoPage({
-        // path: 'qms-pages-InspectionManagement-PhysicochemicalInspect-index'
         name: 'qms-pages-InspectionManagement-PhysicochemicalInspect-index',
         params: {
           wayInto: true,
