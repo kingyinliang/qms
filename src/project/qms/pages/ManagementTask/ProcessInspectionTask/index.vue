@@ -65,7 +65,7 @@
       </el-form>
      <el-table
         :data="dataTableOfTopicMain"
-        height="500"
+
         border
         tooltip-effect="dark"
         class="bueatyScroll"
@@ -753,4 +753,5 @@ export default defineComponent({
 .dialogForm .el-form-item {
     margin-bottom: 20px;
 }
+
 </style>

@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-11-16 09:59:02
  * @LastEditors: Telliex
- * @LastEditTime: 2021-12-04 19:50:03
+ * @LastEditTime: 2021-12-07 16:14:38
 -->
 <template>
   <mds-area class="test_method" title="已选中样品" :pack-up="false" style="margin-bottom: 0; background: #fff; overflow:scroll">
@@ -134,6 +134,7 @@ interface State {
   formForTaskAdd: any
   cssForformLabelWidth: string
   correntWayInto: boolean
+  scanMergeType: boolean
 }
 
 export default defineComponent({
@@ -166,6 +167,7 @@ export default defineComponent({
     /**  == 变量 ==  **/
     const state = reactive<State>({
       correntWayInto: false,
+      scanMergeType: false,
       indexOfCurrentRowOnFocus: 0,
       dialogVisible: false,
       currentGlobalActOgj: {},
@@ -249,41 +251,52 @@ export default defineComponent({
 
     // 根据取样码添加任务
     const btnGetInspectList = (str:string) => {
-      str && MANAGEMENT_INSPECTION_PHYSICOCHEMICAL_QUERY_BY_SAMPLE_CODE_API(
-        [str]
-      ).then(res => {
-        console.log('根据样品码查询检验任务')
-        console.log(res.data.data)
-        if (!res.data.data.length) {
-          proxy.$infoToast('无任何数据')
-        } else {
+      if (state.scanMergeType === true && state.searchFilter.merge === true) { // 扫码合并模式
+        console.log('222222')
+        const temp:string[] = []
+        temp.push(str)
+        temp.length && MANAGEMENT_INSPECTION_PHYSICOCHEMICAL_QUERY_BY_SAMPLE_CODE_API(
+          temp
+        ).then(res => {
+          //
+        })
+      } else { // 一般合并模式
+        console.log('77777')
+        str && MANAGEMENT_INSPECTION_PHYSICOCHEMICAL_QUERY_BY_SAMPLE_CODE_API(
+          [str]
+        ).then(res => {
+          console.log('根据样品码查询检验任务')
+          console.log(res.data.data)
+          if (!res.data.data.length) {
+            proxy.$infoToast('无任何数据')
+          } else {
           // push 前去重
-          let tempLength = 0
-          const temp = state.dataTableOfTopicMain.map(item => item.id)
-          res.data.data.forEach((item:any) => {
-            if (!temp.includes(item.id)) {
-              if (item.taskStatus === 'RECEIVED' || item.taskStatus === 'CHECKING' || item.taskStatus === 'COMPLETED') {
+            let tempLength = 0
+            const temp = state.dataTableOfTopicMain.map(item => item.id)
+            res.data.data.forEach((item:any) => {
+              if (!temp.includes(item.id)) {
+                if (item.taskStatus === 'RECEIVED' || item.taskStatus === 'CHECKING' || item.taskStatus === 'COMPLETED') {
                 // if (item.taskStatus === 'COMPLETED') {
                 //   item.delFlag = 1
                 // } else {
                 //   item.delFlag = 0
                 // }
-                state.dataTableOfTopicMain.push(item)
-                tempLength += 1
+                  state.dataTableOfTopicMain.push(item)
+                  tempLength += 1
+                }
+              } else {
+                proxy.$warningToast('列表中已存在相同检验码')
               }
-            } else {
-              proxy.$warningToast('列表中已存在欲添加的检验码')
+            })
+            // 提示所查找的样品码没有所要查找的状态 （RECEIVED、CHECKING、COMPLETED）
+            if (res.data.data.some((item:any) => item.taskStatus !== 'RECEIVED' && item.taskStatus !== 'CHECKING' && item.taskStatus !== 'COMPLETED')) {
+              proxy.$warningToast('样品码非[已收样][检验中][已完成]状态，不可操作')
             }
-          })
-          // 提示所查找的样品码没有所要查找的状态 （RECEIVED、CHECKING、COMPLETED）
-          if (res.data.data.some((item:any) => item.taskStatus !== 'RECEIVED' && item.taskStatus !== 'CHECKING' && item.taskStatus !== 'COMPLETED')) {
-            proxy.$warningToast('样品码非[已收样][检验中][已完成]状态，不可操作')
-          }
 
-          state.searchFilter.merge = false
-          state.searchFilter.sampleCode = ''
+            state.searchFilter.merge = false
+            state.searchFilter.sampleCode = ''
 
-          setCurrentRowOnFocus({})
+            setCurrentRowOnFocus({})
           // R:highlight row # 此功能不需要
           // if (!state.searchFilter.merge) {
           //   state.dataTableOfTopicMain.filter(element => element.taskStatus !== 'COMPLETED').length >= 1 && setCurrentRowOnFocus(state.dataTableOfTopicMain.filter(element => element.taskStatus !== 'COMPLETED')[0])
@@ -294,10 +307,11 @@ export default defineComponent({
           //     refTableOfTopicMain.value.toggleRowSelection(state.dataTableOfTopicMain.filter(element => element.taskStatus !== 'COMPLETED')[state.dataTableOfTopicMain.filter(element => element.taskStatus !== 'COMPLETED').length - i])
           //   }
           // }
-        }
-      }).catch(() => {
-        proxy.$infoToast('您无权限执行此样品检验，请选择其它样品')
-      })
+          }
+        }).catch(() => {
+          proxy.$infoToast('您无权限执行此样品检验，请选择其它样品')
+        })
+      }
     }
 
     // reload 任务表单
@@ -327,6 +341,7 @@ export default defineComponent({
     // 重置 table data
     const btnReset = () => {
       state.dataTableOfTopicMain = []
+      state.scanMergeType = true
       proxy.$successToast('表单已清空')
       store.commit('common/updateSampleObjToInspect', { type: 'EMPTY', obj: [] })
     }
@@ -556,19 +571,20 @@ export default defineComponent({
       // } else {
       // 清空重整
       state.dataTableOfTopicMain = []
-      if (state.correntWayInto) {
-        if (state.currentObj.length) {
-          await MANAGEMENT_INSPECTION_TASK_INSPECT_QUERY_BY_ID_API(state.currentObj).then((res) => { // /taskInspect/queryTaskInspectByIds
-            console.log('==转进来的数据加工后==')
-            console.log(res.data.data)
-            res.data.data.forEach((item:DataTableOfTopicMain) => {
-              // 只收 'RECEIVED' & 'CHECKING' 状态
-              if (item.taskStatus === 'RECEIVED' || item.taskStatus === 'CHECKING') {
-                state.dataTableOfTopicMain.push(item)
-              }
-            })
+      if (state.correntWayInto && state.currentObj.length) {
+        state.scanMergeType = false
+        await MANAGEMENT_INSPECTION_TASK_INSPECT_QUERY_BY_ID_API(state.currentObj).then((res) => { // /taskInspect/queryTaskInspectByIds
+          console.log('==转进来的数据加工后==')
+          console.log(res.data.data)
+          res.data.data.forEach((item:DataTableOfTopicMain) => {
+            // 只收 'RECEIVED' & 'CHECKING' 状态
+            if (item.taskStatus === 'RECEIVED' || item.taskStatus === 'CHECKING') {
+              state.dataTableOfTopicMain.push(item)
+            }
           })
-        }
+        })
+      } else {
+        state.scanMergeType = true
       }
 
       // 没勾选合并检下，focus 第一条 (其实一进来默认不会勾选 state.searchFilter.merge ===false)

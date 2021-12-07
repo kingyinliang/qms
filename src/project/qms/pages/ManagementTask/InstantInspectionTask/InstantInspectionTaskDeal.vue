@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-10-15 20:07:53
  * @LastEditors: Telliex
- * @LastEditTime: 2021-12-03 16:03:57
+ * @LastEditTime: 2021-12-07 18:44:56
 -->
 <template>
 <div class="k-box-card" style="padding:20px 0;">
@@ -91,14 +91,14 @@
             <em>{{scope.row.indexMethod}}</em>
         </template>
       </el-table-column>
-      <el-table-column label="检验方法" show-overflow-tooltip prop="inspectMethodMarkString" min-width="150">
+      <el-table-column label="检验方法" show-overflow-tooltip prop="needString" min-width="150">
         <template #default="scope">
-          <el-select v-model="scope.row.inspectMethodMarkString" placeholder="请选择" size="small" clearable @visible-change="val=>actFocusGetInspectMethodOptions(val,scope.row)" @change="val=>actChangeGetInspectMethodOptions(val,scope.row)">
+          <el-select v-model="scope.row.needString" placeholder="请选择" size="small" clearable @visible-change="val=>actFocusGetInspectMethodOptions(val,scope.row)" @change="val=>actChangeGetInspectMethodOptions(val,scope.row)">
             <el-option
               v-for="item in scope.row.inspectMethodOptions"
               :key="item.id"
               :label="item.inspectMethodGroupName"
-              :value="`${item.inspectMethodCode}|${item.inspectMethodName}|${item.inspectParameterGroupId}`"
+              :value="item.needString"
             >
             </el-option>
           </el-select>
@@ -165,17 +165,17 @@
       <el-table-column label="指标名称" show-overflow-tooltip prop="indexName" width="100" />
       <el-table-column label="单位" show-overflow-tooltip prop="indexUnit" width="80" />
       <el-table-column label="方法" show-overflow-tooltip prop="indexMethod" width="260" />
-      <el-table-column label="检验方法" show-overflow-tooltip prop="inspectMethodGroupName" min-width="150">
+      <el-table-column label="检验方法" show-overflow-tooltip prop="needString" min-width="150">
         <template #header>
           <span class="required">检验方法</span>
         </template>
         <template #default="scope">
-          <el-select v-model="scope.row.inspectMethodGroupName" placeholder="请选择" size="small" clearable @visible-change="val=>actFocusGetInspectMethodOptions(val,scope.row)" @change="val=>actChangeGetInspectMethodOptions(val,scope.row)">
+          <el-select v-model="scope.row.needString" placeholder="请选择" size="small" clearable @visible-change="val=>actFocusGetInspectMethodOptions(val,scope.row)" @change="val=>actChangeGetInspectMethodOptions(val,scope.row)">
             <el-option
               v-for="item in scope.row.inspectMethodOptions"
               :key="item.id"
               :label="item.inspectMethodGroupName"
-              :value="item.inspectMethodMarkString"
+              :value="item.needString"
             >
             </el-option>
           </el-select>
@@ -626,6 +626,11 @@ export default defineComponent({
           })
         })
 
+        console.log('========')
+        console.log(state.dataFormOfInspectRequest)
+        console.log(state.dataOrgFormOfInspectRequest)
+        console.log('========')
+
         if (!_.isEqual(state.dataFormOfInspectRequest, state.dataOrgFormOfInspectRequest)) {
           isChangeDataFormOfInspectRequest = true
         }
@@ -847,47 +852,57 @@ export default defineComponent({
           row.indexMethod = item.indexMethod
           row.inspectMethod = ''
           row.inspectMethodName = ''
+          row.inspectMethodCode = ''
           row.inspectExplain = ''
+          row.needString = ''
+          row.inspectMethodGroupName = ''
+          row.inspectParameterGroupId = ''
+          row.parameterGroupName = ''
           row.indexId = item.id
+          row.inspectMethodOptions = []
         }
       })
     }
 
     const actFocusGetInspectMethodOptions = (val:boolean, row: any) => {
-      console.log('111111')
-
       // 检验方法下拉
       if (val && row.indexCode !== '') {
-        console.log('22222222')
         row.inspectMethodOptions = []
         MANAGEMENT_PROCESS_INSPECTION_TASK_METHOD_DROPDOWN_API({
           inspectIndexId: row.indexId
-        }).then((res) => {
-        // state.inspectMethodOptions = res.data.data
-          console.log('333333')
-          console.log(res.data.data)
-          row.inspectMethodOptions = res.data.data
-          row.inspectMethodMarkString = `${row.inspectMethodCode}|${row.inspectMethodName}|${row.inspectParameterGroupId}`
+        }).then((cur) => {
+          cur.data.data.forEach((element:any) => {
+            row.inspectMethodOptions.push({
+              inspectMethodCode: element.inspectMethodCode,
+              inspectMethodName: element.inspectMethodName,
+              inspectParameterGroupId: element.inspectParameterGroupId,
+              inspectMethodGroupName: element.inspectMethodGroupName,
+              parameterGroupName: element.parameterGroupName,
+              needString: `${element.inspectMethodName}|${element.inspectMethodCode}|${element.parameterGroupName}|${element.inspectParameterGroupId}`
+            })
+
+            if (element.inspectMethodCode === row.inspectMethodCode && element.inspectParameterGroupId === row.inspectParameterGroupId && element.inspectMethodName === row.inspectMethodName) {
+              row.inspectMethodGroupName = element.inspectMethodGroupName
+              row.parameterGroupName = element.parameterGroupName
+              row.needString = `${element.inspectMethodName}|${element.inspectMethodCode}|${element.parameterGroupName}|${element.inspectParameterGroupId}`
+            }
+          })
         })
       }
     }
 
     const actChangeGetInspectMethodOptions = (val:string, row:any) => {
-      const tempList:string[] = val.split('|')
-      console.log('4444444')
-      console.log(val)
-      console.log(tempList)
-      console.log(row)
       row.inspectMethodOptions.forEach((item:any) => {
-        if (val === item.inspectMethodMarkString) {
-          row.inspectMethodCode = tempList[0]
-          row.inspectParameterGroupId = tempList[2]
-          row.inspectMethodName = tempList[1]
+        if (val === item.needString) {
+          row.inspectMethodCode = item.inspectMethodCode
+          row.inspectParameterGroupId = item.inspectParameterGroupId
+          row.inspectMethodName = item.inspectMethodName
+          row.parameterGroupName = item.parameterGroupName
+          row.inspectMethodGroupName = item.inspectMethodGroupName
         }
       })
     }
 
-    // TODO
     const actClearInspectIndexOptions = (row:any) => {
       row.indexName = ''
       row.indexUnit = ''
@@ -897,40 +912,46 @@ export default defineComponent({
     }
 
     // [ACT:编辑：检验指标 table 加载]
-    const getInspectIndexDataForEdit = async () => {
+    const getInspectIndexDataForEdit = () => {
       MANAGEMENT_PROCESS_INSPECTION_TASK_ASSIGN_QUERY_API({
         taskTempApplyId: state.pageId
-      }).then((res) => {
-        console.log('编辑-检验指标 table 加载')
+      }).then(async (res) => {
+        console.log('11111编辑-检验指标 table 加载')
         console.log(res.data.data)
         state.dataTableOfInspectIndexBuild = res.data.data
-        state.inspectIndexItemSize = res.data.data.length
-        state.dataOrgTableOfInspectIndexBuild = JSON.parse(JSON.stringify(res.data.data))
-        state.dataTableOfInspectIndexBuild.forEach((item) => {
-          item.inspectMethodGroupName = item.inspectMethodName
 
-          // MANAGEMENT_PROCESS_INSPECTION_TASK_METHOD_DROPDOWN_API({
-          //   inspectIndexId: item.indexId
-          // }).then((cur) => {
-          //   // state.inspectMethodOptions = res.data.data
-          //   console.log('333333')
-          //   console.log(cur.data.data)
-          //   cur.data.data.forEach((element:any) => {
-          //     if (element.inspectMethodCode === item.inspectMethodCode && element.inspectParameterGroupId === item.inspectParameterGroupId && element.inspectMethodName === item.inspectMethodName) {
-          //       console.log('okokokokok')
-          //       item.inspectMethodGroupName = element.inspectMethodGroupName
-          //       item.parameterGroupName = element.parameterGroupName
-          //     }
-          //   })
-          // })
+        // state.dataTableOfInspectIndexBuild.forEach(async (item) => {
+        for (const item of state.dataTableOfInspectIndexBuild) {
+          item.inspectMethodOptions = []
+          await MANAGEMENT_PROCESS_INSPECTION_TASK_METHOD_DROPDOWN_API({
+            inspectIndexId: item.indexId
+          }).then((cur) => {
+            cur.data.data.forEach((element:any) => {
+              item.inspectMethodOptions.push({
+                inspectMethodCode: element.inspectMethodCode,
+                inspectMethodName: element.inspectMethodName,
+                inspectParameterGroupId: element.inspectParameterGroupId,
+                inspectMethodGroupName: element.inspectMethodGroupName,
+                parameterGroupName: element.parameterGroupName,
+                needString: `${element.inspectMethodName}|${element.inspectMethodCode}|${element.parameterGroupName}|${element.inspectParameterGroupId}`
 
-          // item.inspectMethodMarkString = `${item.inspectMethodCode}|${item.parameterGroupName}|${item.inspectParameterGroupId}`
-          // item.inspectMethodGroupName = `${item.inspectMethodName}-${item.parameterGroupName}`
+              })
 
+              if (element.inspectMethodCode === item.inspectMethodCode && element.inspectParameterGroupId === item.inspectParameterGroupId && element.inspectMethodName === item.inspectMethodName) {
+                item.inspectMethodGroupName = element.inspectMethodGroupName
+                item.parameterGroupName = element.parameterGroupName
+                item.needString = `${element.inspectMethodName}|${element.inspectMethodCode}|${element.parameterGroupName}|${element.inspectParameterGroupId}`
+              }
+            })
+          })
+          console.log('222222')
           item.isRedact = false
-        })
-        console.log('编辑-检验指标 table 加载')
-        console.log(state.dataOrgTableOfInspectIndexBuild)
+        // })
+        }
+
+        console.log('333333')
+        state.inspectIndexItemSize = res.data.data.length
+        state.dataOrgTableOfInspectIndexBuild = JSON.parse(JSON.stringify(state.dataTableOfInspectIndexBuild))
       })
     }
 
@@ -938,37 +959,45 @@ export default defineComponent({
     const getInspectIndexDataForAssign = () => {
       MANAGEMENT_PROCESS_INSPECTION_TASK_ASSIGN_QUERY_API({
         taskTempApplyId: state.pageId
-      }).then((res) => {
-        console.log('分配-检验指标 table 加载')
+      }).then(async (res) => {
+        console.log('11111分配-检验指标 table 加载')
         console.log(res.data.data)
         state.dataTableOfInspectIndexAssign = res.data.data
-        state.dataTableOfInspectIndexAssign.forEach(async (item) => {
+        // state.dataTableOfInspectIndexAssign.forEach((item) => {
+        for (const item of state.dataTableOfInspectIndexAssign) {
           item.inspectDeptIdList = [item.inspectDeptId]
           item.isDialogVisibleForGlobleItem = false
+          item.inspectMethodOptions = []
 
-          MANAGEMENT_PROCESS_INSPECTION_TASK_METHOD_DROPDOWN_API({
+          await MANAGEMENT_PROCESS_INSPECTION_TASK_METHOD_DROPDOWN_API({
             inspectIndexId: item.indexId
-          }).then((res) => {
-            // state.inspectMethodOptions = res.data.data
-            console.log('333333')
-            console.log(res.data.data)
-            res.data.data.forEach((element:any) => {
+          }).then((cur) => {
+            cur.data.data.forEach((element:any) => {
+              item.inspectMethodOptions.push({
+                inspectMethodCode: element.inspectMethodCode,
+                inspectMethodName: element.inspectMethodName,
+                inspectParameterGroupId: element.inspectParameterGroupId,
+                inspectMethodGroupName: element.inspectMethodGroupName,
+                parameterGroupName: element.parameterGroupName,
+                needString: `${element.inspectMethodName}|${element.inspectMethodCode}|${element.parameterGroupName}|${element.inspectParameterGroupId}`
+
+              })
+
               if (element.inspectMethodCode === item.inspectMethodCode && element.inspectParameterGroupId === item.inspectParameterGroupId && element.inspectMethodName === item.inspectMethodName) {
                 item.inspectMethodGroupName = element.inspectMethodGroupName
                 item.parameterGroupName = element.parameterGroupName
+                item.needString = `${element.inspectMethodName}|${element.inspectMethodCode}|${element.parameterGroupName}|${element.inspectParameterGroupId}`
               }
             })
           })
-
-          item.inspectMethodMarkString = `${item.inspectMethodCode}|${item.parameterGroupName}|${item.inspectParameterGroupId}`
-          item.inspectMethodGroupName = `${item.inspectMethodName}-${item.parameterGroupName}`
-          // item.inspectMethodGroupName = item.inspectMethodName
-        })
-        console.log('分配-检验指标 table 加载')
+        }
+        // })
+        console.log('333333分配-检验指标 table 加载')
         console.log(state.dataTableOfInspectIndexAssign)
 
         state.inspectIndexItemSize = res.data.data.length
-        state.dataOrgTableOfInspectIndexAssign = JSON.parse(JSON.stringify(res.data.data))
+        state.dataOrgTableOfInspectIndexAssign = JSON.parse(JSON.stringify(state.dataTableOfInspectIndexAssign))
+        // state.dataOrgTableOfInspectIndexAssign = JSON.parse(JSON.stringify(res.data.data))
       })
     }
 

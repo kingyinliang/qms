@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-11-11 16:30:07
  * @LastEditors: Telliex
- * @LastEditTime: 2021-12-07 14:09:58
+ * @LastEditTime: 2021-12-07 22:02:30
 -->
 <template>
   <el-dialog :title="title" v-model="isDialogShow" width="90%" @close="onClose">
@@ -76,30 +76,42 @@
               <div class="fixlocation">
                 <template v-if="subItem.inspectMethodNameList">
                   <template v-for="(para,index) in subItem.inspectMethodNameList[subItem.inspectMethodCodeWhichIndex]?.inspectParameterListShow" :key="index">
-                    <div class="subitem" v-if="para.paramDataType==='INTEGER'">
-                      <span style="min-width:50px;overflow: hidden;text-align: right;padding-right:5px;">{{para.paramCode?para.paramCode.split('[')[0]:'?'}}<sub>{{para.paramCode?para.paramCode.split('[')[1].replace(']',''):''}}</sub> = </span>
+                    <div class="subitem" v-if="para.paramDataType==='INTEGER'" :style="{
+                      width:`calc((100%)/${subItem.inspectMethodNameList[subItem.inspectMethodCodeWhichIndex]?.inspectParameterListShow.length>=6?6:subItem.inspectMethodNameList[subItem.inspectMethodCodeWhichIndex]?.inspectParameterListShow.length})`,
+                      minWidth: `calc((100%)/${subItem.inspectMethodNameList[subItem.inspectMethodCodeWhichIndex]?.inspectParameterListShow.length>=6?6:subItem.inspectMethodNameList[subItem.inspectMethodCodeWhichIndex]?.inspectParameterListShow.length})`,
+                      maxWidth:`calc((100%)/${subItem.inspectMethodNameList[subItem.inspectMethodCodeWhichIndex]?.inspectParameterListShow.length>=6?6:subItem.inspectMethodNameList[subItem.inspectMethodCodeWhichIndex]?.inspectParameterListShow.length})`
+                      }">
+                      <span style="min-width:50px;overflow: hidden;text-align: right;padding-right:5px;white-space: nowrap;">{{para.paramCode?para.paramCode.split('[')[0]:'?'}}<sub>{{para.paramCode?para.paramCode.split('[')[1].replace(']',''):''}}</sub> </span>=
                       <el-tooltip  class="item" effect="dark" :content="para.defaultValue" placement="top-start" :disabled="!para.defaultValue">
-                        <el-input  v-model="para.defaultValue" type="text" :maxlength="para.paramStandard" size="small"  placeholder="" oninput="value=value.replace(/[^\d]/g,'')"  style="margin-right:10px" @blur="actHandleInspectResult(subItem)">
+                        <el-input  v-model="para.defaultValue" type="text" :maxlength="para.paramStandard" size="small"  placeholder="" oninput="value=value.replace(/[^\d]/g,'')"  style="margin-right:10px;margin-left:5px;" @blur="actHandleInspectResult(subItem)">
                           <template #suffix>
                             {{para.paramUnit}}
                           </template>
                         </el-input>
                       </el-tooltip>
                     </div>
-                    <div class="subitem" v-else-if="para.paramDataType==='FLOAT_POINT'">
-                      <span style="min-width:50px;overflow: hidden;text-align: right;padding-right:5px;"> {{para.paramCode?para.paramCode.split('[')[0]:'?'}}<sub>{{para.paramCode?para.paramCode.split('[')[1].replace(']',''):''}}</sub> = </span>
+                    <div class="subitem" v-else-if="para.paramDataType==='FLOAT_POINT'" :style="{
+                      width:`calc((100%)/${subItem.inspectMethodNameList[subItem.inspectMethodCodeWhichIndex]?.inspectParameterListShow.length>=6?6:subItem.inspectMethodNameList[subItem.inspectMethodCodeWhichIndex]?.inspectParameterListShow.length})`,
+                      minWidth: `calc((100%)/${subItem.inspectMethodNameList[subItem.inspectMethodCodeWhichIndex]?.inspectParameterListShow.length>=6?6:subItem.inspectMethodNameList[subItem.inspectMethodCodeWhichIndex]?.inspectParameterListShow.length})`,
+                      maxWidth:`calc((100%)/${subItem.inspectMethodNameList[subItem.inspectMethodCodeWhichIndex]?.inspectParameterListShow.length>=6?6:subItem.inspectMethodNameList[subItem.inspectMethodCodeWhichIndex]?.inspectParameterListShow.length})`
+                      }">
+                      <span style="min-width:50px;overflow: hidden;text-align: right;padding-right:5px;white-space: nowrap;"> {{para.paramCode?para.paramCode.split('[')[0]:'?'}}<sub>{{para.paramCode?para.paramCode.split('[')[1].replace(']',''):''}}</sub> </span>=
                       <el-tooltip  class="item" effect="dark" :content="para.defaultValue" placement="top-start" :disabled="!para.defaultValue">
-                        <el-input v-model="para.defaultValue" type="text" size="small" placeholder="" oninput ="value=value.replace(/[^\-\d.]/g, '').replace(/^(\d+)\.(\d+).*$/, '$1.$2')"  style="margin-right:10px" @blur="actHandleInspectResult(subItem)">
+                        <el-input v-model="para.defaultValue" type="text" size="small" placeholder="" oninput ="value=value.replace(/[^\-\d.]/g, '').replace(/^(\d+)\.(\d+).*$/, '$1.$2')"  style="margin-right:10px;margin-left:5px;" @blur="actHandleInspectResult(subItem)">
                           <template #suffix>
                             {{para.paramUnit}}
                           </template>
                         </el-input>
                       </el-tooltip>
                     </div>
-                    <div class="subitem" v-else>
-                      <span style="min-width:50px;overflow: hidden;text-align: right;padding-right:5px;">{{para.paramCode?para.paramCode.split('[')[0]:'?'}}<sub>{{para.paramCode?para.paramCode.split('[')[1].replace(']',''):''}}</sub> = </span>
+                    <div class="subitem" v-else :style="{
+                      width:`calc((100%)/${subItem.inspectMethodNameList[subItem.inspectMethodCodeWhichIndex]?.inspectParameterListShow.length>=6?6:subItem.inspectMethodNameList[subItem.inspectMethodCodeWhichIndex]?.inspectParameterListShow.length})`,
+                      minWidth: `calc((100%)/${subItem.inspectMethodNameList[subItem.inspectMethodCodeWhichIndex]?.inspectParameterListShow.length>=6?6:subItem.inspectMethodNameList[subItem.inspectMethodCodeWhichIndex]?.inspectParameterListShow.length})`,
+                      maxWidth:`calc((100%)/${subItem.inspectMethodNameList[subItem.inspectMethodCodeWhichIndex]?.inspectParameterListShow.length>=6?6:subItem.inspectMethodNameList[subItem.inspectMethodCodeWhichIndex]?.inspectParameterListShow.length})`
+                      }">
+                      <span style="min-width:50px;overflow: hidden;text-align: right;padding-right:5px;white-space: nowrap;">{{para.paramCode?para.paramCode.split('[')[0]:'?'}}<sub>{{para.paramCode?para.paramCode.split('[')[1].replace(']',''):''}}</sub> </span>=
                       <el-tooltip  class="item" effect="dark" :content="para.defaultValue" placement="top-start" :disabled="!para.defaultValue">
-                        <el-input  v-model="para.defaultValue" size="small" placeholder=""  type="text" style="margin-right:10px" @blur="actHandleInspectResult(subItem)">
+                        <el-input  v-model="para.defaultValue" size="small" placeholder=""  type="text" style="margin-right:10px;margin-left:5px;" @blur="actHandleInspectResult(subItem)">
                           <template #suffix>
                             {{para.paramUnit}}
                           </template>
@@ -119,7 +131,7 @@
     </mds-area>
     <el-form :inline="true" :model="dataFormOfSampleInfo"  :label-width="cssForformLabelWidth" >
       <el-form-item label="综合判定："  prop="indexJudgeResult" >
-        <el-radio-group v-model="dataFormOfSampleInfo.indexJudgeResult">
+        <el-radio-group v-model="indexJudgeResult">
           <el-radio label="Y" :disabled="true">合格</el-radio>
           <el-radio label="N" :disabled="true">不合格</el-radio>
         </el-radio-group>
@@ -327,7 +339,6 @@ export default defineComponent({
 
     // Run 判定总结果
     const indexJudgeResult = computed(() => {
-      // state.dataFormOfSampleInfo.indexJudgeResult = temp
       return state.dataFormOfSampleItemUnit.every(item => item.indexJudgeResult === 'Y') ? 'Y' : 'N'
     })
 
@@ -351,78 +362,89 @@ export default defineComponent({
         const tempTaskInspectPhysicalList: any[] = []
         const tempUpdateInspectParameter: any[] = []
 
+        if (item.canEditInspectResult) {
+          item.manualFlag = 'Y'
+          // item.canChangeAgainWithProcessParameter = false // 标示是否过程参数改变触发
+        }
+
         // 处理不等式
         if (item.indexStandardString !== '') {
-          if (item.manualStandard !== null) {
+          if (item.manualStandard !== '') {
             item.manualStandard = item.indexStandardString
           } else {
-            // if (item.indexInnerStandard) {
-            //   item.indexStandardString = `S=${item.indexInnerStandard}`
-            // } else if ((item.indexInnerDown && item.innerDownSymbol) && (item.innerUpSymbol && item.indexInnerUp)) {
-            //   item.indexStandardString = `${item.indexInnerDown}${item.innerDownSymbol.replace('>', '<')}S${item.innerUpSymbol}${item.indexInnerUp}`
-            // } else if (item.indexInnerDown && item.innerDownSymbol) {
-            //   item.indexStandardString = `${item.indexInnerDown}${item.innerDownSymbol.replace('>', '<')}S`
-            // } else if (item.innerUpSymbol && item.indexInnerUp) {
-            //   item.indexStandardString = `S${item.innerUpSymbol}${item.indexInnerUp}`
-            // } else if (item.indexStandard) {
-            //   item.indexStandardString = `S=${item.indexStandard}`
-            // } else if ((item.indexDown && item.downSymbol) && (item.upSymbol && item.indexUp)) {
-            //   item.indexStandardString = `${item.indexDown}${item.downSymbol.replace('>', '<')}S${item.upSymbol}${item.indexUp}`
-            // } else if (item.indexDown && item.downSymbol) {
-            //   item.indexStandardString = `${item.indexDown}${item.downSymbol.replace('>', '<')}S`
-            // } else if (item.upSymbol && item.indexUp) {
-            //   item.indexStandardString = `S${item.upSymbol}${item.indexUp}`
-            // } else {
-            //   item.indexStandardString = ''
-            //   item.canEditIndexStandardString = true
-            // }
-
-            if (item.indexStandardString.split('=')[0] === 'S') { // e.x. S=1
-              if (item.indexInnerStandard) {
-                item.indexInnerStandard = item.indexStandardString.split('=')[1]
-              } else if (item.indexStandard) {
-                item.indexStandard = item.indexStandardString.split('=')[1]
-              }
-
-              // item.inspectIndexStandard = item.indexStandardString.split('=')[1]
-              // item.indexInnerUp = null
-              // item.innerUpSymbol = ''
-              // item.indexInnerDown = null
-              // item.innerDownSymbol = ''
+            if (item.indexInnerStandard) {
+              //
+            } else if ((item.indexInnerDown && item.innerDownSymbol) && (item.innerUpSymbol && item.indexInnerUp)) {
+              //
+            } else if (item.indexInnerDown && item.innerDownSymbol) {
+              //
+            } else if (item.innerUpSymbol && item.indexInnerUp) {
+              //
+            } else if (item.indexStandard) {
+              //
+            } else if ((item.indexDown && item.downSymbol) && (item.upSymbol && item.indexUp)) {
+              //
+            } else if (item.indexDown && item.downSymbol) {
+              //
+            } else if (item.upSymbol && item.indexUp) {
+              //
             } else {
-              const result = /(.*)S(.*)/.exec(item.indexStandardString)
-
-              if (result !== null) {
-                const leftResult = /(.*)([<]=?)/.exec(result[1])
-                const rightResult = /([<]=?)(.*)/.exec(result[2])
-
-                // item.inspectIndexStandard = ''
-
-                if (item.indexInnerDown) {
-                  if (leftResult) {
-                    item.indexInnerDown = leftResult[1]
-                    item.innerDownSymbol = leftResult[2].replace('<', '>')
-                  }
-                } else if (item.indexDown) {
-                  if (leftResult) {
-                    item.indexDown = leftResult[1]
-                    item.downSymbol = leftResult[2].replace('<', '>')
-                  }
-                }
-
-                if (item.indexInnerUp) {
-                  if (rightResult) {
-                    item.indexInnerUp = rightResult[2]
-                    item.innerUpSymbol = rightResult[1]
-                  }
-                } else if (item.indexUp) {
-                  if (rightResult) {
-                    item.indexUp = rightResult[2]
-                    item.upSymbol = rightResult[1]
-                  }
-                }
+              if (item.inspectIndexStandard) {
+                item.indexInnerStandard = item.inspectIndexStandard.indexInnerStandard
+                item.indexInnerDown = item.inspectIndexStandard.indexInnerDown
+                item.innerDownSymbol = item.inspectIndexStandard.innerDownSymbol
+                item.innerUpSymbol = item.inspectIndexStandard.innerUpSymbol
+                item.indexInnerUp = item.inspectIndexStandard.indexInnerUp
+                item.upSymbol = item.inspectIndexStandard.upSymbol
+                item.indexDown = item.inspectIndexStandard.indexDown
+                item.downSymbol = item.inspectIndexStandard.downSymbol
+                item.indexUp = item.inspectIndexStandard.indexUp
+                item.indexStandard = item.inspectIndexStandard.indexStandard
+              } else {
+                console.log('909090909090')
+                item.manualStandard = item.indexStandardString
               }
             }
+
+            // if (item.indexStandardString.split('=')[0] === 'S') { // e.x. S=1
+            //   if (item.indexInnerStandard) {
+            //     item.indexInnerStandard = item.indexStandardString.split('=')[1]
+            //   } else if (item.indexStandard) {
+            //     item.indexStandard = item.indexStandardString.split('=')[1]
+            //   }
+
+            // } else {
+            //   const result = /(.*)S(.*)/.exec(item.indexStandardString)
+
+            //   if (result !== null) {
+            //     const leftResult = /(.*)([<]=?)/.exec(result[1])
+            //     const rightResult = /([<]=?)(.*)/.exec(result[2])
+
+            //     if (item.indexInnerDown) {
+            //       if (leftResult) {
+            //         item.indexInnerDown = leftResult[1]
+            //         item.innerDownSymbol = leftResult[2].replace('<', '>')
+            //       }
+            //     } else if (item.indexDown) {
+            //       if (leftResult) {
+            //         item.indexDown = leftResult[1]
+            //         item.downSymbol = leftResult[2].replace('<', '>')
+            //       }
+            //     }
+
+            //     if (item.indexInnerUp) {
+            //       if (rightResult) {
+            //         item.indexInnerUp = rightResult[2]
+            //         item.innerUpSymbol = rightResult[1]
+            //       }
+            //     } else if (item.indexUp) {
+            //       if (rightResult) {
+            //         item.indexUp = rightResult[2]
+            //         item.upSymbol = rightResult[1]
+            //       }
+            //     }
+            //   }
+            // }
           }
         }
 
@@ -634,7 +656,7 @@ export default defineComponent({
 
     // 标准值栏位处理
     const chechIndexStandardString = (val:any) => {
-      if (val.manualStandard === null) {
+      if (val.manualStandard === '') {
         if (val.indexStandardString.indexOf('S') === -1) {
           proxy.$warningToast('缺少变数 S')
         } else if (val.indexStandardString === 'S') {
@@ -879,6 +901,7 @@ export default defineComponent({
           if (!result) {
             console.log('11111')
             subItem.inspectResult = ''
+            subItem.canEditInspectResult = true
           } else {
             console.log('22222')
             subItem.inspectResult = result.toString()
@@ -1093,10 +1116,11 @@ export default defineComponent({
             // 2.有标准值时，带出标准值 ，不可自由编辑
             // 3.有不等式时，带出不等式 ，不可自由编辑
 
-            if (item.manualStandard !== null) {
+            if (item.manualStandard !== '') {
               item.indexStandardString = item.manualStandard
               item.canEditIndexStandardString = true
             } else {
+              // =》 先看外层
               if (item.indexInnerStandard) {
                 item.indexStandardString = `S=${item.indexInnerStandard}`
                 item.canEditIndexStandardString = false
@@ -1122,8 +1146,43 @@ export default defineComponent({
                 item.indexStandardString = `S${item.upSymbol}${item.indexUp}`
                 item.canEditIndexStandardString = false
               } else {
-                item.indexStandardString = ''
-                item.canEditIndexStandardString = true
+                // =》 先看内层
+                console.log('=================')
+                console.log(item.indexName)
+                console.log(item)
+                if (item.inspectIndexStandard) {
+                  if (item.inspectIndexStandard.indexInnerStandard) {
+                    item.indexStandardString = `S=${item.inspectIndexStandard.indexInnerStandard}`
+                    item.canEditIndexStandardString = false
+                  } else if ((item.inspectIndexStandard.indexInnerDown && item.inspectIndexStandard.innerDownSymbol) && (item.inspectIndexStandard.innerUpSymbol && item.inspectIndexStandard.indexInnerUp)) {
+                    item.indexStandardString = `${item.inspectIndexStandard.indexInnerDown}${item.inspectIndexStandard.innerDownSymbol.replace('>', '<')}S${item.inspectIndexStandard.innerUpSymbol}${item.inspectIndexStandard.indexInnerUp}`
+                    item.canEditIndexStandardString = false
+                  } else if (item.inspectIndexStandard.indexInnerDown && item.inspectIndexStandard.innerDownSymbol) {
+                    item.indexStandardString = `${item.inspectIndexStandard.indexInnerDown}${item.inspectIndexStandard.innerDownSymbol.replace('>', '<')}S`
+                    item.canEditIndexStandardString = false
+                  } else if (item.inspectIndexStandard.innerUpSymbol && item.inspectIndexStandard.indexInnerUp) {
+                    item.indexStandardString = `S${item.inspectIndexStandard.innerUpSymbol}${item.inspectIndexStandard.indexInnerUp}`
+                    item.canEditIndexStandardString = false
+                  } else if (item.inspectIndexStandard.indexStandard) {
+                    item.indexStandardString = `S=${item.inspectIndexStandard.indexStandard}`
+                    item.canEditIndexStandardString = false
+                  } else if ((item.inspectIndexStandard.indexDown && item.inspectIndexStandard.downSymbol) && (item.inspectIndexStandard.upSymbol && item.inspectIndexStandard.indexUp)) {
+                    item.indexStandardString = `${item.inspectIndexStandard.indexDown}${item.inspectIndexStandard.downSymbol.replace('>', '<')}S${item.inspectIndexStandard.upSymbol}${item.inspectIndexStandard.indexUp}`
+                    item.canEditIndexStandardString = false
+                  } else if (item.inspectIndexStandard.indexDown && item.inspectIndexStandard.downSymbol) {
+                    item.indexStandardString = `${item.indexDown}${item.downSymbol.replace('>', '<')}S`
+                    item.canEditIndexStandardString = false
+                  } else if (item.inspectIndexStandard.upSymbol && item.inspectIndexStandard.indexUp) {
+                    item.indexStandardString = `S${item.inspectIndexStandard.upSymbol}${item.inspectIndexStandard.indexUp}`
+                    item.canEditIndexStandardString = false
+                  } else {
+                    item.indexStandardString = ''
+                    item.canEditIndexStandardString = true
+                  }
+                } else {
+                  item.indexStandardString = ''
+                  item.canEditIndexStandardString = true
+                }
               }
             }
 
@@ -1244,9 +1303,7 @@ export default defineComponent({
     display: flex;
     align-items: center;
     flex:1;
-    width:calc((100%)/6);
-    min-width: calc((100%)/6);
-    max-width:calc((100%)/6);
+
   }
 }
 
