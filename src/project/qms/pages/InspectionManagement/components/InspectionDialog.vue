@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-11-11 16:30:07
  * @LastEditors: Telliex
- * @LastEditTime: 2021-12-08 08:39:57
+ * @LastEditTime: 2021-12-08 16:58:18
 -->
 <template>
   <el-dialog :title="title" v-model="isDialogShow" width="90%" @close="onClose">
@@ -638,6 +638,7 @@ export default defineComponent({
       if (val.inspectResult === '') {
         val.indexJudgeResult = 'N'
       } else {
+        console.log('888888888888')
         if (val.indexStandardString !== '') {
           chechIndexStandardString(val)
         }
@@ -905,6 +906,7 @@ export default defineComponent({
           } else {
             console.log('22222')
             subItem.inspectResult = result.toString()
+            chechIndexStandardString(subItem)
           }
         } else {
           subItem.inspectResult = ''
@@ -1170,6 +1172,8 @@ export default defineComponent({
                     item.indexStandardString = `${item.inspectIndexStandard.indexDown}${item.inspectIndexStandard.downSymbol.replace('>', '<')}S${item.inspectIndexStandard.upSymbol}${item.inspectIndexStandard.indexUp}`
                     item.canEditIndexStandardString = false
                   } else if (item.inspectIndexStandard.indexDown && item.inspectIndexStandard.downSymbol) {
+                    console.log('=======hahahahah==========')
+                    console.log(item.indexName)
                     item.indexStandardString = `${item.indexDown}${item.downSymbol.replace('>', '<')}S`
                     item.canEditIndexStandardString = false
                   } else if (item.inspectIndexStandard.upSymbol && item.inspectIndexStandard.indexUp) {
