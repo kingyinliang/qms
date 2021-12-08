@@ -413,6 +413,11 @@ export default defineComponent({
         state.topicMainData = []
         setTimeout(() => {
           treeModule.value.focusCurrentNodeNumber = state.currentFocusTarget
+
+          // 对新增的方法寻找 focus object to assign
+          if (state.globalMainObj._level === 3) {
+            getMaterialDetail('default', state.globalMainObj, '')
+          }
         }, 2000)
       })
     }
@@ -445,6 +450,10 @@ export default defineComponent({
             data[i].inspectGroups[j].inspectGroups[k].canEdit = true
             data[i].inspectGroups[j].inspectGroups[k].focusId = data[i].inspectGroups[j].inspectGroups[k]._level + 'c' + i + j + data[i].inspectGroups[j].inspectGroups[k].inspectMethodId
             data[i].inspectGroups[j].inspectGroups[k].focusParentId = data[i].inspectGroups[j]._level + 'b' + i + j
+            // 对新增的方法寻找 focus object to assign
+            if (state.currentFocusTarget === data[i].inspectGroups[j].inspectGroups[k].focusId) {
+              state.globalMainObj = data[i].inspectGroups[j].inspectGroups[k]
+            }
           }
         }
       }
@@ -453,9 +462,9 @@ export default defineComponent({
     // [指标检验方法明细] 触发
     const treeNodeContextMenuHandle = (val:TreeItemData) => {
       treeModule.value.focusCurrentNodeNumber = ''
-      setTimeout(() => {
-        treeModule.value.focusCurrentNodeNumber = '659447186223812608'
-      }, 3000)
+      // setTimeout(() => {
+      //   treeModule.value.focusCurrentNodeNumber = '659447186223812608'
+      // }, 3000)
       state.globalMainObj = val // 赋予全局当前 node infomation
       if (val.canEdit === true && val._level === 2) { // display 新增 submenu
         state.isSubMenuAddBNTShow = true

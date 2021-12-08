@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-10-15 20:07:53
  * @LastEditors: Telliex
- * @LastEditTime: 2021-12-07 18:44:56
+ * @LastEditTime: 2021-12-08 11:29:51
 -->
 <template>
 <div class="k-box-card" style="padding:20px 0;">
@@ -26,7 +26,10 @@
                   :disabled="dataFormDisabled"
                 />
           </el-form-item>
-          <el-form-item label="取样部门："  prop="sampleDeptIdList" class="required">
+          <el-form-item label="发布人员："  prop="deployMan">
+            <el-input v-model="dataFormOfInspectRequest.deployMan"  class="inputWidth" placeholder="请输入" :disabled="true" autocomplete="off" ></el-input>
+          </el-form-item>
+          <el-form-item label="取样部门："  prop="sampleDeptIdList" class="required" style="flex:1">
             <tree-dialog
                   ref="refTaskTempDeptList"
                   v-model="dataFormOfInspectRequest.sampleDeptIdList"
@@ -37,9 +40,6 @@
                   :tree-props="{ label: 'deptName', children: 'children' }"
                   :disabled="dataFormDisabled"
                 />
-          </el-form-item>
-          <el-form-item label="发布人员："  prop="deployMan">
-            <el-input v-model="dataFormOfInspectRequest.deployMan"  class="inputWidth" placeholder="请输入" :disabled="true" autocomplete="off" ></el-input>
           </el-form-item>
         </div>
         <el-form-item label="检验内容："  prop="inspectContent" class="required" >
