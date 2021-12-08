@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-11-11 16:30:07
  * @LastEditors: Telliex
- * @LastEditTime: 2021-12-07 20:51:34
+ * @LastEditTime: 2021-12-08 08:41:50
 -->
 <template>
   <mds-area class="info" :title="subTitle">
@@ -125,6 +125,10 @@
                     <el-input v-model="subItem.indexStandardString" size="small"  class="inputWidth" placeholder="自动带入" autocomplete="off" :readonly="onlyRead" :disabled="onlyRead"></el-input>
                   </el-tooltip>
               </el-form-item>
+              <el-form-item label="检验时间："  prop="finishDate" v-if="subItem.finishDate" >
+              <div >{{!subItem.finishDate?'':subItem.finishDate}}</div>
+              </el-form-item>
+              </el-form>
               <el-form  :model="subItem" :label-width="cssForformLabelWidth">
               <el-form-item label="检验过程："  prop="" v-if="subItem.inspectParameterList.length">
                 <div class="fixlocation">
@@ -136,7 +140,7 @@
                         }">
                         <span style="min-width:50px;overflow: hidden;text-align: right;padding-right:5px;white-space: nowrap;"> {{pars.paramCode?pars.paramCode.split('[')[0]:'?'}}<sub>{{pars.paramCode?pars.paramCode.split('[')[1].replace(']',''):''}}</sub> =</span>
                         <el-tooltip class="item" effect="dark" :content="pars.defaultValue" placement="top-start" :disabled="!pars.defaultValue">
-                          <el-input v-model="pars.defaultValue" type="text"  size="small" placeholder="" style="width:100px;margin-right:10px" :disabled="onlyRead">
+                          <el-input v-model="pars.defaultValue" type="text"  size="small" placeholder="" style="margin-right:10px;" :disabled="onlyRead">
                             <template #suffix>
                               {{pars.paramUnit}}
                             </template>
@@ -147,7 +151,6 @@
                 </div>
                 </el-form-item>
               </el-form>
-            </el-form>
             </mds-area>
           </template>
         </mds-area>
@@ -276,26 +279,48 @@ export default defineComponent({
               item.inspectIndexStandard = tempIndex.data.data.inspectIndexStandard
 
               if (item.manualStandard !== '') {
-                item.indexStandardString = item.manualStandard
+                item.manualStandard = item.indexStandardString
               } else {
-                if (item.inspectIndexStandard.indexInnerStandard) {
-                  item.indexStandardString = `S=${item.inspectIndexStandard.indexInnerStandard}`
-                } else if ((item.inspectIndexStandard.indexInnerDown && item.inspectIndexStandard.innerDownSymbol) && (item.inspectIndexStandard.innerUpSymbol && item.inspectIndexStandard.indexInnerUp)) {
-                  item.indexStandardString = `${item.inspectIndexStandard.indexInnerDown}${item.inspectIndexStandard.innerDownSymbol.replace('>', '<')}S${item.inspectIndexStandard.innerUpSymbol}${item.inspectIndexStandard.indexInnerUp}`
-                } else if (item.inspectIndexStandard.indexInnerDown && item.inspectIndexStandard.innerDownSymbol) {
-                  item.indexStandardString = `${item.inspectIndexStandard.indexInnerDown}${item.inspectIndexStandard.innerDownSymbol.replace('>', '<')}S`
-                } else if (item.inspectIndexStandard.innerUpSymbol && item.inspectIndexStandard.indexInnerUp) {
-                  item.indexStandardString = `S${item.inspectIndexStandard.innerUpSymbol}${item.inspectIndexStandard.indexInnerUp}`
-                } else if (item.inspectIndexStandard.indexStandard) {
-                  item.indexStandardString = `S=${item.inspectIndexStandard.indexStandard}`
-                } else if ((item.inspectIndexStandard.indexDown && item.inspectIndexStandard.downSymbol) && (item.inspectIndexStandard.upSymbol && item.inspectIndexStandard.indexUp)) {
-                  item.indexStandardString = `${item.inspectIndexStandard.indexDown}${item.inspectIndexStandard.downSymbol.replace('>', '<')}S${item.inspectIndexStandard.upSymbol}${item.inspectIndexStandard.indexUp}`
-                } else if (item.inspectIndexStandard.indexDown && item.inspectIndexStandard.downSymbol) {
-                  item.indexStandardString = `${item.inspectIndexStandard.indexDown}${item.inspectIndexStandard.downSymbol.replace('>', '<')}S`
-                } else if (item.inspectIndexStandard.upSymbol && item.inspectIndexStandard.indexUp) {
-                  item.indexStandardString = `S${item.inspectIndexStandard.upSymbol}${item.inspectIndexStandard.indexUp}`
+                if (item.indexInnerStandard) {
+                  item.indexStandardString = `S=${item.indexInnerStandard}`
+                } else if ((item.indexInnerDown && item.innerDownSymbol) && (item.innerUpSymbol && item.indexInnerUp)) {
+                  item.indexStandardString = `${item.indexInnerDown}${item.innerDownSymbol.replace('>', '<')}S${item.innerUpSymbol}${item.indexInnerUp}`
+                } else if (item.indexInnerDown && item.innerDownSymbol) {
+                  item.indexStandardString = `${item.indexInnerDown}${item.innerDownSymbol.replace('>', '<')}S`
+                } else if (item.innerUpSymbol && item.indexInnerUp) {
+                  item.indexStandardString = `S${item.innerUpSymbol}${item.indexInnerUp}`
+                } else if (item.indexStandard) {
+                  item.indexStandardString = `S=${item.indexStandard}`
+                } else if ((item.indexDown && item.downSymbol) && (item.upSymbol && item.indexUp)) {
+                  item.indexStandardString = `${item.indexDown}${item.downSymbol.replace('>', '<')}S${item.upSymbol}${item.indexUp}`
+                } else if (item.indexDown && item.downSymbol) {
+                  item.indexStandardString = `${item.indexDown}${item.downSymbol.replace('>', '<')}S`
+                } else if (item.upSymbol && item.indexUp) {
+                  item.indexStandardString = `S${item.upSymbol}${item.indexUp}`
                 } else {
-                  item.indexStandardString = ''
+                  if (item.inspectIndexStandard) {
+                    if (item.inspectIndexStandard.indexInnerStandard) {
+                      item.indexStandardString = `S=${item.inspectIndexStandard.indexInnerStandard}`
+                    } else if ((item.inspectIndexStandard.indexInnerDown && item.inspectIndexStandard.innerDownSymbol) && (item.inspectIndexStandard.innerUpSymbol && item.inspectIndexStandard.indexInnerUp)) {
+                      item.indexStandardString = `${item.inspectIndexStandard.indexInnerDown}${item.inspectIndexStandard.innerDownSymbol.replace('>', '<')}S${item.inspectIndexStandard.innerUpSymbol}${item.inspectIndexStandard.indexInnerUp}`
+                    } else if (item.inspectIndexStandard.indexInnerDown && item.inspectIndexStandard.innerDownSymbol) {
+                      item.indexStandardString = `${item.inspectIndexStandard.indexInnerDown}${item.inspectIndexStandard.innerDownSymbol.replace('>', '<')}S`
+                    } else if (item.inspectIndexStandard.innerUpSymbol && item.inspectIndexStandard.indexInnerUp) {
+                      item.indexStandardString = `S${item.inspectIndexStandard.innerUpSymbol}${item.inspectIndexStandard.indexInnerUp}`
+                    } else if (item.inspectIndexStandard.indexStandard) {
+                      item.indexStandardString = `S=${item.inspectIndexStandard.indexStandard}`
+                    } else if ((item.inspectIndexStandard.indexDown && item.inspectIndexStandard.downSymbol) && (item.inspectIndexStandard.upSymbol && item.inspectIndexStandard.indexUp)) {
+                      item.indexStandardString = `${item.inspectIndexStandard.indexDown}${item.inspectIndexStandard.downSymbol.replace('>', '<')}S${item.inspectIndexStandard.upSymbol}${item.inspectIndexStandard.indexUp}`
+                    } else if (item.inspectIndexStandard.indexDown && item.inspectIndexStandard.downSymbol) {
+                      item.indexStandardString = `${item.inspectIndexStandard.indexDown}${item.inspectIndexStandard.downSymbol.replace('>', '<')}S`
+                    } else if (item.inspectIndexStandard.upSymbol && item.inspectIndexStandard.indexUp) {
+                      item.indexStandardString = `S${item.inspectIndexStandard.upSymbol}${item.inspectIndexStandard.indexUp}`
+                    } else {
+                      item.indexStandardString = ''
+                    }
+                  } else {
+                    item.indexStandardString = ''
+                  }
                 }
               }
 
@@ -329,26 +354,48 @@ export default defineComponent({
               item.inspectIndexStandard = tempIndex.data.data.inspectIndexStandard
 
               if (item.manualStandard !== '') {
-                item.indexStandardString = item.manualStandard
+                item.manualStandard = item.indexStandardString
               } else {
-                if (item.inspectIndexStandard.indexInnerStandard) {
-                  item.indexStandardString = `S=${item.inspectIndexStandard.indexInnerStandard}`
-                } else if ((item.inspectIndexStandard.indexInnerDown && item.inspectIndexStandard.innerDownSymbol) && (item.inspectIndexStandard.innerUpSymbol && item.inspectIndexStandard.indexInnerUp)) {
-                  item.indexStandardString = `${item.inspectIndexStandard.indexInnerDown}${item.inspectIndexStandard.innerDownSymbol.replace('>', '<')}S${item.inspectIndexStandard.innerUpSymbol}${item.inspectIndexStandard.indexInnerUp}`
-                } else if (item.inspectIndexStandard.indexInnerDown && item.inspectIndexStandard.innerDownSymbol) {
-                  item.indexStandardString = `${item.inspectIndexStandard.indexInnerDown}${item.inspectIndexStandard.innerDownSymbol.replace('>', '<')}S`
-                } else if (item.inspectIndexStandard.innerUpSymbol && item.inspectIndexStandard.indexInnerUp) {
-                  item.indexStandardString = `S${item.inspectIndexStandard.innerUpSymbol}${item.inspectIndexStandard.indexInnerUp}`
-                } else if (item.inspectIndexStandard.indexStandard) {
-                  item.indexStandardString = `S=${item.inspectIndexStandard.indexStandard}`
-                } else if ((item.inspectIndexStandard.indexDown && item.inspectIndexStandard.downSymbol) && (item.inspectIndexStandard.upSymbol && item.inspectIndexStandard.indexUp)) {
-                  item.indexStandardString = `${item.inspectIndexStandard.indexDown}${item.inspectIndexStandard.downSymbol.replace('>', '<')}S${item.inspectIndexStandard.upSymbol}${item.inspectIndexStandard.indexUp}`
-                } else if (item.inspectIndexStandard.indexDown && item.inspectIndexStandard.downSymbol) {
-                  item.indexStandardString = `${item.inspectIndexStandard.indexDown}${item.inspectIndexStandard.downSymbol.replace('>', '<')}S`
-                } else if (item.inspectIndexStandard.upSymbol && item.inspectIndexStandard.indexUp) {
-                  item.indexStandardString = `S${item.inspectIndexStandard.upSymbol}${item.inspectIndexStandard.indexUp}`
+                if (item.indexInnerStandard) {
+                  item.indexStandardString = `S=${item.indexInnerStandard}`
+                } else if ((item.indexInnerDown && item.innerDownSymbol) && (item.innerUpSymbol && item.indexInnerUp)) {
+                  item.indexStandardString = `${item.indexInnerDown}${item.innerDownSymbol.replace('>', '<')}S${item.innerUpSymbol}${item.indexInnerUp}`
+                } else if (item.indexInnerDown && item.innerDownSymbol) {
+                  item.indexStandardString = `${item.indexInnerDown}${item.innerDownSymbol.replace('>', '<')}S`
+                } else if (item.innerUpSymbol && item.indexInnerUp) {
+                  item.indexStandardString = `S${item.innerUpSymbol}${item.indexInnerUp}`
+                } else if (item.indexStandard) {
+                  item.indexStandardString = `S=${item.indexStandard}`
+                } else if ((item.indexDown && item.downSymbol) && (item.upSymbol && item.indexUp)) {
+                  item.indexStandardString = `${item.indexDown}${item.downSymbol.replace('>', '<')}S${item.upSymbol}${item.indexUp}`
+                } else if (item.indexDown && item.downSymbol) {
+                  item.indexStandardString = `${item.indexDown}${item.downSymbol.replace('>', '<')}S`
+                } else if (item.upSymbol && item.indexUp) {
+                  item.indexStandardString = `S${item.upSymbol}${item.indexUp}`
                 } else {
-                  item.indexStandardString = ''
+                  if (item.inspectIndexStandard) {
+                    if (item.inspectIndexStandard.indexInnerStandard) {
+                      item.indexStandardString = `S=${item.inspectIndexStandard.indexInnerStandard}`
+                    } else if ((item.inspectIndexStandard.indexInnerDown && item.inspectIndexStandard.innerDownSymbol) && (item.inspectIndexStandard.innerUpSymbol && item.inspectIndexStandard.indexInnerUp)) {
+                      item.indexStandardString = `${item.inspectIndexStandard.indexInnerDown}${item.inspectIndexStandard.innerDownSymbol.replace('>', '<')}S${item.inspectIndexStandard.innerUpSymbol}${item.inspectIndexStandard.indexInnerUp}`
+                    } else if (item.inspectIndexStandard.indexInnerDown && item.inspectIndexStandard.innerDownSymbol) {
+                      item.indexStandardString = `${item.inspectIndexStandard.indexInnerDown}${item.inspectIndexStandard.innerDownSymbol.replace('>', '<')}S`
+                    } else if (item.inspectIndexStandard.innerUpSymbol && item.inspectIndexStandard.indexInnerUp) {
+                      item.indexStandardString = `S${item.inspectIndexStandard.innerUpSymbol}${item.inspectIndexStandard.indexInnerUp}`
+                    } else if (item.inspectIndexStandard.indexStandard) {
+                      item.indexStandardString = `S=${item.inspectIndexStandard.indexStandard}`
+                    } else if ((item.inspectIndexStandard.indexDown && item.inspectIndexStandard.downSymbol) && (item.inspectIndexStandard.upSymbol && item.inspectIndexStandard.indexUp)) {
+                      item.indexStandardString = `${item.inspectIndexStandard.indexDown}${item.inspectIndexStandard.downSymbol.replace('>', '<')}S${item.inspectIndexStandard.upSymbol}${item.inspectIndexStandard.indexUp}`
+                    } else if (item.inspectIndexStandard.indexDown && item.inspectIndexStandard.downSymbol) {
+                      item.indexStandardString = `${item.inspectIndexStandard.indexDown}${item.inspectIndexStandard.downSymbol.replace('>', '<')}S`
+                    } else if (item.inspectIndexStandard.upSymbol && item.inspectIndexStandard.indexUp) {
+                      item.indexStandardString = `S${item.inspectIndexStandard.upSymbol}${item.inspectIndexStandard.indexUp}`
+                    } else {
+                      item.indexStandardString = ''
+                    }
+                  } else {
+                    item.indexStandardString = ''
+                  }
                 }
               }
 
