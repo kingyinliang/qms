@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-11-11 16:30:07
  * @LastEditors: Telliex
- * @LastEditTime: 2021-12-07 22:02:30
+ * @LastEditTime: 2021-12-08 08:39:57
 -->
 <template>
   <el-dialog :title="title" v-model="isDialogShow" width="90%" @close="onClose">
@@ -70,6 +70,9 @@
                 <el-input v-model="subItem.indexStandardString" size="small"  class="inputWidth" placeholder="请输入" autocomplete="off" :disabled="!subItem.canEditIndexStandardString" ></el-input>
               </el-tooltip>
             </el-form-item>
+            <el-form-item label="检验时间："  prop="finishDate" v-if="subItem.finishDate">
+              <div ><span>检验时间:</span>{{!subItem.finishDate?'':subItem.finishDate}}</div>
+            </el-form-item>
           </el-form>
           <el-form  :model="subItem" :label-width="cssForformLabelWidth">
             <el-form-item label="检验过程："  prop="" v-if="subItem.canShowParameterList" style="margin-top:10px">
@@ -121,9 +124,6 @@
                   </template>
                 </template>
               </div>
-            </el-form-item>
-            <el-form-item label="检验时间："  prop="finishDate" v-if="subItem.finishDate">
-              <div ><span>检验时间:</span>{{!subItem.finishDate?'':subItem.finishDate}}</div>
             </el-form-item>
           </el-form>
         </mds-area>

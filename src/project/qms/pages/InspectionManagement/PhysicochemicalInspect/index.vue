@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-11-16 09:59:02
  * @LastEditors: Telliex
- * @LastEditTime: 2021-12-07 16:14:38
+ * @LastEditTime: 2021-12-08 09:08:08
 -->
 <template>
   <mds-area class="test_method" title="已选中样品" :pack-up="false" style="margin-bottom: 0; background: #fff; overflow:scroll">
@@ -45,7 +45,8 @@ import MdsArea from '@/components/package/mds-area/src/mds-area.vue'
 import {
   MANAGEMENT_INSPECTION_PHYSICOCHEMICAL_QUERY_BY_SAMPLE_CODE_API, // 检验管理-[检验任务]- 根据样品码查询检验任务
   MANAGEMENT_INSPECTION_TASK_INSPECT_QUERY_BY_ID_API, // 检验管理-[检验任务]- 分析是否有合并检 /taskInspect/queryTaskInspectByIds
-  MANAGEMENT_INSPECTION_PHYSICOCHEMICAL_TASK_INSPECT_QUERY_API
+  // MANAGEMENT_INSPECTION_PHYSICOCHEMICAL_TASK_INSPECT_QUERY_API,
+  MANAGEMENT_INSPECTION_PHYSICOCHEMICAL_TASK_FORM_QUERY_API
 } from '@/api/api'
 import layoutTs from '@/components/layout/layoutTs'
 import { useStore } from 'vuex'
@@ -225,7 +226,20 @@ export default defineComponent({
         state.mainType = state.selectedListOfTopicMainData[0].taskInspectClassify
         state.subType = 'normal'
 
+        // if (state.selectedListOfTopicMainData[0].mergeBatch === '') {
         state.targetObjList = JSON.parse(JSON.stringify(state.selectedListOfTopicMainData))
+        // } else { // 该条是合并样品
+        //   // TODO
+
+        //   MANAGEMENT_INSPECTION_PHYSICOCHEMICAL_TASK_FORM_QUERY_API({
+        //     id: state.selectedListOfTopicMainData[0].id,
+        //     recheckBatch: ''
+        //   }).then((res:any) => {
+        //     state.targetObjList = res.data.data
+        //     console.log('ininin')
+        //     console.log(res.data.data)
+        //   })
+        // }
       } else {
         console.log('normal2')
         console.log(state.currentGlobalActOgj.taskInspectClassify)
@@ -233,7 +247,19 @@ export default defineComponent({
         state.subType = 'normal'
 
         if (Object.keys(state.currentGlobalActOgj).length !== 0) {
+          // if (state.currentGlobalActOgj.mergeBatch === '') {
           state.targetObjList = [JSON.parse(JSON.stringify(state.currentGlobalActOgj))]
+          // } else { // 该条是合并样品
+          //   // TODO
+          //   MANAGEMENT_INSPECTION_PHYSICOCHEMICAL_TASK_FORM_QUERY_API({
+          //     id: state.currentGlobalActOgj.id,
+          //     recheckBatch: ''
+          //   }).then((res:any) => {
+          //     state.targetObjList = res.data.data
+          //     console.log('ininin')
+          //     console.log(res.data.data)
+          //   })
+          // }
         } else {
           proxy.$warningToast('请选取任务')
         }
@@ -251,14 +277,39 @@ export default defineComponent({
 
     // 根据取样码添加任务
     const btnGetInspectList = (str:string) => {
-      if (state.scanMergeType === true && state.searchFilter.merge === true) { // 扫码合并模式
-        console.log('222222')
-        const temp:string[] = []
-        temp.push(str)
-        temp.length && MANAGEMENT_INSPECTION_PHYSICOCHEMICAL_QUERY_BY_SAMPLE_CODE_API(
-          temp
+      if (state.scanMergeType === true) { // 扫码合并模式
+        // if (state.searchFilter.merge === false) {
+        //   proxy.$warningToast('请先勾选合并检，再扫码')
+        //   return false
+        // }
+
+        str && MANAGEMENT_INSPECTION_PHYSICOCHEMICAL_QUERY_BY_SAMPLE_CODE_API(
+          [str]
         ).then(res => {
-          //
+          console.log('根据样品码查询检验任务')
+          console.log(res.data.data)
+          if (!res.data.data.length) {
+            proxy.$infoToast('无任何数据')
+          } else {
+            const temp = state.dataTableOfTopicMain.map(item => item.id)
+            res.data.data.forEach((item:any) => {
+              if (!temp.includes(item.id)) {
+                if (item.taskStatus === 'RECEIVED' || item.taskStatus === 'CHECKING' || item.taskStatus === 'COMPLETED') {
+                  if (state.dataTableOfTopicMain.length === 0) { // 第一笔
+                    state.dataTableOfTopicMain.push(item)
+                  } else { // 第一笔之后
+                    if (item.inspectMaterialCode === state.dataTableOfTopicMain[0].inspectMaterialCode && item.inspectContent === state.dataTableOfTopicMain[0].inspectContent && item.inspectProperty === state.dataTableOfTopicMain[0].inspectProperty) {
+                      state.dataTableOfTopicMain.push(item)
+                    } else {
+                      proxy.$warningToast('非同一类样品不可和并检')
+                    }
+                  }
+                }
+              } else {
+                proxy.$warningToast('列表中已存在相同检验码')
+              }
+            })
+          }
         })
       } else { // 一般合并模式
         console.log('77777')
