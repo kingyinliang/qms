@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-11-11 16:30:07
  * @LastEditors: Telliex
- * @LastEditTime: 2021-12-08 16:58:18
+ * @LastEditTime: 2021-12-08 21:26:29
 -->
 <template>
   <el-dialog :title="title" v-model="isDialogShow" width="90%" @close="onClose">
@@ -145,8 +145,8 @@
     <el-form :inline="true"  :model="dataFormOfSampleInfo"  :label-width="cssForformLabelWidth" >
       <el-form-item label="复检方式："  prop="recheckMod" >
         <el-radio-group v-model="dataFormOfSampleInfo.recheckMod">
-          <el-radio label="ORIGINAL_RECHECK">原样复检</el-radio>
-          <el-radio label="RESAMOLING">取样复检</el-radio>
+          <el-radio label="ORIGINAL_RECHECK" @click.native.prevent="actChangeByRecheckMod('ORIGINAL_RECHECK')" >原样复检</el-radio>
+          <el-radio label="RESAMOLING" @click.native.prevent="actChangeByRecheckMod('RESAMOLING')">取样复检</el-radio>
         </el-radio-group>
       </el-form-item>
       <el-form-item label="取样说明："  prop="sampleExplain">
@@ -219,6 +219,7 @@ interface State {
   mainObj:any[]
   formForTaskAdd: any
   currentOrderStyle: string
+  tempRecheckMod: string
 }
 
 interface Props{
@@ -287,6 +288,7 @@ export default defineComponent({
       mainObj: [],
       formForTaskAdd: {},
       dataFormOfSampleItemUnit: [],
+      tempRecheckMod: '',
       timeLineData: [
         {
           indexName: 'Custom icon',
@@ -401,7 +403,6 @@ export default defineComponent({
                 item.indexUp = item.inspectIndexStandard.indexUp
                 item.indexStandard = item.inspectIndexStandard.indexStandard
               } else {
-                console.log('909090909090')
                 item.manualStandard = item.indexStandardString
               }
             }
@@ -503,8 +504,8 @@ export default defineComponent({
       if (type !== 'save') { // 完成提交行为
         if (state.dataFormOfSampleInfo.indexJudgeResult === 'N' && state.dataFormOfSampleInfo.recheckMod === '') {
           proxy.$confirm('此样品检验不合格，请确认是否复检？', '提示', {
-            confirmButtonText: '确定',
-            cancelButtonText: '取消',
+            confirmButtonText: '是',
+            cancelButtonText: '否',
             type: 'warning'
           }).then(async (val:string) => {
             if (val === 'confirm') {
@@ -577,8 +578,7 @@ export default defineComponent({
             tempResult += 1
             needResult += 1
           }
-
-          if (item.inspectMethodNameList[item.inspectMethodCodeWhichIndex].length && item.inspectMethodNameList[item.inspectMethodCodeWhichIndex].inspectParameterListShow.length) {
+          if (item.inspectMethodNameList[item.inspectMethodCodeWhichIndex]?.length && item.inspectMethodNameList[item.inspectMethodCodeWhichIndex]?.inspectParameterListShow.length) {
             item.inspectMethodNameList[item.inspectMethodCodeWhichIndex].inspectParameterListShow.forEach((subItem:any) => {
               needResult += 1
               if (subItem.defaultValue === '') {
@@ -586,7 +586,6 @@ export default defineComponent({
               }
             })
           }
-
           if (tempResult !== needResult) {
             tempReturn = false
           }
@@ -638,7 +637,6 @@ export default defineComponent({
       if (val.inspectResult === '') {
         val.indexJudgeResult = 'N'
       } else {
-        console.log('888888888888')
         if (val.indexStandardString !== '') {
           chechIndexStandardString(val)
         }
@@ -658,91 +656,85 @@ export default defineComponent({
     // 标准值栏位处理
     const chechIndexStandardString = (val:any) => {
       if (val.manualStandard === '') {
-        if (val.indexStandardString.indexOf('S') === -1) {
-          proxy.$warningToast('缺少变数 S')
-        } else if (val.indexStandardString === 'S') {
-          if (val.inspectResult !== '') {
-            let tempString = ''
-            if (val.indexInnerStandard) {
-              tempString = val.indexInnerStandard
-            } else if (val.indexStandard) {
-              tempString = val.indexStandard
-            } else {
-              proxy.$warningToast('无标准值')
-              val.indexJudgeResult = 'N'
-              return
-            }
-            if (evil(`${val.inspectResult}==${tempString}`)) {
-              console.log('val.indexJudgeResult = Y')
-              val.indexJudgeResult = 'Y'
-            } else {
-              console.log('val.indexJudgeResult = N')
-              val.indexJudgeResult = 'N'
-            }
-          }
-        } else if (val.indexStandardString.split('=')[0] === 'S') {
-          if (val.inspectResult !== '') {
-            if (evil(`${val.indexStandardString.split('=')[1]}==${val.inspectResult}`)) {
-              console.log('val.indexJudgeResult = Y')
-              val.indexJudgeResult = 'Y'
-            } else {
-              console.log('val.indexJudgeResult = N')
-              val.indexJudgeResult = 'N'
-            }
-          }
-        } else {
-          if (val.inspectResult !== '') {
-            const result = /(.*)S(.*)/.exec(val.indexStandardString)
-            if (result === null) {
-              proxy.$warningToast('标准栏位式子错误')
-              val.indexStandardString = ''
-              return
-            }
-            if (result[1] === '' && result[2] === '') {
-              proxy.$warningToast('标准栏位式子错误')
-              val.indexStandardString = ''
-              return
-            }
+        // if (val.indexStandardString.indexOf('S') === -1) {
+        //   proxy.$warningToast('缺少变数 S')
+        // } else if (val.indexStandardString === 'S') {
+        //   if (val.inspectResult !== '') {
+        //     let tempString = ''
+        //     if (val.indexInnerStandard) {
+        //       tempString = val.indexInnerStandard
+        //     } else if (val.indexStandard) {
+        //       tempString = val.indexStandard
+        //     } else {
+        //       proxy.$warningToast('无标准值')
+        //       val.indexJudgeResult = 'N'
+        //       return
+        //     }
+        //     if (evil(`${val.inspectResult}==${tempString}`)) {
+        //       console.log('val.indexJudgeResult = Y')
+        //       val.indexJudgeResult = 'Y'
+        //     } else {
+        //       console.log('val.indexJudgeResult = N')
+        //       val.indexJudgeResult = 'N'
+        //     }
+        //   }
+        // } else if (val.indexStandardString.split('=')[0] === 'S') {
+        //   if (val.inspectResult !== '') {
+        //     if (evil(`${val.indexStandardString.split('=')[1]}==${val.inspectResult}`)) {
+        //       console.log('val.indexJudgeResult = Y')
+        //       val.indexJudgeResult = 'Y'
+        //     } else {
+        //       console.log('val.indexJudgeResult = N')
+        //       val.indexJudgeResult = 'N'
+        //     }
+        //   }
+        // } else {
+        if (val.inspectResult !== '') {
+          // const result = /(.*)S(.*)/.exec(val.indexStandardString)
+          // if (result === null) {
+          //   proxy.$warningToast('标准栏位式子错误')
+          //   val.indexStandardString = ''
+          //   return
+          // }
+          // if (result[1] === '' && result[2] === '') {
+          //   proxy.$warningToast('标准栏位式子错误')
+          //   val.indexStandardString = ''
+          //   return
+          // }
 
-            const leftResult = /(.*)([><]=?)/.exec(result[1])
-            const rightResult = /([><]=?)(.*)/.exec(result[2])
+          // const leftResult = /(.*)([><]=?)/.exec(result[1])
+          // const rightResult = /([><]=?)(.*)/.exec(result[2])
 
-            if (!leftResult) {
-              val.indexInnerDown = ''
-              val.innerDownSymbol = ''
-            } else {
-              val.indexInnerDown = leftResult[1]
-              val.innerDownSymbol = leftResult[2]
-            }
+          // if (!leftResult) {
+          //   val.indexInnerDown = ''
+          //   val.innerDownSymbol = ''
+          // } else {
+          //   val.indexInnerDown = leftResult[1]
+          //   val.innerDownSymbol = leftResult[2]
+          // }
 
-            if (!rightResult) {
-              val.indexInnerUp = ''
-              val.innerUpSymbol = ''
-            } else {
-              val.indexInnerUp = rightResult[2]
-              val.innerUpSymbol = rightResult[1]
-            }
+          // if (!rightResult) {
+          //   val.indexInnerUp = ''
+          //   val.innerUpSymbol = ''
+          // } else {
+          //   val.indexInnerUp = rightResult[2]
+          //   val.innerUpSymbol = rightResult[1]
+          // }
 
-            if (val.inspectResult && val.indexStandardString) {
-              try {
-                console.log('zzzzzzzz')
-                console.log(`${result[1]}${val.inspectResult}`)
-                console.log(`${val.inspectResult}${result[2]}`)
-                if (evil(`${result[1]}${val.inspectResult}`) && evil(`${val.inspectResult}${result[2]}`)) {
-                  console.log('val.indexJudgeResult = Y')
-                  val.indexJudgeResult = 'Y'
-                } else {
-                  console.log('val.indexJudgeResult = N')
-                  val.indexJudgeResult = 'N'
-                }
-              } catch (err) {
-                console.log(err)
-                console.log('val.indexJudgeResult = N')
+          if (val.indexStandardString) {
+            try {
+              const temp = val.indexStandardString.replace('S', val.inspectResult)
+              if (evil(`${temp}`)) {
+                val.indexJudgeResult = 'Y'
+              } else {
                 val.indexJudgeResult = 'N'
               }
+            } catch (err) {
+              val.indexJudgeResult = 'N'
             }
           }
         }
+        // }
       }
     }
 
@@ -753,17 +745,37 @@ export default defineComponent({
 
     // 切换检验方法
     const btnChangeMethodOfIndex = (index: number, target: any) => {
+      proxy.$confirm('切换检验方法后，当前维护数据将被清空，请确认是否继续？', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(async (val:string) => {
+        if (val === 'confirm') {
+          actChangeMethodOfIndex(index, target)
+        }
+        // onClose()
+      }).catch(() => {
+        //
+      })
+    }
+
+    const actChangeMethodOfIndex = (index: number, target: any) => {
       console.log('target')
       console.log(target)
       // 1. 该方法下一定要有过程参数 data
       // 2. 同方法不做再点击
       if (target.inspectMethodNameList && target.inspectMethodNameList.length) { // 1.
         if (target.inspectMethodCodeWhichIndex !== index) { // 2.
-          console.log('come in')
+          const prevIndex = target.inspectMethodCodeWhichIndex
           target.inspectMethodCodeWhichIndex = index
           target.inspectMethodCode = target.inspectMethodNameList[index].inspectMethodCode
           target.inspectMethodName = target.inspectMethodNameList[index].inspectMethodName
           target.canShowParameterList = target.inspectMethodNameList[index].inspectParameterListShow.length !== 0
+          // 切换 tab 时，将退出的 tab 复原
+          if (prevIndex !== 100) {
+            const prevParameterObj = JSON.parse(JSON.stringify(target.inspectMethodNameListTemp[prevIndex]))
+            target.inspectMethodNameList[prevIndex] = prevParameterObj
+          }
 
           if (!target.inspectMethodNameList[index].inspectParameterListShow.length) {
             proxy.$infoToast(`${target.indexName}-${target.inspectMethodName}没有过程参数`)
@@ -840,10 +852,7 @@ export default defineComponent({
       const tempDepend = args.split(',')
       for (let i = 0; i < tempDepend.length; i++) {
         const re = new RegExp(tempDepend[i].replace('[', '\\[').replace(']', '\\]'), 'g')
-        console.log(re)
-        console.log(transList[i])
         formulaString = formulaString.replace(re, transList[i])
-        console.log(formulaString)
       }
 
       // 公式错误表示可编辑
@@ -887,9 +896,6 @@ export default defineComponent({
 
     // key in trigger 过程参数栏位出来的结果
     const actHandleInspectResult = (subItem:any) => {
-      console.log('subItem')
-      console.log(subItem)
-
       if (!subItem.canEditInspectResult && subItem.canChangeAgainWithProcessParameter) { // 判定是否依靠过程参数计算
         if (subItem.inspectMethodNameList[subItem.inspectMethodCodeWhichIndex]?.inspectParameterListShow.every((item:any) => item.defaultValue !== '')) { // 过程参数都不为空才触发
           const result = runFormula(subItem.filnalFormula,
@@ -897,14 +903,10 @@ export default defineComponent({
             subItem.inspectMethodNameList[subItem.inspectMethodCodeWhichIndex].inspectParameterListShow,
             subItem.inspectMethodNameList[subItem.inspectMethodCodeWhichIndex].inspectParameterListHidden)
 
-          console.log('kakakkakakkaka')
-          console.log(result)
           if (!result) {
-            console.log('11111')
             subItem.inspectResult = ''
             subItem.canEditInspectResult = true
           } else {
-            console.log('22222')
             subItem.inspectResult = result.toString()
             chechIndexStandardString(subItem)
           }
@@ -919,19 +921,10 @@ export default defineComponent({
       const transList = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z']
       const tempDepend = depend.split(',')
 
-      console.log('tempDepend')
-      console.log(tempDepend)
       let tempFormula = formula
-      console.log('tempFormula')
-      console.log(tempFormula)
 
       const valueList = new Array(tempDepend.length)
       const importValue:any = {}
-
-      console.log('showValue')
-      console.log(showValue)
-      console.log('hiddenValue')
-      console.log(hiddenValue)
       tempDepend.forEach((item, index) => {
         const re = new RegExp(item.replace('[', '\\[').replace(']', '\\]'), 'g')
 
@@ -945,27 +938,15 @@ export default defineComponent({
         })
       })
 
-      console.log('tempFormula=======')
-      console.log(tempFormula)
-
-      console.log('valueList=======')
-      console.log(valueList)
-
-      console.log('importValue=======')
-      console.log(importValue)
-
       tempDepend.forEach((item, index) => {
         if (hiddenValue.length) {
           hiddenValue.forEach(subItem => {
             if (item === subItem.paramCode) {
-              console.log('index:' + index)
               const thisIndex = tempDepend.indexOf(subItem.parentParamCode)
               const value = importValue[transList[thisIndex]]
-              console.log(value)
               let canFindIt = false
               subItem.inspectAssociateList.forEach((element:any) => {
                 if (element.associate === value) {
-                  console.log('lololololol')
                   canFindIt = true
                   importValue[transList[index]] = !element.value ? 0 : Number(element.value)
                   valueList[index] = !element.value ? 0 : Number(element.value)
@@ -979,37 +960,22 @@ export default defineComponent({
         }
       })
 
-      console.log('valueList=====4444==')
-      console.log(valueList)
-
-      console.log('importValue===4444====')
-      console.log(importValue)
-
       let expr:any
       let result:any
 
       if (depend.split(',').length === 1 && depend.split(',')[0].trim().toString() === formula.trim().toString()) { // 仅一个展示的过程参数且 S=该过程参数
-        console.log('yyyyyyyyyy')
-        console.log(showValue)
         showValue.forEach((item) => {
           if (item.paramCode === depend.split(',')[0].trim().toString()) {
-            console.log('xxxxxx')
-            console.log(item.defaultValue)
             result = item.defaultValue
           }
         })
       } else {
         if (showValue.some(item => item.paramDataType === '')) { // 多个过程参数没类型
-          console.log('多个过程参数没类型')
           proxy.$warningToast('公式或参数值有错误，无法计算。请改手动输入结果，以进行判定')
           result = null
         } else {
           try {
             // 加入字串形态
-            console.log('tempFormula')
-            console.log(tempFormula)
-            console.log('importValue')
-            console.log(importValue)
             expr = parser.parse(tempFormula)
             result = expr.evaluate(importValue)
           } catch (err) {
@@ -1021,6 +987,16 @@ export default defineComponent({
       }
 
       return result
+    }
+
+    const actChangeByRecheckMod = (val:string) => {
+      if (state.dataFormOfSampleInfo.recheckMod === val) {
+        state.dataFormOfSampleInfo.recheckMod = ''
+      } else {
+        state.dataFormOfSampleInfo.recheckMod = val
+      }
+
+      console.log(state.dataFormOfSampleInfo.recheckMod)
     }
 
     // TODO watch
@@ -1110,6 +1086,7 @@ export default defineComponent({
             Object.assign(item, {
               inspectIndexStandard: tempIndex.data.data.inspectIndexStandard,
               inspectMethodNameList: tempIndex.data.data.inspectMethodNameList,
+              inspectMethodNameListTemp: JSON.parse(JSON.stringify(tempIndex.data.data.inspectMethodNameList)),
               sampleCode: state.idToSampleCode[item.taskInspectId]
             })
 
@@ -1149,9 +1126,6 @@ export default defineComponent({
                 item.canEditIndexStandardString = false
               } else {
                 // =》 先看内层
-                console.log('=================')
-                console.log(item.indexName)
-                console.log(item)
                 if (item.inspectIndexStandard) {
                   if (item.inspectIndexStandard.indexInnerStandard) {
                     item.indexStandardString = `S=${item.inspectIndexStandard.indexInnerStandard}`
@@ -1172,9 +1146,7 @@ export default defineComponent({
                     item.indexStandardString = `${item.inspectIndexStandard.indexDown}${item.inspectIndexStandard.downSymbol.replace('>', '<')}S${item.inspectIndexStandard.upSymbol}${item.inspectIndexStandard.indexUp}`
                     item.canEditIndexStandardString = false
                   } else if (item.inspectIndexStandard.indexDown && item.inspectIndexStandard.downSymbol) {
-                    console.log('=======hahahahah==========')
-                    console.log(item.indexName)
-                    item.indexStandardString = `${item.indexDown}${item.downSymbol.replace('>', '<')}S`
+                    item.indexStandardString = `${item.inspectIndexStandard.indexDown}${item.inspectIndexStandard.downSymbol.replace('>', '<')}S`
                     item.canEditIndexStandardString = false
                   } else if (item.inspectIndexStandard.upSymbol && item.inspectIndexStandard.indexUp) {
                     item.indexStandardString = `S${item.inspectIndexStandard.upSymbol}${item.inspectIndexStandard.indexUp}`
@@ -1192,7 +1164,12 @@ export default defineComponent({
 
             // 指标预设没有方法时，预设套入第一笔
             if (item.inspectMethodCode === '' && tempIndex.data.data.inspectMethodNameList) {
-              btnChangeMethodOfIndex(0, item)
+              actChangeMethodOfIndex(0, item)
+            }
+
+            // 走一遍运算
+            if (!item.canEditInspectResult && !item.canEditIndexStandardString) {
+              actHandleInspectResult(item)
             }
           })
           console.log('state.dataFormOfSampleItemUnit')
@@ -1223,6 +1200,8 @@ export default defineComponent({
       actHandleIndexStandardString,
       actHandleInspectResult,
       // act
+      actChangeByRecheckMod,
+      actChangeMethodOfIndex,
       // ref
       refFormOfSampleInfo,
       // other
