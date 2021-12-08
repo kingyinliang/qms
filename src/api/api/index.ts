@@ -44,6 +44,10 @@ export function USER_QUIT_API (params = {}):Promise<AxiosResponse> {
 export function ORG_TREE_API (params = {}):Promise<AxiosResponse> {
   return Http.get('/sysDept/dropDown', params, { baseURL: (process.env.VUE_APP_SYSTEM_API as string) + (process.env.VUE_APP_API_V as string) })
 }
+// 查人员
+export function USER_LIST_QUERY (params = {}):Promise<AxiosResponse> {
+  return Http.post('/sysUser/userRole/all/query', params, { baseURL: (process.env.VUE_APP_SYSTEM_API as string) + (process.env.VUE_APP_API_V as string) })
+}
 // 组织架构-按工厂和类型查询组织机构
 export function DEPT_QUERY_API (params = {}):Promise<AxiosResponse> {
   return Http.post('/sysDept/getTypeDept', params, { baseURL: (process.env.VUE_APP_SYSTEM_API as string) + (process.env.VUE_APP_API_V as string) })

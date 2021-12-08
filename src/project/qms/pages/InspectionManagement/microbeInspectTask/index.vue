@@ -66,9 +66,9 @@
       </el-form-item>
         <el-form-item>
           <el-button icon="el-icon-search" @click="() => {queryForm.current = 1; query()}">查询</el-button>
-          <el-button @click="goDetail('CULTIVATE')"><i class="qmsIconfont qms-jianyan"/> 培养</el-button>
-          <el-button type="primary" @click="goDetail('CALCULATE')"><i class="qmsIconfont qms-dayin" /> 计数</el-button>
-          <el-button v-if="task !== 'COLONYNUM'" type="primary" @click="goInspect"><i class="qmsIconfont qms-dayin" /> 检验</el-button>
+          <el-button @click="goCultivate()"><i class="qmsIconfont qms-jianyan"/> 培养</el-button>
+          <el-button type="primary" @click="goCount('CALCULATE')"><i class="qmsIconfont qms-dayin" /> 计数</el-button>
+          <el-button v-if="task !== 'COLONYNUM'" type="primary" @click="goFive()"><i class="qmsIconfont qms-dayin" /> 检验</el-button>
         </el-form-item>
       </el-form>
     </template>
@@ -110,10 +110,10 @@
       <el-table-column label="收样时间" prop="receiveDate" min-width="150" :show-overflow-tooltip="true" />
       <el-table-column label="操作" width="140" fixed="right">
         <template #default="scope">
-          <el-button v-if="scope.row.inspectMethodGroupNameList.includes('培养法')"  type="text" icon="qmsIconfont qms-jianyan3" class="role__btn" @click="cultivateSample(scope.row)">
+          <el-button v-if="scope.row.inspectMethodGroupNameList.includes('培养法')"  type="text" icon="qmsIconfont qms-jianyan3" class="role__btn" @click="goCultivate(scope.row)">
             培养
           </el-button>
-          <el-button v-if="scope.row.inspectMethodGroupNameList.includes('直接法')" type="text" icon="qmsIconfont qms-jianyan3" class="role__btn" @click="inspectSample(scope.row)">
+          <el-button v-if="scope.row.inspectMethodGroupNameList.includes('五管法')" type="text" icon="qmsIconfont qms-jianyan3" class="role__btn" @click="goFive(scope.row)">
             检验
           </el-button>
         </template>
@@ -234,20 +234,49 @@ export default defineComponent({
     }
 
     // 计算 & 培养
-    const goDetail = (type:string) => {
+    const goCultivate = (row?:TableData) => {
+      if (!row && !selectionData.value.length) {
+        proxy.$warningToast('请选择数据')
+        return
+      }
+
+      store.commit('inspection/updateMicrobeInspectCultivate', {
+        indexName: inspectClassifyObj.inspectClassifyName,
+        taskInspectIdList: row ? [row.id] : selectionData.value.map(it => it.id)
+      })
+
+      gotoPage({
+        name: 'qms-pages-InspectionManagement-microbeInspect-cultivate'
+      })
+    }
+    const goCount = (type:string) => {
       if (!selectionData.value.length) {
         proxy.$warningToast('请选择数据')
         return
       }
 
-      const transferObj = { type: type, class: task.value, obj: selectionData.value.length ? selectionData.value : [] }
+      store.commit('inspection/updateMicrobeInspectCount', {
+        indexName: inspectClassifyObj.inspectClassifyName,
+        taskInspectIdList: selectionData.value.map(it => it.id)
+      })
 
       gotoPage({
-        name: 'qms-pages-InspectionManagement-microbeInspect-index',
-        params: {
-          wayInto: true,
-          transferObj: JSON.stringify(transferObj)
-        }
+        name: 'qms-pages-InspectionManagement-microbeInspect-count'
+      })
+    }
+    const goFive = (row?:TableData) => {
+      if (!row && !selectionData.value.length) {
+        proxy.$warningToast('请选择数据')
+        return
+      }
+
+      store.commit('inspection/updateMicrobeInspectFive', {
+        indexName: inspectClassifyObj.inspectClassifyName,
+        taskInspectIdList: row ? [row.id] : selectionData.value.map(it => it.id)
+      })
+
+      gotoPage({
+        name: 'qms-pages-InspectionManagement-microbeInspect-five'
       })
     }
     // 表格复选框能否被选中逻辑
@@ -260,30 +289,6 @@ export default defineComponent({
     // 表格复选框改变
     const selectionChange = (val: TableData[]) => {
       selectionData.value = val
-    }
-    // 培养 from row
-    const cultivateSample = (row: TableData) => {
-      proxy.$confirm('是否培养，请确认', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }).then(async () => {
-        proxy.$successToast('操作成功')
-        await query()
-        await getTask()
-      })
-    }
-    // 检验 from row
-    const inspectSample = (row: TableData) => {
-      proxy.$confirm('是否检验，请确认', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }).then(async () => {
-        proxy.$successToast('操作成功')
-        await query()
-        await getTask()
-      })
     }
 
     const goInspect = () => {
@@ -325,11 +330,11 @@ export default defineComponent({
       goHistory,
       changeTask,
       query,
-      goDetail,
+      goCultivate,
+      goCount,
+      goFive,
       checkDate,
       selectionChange,
-      cultivateSample,
-      inspectSample,
       btnConfigulationReadOnly,
       goInspect
     }
