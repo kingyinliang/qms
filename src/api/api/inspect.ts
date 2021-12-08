@@ -37,3 +37,22 @@ export function TASK_INSPECT_MICROBE_INSPECT_TASK_LIST_QUERY (params = {}):Promi
 export function TASK_INSPECT_MICROBE_INSPECT_MICROBE_PARAMETER_QUERY (params = {}):Promise<AxiosResponse> {
   return Http.post('/inspectParameter/queryInspectParameterMicrobeTask', params, { baseURL: (process.env.VUE_APP_QMS_API as string) + (process.env.VUE_APP_API_V as string) })
 }
+
+export function MICROBE_INSPECT_LIST (params = {}):Promise<AxiosResponse> {
+  return Http.post('/taskInspect/queryMicrobeTaskInspectList', params, { baseURL })
+}
+export function MICROBE_INSPECT_FIVE_DIALOG_QUERY (params = {}):Promise<AxiosResponse> {
+  return Http.post('/taskFiveTube/queryTaskFiveTube', params, { baseURL })
+}
+export function MICROBE_INSPECT_FIVE_DIALOG_SAVED (params = {}):Promise<AxiosResponse> {
+  return Http.post('/taskFiveTube/modifyTaskFiveTube', params, { baseURL })
+}
+export function MICROBE_INSPECT_COUNT_DIALOG_QUERY (params = {}):Promise<AxiosResponse> {
+  return Http.post('/taskCultureMedium/queryCountTaskCultureMedium', params, { baseURL })
+}
+export function MICROBE_INSPECT_CULTIVATE_DIALOG_QUERY (params = {}):Promise<AxiosResponse> {
+  return Http.post('/taskCultureMedium/queryTaskCultureMedium', params, { baseURL })
+}
+export function MICROBE_INSPECT_CULTIVATE_DIALOG_SAVED (params = {}):Promise<AxiosResponse> {
+  return Http.post('/taskCultureMedium/insertTaskCultureMedium', params, { baseURL })
+}
