@@ -205,7 +205,7 @@ export default defineComponent({
         proxy.$warningToast('请选择数据')
         return
       }
-      const data = selectionData.value.filter(it => it.taskStatus === 'RECEIVED' || it.taskStatus === 'CHECKING')
+      const data = selectionData.value.filter(it => it.taskStatus === 'RECEIVED' || it.taskStatus === 'CHECKING' || it.taskStatus === 'COMPLETED')
       if (selectionData.value.length && data.length !== selectionData.value.length) {
         proxy.$warningToast('存在不可检验任务请重新选择')
         return
