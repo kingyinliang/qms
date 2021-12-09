@@ -223,8 +223,10 @@ import {
 import {
   DICT_DROPDOWN,
   USER_LIST_QUERY,
+  MICROBE_INSPECT_COUNT_DIALOG_STANDARD,
   MICROBE_INSPECT_CULTIVATE_DIALOG_SAVED,
-  MICROBE_INSPECT_FIVE_DIALOG_SAVED
+  MICROBE_INSPECT_FIVE_DIALOG_SAVED,
+  MICROBE_INSPECT_COUNT_DIALOG_SAVED
 } from '@/api/api'
 import { dateFormat } from '@/utils'
 
@@ -246,6 +248,7 @@ export default defineComponent({
     const componentData = reactive({
       visibleDialog: false,
       form: {},
+      standard: {},
       tableData: [],
       users: [],
       ftube: [],
@@ -255,7 +258,11 @@ export default defineComponent({
       sterilizerPot: []
     })
 
-    const init = (data, row) => {
+    const init = async (data, row) => {
+      if (props.type === 'CALCULATE') {
+        const res = await MICROBE_INSPECT_COUNT_DIALOG_STANDARD([row])
+        componentData.standard = res.data.data[0]
+      }
       if (data) {
         componentData.form = data
         componentData.form.inspectContent = props.type !== 'CULTIVATE' ? row.inspectContent : row[0].inspectContent.split('-')[row[0].inspectContent.split('-').length - 1]
@@ -280,7 +287,26 @@ export default defineComponent({
           componentData.form.taskFiveTubeDataList[0].confirm = componentData.form.confirm
           componentData.form.taskFiveTubeDataList[0].mpn = componentData.form.mpn
         }
-      } else if (props.type === 'CALCULATE') {} else if (props.type === 'CULTIVATE') {
+      } else if (props.type === 'CALCULATE') {
+        componentData.form = {
+          inspectContent: row.inspectContent,
+          inspectDate: dateFormat(new Date(), 'yyyy-MM-dd'),
+          inspectMan: [],
+          cultureBatch: '',
+          sterilizerBatch: '',
+          cultureBox: '',
+          sterilizerPot: '',
+          putInDate: '',
+          putInTemp: '',
+          takeOutDate: '',
+          takeOutTemp: '',
+          cultureTemp: '',
+          taskInspectIdList: row.id,
+          taskInspectIndexIdList: row.taskInspectIndexId,
+          taskManageIdList: row.taskManageId,
+          taskCultureDataList: []
+        }
+      } else if (props.type === 'CULTIVATE') {
         componentData.form = {
           inspectContent: row[0].inspectContent.split('-')[row[0].inspectContent.split('-').length - 1],
           inspectDate: dateFormat(new Date(), 'yyyy-MM-dd'),
@@ -336,6 +362,7 @@ export default defineComponent({
       const { data } = await DICT_DROPDOWN({ dictType: code })
       return data.data
     }
+    // 合并单元格
     const objectSpanMethod = (scope) => {
       if (scope.columnIndex > 3) {
         if (scope.rowIndex > 1) {
@@ -351,9 +378,11 @@ export default defineComponent({
         }
       }
     }
+    // 提交表单
     const updateFormSubmit = async (str) => {
       if (props.type === 'CALCULATE') {
         componentData.form.taskStatus = str
+        await MICROBE_INSPECT_COUNT_DIALOG_SAVED(componentData.form)
       } else if (props.type === 'CULTIVATE') {
         const data = JSON.parse(JSON.stringify(componentData.form))
         data.inspectMan = data.inspectMan.join(',')

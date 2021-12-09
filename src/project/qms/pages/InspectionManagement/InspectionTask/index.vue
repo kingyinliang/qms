@@ -41,13 +41,13 @@
     <template #titleBtn>
       <el-form :inline="true" size="small" style="float: right;display: flex" @keyup.enter="() => {queryForm.current = 1; query()}" @submit.prevent>
         <el-form-item label="取样码：">
-          <el-input v-model="queryForm.sampleCode" placeholder="请输入" style="width: 120px"></el-input>
+          <el-input v-model="queryForm.sampleCode" placeholder="请输入" style="width: 120px" clearable></el-input>
         </el-form-item>
         <el-form-item label="检验内容：">
-          <el-input v-model="queryForm.inspectContent" placeholder="请输入" style="width: 120px"></el-input>
+          <el-input v-model="queryForm.inspectContent" placeholder="请输入" style="width: 120px" clearable></el-input>
         </el-form-item>
         <el-form-item label="取样信息：" v-if="task === 'PROCESS'">
-          <el-input v-model="queryForm.inspectSiteName" placeholder="请输入" style="width: 120px"></el-input>
+          <el-input v-model="queryForm.inspectSiteName" placeholder="请输入" style="width: 120px" clearable></el-input>
         </el-form-item>
         <el-form-item>
           <el-button icon="el-icon-search" @click="() => {queryForm.current = 1; query()}">查询</el-button>
@@ -228,13 +228,17 @@ export default defineComponent({
         }
       })
     }
-    const setText = (row: TableData):string => {
+    const setText = (row: TableData, tmpStr?: string):string => {
       const inspectContent = (row.inspectContent as string).split('-')
       if (inspectContent.length && inspectContent[1] && inspectContent[2]) {
         let tmp = ''
         inspectContent[2].indexOf('理') >= 0 ? tmp = '理'
           : inspectContent[2].indexOf('微生物') >= 0 ? tmp = '菌' : tmp = ''
-        return `${inspectContent[1]}(${tmp})`
+        if (tmpStr) {
+          return `${tmp}检验`
+        } else {
+          return `${inspectContent[1]}(${tmp})`
+        }
       } else {
         return ''
       }
@@ -243,7 +247,7 @@ export default defineComponent({
     const goPrint = () => {
       if (selectionData.value.length) {
         const data = selectionData.value.map(it => ({
-          title: setText(it),
+          title: task.value === 'TEMP' ? setText(it, 'TEMP') : setText(it),
           subtitle: (it.itemName || '') + (it.inspectSiteName || ''),
           code: it.sampleCode
         }))

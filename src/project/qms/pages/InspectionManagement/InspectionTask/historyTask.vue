@@ -2,13 +2,13 @@
   <el-card class="box-card">
     <el-form inline :model="queryForm" size="small" label-suffix="：" @keyup.enter="() => {queryForm.current = 1; query()}" @submit.prevent>
       <el-form-item label="取样码">
-        <el-input v-model="queryForm.sampleCode" placeholder="请输入" style="width: 140px"></el-input>
+        <el-input v-model="queryForm.sampleCode" placeholder="请输入" style="width: 140px" clearable></el-input>
       </el-form-item>
       <el-form-item label="检验内容">
-        <el-input v-model="queryForm.inspectContent" placeholder="请输入" style="width: 140px"></el-input>
+        <el-input v-model="queryForm.inspectContent" placeholder="请输入" style="width: 140px" clearable></el-input>
       </el-form-item>
       <el-form-item label="取样信息">
-        <el-input v-model="queryForm.inspectSiteName" placeholder="请输入" style="width: 140px"></el-input>
+        <el-input v-model="queryForm.inspectSiteName" placeholder="请输入" clearable style="width: 140px"></el-input>
       </el-form-item>
       <el-form-item label="日期">
         <el-date-picker
@@ -17,6 +17,7 @@
           format="YYYY-MM-DD"
           value-format="YYYY-MM-DD"
           placeholder="请选选择日期"
+          clearable
           style="width: 140px"
         />
         -
@@ -25,6 +26,7 @@
           type="date"
           format="YYYY-MM-DD"
           value-format="YYYY-MM-DD"
+          clearable
           placeholder="请选选择日期"
           style="width: 140px"
         />
@@ -71,8 +73,8 @@
       <el-table-column v-if="task !== 'INCOMING'&&task !== 'SAFETY'" label="取样部门" prop="coSampleDeptName" min-width="165" :show-overflow-tooltip="true" />
       <el-table-column v-if="task === 'INCOMING' || task === 'SAFETY'" label="检验单位" prop="coInspectDeptName" min-width="165" :show-overflow-tooltip="true" />
       <el-table-column v-if="task !== 'SAFETY'" label="取样时间" prop="sampleEndDate" min-width="165" :show-overflow-tooltip="true" />
-      <el-table-column v-if="task === 'INCOMING'" label="检验开始" prop="inspectStartDate" min-width="165" :show-overflow-tooltip="true" />
-      <el-table-column v-if="task === 'INCOMING'" label="检验结束" prop="inspectEndDate" min-width="165" :show-overflow-tooltip="true" />
+      <el-table-column label="检验开始" prop="inspectStartDate" min-width="165" :show-overflow-tooltip="true" />
+      <el-table-column label="检验结束" prop="inspectEndDate" min-width="165" :show-overflow-tooltip="true" />
     </el-table>
     <el-row style="float: right">
       <el-pagination
