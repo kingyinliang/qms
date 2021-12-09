@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-11-16 09:59:02
  * @LastEditors: Telliex
- * @LastEditTime: 2021-12-08 16:16:07
+ * @LastEditTime: 2021-12-08 23:15:02
 -->
 <template>
   <mds-area class="test_method" title="已选中样品" :pack-up="false" style="margin-bottom: 0; background: #fff; overflow:scroll">
@@ -214,20 +214,15 @@ export default defineComponent({
         state.mainType = state.selectedListOfTopicMainData[0].taskInspectClassify
         state.subType = 'normal'
 
-        // if (state.selectedListOfTopicMainData[0].mergeBatch === '') {
-        state.targetObjList = JSON.parse(JSON.stringify(state.selectedListOfTopicMainData))
-        // } else { // 该条是合并样品
-        //   // TODO
-
-        //   MANAGEMENT_INSPECTION_PHYSICOCHEMICAL_TASK_FORM_QUERY_API({
-        //     id: state.selectedListOfTopicMainData[0].id,
-        //     recheckBatch: ''
-        //   }).then((res:any) => {
-        //     state.targetObjList = res.data.data
-        //     console.log('ininin')
-        //     console.log(res.data.data)
-        //   })
-        // }
+        if (state.selectedListOfTopicMainData[0].mergeBatch === '') {
+          state.targetObjList = JSON.parse(JSON.stringify(state.selectedListOfTopicMainData))
+        } else { // 该条是合并样品
+          state.subType = 'merge'
+          state.targetObjList = state.dataTableOfTopicMain.filter((element:any) => element.mergeBatch === state.selectedListOfTopicMainData[0].mergeBatch)
+          refTableOfTopicMain.value.toggleRowSelection(state.targetObjList, true)
+          console.log('state.selectedListOfTopicMainData')
+          console.log(state.selectedListOfTopicMainData)
+        }
       } else {
         console.log('normal2')
         console.log(state.currentGlobalActOgj.taskInspectClassify)
@@ -235,19 +230,15 @@ export default defineComponent({
         state.subType = 'normal'
 
         if (Object.keys(state.currentGlobalActOgj).length !== 0) {
-          // if (state.currentGlobalActOgj.mergeBatch === '') {
-          state.targetObjList = [JSON.parse(JSON.stringify(state.currentGlobalActOgj))]
-          // } else { // 该条是合并样品
-          //   // TODO
-          //   MANAGEMENT_INSPECTION_PHYSICOCHEMICAL_TASK_FORM_QUERY_API({
-          //     id: state.currentGlobalActOgj.id,
-          //     recheckBatch: ''
-          //   }).then((res:any) => {
-          //     state.targetObjList = res.data.data
-          //     console.log('ininin')
-          //     console.log(res.data.data)
-          //   })
-          // }
+          if (state.currentGlobalActOgj.mergeBatch === '') {
+            state.targetObjList = [JSON.parse(JSON.stringify(state.currentGlobalActOgj))]
+          } else { // 该条是合并样品
+            state.subType = 'merge'
+            state.targetObjList = state.dataTableOfTopicMain.filter((element:any) => element.mergeBatch === state.currentGlobalActOgj.mergeBatch)
+            refTableOfTopicMain.value.toggleRowSelection(state.targetObjList, true)
+            console.log('state.selectedListOfTopicMainData')
+            console.log(state.selectedListOfTopicMainData)
+          }
         } else {
           proxy.$warningToast('请选取任务')
         }
@@ -436,7 +427,12 @@ export default defineComponent({
       setTimeout(async () => {
         // 1. 是否刷新 list
         if (val.act === 'save' && state.subType === 'merge') { // 不刷新
-          state.selectedListOfTopicMainData.forEach((item:any) => { item.taskStatus = 'CHECKING' })
+          state.selectedListOfTopicMainData.forEach((item:any) => {
+            if (item.taskStatus === 'RECEIVED') { // TODO
+              item.taskStatus = 'CHECKING'
+              item.taskStatusName = '检验中'
+            }
+          })
         } else { // 刷新
           const tempContainer:any[] = []
           let isOpenCopy = false
@@ -479,6 +475,7 @@ export default defineComponent({
                 nexItemIndex = index
               }
 
+              // TODO reload 后与完成也要出现吗？
               if (item.taskStatus === 'COMPLETED') {
                 item.delFlag = 1
               }
