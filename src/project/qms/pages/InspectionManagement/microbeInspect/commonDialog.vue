@@ -177,25 +177,37 @@
           </el-table-column>
           <el-table-column label="EMB平板及G染色、镜检" min-width="130" >
             <template #default="scope">
-              <el-input v-model="scope.row.sampleCode" placeholder="请输入" :disabled="preview" clearable style="width: 140px" />
+              <el-input v-model="scope.row.emb" placeholder="请输入" :disabled="preview" clearable style="width: 140px" />
             </template>
           </el-table-column>
           <el-table-column label="证实试验" min-width="110" >
             <template #default="scope">
-              <el-input v-model="scope.row.sampleCode" placeholder="请输入" :disabled="preview" clearable style="width: 140px" />
+              <el-input v-model="scope.row.confirm" placeholder="请输入" :disabled="preview" clearable style="width: 140px" />
             </template>
           </el-table-column>
           <el-table-column label="查MPN检索表（MPN/100mL）" min-width="130" >
             <template #default="scope">
-              <el-input v-model="scope.row.sampleCode" placeholder="请输入" :disabled="preview" clearable style="width: 140px" />
+              <el-input v-model="scope.row.mpn" placeholder="请输入" :disabled="preview" clearable style="width: 140px" />
             </template>
           </el-table-column>
         </el-table>
       </mds-card>
-      <div style="display: flex;align-items: center">
-        <div>检验说明：</div>
-        <el-input v-model="form.inspectExplain" placeholder="请输入" disabled clearable style="flex: 1" />
-      </div>
+      <el-form :inline="true" label-width="120" size="small">
+        <el-form-item label="综合判定：" >
+          <el-radio v-model="form.judgeResult" label="Y" :disabled="preview">合格</el-radio>
+          <el-radio v-model="form.judgeResult" label="N" :disabled="preview">不合格</el-radio>
+        </el-form-item>
+        <el-form-item label="检验说明：" style="margin-left: 100px">
+          <el-input v-model="form.inspectExplain" placeholder="请输入" :disabled="preview" clearable style="width: 300px"/>
+        </el-form-item>
+        <el-form-item label="复检方式：" >
+          <el-radio v-model="form.recheckMod" label="ORIGINAL_RECHECK" :disabled="preview">原样复检</el-radio>
+          <el-radio v-model="form.recheckMod" label="RESAMOLING" :disabled="preview">取样复检</el-radio>
+        </el-form-item>
+        <el-form-item label="取样说明：" style="margin-left: 60px">
+          <el-input v-model="form.inspectSiteName" placeholder="请输入" :disabled="preview" clearable style="width: 300px"/>
+        </el-form-item>
+      </el-form>
     </template>
   </div>
 </template>
@@ -291,6 +303,8 @@ export default defineComponent({
         const list = []
         for (let i = 0; i < 5; i++) {
           list.push({
+            sampleSequence: i + 1,
+            taskInspectId: row.id,
             ten: '',
             one: '',
             zeroPointOne: '',
@@ -310,7 +324,10 @@ export default defineComponent({
           sterilizerPot: '',
           consoleNo: '',
           cultureBox: '',
+          judgeResult: '',
           inspectExplain: '',
+          recheckMod: '',
+          inspectSiteName: '',
           taskFiveTubeDataList: list
         }
       }
@@ -349,7 +366,7 @@ export default defineComponent({
         await MICROBE_INSPECT_FIVE_DIALOG_SAVED(componentData.form)
       }
       proxy.$successToast('操作成功')
-      proxy.$emit('success')
+      proxy.$emit('success', str)
     }
 
     onMounted(async () => {
