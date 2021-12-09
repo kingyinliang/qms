@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-11-16 09:59:02
  * @LastEditors: Telliex
- * @LastEditTime: 2021-12-09 11:01:19
+ * @LastEditTime: 2021-12-09 15:21:40
 -->
 <template>
   <mds-area class="test_method" title="已选中样品" :pack-up="false" style="margin-bottom: 0; background: #fff; overflow:scroll">
@@ -438,13 +438,17 @@ export default defineComponent({
       // val.act==='submit && val.target === 'RESAMOLING' => 提交 取样复检
       setTimeout(async () => {
         // 1. 是否刷新 list
-        if (val.act === 'save' && state.subType === 'merge') { // 不刷新
-          state.selectedListOfTopicMainData.forEach((item:any) => {
-            if (item.taskStatus === 'RECEIVED') { // TODO
+        if (val.act === 'save') { // 不刷新
+          // if (state.subType === 'normal') { // 一般
+
+          // } else if (state.subType === 'merge') { // 合并
+          state.targetObjList.forEach((item:any) => {
+            if (item.taskStatus === 'RECEIVED') {
               item.taskStatus = 'CHECKING'
               item.taskStatusName = '检验中'
             }
           })
+          // }
         } else { // 刷新
           const tempContainer:any[] = []
           let isOpenCopy = false
@@ -487,7 +491,6 @@ export default defineComponent({
                 nexItemIndex = index
               }
 
-              // TODO reload 后与完成也要出现吗？
               if (item.taskStatus === 'COMPLETED') {
                 item.delFlag = 1
               }
