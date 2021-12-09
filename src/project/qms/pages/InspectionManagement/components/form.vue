@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-11-11 16:30:07
  * @LastEditors: Telliex
- * @LastEditTime: 2021-12-08 08:41:50
+ * @LastEditTime: 2021-12-09 10:40:54
 -->
 <template>
   <mds-area class="info" :title="subTitle">
@@ -125,8 +125,8 @@
                     <el-input v-model="subItem.indexStandardString" size="small"  class="inputWidth" placeholder="自动带入" autocomplete="off" :readonly="onlyRead" :disabled="onlyRead"></el-input>
                   </el-tooltip>
               </el-form-item>
-              <el-form-item label="检验时间："  prop="finishDate" v-if="subItem.finishDate" >
-              <div >{{!subItem.finishDate?'':subItem.finishDate}}</div>
+              <el-form-item label="检验时间："  prop="inspectIndexDate" v-if="subItem.inspectIndexDate" >
+              <div >{{!subItem.inspectIndexDate?'':subItem.inspectIndexDate}}</div>
               </el-form-item>
               </el-form>
               <el-form  :model="subItem" :label-width="cssForformLabelWidth">
