@@ -67,7 +67,7 @@
         <el-form-item>
           <el-button icon="el-icon-search" @click="() => {queryForm.current = 1; query()}">查询</el-button>
           <el-button @click="goCultivate()"><i class="qmsIconfont qms-jianyan"/> 培养</el-button>
-          <el-button type="primary" @click="goCount('CALCULATE')"><i class="qmsIconfont qms-dayin" /> 计数</el-button>
+          <el-button type="primary" @click="goCount()"><i class="qmsIconfont qms-dayin" /> 计数</el-button>
           <el-button v-if="task !== 'COLONYNUM'" type="primary" @click="goFive()"><i class="qmsIconfont qms-dayin" /> 检验</el-button>
         </el-form-item>
       </el-form>
@@ -77,7 +77,7 @@
       <el-table-column type="index" fixed="left" :index="(index) => index + 1 + (queryForm.current - 1) * queryForm.size" label="序号" width="50" />
       <el-table-column label="样品码" prop="sampleCode" min-width="120" :show-overflow-tooltip="true" >
         <template #default="scope">
-         <div type="text" class="text_btn" @click="btnConfigulationReadOnly(scope.row)">
+         <div type="text" class="text_btn" @click="goForm(scope.row)">
             <em>{{scope.row.sampleCode}}</em>
           </div>
         </template>
@@ -152,6 +152,7 @@ interface TableData{
   itemName?: string
   inspectSiteName?: string
   sampleCode?: string
+  inspectMethodGroupNameList: string[]
 }
 
 export default defineComponent({
@@ -180,7 +181,6 @@ export default defineComponent({
       inspectClassifyName: '菌落总数',
       inspectClassify: 'COLONYNUM'
     })
-    const mappingClassifyName = reactive({})
     const tableData = ref<TableData[]>([]) // 表格数据
     const selectionData = ref<TableData[]>([]) // 选中数据
 
@@ -233,10 +233,15 @@ export default defineComponent({
       query()
     }
 
-    // 计算 & 培养
+    // 培养
     const goCultivate = (row?:TableData) => {
       if (!row && !selectionData.value.length) {
         proxy.$warningToast('请选择数据')
+        return
+      }
+
+      if (!row && selectionData.value.length !== selectionData.value.filter(it => it.inspectMethodGroupNameList.includes('培养法')).length) {
+        proxy.$warningToast('请选择培养法数据')
         return
       }
 
@@ -249,9 +254,15 @@ export default defineComponent({
         name: 'qms-pages-InspectionManagement-microbeInspect-cultivate'
       })
     }
-    const goCount = (type:string) => {
+    // 计数
+    const goCount = () => {
       if (!selectionData.value.length) {
         proxy.$warningToast('请选择数据')
+        return
+      }
+
+      if (selectionData.value.length !== selectionData.value.filter(it => it.inspectMethodGroupNameList.includes('培养法')).length) {
+        proxy.$warningToast('请选择培养法数据')
         return
       }
 
@@ -267,6 +278,11 @@ export default defineComponent({
     const goFive = (row?:TableData) => {
       if (!row && !selectionData.value.length) {
         proxy.$warningToast('请选择数据')
+        return
+      }
+
+      if (!row && selectionData.value.length !== selectionData.value.filter(it => it.inspectMethodGroupNameList.includes('五管法')).length) {
+        proxy.$warningToast('请选择五管法数据')
         return
       }
 
@@ -295,21 +311,19 @@ export default defineComponent({
       //
     }
 
-    // [BTN:只读]
-    const btnConfigulationReadOnly = async (row:TableData) => {
-      if (task.value === 'TEMP') {
-        console.log('TEMP')
-        console.log(row)
-        store.commit('common/updateSampleObjForView', { type: 'TEMP', obj: [row] })
-      } else if (task.value === 'COLONYNUM') {
-        store.commit('common/updateSampleObjForView', { type: 'COLONYNUM', obj: [row] })
-        console.log('COLONYNUM')
-        console.log(row)
+    const goForm = async (row:TableData) => {
+      if (row.inspectMethodGroupNameList.includes('培养法')) {
+        store.commit('inspection/updateMicrobeInspectCultivateForm', row)
+        gotoPage({
+          path: 'qms-pages-InspectionManagement-microbeInspect-countForm'
+        })
       }
-
-      gotoPage({
-        path: 'qms-pages-InspectionManagement-components-form'
-      })
+      if (row.inspectMethodGroupNameList.includes('五管法')) {
+        store.commit('inspection/updateMicrobeInspectFiveForm', row)
+        gotoPage({
+          path: 'qms-pages-InspectionManagement-microbeInspect-fiveForm'
+        })
+      }
     }
 
     onMounted(async () => {
@@ -335,7 +349,7 @@ export default defineComponent({
       goFive,
       checkDate,
       selectionChange,
-      btnConfigulationReadOnly,
+      goForm,
       goInspect
     }
   }

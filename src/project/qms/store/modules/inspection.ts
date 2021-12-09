@@ -4,7 +4,9 @@ const state = {
   inspectionTask: [],
   microbeInspectCount: {},
   microbeInspectCultivate: {},
+  microbeInspectCultivateForm: {},
   microbeInspectFive: {},
+  microbeInspectFiveForm: {},
   microbeInspectTask: {}
 }
 const mutations: MutationTree<any> = {
@@ -20,8 +22,14 @@ const mutations: MutationTree<any> = {
   updateMicrobeInspectCultivate (state, payload):void{
     state.microbeInspectCultivate = payload
   },
+  updateMicrobeInspectCultivateForm (state, payload):void{
+    state.microbeInspectCultivateForm = payload
+  },
   updateMicrobeInspectFive (state, payload):void{
     state.microbeInspectFive = payload
+  },
+  updateMicrobeInspectFiveForm (state, payload):void{
+    state.microbeInspectFiveForm = payload
   }
 }
 
