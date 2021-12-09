@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-11-11 16:30:07
  * @LastEditors: Telliex
- * @LastEditTime: 2021-12-08 21:26:29
+ * @LastEditTime: 2021-12-08 21:59:29
 -->
 <template>
   <el-dialog :title="title" v-model="isDialogShow" width="90%" @close="onClose">
@@ -145,8 +145,8 @@
     <el-form :inline="true"  :model="dataFormOfSampleInfo"  :label-width="cssForformLabelWidth" >
       <el-form-item label="复检方式："  prop="recheckMod" >
         <el-radio-group v-model="dataFormOfSampleInfo.recheckMod">
-          <el-radio label="ORIGINAL_RECHECK" @click.native.prevent="actChangeByRecheckMod('ORIGINAL_RECHECK')" >原样复检</el-radio>
-          <el-radio label="RESAMOLING" @click.native.prevent="actChangeByRecheckMod('RESAMOLING')">取样复检</el-radio>
+          <el-radio label="ORIGINAL_RECHECK" @click.prevent="actChangeByRecheckMod('ORIGINAL_RECHECK')" >原样复检</el-radio>
+          <el-radio label="RESAMOLING" @click.prevent="actChangeByRecheckMod('RESAMOLING')">取样复检</el-radio>
         </el-radio-group>
       </el-form-item>
       <el-form-item label="取样说明："  prop="sampleExplain">
