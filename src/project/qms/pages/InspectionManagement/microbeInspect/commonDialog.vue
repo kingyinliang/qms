@@ -194,7 +194,7 @@
       </mds-card>
       <div style="display: flex;align-items: center">
         <div>检验说明：</div>
-        <el-input v-model="form.sampleCode" placeholder="请输入" disabled clearable style="flex: 1" />
+        <el-input v-model="form.inspectExplain" placeholder="请输入" disabled clearable style="flex: 1" />
       </div>
     </template>
   </div>
@@ -254,6 +254,12 @@ export default defineComponent({
           componentData.form.taskInspectIndexIdList = row.map(it => it.taskInspectIndexId)
           componentData.form.taskManageIdList = row.map(it => it.taskManageId)
         }
+        if (props.type === 'CALCULATE') {
+          componentData.form.inspectMan = componentData.form.inspectMan.split(',')
+          componentData.form.taskInspectId = row.id
+          componentData.form.taskInspectIndexId = row.taskInspectIndexId
+          componentData.form.taskManageId = row.taskManageId
+        }
         if (props.type === 'FIVETUBES') {
           componentData.form.taskInspectId = row.id
           componentData.form.taskInspectIndexId = row.taskInspectIndexId
@@ -304,6 +310,7 @@ export default defineComponent({
           sterilizerPot: '',
           consoleNo: '',
           cultureBox: '',
+          inspectExplain: '',
           taskFiveTubeDataList: list
         }
       }
@@ -327,13 +334,15 @@ export default defineComponent({
         }
       }
     }
-    const updateFormSubmit = async () => {
+    const updateFormSubmit = async (str) => {
       if (props.type === 'CALCULATE') {
+        componentData.form.taskStatus = str
       } else if (props.type === 'CULTIVATE') {
         const data = JSON.parse(JSON.stringify(componentData.form))
         data.inspectMan = data.inspectMan.join(',')
         await MICROBE_INSPECT_CULTIVATE_DIALOG_SAVED(data)
       } else if (props.type === 'FIVETUBES') {
+        componentData.form.taskStatus = str
         componentData.form.emb = componentData.form.taskFiveTubeDataList[0].emb
         componentData.form.confirm = componentData.form.taskFiveTubeDataList[0].confirm
         componentData.form.mpn = componentData.form.taskFiveTubeDataList[0].mpn
