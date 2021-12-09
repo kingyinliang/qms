@@ -51,25 +51,12 @@
       </el-table-column>
     </el-table>
   </mds-card>
-  <el-dialog v-model="cultivateDialog" title="培养" width="855px">
-    <commonDialog ref="cultivateDialogRef" type="CULTIVATE" :preview="false" @success="() => cultivateDialog = false"/>
+  <el-dialog v-model="visibleDialog" :title="type === 'CULTIVATE'? '培养' : type === 'CALCULATE'? '计数' : '检验'" width="855px">
+    <commonDialog ref="dialogRef" :type="type" :preview="false" @success="() => cultivateDialog = false"/>
     <div style="margin-top: 10px;display: flex;justify-content: flex-end;">
-      <el-button size="small" icon="el-icon-circle-close" @click="cultivateDialog = false">取消</el-button>
-      <el-button size="small" icon="el-icon-circle-check" type="primary" @click="updateFormSubmit">保存</el-button>
-    </div>
-  </el-dialog>
-  <el-dialog v-model="countDialog" title="计数" width="855px">
-    <commonDialog ref="countDialogRef" type="CALCULATE" :preview="false" @success="() => cultivateDialog = false"/>
-    <div style="margin-top: 10px;display: flex;justify-content: flex-end;">
-      <el-button size="small" icon="el-icon-circle-close" @click="countDialog = false">取消</el-button>
-      <el-button size="small" icon="el-icon-circle-check" type="primary" @click="updateFormSubmit">保存</el-button>
-    </div>
-  </el-dialog>
-  <el-dialog v-model="fiveDialog" title="检验" width="855px">
-    <commonDialog ref="fiveDialogRef" type="FIVETUBES" :preview="false" @success="() => cultivateDialog = false"/>
-    <div style="margin-top: 10px;display: flex;justify-content: flex-end;">
-      <el-button size="small" icon="el-icon-circle-close" @click="fiveDialog = false">取消</el-button>
-      <el-button size="small" icon="el-icon-circle-check" type="primary" @click="updateFormSubmit">保存</el-button>
+      <el-button v-if="type === 'FIVETUBES'" size="small" icon="el-icon-circle-close" @click="visibleDialog = false">取消</el-button>
+      <el-button size="small" icon="el-icon-circle-check" type="primary" @click="updateFormSubmit('检验中')">保存</el-button>
+      <el-button v-if="type !== 'FIVETUBES'" size="small" icon="el-icon-circle-check" type="primary" @click="updateFormSubmit('已完成')">完成</el-button>
     </div>
   </el-dialog>
 </template>
@@ -115,12 +102,8 @@ export default defineComponent({
     const proxy = getCurrentInstance().proxy
 
     const componentData = reactive({
-      countDialogRef: ref(),
-      cultivateDialogRef: ref(),
-      fiveDialogRef: ref(),
-      countDialog: false,
-      cultivateDialog: false,
-      fiveDialog: false,
+      dialogRef: ref(),
+      visibleDialog: false,
       queryForm: {
         indexName: props.indexName,
         sampleCode: '',
@@ -146,9 +129,9 @@ export default defineComponent({
         return
       }
       const { data } = await MICROBE_INSPECT_CULTIVATE_DIALOG_QUERY(componentData.selectionData.map(it => it.id))
-      componentData.cultivateDialog = true
+      componentData.visibleDialog = true
       await nextTick()
-      componentData.cultivateDialogRef.init(data.data, componentData.selectionData)
+      componentData.dialogRef.init(data.data, componentData.selectionData)
     }
     // 预览
     const preview = () => {
@@ -157,24 +140,19 @@ export default defineComponent({
     // 计数
     const calculate = async (row) => {
       const { data } = await MICROBE_INSPECT_COUNT_DIALOG_QUERY([row.id])
-      componentData.countDialog = true
+      componentData.visibleDialog = true
       await nextTick()
-      componentData.countDialogRef.init(data.data[0], row)
+      componentData.dialogRef.init(data.data[0], row)
     }
     // 检验
     const five = async (row) => {
       const { data } = await MICROBE_INSPECT_FIVE_DIALOG_QUERY([row.id])
-      componentData.fiveDialog = true
+      componentData.visibleDialog = true
       await nextTick()
-      componentData.fiveDialogRef.init(data.data[0], row)
+      componentData.dialogRef.init(data.data[0], row)
     }
-    const updateFormSubmit = () => {
-      if (props.type === 'CALCULATE') {
-      } else if (props.type === 'CULTIVATE') {
-        componentData.cultivateDialogRef.updateFormSubmit()
-      } else if (props.type === 'FIVETUBES') {
-        componentData.fiveDialogRef.updateFormSubmit()
-      }
+    const updateFormSubmit = (str) => {
+      componentData.dialogRef.updateFormSubmit(str)
     }
 
     onMounted(async () => {
