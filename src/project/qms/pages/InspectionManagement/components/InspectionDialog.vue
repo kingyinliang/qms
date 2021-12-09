@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-11-11 16:30:07
  * @LastEditors: Telliex
- * @LastEditTime: 2021-12-09 14:24:23
+ * @LastEditTime: 2021-12-09 17:02:07
 -->
 <template>
   <el-dialog :title="title" v-model="isDialogShow" width="90%" @close="onClose">
@@ -165,15 +165,17 @@
             :color="'#467BFF'"
             :hide-timestamp="true"
           >
-          <h4 style="margin-bottom:5px;">检验说明</h4>
+          <h4 style="margin-bottom:5px;">检验说明 : ( 指标 | 样品码 | 结果 )</h4>
             <div class="time-log">
-              <ul>
-                <li v-for="(element, index) in item.indexList" :key="index"><div>> <span>指标：</span><em>{{element.indexName}}</em></div><div><span>样品码：</span><em>{{element.sampleCode}}</em></div><div><span>结果：</span><em :style="{color:element.indexJudgeResult==='N'?'#ff0000':'inherit'}">{{element.inspectResult}}</em></div></li>
+              <ul class="fixlocation">
+                <!-- <li v-for="(element, index) in item.indexList" :key="index"><div>> <span>指标：</span><em>{{element.indexName}}</em></div><div><span>样品码：</span><em>{{element.sampleCode}}</em></div><div><span>结果：</span><em :style="{color:element.indexJudgeResult==='N'?'#ff0000':'inherit'}">{{element.inspectResult}}</em></div></li> -->
+                <li v-for="(element, index) in item.indexList" :key="index" class="subelement" ><div>{{`${element.indexName} (${element.sampleCode})`}}<em :style="{marginLeft:'10px',color:element.indexJudgeResult==='N'?'#ff0000':'inherit'}">{{element.inspectResult}}</em></div></li>
+
               </ul>
             </div>
             <template #dot>
               <div class="dot">
-                {{item.indexList.length-index-2}}
+                {{timeLineData.length-index}}
               </div>
             </template>
           </el-timeline-item>
@@ -356,6 +358,7 @@ export default defineComponent({
     const btnSaveOrSubmitDataOfInspect = _.debounce(async (type:string) => {
       // 综合判定
       state.dataFormOfSampleInfo.indexJudgeResult = indexJudgeResult.value
+      state.dataFormOfSampleInfo.judgeResult = indexJudgeResult.value
 
       const tempTaskInspectList = JSON.parse(JSON.stringify(state.mainObj))
       const tempTaskInspectIndexList = JSON.parse(JSON.stringify(state.dataFormOfSampleItemUnit))
@@ -408,46 +411,6 @@ export default defineComponent({
                 item.manualStandard = item.indexStandardString
               }
             }
-
-            // if (item.indexStandardString.split('=')[0] === 'S') { // e.x. S=1
-            //   if (item.indexInnerStandard) {
-            //     item.indexInnerStandard = item.indexStandardString.split('=')[1]
-            //   } else if (item.indexStandard) {
-            //     item.indexStandard = item.indexStandardString.split('=')[1]
-            //   }
-
-            // } else {
-            //   const result = /(.*)S(.*)/.exec(item.indexStandardString)
-
-            //   if (result !== null) {
-            //     const leftResult = /(.*)([<]=?)/.exec(result[1])
-            //     const rightResult = /([<]=?)(.*)/.exec(result[2])
-
-            //     if (item.indexInnerDown) {
-            //       if (leftResult) {
-            //         item.indexInnerDown = leftResult[1]
-            //         item.innerDownSymbol = leftResult[2].replace('<', '>')
-            //       }
-            //     } else if (item.indexDown) {
-            //       if (leftResult) {
-            //         item.indexDown = leftResult[1]
-            //         item.downSymbol = leftResult[2].replace('<', '>')
-            //       }
-            //     }
-
-            //     if (item.indexInnerUp) {
-            //       if (rightResult) {
-            //         item.indexInnerUp = rightResult[2]
-            //         item.innerUpSymbol = rightResult[1]
-            //       }
-            //     } else if (item.indexUp) {
-            //       if (rightResult) {
-            //         item.indexUp = rightResult[2]
-            //         item.upSymbol = rightResult[1]
-            //       }
-            //     }
-            //   }
-            // }
           }
         }
 
@@ -484,7 +447,6 @@ export default defineComponent({
           tempRes.push(copyItem)
         })
       })
-      // let  = JSON.parse(JSON.stringify(tempRes))
 
       // 处理合并检标示
       tempTaskInspectList.forEach((item:any, index:number) => {
@@ -505,6 +467,11 @@ export default defineComponent({
 
       if (type !== 'save') { // 完成提交行为
         if (state.dataFormOfSampleInfo.indexJudgeResult === 'N' && state.dataFormOfSampleInfo.recheckMod === '') {
+          console.log('22222222')
+          console.log('state.dataFormOfSampleInfo.indexJudgeResult')
+          console.log(state.dataFormOfSampleInfo.indexJudgeResult)
+          console.log('state.dataFormOfSampleInfo.recheckMod')
+          console.log(state.dataFormOfSampleInfo.recheckMod)
           proxy.$confirm('此样品检验不合格，请确认是否复检？', '提示', {
             confirmButtonText: '是',
             cancelButtonText: '否',
@@ -514,6 +481,7 @@ export default defineComponent({
               // 需校验
               if (checkRequiredData(state.dataFormOfSampleItemUnit)) { // check the required
                 finalRunCheck(state.dataFormOfSampleItemUnit) // run count one time
+                console.log('pass')
                 handleSaveData('submit', obj)
               }
             }
@@ -1023,6 +991,9 @@ export default defineComponent({
               })
             })
 
+            console.log('state.timeLineData')
+            console.log(state.timeLineData)
+
             //    timeLineData: [
             // {
             //   indexName: 'Custom icon',
@@ -1263,20 +1234,6 @@ export default defineComponent({
 
   ul{
     list-style: none;
-    display: flex;
-    flex-direction: row;
-    flex-wrap:wrap;
-    li{
-      display: flex;
-      margin-bottom: 10px;
-      flex-direction: row;
-      margin-right:10px;
-      justify-content: space-between;
-      div{
-        text-align: left;
-        width: 180px;
-      }
-    }
   }
 
 }
@@ -1316,6 +1273,17 @@ export default defineComponent({
     align-items: center;
     flex:1;
 
+  }
+  .subelement{
+    width:calc(90%/3);
+    min-width:calc(90%/3);
+    max-width:calc(90%/3);
+    flex:1;
+       margin-bottom: 10px;
+      margin-right:10px;
+    >div::before{
+      content: "> ";
+    }
   }
 }
 
