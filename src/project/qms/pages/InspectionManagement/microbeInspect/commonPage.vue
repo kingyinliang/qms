@@ -59,8 +59,8 @@
       <el-button v-if="type !== 'CULTIVATE'" size="small" icon="el-icon-circle-check" type="primary" @click="updateFormSubmit('COMPLETED')">完成</el-button>
     </div>
   </el-dialog>
-  <el-dialog v-model="visiblePreviewDialog" title="检验预览" width="855px">
-    <commonDialog ref="previewDialogRef" previewDialog="FIVETUBES" @success="previewSuccessFn"/>
+  <el-dialog v-model="visiblePreviewDialog" :title="type === 'FIVETUBES'?'检验预览':'计数预览'" width="855px">
+    <commonDialog ref="previewDialogRef" :previewDialog="type" @success="previewSuccessFn"/>
     <div style="margin-top: 10px;display: flex;justify-content: flex-end;">
       <el-button size="small" icon="el-icon-circle-close" @click="visiblePreviewDialog = false">取消</el-button>
       <el-button size="small" icon="el-icon-circle-check" type="primary" @click="updateFormSubmit('COMPLETED', 'preview')">完成</el-button>
@@ -152,12 +152,16 @@ export default defineComponent({
         proxy.$warningToast('请录入数据后预览')
         return
       }
+      let net
       if (props.type === 'FIVETUBES') {
-        componentData.visiblePreviewDialog = true
-        const { data } = await MICROBE_INSPECT_FIVE_DIALOG_QUERY(ids)
-        await nextTick()
-        componentData.previewDialogRef.previewInit(data.data)
+        net = MICROBE_INSPECT_FIVE_DIALOG_QUERY
+      } else {
+        net = MICROBE_INSPECT_COUNT_DIALOG_QUERY
       }
+      componentData.visiblePreviewDialog = true
+      const { data } = await net(ids)
+      await nextTick()
+      componentData.previewDialogRef.previewInit(data.data)
     }
     // 培养
     const cultivate = async () => {

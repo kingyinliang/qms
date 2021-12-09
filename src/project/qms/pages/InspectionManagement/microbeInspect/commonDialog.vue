@@ -4,7 +4,7 @@
       <img src="@/assets/img/printIcon.svg" alt="" class="inspect__form__header__img">
       <span>{{ form.inspectContent }}</span>
     </p>
-    <el-form :inline="true" size="small" label-width="98px">
+    <el-form :model="form" ref="formRef" :rules="rules" :inline="true" size="small" label-width="98px">
       <template v-if="type === 'CULTIVATE' || type === 'CALCULATE'">
         <mds-card class="inspect__form__main" title="培养" :pack-up="false">
           <div>
@@ -12,17 +12,17 @@
               <el-date-picker
                 v-model="form.inspectDate"
                 type="date"
-                :disabled="preview"
+                :disabled="preview || type === 'CALCULATE'"
                 format="YYYY-MM-DD"
                 value-format="YYYY-MM-DD"
                 placeholder="请选选择日期"
                 style="width: 140px"
               />
             </el-form-item>
-            <el-form-item label="培养批次：">
-              <el-input v-model="form.cultureBatch" placeholder="请输入" :disabled="preview" clearable style="width: 140px" />
+            <el-form-item label="培养批次：" prop="cultureBatch">
+              <el-input v-model="form.cultureBatch" maxlength="10" placeholder="请输入" :disabled="preview" clearable style="width: 140px" />
             </el-form-item>
-            <el-form-item label="培养箱：">
+            <el-form-item label="培养箱：" prop="cultureBox">
               <el-select v-model="form.cultureBox" placeholder="请选择" :disabled="preview" clearable style="width: 140px">
                 <el-option v-for="item in cultureBox" :key="item.dictCode" :label="item.dictValue" :value="item.dictCode" />
               </el-select>
@@ -32,7 +32,7 @@
                 <el-option v-for="item in sterilizerPot" :key="item.dictCode" :label="item.dictValue" :value="item.dictCode" />
               </el-select>
             </el-form-item>
-            <el-form-item label="放入时间：">
+            <el-form-item label="放入时间：" prop="putInDate">
               <el-date-picker
                 v-model="form.putInDate"
                 type="date"
@@ -43,10 +43,10 @@
                 style="width: 140px"
               />
             </el-form-item>
-            <el-form-item label="放入温度：">
+            <el-form-item label="放入温度：" prop="putInTemp">
               <el-input v-model="form.putInTemp" placeholder="请输入" :disabled="preview" clearable style="width: 140px" />
             </el-form-item>
-            <el-form-item label="取出时间：">
+            <el-form-item label="取出时间：" prop="takeOutDate">
               <el-date-picker
                 v-model="form.takeOutDate"
                 type="date"
@@ -57,18 +57,18 @@
                 style="width: 140px"
               />
             </el-form-item>
-            <el-form-item label="取出温度：">
+            <el-form-item label="取出温度：" prop="takeOutTemp">
               <el-input v-model="form.takeOutTemp" placeholder="请输入" :disabled="preview" clearable style="width: 140px" />
             </el-form-item>
-            <el-form-item label="灭菌用品批次：" label-width="120px">
-              <el-input v-model="form.sterilizerBatch" placeholder="请输入" :disabled="preview" clearable style="width: 140px" />
-            </el-form-item>
-            <el-form-item label="检验人：">
+            <el-form-item label="检验人：" prop="inspectMan">
               <el-select v-model="form.inspectMan" multiple filterable placeholder="请选择" :disabled="preview" clearable style="width: 140px">
                 <el-option v-for="item in users" :key="item.id" :label="item.realName" :value="item.id" />
               </el-select>
             </el-form-item>
-            <el-form-item label="培养24小时温度：" label-width="140px">
+            <el-form-item label="灭菌用品批次：" label-width="130px" prop="sterilizerBatch">
+              <el-input v-model="form.sterilizerBatch" maxlength="10" placeholder="请输入" :disabled="preview" clearable style="width: 140px" />
+            </el-form-item>
+            <el-form-item label="培养24小时温度：" label-width="140px" prop="cultureTemp">
               <el-input v-model="form.cultureTemp" placeholder="请输入" :disabled="preview" clearable style="width: 140px" />
             </el-form-item>
           </div>
@@ -215,7 +215,7 @@
       </template>
       <template v-if="type === 'FIVETUBES' || type === 'CALCULATE'">
         <div>
-          <el-form-item label="综合判定：" label-width="120">
+          <el-form-item label="综合判定：" label-width="120" prop="judgeResult">
             <el-radio v-model="form.judgeResult" label="Y" :disabled="preview">合格</el-radio>
             <el-radio v-model="form.judgeResult" label="N" :disabled="preview">不合格</el-radio>
           </el-form-item>
@@ -234,7 +234,7 @@
     </el-form>
   </div>
   <div v-else-if="previewDialog === 'FIVETUBES'">
-    <el-table border :cell-style="{'text-align':'center'}" :data="fivePreviewTableData" tooltip-effect="dark" style="width: 100%" :span-method="fivePreviewSpanMethod">
+    <el-table border :cell-style="{'text-align':'center'}" :data="previewTableData" tooltip-effect="dark" style="width: 100%" :span-method="fivePreviewSpanMethod">
       <el-table-column label="样品" show-overflow-tooltip prop="sampleCode" min-width="95" />
       <el-table-column label="检验内容" show-overflow-tooltip prop="inspectContent" min-width="95" />
       <el-table-column label="10mL双料管" show-overflow-tooltip min-width="100">
@@ -263,12 +263,23 @@
       <el-table-column label="查MPN检索表（MPN/100mL）" show-overflow-tooltip prop="mpn" min-width="130" />
     </el-table>
   </div>
+  <div v-else-if="previewDialog === 'CALCULATE'">
+    <el-table border :cell-style="{'text-align':'center'}" :data="previewTableData" tooltip-effect="dark" style="width: 100%" :span-method="countPreviewSpanMethod">
+      <el-table-column label="样品" show-overflow-tooltip prop="sampleCode" min-width="95" />
+      <el-table-column label="检验内容" show-overflow-tooltip prop="inspectContent" min-width="95" />
+      <el-table-column label="计数1" show-overflow-tooltip prop="countOne" min-width="110" />
+      <el-table-column label="计数2" show-overflow-tooltip prop="countTwo" min-width="110" />
+      <el-table-column label="平均值" show-overflow-tooltip prop="average" min-width="110" />
+      <el-table-column label="结果" show-overflow-tooltip prop="result" min-width="110" />
+    </el-table>
+  </div>
 </template>
 
 <script>
 import {
   defineComponent,
   reactive,
+  ref,
   toRefs,
   onMounted,
   getCurrentInstance
@@ -281,7 +292,7 @@ import {
   MICROBE_INSPECT_FIVE_DIALOG_SAVED,
   MICROBE_INSPECT_COUNT_DIALOG_SAVED
 } from '@/api/api'
-import { dateFormat } from '@/utils'
+import { dateFormat, merge } from '@/utils'
 
 export default defineComponent({
   name: 'commonDialog',
@@ -301,21 +312,37 @@ export default defineComponent({
   },
   setup (props) {
     const proxy = getCurrentInstance().proxy
+    const rules = {
+      inspectMan: [{ required: true, message: '请选择检验人', trigger: 'blur' }],
+      cultureBatch: [{ required: true, message: '请输入培养批次', trigger: 'blur' }],
+      cultureBox: [{ required: true, message: '请选择培养箱', trigger: 'blur' }],
+      putInDate: [{ required: true, message: '请选择放入时间', trigger: 'blur' }],
+      putInTemp: [{ required: true, message: '请选择放入温度', trigger: 'blur' }],
+      takeOutDate: [{ required: true, message: '请选择取出时间', trigger: 'blur' }],
+      takeOutTemp: [{ required: true, message: '请选择取出温度', trigger: 'blur' }],
+      sterilizerBatch: [{ required: true, message: '请输入灭菌用品批次', trigger: 'blur' }],
+      cultureTemp: [{ required: true, message: '请输入培养24小时温度', trigger: 'blur' }],
+      judgeResult: [{ required: true, message: '请选择综合判定', trigger: 'blur' }]
+    }
 
     const componentData = reactive({
+      formRef: ref(),
       form: {},
       standard: {},
       inspectMethod: {},
-      fivePreviewTableData: [],
+      previewTableData: [],
       users: [],
       ftube: [],
       consoleNo: [],
       outWaterNo: [],
       cultureBox: [],
-      sterilizerPot: []
+      sterilizerPot: [],
+      spanArr: []
     })
 
+    // 初始化表单弹窗或者预览表单
     const init = async (data, row) => {
+      componentData.formRef.resetFields()
       if (props.type === 'CALCULATE') {
         const res = await MICROBE_INSPECT_COUNT_DIALOG_STANDARD([row])
         componentData.standard = res.data.data[0].inspectIndexStandard
@@ -432,17 +459,31 @@ export default defineComponent({
         }
       }
     }
+    // 初始化预览弹窗
     const previewInit = (data) => {
-      componentData.fivePreviewTableData = []
+      console.log(1)
+      componentData.previewTableData = []
       data.forEach(it => {
-        it.taskFiveTubeDataList[0].sampleCode = it.sampleCode
-        it.taskFiveTubeDataList[0].inspectContent = it.inspectContent
-        it.taskFiveTubeDataList[0].emb = it.emb
-        it.taskFiveTubeDataList[0].confirm = it.confirm
-        it.taskFiveTubeDataList[0].mpn = it.mpn
-        componentData.fivePreviewTableData = componentData.fivePreviewTableData.concat(it.taskFiveTubeDataList)
+        if (props.previewDialog === 'FIVETUBES') {
+          it.taskFiveTubeDataList.map(item => { item.sampleCode = it.sampleCode })
+          it.taskFiveTubeDataList[0].inspectContent = it.inspectContent
+          it.taskFiveTubeDataList[0].emb = it.emb
+          it.taskFiveTubeDataList[0].confirm = it.confirm
+          it.taskFiveTubeDataList[0].mpn = it.mpn
+          componentData.previewTableData = componentData.previewTableData.concat(it.taskFiveTubeDataList)
+        }
+        if (props.previewDialog === 'CALCULATE') {
+          it.taskCultureDataList.map(item => { item.sampleCode = it.sampleCode })
+          it.taskCultureDataList[0].inspectContent = it.inspectContent
+          it.taskCultureDataList[0].emb = it.emb
+          it.taskCultureDataList[0].confirm = it.confirm
+          it.taskCultureDataList[0].mpn = it.mpn
+          componentData.previewTableData = componentData.previewTableData.concat(it.taskCultureDataList)
+        }
       })
+      componentData.spanArr = merge(componentData.previewTableData, 'sampleCode')
     }
+    // 获取数据字典
     const getSelect = async (code) => {
       const { data } = await DICT_DROPDOWN({ dictType: code })
       return data.data
@@ -479,23 +520,38 @@ export default defineComponent({
         }
       }
     }
+    // 预览合并单元格
     const fivePreviewSpanMethod = (scope) => {
       if (scope.columnIndex < 2 || scope.columnIndex > 4) {
-        if (scope.rowIndex % 5 !== 0) {
-          return {
-            rowspan: 0,
-            colspan: 0
-          }
-        } else {
-          return {
-            rowspan: 5,
-            colspan: 1
-          }
+        return {
+          rowspan: componentData.spanArr[scope.rowIndex],
+          colspan: componentData.spanArr[scope.rowIndex] > 0 ? 1 : 0
         }
       }
     }
-    // 提交表单
+    // 预览合并单元格
+    const countPreviewSpanMethod = (scope) => {
+      if (scope.columnIndex < 2 || scope.columnIndex > 5) {
+        return {
+          rowspan: componentData.spanArr[scope.rowIndex],
+          colspan: componentData.spanArr[scope.rowIndex] > 0 ? 1 : 0
+        }
+      }
+    }
+    // 提交表单--校验
     const updateFormSubmit = async (str) => {
+      if (str === 'COMPLETED') {
+        componentData.formRef.validate((valid) => {
+          if (valid) {
+            updateFormSubmitFn(str)
+          }
+        })
+      } else {
+        updateFormSubmitFn(str)
+      }
+    }
+    // 提交表单
+    const updateFormSubmitFn = async (str) => {
       if (props.type === 'CALCULATE') {
         componentData.form.taskStatus = str
         await MICROBE_INSPECT_COUNT_DIALOG_SAVED(componentData.form)
@@ -513,6 +569,7 @@ export default defineComponent({
       proxy.$successToast('操作成功')
       proxy.$emit('success', str)
     }
+    // 计数 计算平均值
     const keyChange = (row) => {
       row.average = (Number(row.countOne) + Number(row.countTwo)) / 2
     }
@@ -537,10 +594,12 @@ export default defineComponent({
 
     return {
       ...toRefs(componentData),
+      rules,
       init,
       previewInit,
       objectSpanMethod,
       countSpanMethod,
+      countPreviewSpanMethod,
       fivePreviewSpanMethod,
       updateFormSubmit,
       keyChange,

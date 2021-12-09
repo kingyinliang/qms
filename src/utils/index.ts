@@ -222,3 +222,23 @@ export function checkNum (obj:HTMLInputElement, intNum = 0, decNum = 0):string {
   }
   return value
 }
+
+export function merge (tableData:any[], fieldName:string): number[] {
+  const spanOneArr: number[] = []
+  let concatOne = 0
+  tableData.forEach((item, index) => {
+    if (index === 0) {
+      spanOneArr.push(1)
+    } else if (item.materialH === '') {
+      spanOneArr.push(1)
+      concatOne = index
+    } else if (item[fieldName] === tableData[index - 1][fieldName]) {
+      spanOneArr[concatOne] += 1
+      spanOneArr.push(0)
+    } else {
+      spanOneArr.push(1)
+      concatOne = index
+    }
+  })
+  return spanOneArr
+}
