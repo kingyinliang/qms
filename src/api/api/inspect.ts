@@ -50,6 +50,12 @@ export function MICROBE_INSPECT_FIVE_DIALOG_SAVED (params = {}):Promise<AxiosRes
 export function MICROBE_INSPECT_COUNT_DIALOG_QUERY (params = {}):Promise<AxiosResponse> {
   return Http.post('/taskCultureMedium/queryCountTaskCultureMedium', params, { baseURL })
 }
+export function MICROBE_INSPECT_COUNT_DIALOG_SAVED (params = {}):Promise<AxiosResponse> {
+  return Http.post('/taskCultureMedium/modifyTaskCultureMedium', params, { baseURL })
+}
+export function MICROBE_INSPECT_COUNT_DIALOG_STANDARD (params = {}):Promise<AxiosResponse> {
+  return Http.post('/inspectParameter/queryInspectParameterMicrobeTask', params, { baseURL: (process.env.VUE_APP_API_HOST as string) + '/df-quality-plan' + (process.env.VUE_APP_API_V as string) })
+}
 export function MICROBE_INSPECT_CULTIVATE_DIALOG_QUERY (params = {}):Promise<AxiosResponse> {
   return Http.post('/taskCultureMedium/queryTaskCultureMedium', params, { baseURL })
 }
