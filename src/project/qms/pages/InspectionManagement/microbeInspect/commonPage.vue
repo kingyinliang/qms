@@ -41,10 +41,10 @@
       <el-table-column label="检验内容" show-overflow-tooltip prop="inspectContent" />
       <el-table-column label="操作" width="140" fixed="right" v-if="type!=='CULTIVATE'">
         <template #default="scope">
-          <el-button v-if="type === 'CALCULATE'" type="text" icon="qmsIconfont qms-jianyan3" class="role__btn" @click="calculate(scope.row)">
+          <el-button v-if="type === 'CALCULATE'" type="text" icon="qmsIconfont qms-jianyan3" class="role__btn" @click="rowBtn(scope.row)">
             计数
           </el-button>
-          <el-button v-if="type === 'FIVETUBES'" type="text" icon="qmsIconfont qms-jianyan3" class="role__btn" @click="five(scope.row)">
+          <el-button v-if="type === 'FIVETUBES'" type="text" icon="qmsIconfont qms-jianyan3" class="role__btn" @click="rowBtn(scope.row)">
             检验
           </el-button>
         </template>
@@ -52,11 +52,11 @@
     </el-table>
   </mds-card>
   <el-dialog v-model="visibleDialog" :title="type === 'CULTIVATE'? '培养' : type === 'CALCULATE'? '计数' : '检验'" width="855px">
-    <commonDialog ref="dialogRef" :type="type" :preview="false" @success="() => cultivateDialog = false"/>
+    <commonDialog ref="dialogRef" :type="type" :preview="false" @success="successFn"/>
     <div style="margin-top: 10px;display: flex;justify-content: flex-end;">
-      <el-button v-if="type === 'FIVETUBES'" size="small" icon="el-icon-circle-close" @click="visibleDialog = false">取消</el-button>
-      <el-button size="small" icon="el-icon-circle-check" type="primary" @click="updateFormSubmit('检验中')">保存</el-button>
-      <el-button v-if="type !== 'FIVETUBES'" size="small" icon="el-icon-circle-check" type="primary" @click="updateFormSubmit('已完成')">完成</el-button>
+      <el-button v-if="type === 'CULTIVATE'" size="small" icon="el-icon-circle-close" @click="visibleDialog = false">取消</el-button>
+      <el-button size="small" icon="el-icon-circle-check" type="primary" @click="updateFormSubmit('CHECKING')">保存</el-button>
+      <el-button v-if="type !== 'CULTIVATE'" size="small" icon="el-icon-circle-check" type="primary" @click="updateFormSubmit('COMPLETED')">完成</el-button>
     </div>
   </el-dialog>
 </template>
@@ -110,14 +110,26 @@ export default defineComponent({
         inspectDateBegin: '',
         taskInspectIdList: props.taskInspectIdList
       },
+      tmpRow: {},
       selectionData: [],
       tableData: []
     })
 
     // 查询
-    const query = async () => {
+    const query = async (tmp) => {
+      if (!tmp) {
+        componentData.queryForm.taskInspectIdList = []
+      }
       const { data } = await MICROBE_INSPECT_LIST(componentData.queryForm)
-      componentData.tableData = data.data
+      if (tmp) {
+        componentData.tableData = data.data
+      } else if (!data.data.length) {
+        proxy.$warningToast('无查询数据')
+      } else if (componentData.tableData.filter(it => it.id === data.data[0].id).length) {
+        proxy.$warningToast('此数据已在表格内')
+      } else {
+        componentData.tableData.push(data.data[0])
+      }
     }
     const selectionChange = (val) => {
       componentData.selectionData = val
@@ -141,6 +153,7 @@ export default defineComponent({
     const calculate = async (row) => {
       const { data } = await MICROBE_INSPECT_COUNT_DIALOG_QUERY([row.id])
       componentData.visibleDialog = true
+      componentData.tmpRow = row
       await nextTick()
       componentData.dialogRef.init(data.data[0], row)
     }
@@ -148,15 +161,42 @@ export default defineComponent({
     const five = async (row) => {
       const { data } = await MICROBE_INSPECT_FIVE_DIALOG_QUERY([row.id])
       componentData.visibleDialog = true
+      componentData.tmpRow = row
+      await nextTick()
+      componentData.dialogRef.init(data.data[0], row)
+    }
+    const rowBtn = async (row) => {
+      let net
+      if (props.type === 'FIVETUBES') {
+        net = MICROBE_INSPECT_FIVE_DIALOG_QUERY
+      } else {
+        net = MICROBE_INSPECT_COUNT_DIALOG_QUERY
+      }
+      const { data } = await net([row.id])
+      componentData.visibleDialog = true
+      componentData.tmpRow = row
       await nextTick()
       componentData.dialogRef.init(data.data[0], row)
     }
     const updateFormSubmit = (str) => {
       componentData.dialogRef.updateFormSubmit(str)
     }
+    const successFn = (str) => {
+      componentData.visibleDialog = false
+      if (str === 'COMPLETED') {
+        componentData.tableData = componentData.tableData.filter(it => it.id !== componentData.tmpRow.id)
+      } else {
+        const tmp = componentData.tableData.find(it => it.id === componentData.tmpRow.id)
+        tmp.status = '已保存'
+        const index = componentData.tableData.findIndex(it => it.id === componentData.tmpRow.id) + 1
+        if (componentData.tableData[index]) {
+          rowBtn(componentData.tableData[index])
+        }
+      }
+    }
 
     onMounted(async () => {
-      await query()
+      await query(true)
     })
 
     return {
@@ -167,7 +207,9 @@ export default defineComponent({
       query,
       calculate,
       five,
-      updateFormSubmit
+      rowBtn,
+      updateFormSubmit,
+      successFn
     }
   }
 })

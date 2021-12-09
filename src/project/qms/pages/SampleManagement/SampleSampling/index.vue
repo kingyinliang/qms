@@ -98,7 +98,7 @@
           <el-button v-if="scope.row.taskStatus === 'UNSAMPLED' || scope.row.taskStatus === 'SAMPLING'" type="text" icon="qmsIconfont qms-jianyan3" class="role__btn" @click="sampling(scope.row)">
             取样
           </el-button>
-          <el-button v-if="task !== 'TEMP' && scope.row.taskStatus === 'UNSAMPLED'" style="color: #EF4632" type="text" icon="el-icon-delete" class="role__btn" @click="delRow(scope.row)">
+          <el-button v-if="task !== 'TEMP' && scope.row.taskStatus === 'UNSAMPLED' && scope.row.triggerMode === 'MANUAL'" style="color: #EF4632" type="text" icon="el-icon-delete" class="role__btn" @click="delRow(scope.row)">
             删除
           </el-button>
         </template>
