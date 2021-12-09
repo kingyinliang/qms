@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-11-11 16:30:07
  * @LastEditors: Telliex
- * @LastEditTime: 2021-12-08 21:59:29
+ * @LastEditTime: 2021-12-09 14:24:23
 -->
 <template>
   <el-dialog :title="title" v-model="isDialogShow" width="90%" @close="onClose">
@@ -70,8 +70,8 @@
                 <el-input v-model="subItem.indexStandardString" size="small"  class="inputWidth" placeholder="请输入" autocomplete="off" :disabled="!subItem.canEditIndexStandardString" ></el-input>
               </el-tooltip>
             </el-form-item>
-            <el-form-item label="检验时间："  prop="finishDate" v-if="subItem.finishDate">
-              <div ><span>检验时间:</span>{{!subItem.finishDate?'':subItem.finishDate}}</div>
+            <el-form-item label="检验时间："  prop="inspectIndexDate" v-if="subItem.inspectIndexDate">
+              <div ><span>检验时间:</span>{{!subItem.inspectIndexDate?'':subItem.inspectIndexDate}}</div>
             </el-form-item>
           </el-form>
           <el-form  :model="subItem" :label-width="cssForformLabelWidth">
@@ -155,7 +155,7 @@
         </el-tooltip>
       </el-form-item>
     </el-form>
-    <mds-area :title="'检验记录'" :name="'org'" class="info" v-if="false" >
+    <mds-area :title="'检验记录'" :name="'org'" class="info" v-if="timeLineData.length">
       <div class="block" style="padding-top:10px">
         <el-timeline>
           <el-timeline-item
@@ -165,6 +165,7 @@
             :color="'#467BFF'"
             :hide-timestamp="true"
           >
+          <h4 style="margin-bottom:5px;">检验说明</h4>
             <div class="time-log">
               <ul>
                 <li v-for="(element, index) in item.indexList" :key="index"><div>> <span>指标：</span><em>{{element.indexName}}</em></div><div><span>样品码：</span><em>{{element.sampleCode}}</em></div><div><span>结果：</span><em :style="{color:element.indexJudgeResult==='N'?'#ff0000':'inherit'}">{{element.inspectResult}}</em></div></li>
@@ -172,7 +173,7 @@
             </div>
             <template #dot>
               <div class="dot">
-                {{item.indexList.length-index-1}}
+                {{item.indexList.length-index-2}}
               </div>
             </template>
           </el-timeline-item>
@@ -197,7 +198,8 @@ import {
   MANAGEMENT_INSPECTION_PHYSICOCHEMICAL_TASK_INSPECT_QUERY_API,
   MANAGEMENT_INSPECTION_PHYSICOCHEMICAL_RECHECK_TASK_INSPECT_API, // 理化检验保存 /taskInspectIndex/modifyTnspectIndex
   INSPECT_INDEX_PROCESS_PARAMETER_QUERY_FOR_TASK_API, // 查询过程参数数据 INSPECT_INDEX_PROCESS_PARAMETER_QUERY_FOR_TASK_API
-  INSPECT_INDEX_PROCESS_PARAMETER_UPDATE_FOR_TASK_API // 基础数据-[指标检验方法明细][过程参数]- 检验编辑 /inspectParameter/updateInspectParameter
+  INSPECT_INDEX_PROCESS_PARAMETER_UPDATE_FOR_TASK_API, // 基础数据-[指标检验方法明细][过程参数]- 检验编辑 /inspectParameter/updateInspectParameter
+  MANAGEMENT_INSPECTION_PHYSICOCHEMICAL_TASK_FORM_QUERY_API // 检验管理-[检验任务]- 检验表单查询 /taskInspect/formTaskInspect
 } from '@/api/api'
 
 import expreval from 'expr-eval'
@@ -290,52 +292,52 @@ export default defineComponent({
       dataFormOfSampleItemUnit: [],
       tempRecheckMod: '',
       timeLineData: [
-        {
-          indexName: 'Custom icon',
-          indexList: [
-            {
-              indexName: 'Custom icon',
-              sampleCode: '2222',
-              inspectResult: '33333',
-              indexJudgeResult: 'N'
-            },
-            {
-              indexName: 'Custom icon',
-              sampleCode: '2222',
-              inspectResult: '33333',
-              indexJudgeResult: 'N'
-            },
-            {
-              indexName: 'Custom icon',
-              sampleCode: '2222',
-              inspectResult: '33333',
-              indexJudgeResult: 'Y'
-            }
-          ]
-        },
-        {
-          indexName: 'Custom icon',
-          indexList: [
-            {
-              indexName: 'Custom icon',
-              sampleCode: '2222',
-              inspectResult: '33333',
-              indexJudgeResult: 'N'
-            },
-            {
-              indexName: 'Custom icon',
-              sampleCode: '2222',
-              inspectResult: '33333',
-              indexJudgeResult: 'N'
-            },
-            {
-              indexName: 'Custom icon',
-              sampleCode: '2222',
-              inspectResult: '33333',
-              indexJudgeResult: 'Y'
-            }
-          ]
-        }
+        // {
+        //   indexName: 'Custom icon',
+        //   indexList: [
+        //     {
+        //       indexName: 'Custom icon',
+        //       sampleCode: '2222',
+        //       inspectResult: '33333',
+        //       indexJudgeResult: 'N'
+        //     },
+        //     {
+        //       indexName: 'Custom icon',
+        //       sampleCode: '2222',
+        //       inspectResult: '33333',
+        //       indexJudgeResult: 'N'
+        //     },
+        //     {
+        //       indexName: 'Custom icon',
+        //       sampleCode: '2222',
+        //       inspectResult: '33333',
+        //       indexJudgeResult: 'Y'
+        //     }
+        //   ]
+        // },
+        // {
+        //   indexName: 'Custom icon',
+        //   indexList: [
+        //     {
+        //       indexName: 'Custom icon',
+        //       sampleCode: '2222',
+        //       inspectResult: '33333',
+        //       indexJudgeResult: 'N'
+        //     },
+        //     {
+        //       indexName: 'Custom icon',
+        //       sampleCode: '2222',
+        //       inspectResult: '33333',
+        //       indexJudgeResult: 'N'
+        //     },
+        //     {
+        //       indexName: 'Custom icon',
+        //       sampleCode: '2222',
+        //       inspectResult: '33333',
+        //       indexJudgeResult: 'Y'
+        //     }
+        //   ]
+        // }
       ]
     })
 
@@ -655,86 +657,61 @@ export default defineComponent({
 
     // 标准值栏位处理
     const chechIndexStandardString = (val:any) => {
-      if (val.manualStandard === '') {
-        // if (val.indexStandardString.indexOf('S') === -1) {
-        //   proxy.$warningToast('缺少变数 S')
-        // } else if (val.indexStandardString === 'S') {
-        //   if (val.inspectResult !== '') {
-        //     let tempString = ''
-        //     if (val.indexInnerStandard) {
-        //       tempString = val.indexInnerStandard
-        //     } else if (val.indexStandard) {
-        //       tempString = val.indexStandard
-        //     } else {
-        //       proxy.$warningToast('无标准值')
-        //       val.indexJudgeResult = 'N'
-        //       return
-        //     }
-        //     if (evil(`${val.inspectResult}==${tempString}`)) {
-        //       console.log('val.indexJudgeResult = Y')
-        //       val.indexJudgeResult = 'Y'
-        //     } else {
-        //       console.log('val.indexJudgeResult = N')
-        //       val.indexJudgeResult = 'N'
-        //     }
-        //   }
-        // } else if (val.indexStandardString.split('=')[0] === 'S') {
-        //   if (val.inspectResult !== '') {
-        //     if (evil(`${val.indexStandardString.split('=')[1]}==${val.inspectResult}`)) {
-        //       console.log('val.indexJudgeResult = Y')
-        //       val.indexJudgeResult = 'Y'
-        //     } else {
-        //       console.log('val.indexJudgeResult = N')
-        //       val.indexJudgeResult = 'N'
-        //     }
-        //   }
-        // } else {
-        if (val.inspectResult !== '') {
-          // const result = /(.*)S(.*)/.exec(val.indexStandardString)
-          // if (result === null) {
-          //   proxy.$warningToast('标准栏位式子错误')
-          //   val.indexStandardString = ''
-          //   return
-          // }
-          // if (result[1] === '' && result[2] === '') {
-          //   proxy.$warningToast('标准栏位式子错误')
-          //   val.indexStandardString = ''
-          //   return
-          // }
+      if (val.manualStandard === '' && val.inspectResult !== '') {
+        let center = ''
+        let leftResult = ''
+        let rightResult = ''
 
-          // const leftResult = /(.*)([><]=?)/.exec(result[1])
-          // const rightResult = /([><]=?)(.*)/.exec(result[2])
+        if (val.indexStandardString.substring(0, 2) === 'S=') {
+          center = val.indexStandardString.split('S=')[1]
+        } else {
+          const result = /(.*)S(.*)/.exec(val.indexStandardString)
+          if (result === null) {
+            proxy.$warningToast('标准栏位式子错误')
+            val.indexStandardString = ''
+            return
+          }
 
-          // if (!leftResult) {
-          //   val.indexInnerDown = ''
-          //   val.innerDownSymbol = ''
-          // } else {
-          //   val.indexInnerDown = leftResult[1]
-          //   val.innerDownSymbol = leftResult[2]
-          // }
+          if (result[1]) {
+            leftResult = result[1]
+          }
 
-          // if (!rightResult) {
-          //   val.indexInnerUp = ''
-          //   val.innerUpSymbol = ''
-          // } else {
-          //   val.indexInnerUp = rightResult[2]
-          //   val.innerUpSymbol = rightResult[1]
-          // }
+          if (result[2]) {
+            rightResult = result[2]
+          }
+        }
 
-          if (val.indexStandardString) {
-            try {
-              const temp = val.indexStandardString.replace('S', val.inspectResult)
-              if (evil(`${temp}`)) {
+        if (val.indexStandardString) {
+          try {
+            if (leftResult !== '' && rightResult !== '') {
+              if (evil(`${leftResult}${val.inspectResult}`) && evil(`${val.inspectResult}${rightResult}`)) {
                 val.indexJudgeResult = 'Y'
               } else {
                 val.indexJudgeResult = 'N'
               }
-            } catch (err) {
-              val.indexJudgeResult = 'N'
+            } else if (leftResult === '' && rightResult !== '') {
+              if (evil(`${val.inspectResult}${rightResult}`)) {
+                val.indexJudgeResult = 'Y'
+              } else {
+                val.indexJudgeResult = 'N'
+              }
+            } else if (leftResult !== '' && rightResult === '') {
+              if (evil(`${leftResult}${val.inspectResult}`)) {
+                val.indexJudgeResult = 'Y'
+              } else {
+                val.indexJudgeResult = 'N'
+              }
+            } else {
+              if (evil(`${center}==${val.inspectResult}`)) {
+                val.indexJudgeResult = 'Y'
+              } else {
+                val.indexJudgeResult = 'N'
+              }
             }
+          } catch (err) {
+            val.indexJudgeResult = 'N'
           }
         }
-        // }
       }
     }
 
@@ -1021,6 +998,58 @@ export default defineComponent({
         state.dataFormOfSampleInfo.inspectSiteNameString = val.map((item:any) => item.inspectSiteName).join(',')
         state.currentOrderStyle = val[0].recheckFlag === 'N' ? 'first' : 'repeat'
 
+        // add 复检讯息
+        if (val[0].recheckBatch !== '') {
+          MANAGEMENT_INSPECTION_PHYSICOCHEMICAL_TASK_FORM_QUERY_API({ // /taskInspect/formTaskInspect
+            id: val[0].id,
+            recheckBatch: val[0].recheckBatch
+          }).then((res) => {
+            console.log('复检讯息')
+            console.log(res.data.data)
+            state.timeLineData = []
+            res.data.data.forEach((element:any) => {
+              const tempIndexList:any[] = []
+              element.taskInspectIndexList.forEach((subElement:any) => {
+                tempIndexList.push({
+                  indexName: subElement.indexName,
+                  sampleCode: element.sampleCode,
+                  inspectResult: subElement.inspectResult,
+                  indexJudgeResult: subElement.indexJudgeResult
+                })
+              })
+              state.timeLineData.push({
+                indexName: element.indexName,
+                indexList: tempIndexList
+              })
+            })
+
+            //    timeLineData: [
+            // {
+            //   indexName: 'Custom icon',
+            //   indexList: [
+            //     {
+            //       indexName: 'Custom icon',
+            //       sampleCode: '2222',
+            //       inspectResult: '33333',
+            //       indexJudgeResult: 'N'
+            //     },
+            //     {
+            //       indexName: 'Custom icon',
+            //       sampleCode: '2222',
+            //       inspectResult: '33333',
+            //       indexJudgeResult: 'N'
+            //     },
+            //     {
+            //       indexName: 'Custom icon',
+            //       sampleCode: '2222',
+            //       inspectResult: '33333',
+            //       indexJudgeResult: 'Y'
+            //     }
+            //   ]
+            // }]
+          })
+        }
+
         // add id2sampleCode obj 获取指标
         MANAGEMENT_INSPECTION_PHYSICOCHEMICAL_TASK_INSPECT_QUERY_API( // /taskInspectIndex/queryTaskInspectIndex
           val.map((item:any) => item.id)
@@ -1245,7 +1274,7 @@ export default defineComponent({
       justify-content: space-between;
       div{
         text-align: left;
-        width: 150px;
+        width: 180px;
       }
     }
   }
