@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-11-16 09:59:02
  * @LastEditors: Telliex
- * @LastEditTime: 2021-12-08 23:15:02
+ * @LastEditTime: 2021-12-09 11:01:19
 -->
 <template>
   <mds-area class="test_method" title="已选中样品" :pack-up="false" style="margin-bottom: 0; background: #fff; overflow:scroll">
@@ -211,6 +211,11 @@ export default defineComponent({
       } else if (state.searchFilter.merge && state.selectedListOfTopicMainData.length === 1) { // 勾选 1 个， 视为一般检
         console.log(state.selectedListOfTopicMainData[0].taskInspectClassify)
         console.log('normal1')
+
+        if (state.selectedListOfTopicMainData[0].taskStatus === 'COMPLETED') {
+          proxy.$warningToast('已完成状态无法检验')
+          return
+        }
         state.mainType = state.selectedListOfTopicMainData[0].taskInspectClassify
         state.subType = 'normal'
 
@@ -226,6 +231,12 @@ export default defineComponent({
       } else {
         console.log('normal2')
         console.log(state.currentGlobalActOgj.taskInspectClassify)
+
+        if (state.currentGlobalActOgj.taskStatus === 'COMPLETED') {
+          proxy.$warningToast('已完成状态无法检验')
+          return
+        }
+
         state.mainType = state.currentGlobalActOgj.taskInspectClassify
         state.subType = 'normal'
 
@@ -240,7 +251,7 @@ export default defineComponent({
             console.log(state.selectedListOfTopicMainData)
           }
         } else {
-          proxy.$warningToast('请选取任务')
+          proxy.$infoToast('请选取任务')
         }
       }
 
@@ -367,6 +378,7 @@ export default defineComponent({
     const actHandleSelectionChange = (val: DataTableOfTopicMain[]) => {
       console.log('选框选择後的处理')
       console.log(val)
+      setCurrentRowOnFocus({})
       state.selectedListOfTopicMainData = val
     }
 
