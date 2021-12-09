@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-11-11 16:30:07
  * @LastEditors: Telliex
- * @LastEditTime: 2021-12-09 17:02:07
+ * @LastEditTime: 2021-12-09 17:36:23
 -->
 <template>
   <el-dialog :title="title" v-model="isDialogShow" width="90%" @close="onClose">
@@ -625,7 +625,7 @@ export default defineComponent({
 
     // 标准值栏位处理
     const chechIndexStandardString = (val:any) => {
-      if (val.manualStandard === '' && val.inspectResult !== '') {
+      if (val.manualStandard === '' && val.inspectResult !== '' && val.indexStandardString !== '') {
         let center = ''
         let leftResult = ''
         let rightResult = ''

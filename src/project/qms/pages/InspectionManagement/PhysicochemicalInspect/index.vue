@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-11-16 09:59:02
  * @LastEditors: Telliex
- * @LastEditTime: 2021-12-09 15:21:40
+ * @LastEditTime: 2021-12-09 22:01:34
 -->
 <template>
   <mds-area class="test_method" title="已选中样品" :pack-up="false" style="margin-bottom: 0; background: #fff; overflow:scroll">
@@ -219,11 +219,19 @@ export default defineComponent({
         state.mainType = state.selectedListOfTopicMainData[0].taskInspectClassify
         state.subType = 'normal'
 
-        if (state.selectedListOfTopicMainData[0].mergeBatch === '') {
+        if (state.selectedListOfTopicMainData[0].mergeBatch === '' && state.selectedListOfTopicMainData[0].groupBatch === '') {
           state.targetObjList = JSON.parse(JSON.stringify(state.selectedListOfTopicMainData))
         } else { // 该条是合并样品
           state.subType = 'merge'
-          state.targetObjList = state.dataTableOfTopicMain.filter((element:any) => element.mergeBatch === state.selectedListOfTopicMainData[0].mergeBatch)
+
+          if (state.currentGlobalActOgj.mergeBatch !== '') {
+            state.targetObjList = state.dataTableOfTopicMain.filter((element:any) => element.mergeBatch === state.selectedListOfTopicMainData[0].mergeBatch)
+          }
+
+          if (state.currentGlobalActOgj.groupBatch !== '') {
+            state.targetObjList = state.dataTableOfTopicMain.filter((element:any) => element.groupBatch === state.selectedListOfTopicMainData[0].groupBatch)
+          }
+
           refTableOfTopicMain.value.toggleRowSelection(state.targetObjList, true)
           console.log('state.selectedListOfTopicMainData')
           console.log(state.selectedListOfTopicMainData)
@@ -241,11 +249,20 @@ export default defineComponent({
         state.subType = 'normal'
 
         if (Object.keys(state.currentGlobalActOgj).length !== 0) {
-          if (state.currentGlobalActOgj.mergeBatch === '') {
+          if (state.currentGlobalActOgj.mergeBatch === '' && state.currentGlobalActOgj.groupBatch === '') {
             state.targetObjList = [JSON.parse(JSON.stringify(state.currentGlobalActOgj))]
           } else { // 该条是合并样品
             state.subType = 'merge'
-            state.targetObjList = state.dataTableOfTopicMain.filter((element:any) => element.mergeBatch === state.currentGlobalActOgj.mergeBatch)
+
+            // TODO  是不是 mergeBatch groupBatch  同时出现
+            if (state.currentGlobalActOgj.mergeBatch !== '') {
+              state.targetObjList = state.dataTableOfTopicMain.filter((element:any) => element.mergeBatch === state.currentGlobalActOgj.mergeBatch)
+            }
+
+            if (state.currentGlobalActOgj.groupBatch !== '') {
+              state.targetObjList = state.dataTableOfTopicMain.filter((element:any) => element.groupBatch === state.currentGlobalActOgj.groupBatch)
+            }
+
             refTableOfTopicMain.value.toggleRowSelection(state.targetObjList, true)
             console.log('state.selectedListOfTopicMainData')
             console.log(state.selectedListOfTopicMainData)
