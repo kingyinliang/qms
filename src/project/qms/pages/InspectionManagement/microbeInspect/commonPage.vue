@@ -114,6 +114,7 @@ export default defineComponent({
       visibleDialog: false,
       visiblePreviewDialog: false,
       queryForm: {
+        type: props.type,
         indexName: props.indexName,
         sampleCode: '',
         inspectDateBegin: '',
@@ -146,8 +147,8 @@ export default defineComponent({
     }
     // 预览
     const preview = async () => {
-      // const ids = componentData.tableData.filter(it => it.status === '已保存').map(it => it.id)
-      const ids = componentData.tableData.map(it => it.id)
+      const ids = componentData.tableData.filter(it => it.status === '已保存').map(it => it.id)
+      // const ids = componentData.tableData.map(it => it.id)
       if (!ids.length) {
         proxy.$warningToast('请录入数据后预览')
         return
