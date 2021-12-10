@@ -59,6 +59,13 @@
       <el-button v-if="type !== 'CULTIVATE'" size="small" icon="el-icon-circle-check" type="primary" @click="updateFormSubmit('COMPLETED')">完成</el-button>
     </div>
   </el-dialog>
+  <el-dialog v-model="visiblePreviewDialog" :title="type === 'FIVETUBES'?'检验预览':'计数预览'" width="855px">
+    <commonDialog ref="previewDialogRef" :previewDialog="type" @success="previewSuccessFn"/>
+    <div style="margin-top: 10px;display: flex;justify-content: flex-end;">
+      <el-button size="small" icon="el-icon-circle-close" @click="visiblePreviewDialog = false">取消</el-button>
+      <el-button size="small" icon="el-icon-circle-check" type="primary" @click="updateFormSubmit('COMPLETED', 'preview')">完成</el-button>
+    </div>
+  </el-dialog>
 </template>
 
 <script>
@@ -103,7 +110,9 @@ export default defineComponent({
 
     const componentData = reactive({
       dialogRef: ref(),
+      previewDialogRef: ref(),
       visibleDialog: false,
+      visiblePreviewDialog: false,
       queryForm: {
         indexName: props.indexName,
         sampleCode: '',
@@ -112,7 +121,8 @@ export default defineComponent({
       },
       tmpRow: {},
       selectionData: [],
-      tableData: []
+      tableData: [],
+      fivePreviewTableData: []
     })
 
     // 查询
@@ -134,6 +144,25 @@ export default defineComponent({
     const selectionChange = (val) => {
       componentData.selectionData = val
     }
+    // 预览
+    const preview = async () => {
+      // const ids = componentData.tableData.filter(it => it.status === '已保存').map(it => it.id)
+      const ids = componentData.tableData.map(it => it.id)
+      if (!ids.length) {
+        proxy.$warningToast('请录入数据后预览')
+        return
+      }
+      let net
+      if (props.type === 'FIVETUBES') {
+        net = MICROBE_INSPECT_FIVE_DIALOG_QUERY
+      } else {
+        net = MICROBE_INSPECT_COUNT_DIALOG_QUERY
+      }
+      componentData.visiblePreviewDialog = true
+      const { data } = await net(ids)
+      await nextTick()
+      componentData.previewDialogRef.previewInit(data.data)
+    }
     // 培养
     const cultivate = async () => {
       if (!componentData.selectionData.length) {
@@ -145,26 +174,7 @@ export default defineComponent({
       await nextTick()
       componentData.dialogRef.init(data.data, componentData.selectionData)
     }
-    // 预览
-    const preview = () => {
-      console.log(1)
-    }
-    // 计数
-    const calculate = async (row) => {
-      const { data } = await MICROBE_INSPECT_COUNT_DIALOG_QUERY([row.id])
-      componentData.visibleDialog = true
-      componentData.tmpRow = row
-      await nextTick()
-      componentData.dialogRef.init(data.data[0], row)
-    }
-    // 检验
-    const five = async (row) => {
-      const { data } = await MICROBE_INSPECT_FIVE_DIALOG_QUERY([row.id])
-      componentData.visibleDialog = true
-      componentData.tmpRow = row
-      await nextTick()
-      componentData.dialogRef.init(data.data[0], row)
-    }
+    // 计数和检验
     const rowBtn = async (row) => {
       let net
       if (props.type === 'FIVETUBES') {
@@ -178,21 +188,32 @@ export default defineComponent({
       await nextTick()
       componentData.dialogRef.init(data.data[0], row)
     }
-    const updateFormSubmit = (str) => {
-      componentData.dialogRef.updateFormSubmit(str)
+    // 保存和完成
+    const updateFormSubmit = (str, pre) => {
+      if (pre) {
+        componentData.previewDialogRef.previewFormSubmitFn(str)
+      } else {
+        componentData.dialogRef.updateFormSubmit(str)
+      }
     }
+    // 保存和完成回调
     const successFn = (str) => {
       componentData.visibleDialog = false
-      if (str === 'COMPLETED') {
+      if (str === 'COMPLETED' && props.type !== 'CULTIVATE') {
         componentData.tableData = componentData.tableData.filter(it => it.id !== componentData.tmpRow.id)
-      } else {
+      } else if (props.type !== 'CULTIVATE') {
+        const tmpList = componentData.tableData.filter(it => it.status !== '已保存')
+        const tmpIndex = tmpList.findIndex(it => it.id === componentData.tmpRow.id) + 1
+        if (tmpList[tmpIndex]) {
+          rowBtn(tmpList[tmpIndex])
+        }
+
         const tmp = componentData.tableData.find(it => it.id === componentData.tmpRow.id)
         tmp.status = '已保存'
-        const index = componentData.tableData.findIndex(it => it.id === componentData.tmpRow.id) + 1
-        if (componentData.tableData[index]) {
-          rowBtn(componentData.tableData[index])
-        }
       }
+    }
+    const previewSuccessFn = () => {
+      componentData.visiblePreviewDialog = false
     }
 
     onMounted(async () => {
@@ -205,11 +226,10 @@ export default defineComponent({
       cultivate,
       preview,
       query,
-      calculate,
-      five,
       rowBtn,
       updateFormSubmit,
-      successFn
+      successFn,
+      previewSuccessFn
     }
   }
 })
