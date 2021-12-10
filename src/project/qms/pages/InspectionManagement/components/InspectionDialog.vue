@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-11-11 16:30:07
  * @LastEditors: Telliex
- * @LastEditTime: 2021-12-10 12:43:32
+ * @LastEditTime: 2021-12-10 13:51:53
 -->
 <template>
   <el-dialog :title="title" v-model="isDialogShow" width="90%" @close="onClose">
@@ -182,6 +182,33 @@
         </el-timeline>
       </div>
     </mds-area>
+    <mds-area :title="'检验记录'" :name="'org'" class="info" v-if="timeLineDataForGroup.length">
+      <div class="block" style="padding-top:10px">
+        <el-timeline>
+          <el-timeline-item
+            v-for="(item, index) in timeLineDataForGroup"
+            :key="index"
+            :size="'large'"
+            :color="'#467BFF'"
+            :hide-timestamp="true"
+          >
+          <h4 style="margin-bottom:5px;">检验说明 : ( 指标 | 样品码 | 结果 )</h4>
+            <div class="time-log">
+              <ul class="fixlocation">
+                <!-- <li v-for="(element, index) in item.indexList" :key="index"><div>> <span>指标：</span><em>{{element.indexName}}</em></div><div><span>样品码：</span><em>{{element.sampleCode}}</em></div><div><span>结果：</span><em :style="{color:element.indexJudgeResult==='N'?'#ff0000':'inherit'}">{{element.inspectResult}}</em></div></li> -->
+                <li v-for="(element, index) in item.indexList" :key="index" class="subelement" ><div>{{`${element.indexName} (${element.sampleCode})`}}<em :style="{marginLeft:'10px',color:element.indexJudgeResult==='N'?'#ff0000':'inherit'}">{{element.inspectResult}}</em></div></li>
+
+              </ul>
+            </div>
+            <template #dot>
+              <div class="dot">
+                {{timeLineDataForGroup.length-index}}
+              </div>
+            </template>
+          </el-timeline-item>
+        </el-timeline>
+      </div>
+    </mds-area>
     <div style="display: flex; margin:0;justify-content: flex-end;">
       <el-button  icon="el-icon-circle-close" type="primary" size="small" class="topic-button" @click="onClose">取消</el-button>
       <el-button  icon="el-icon-circle-check" type="primary" size="small" class="topic-button"  @click="btnSaveOrSubmitDataOfInspect('save')">保存</el-button>
@@ -219,6 +246,7 @@ interface State {
   dataFormOfSampleInfo: any
   dataFormOfSampleItemUnit: any[]
   timeLineData: any[]
+  timeLineDataForGroup: any[]
   idToSampleCode: any
   mainObj:any[]
   formForTaskAdd: any
@@ -293,54 +321,8 @@ export default defineComponent({
       formForTaskAdd: {},
       dataFormOfSampleItemUnit: [],
       tempRecheckMod: '',
-      timeLineData: [
-        // {
-        //   indexName: 'Custom icon',
-        //   indexList: [
-        //     {
-        //       indexName: 'Custom icon',
-        //       sampleCode: '2222',
-        //       inspectResult: '33333',
-        //       indexJudgeResult: 'N'
-        //     },
-        //     {
-        //       indexName: 'Custom icon',
-        //       sampleCode: '2222',
-        //       inspectResult: '33333',
-        //       indexJudgeResult: 'N'
-        //     },
-        //     {
-        //       indexName: 'Custom icon',
-        //       sampleCode: '2222',
-        //       inspectResult: '33333',
-        //       indexJudgeResult: 'Y'
-        //     }
-        //   ]
-        // },
-        // {
-        //   indexName: 'Custom icon',
-        //   indexList: [
-        //     {
-        //       indexName: 'Custom icon',
-        //       sampleCode: '2222',
-        //       inspectResult: '33333',
-        //       indexJudgeResult: 'N'
-        //     },
-        //     {
-        //       indexName: 'Custom icon',
-        //       sampleCode: '2222',
-        //       inspectResult: '33333',
-        //       indexJudgeResult: 'N'
-        //     },
-        //     {
-        //       indexName: 'Custom icon',
-        //       sampleCode: '2222',
-        //       inspectResult: '33333',
-        //       indexJudgeResult: 'Y'
-        //     }
-        //   ]
-        // }
-      ]
+      timeLineData: [],
+      timeLineDataForGroup: []
     })
 
     // Run 判定总结果
@@ -996,34 +978,6 @@ export default defineComponent({
             console.log(state.timeLineData)
           })
         }
-        // add 聚合讯息
-        if (val[0].groupBatch !== '') {
-          console.log('val')
-          console.log(val)
-
-          // MANAGEMENT_INSPECTION_PHYSICOCHEMICAL_TASK_INSPECT_QUERY_API( // /taskInspectIndex/queryTaskInspectIndex
-          //   val.map((item:any) => item.id)
-          // )
-          // const temp = val.filter((element:any) => element.taskStatus === 'COMPLETED')
-          // if (temp.length) {
-          //   state.timeLineData = []
-          //   temp.forEach((element:any) => {
-          //     const tempIndexList:any[] = []
-          //     element.taskInspectIndexList.forEach((subElement:any) => {
-          //       tempIndexList.push({
-          //         indexName: subElement.indexName,
-          //         sampleCode: element.sampleCode,
-          //         inspectResult: subElement.inspectResult,
-          //         indexJudgeResult: subElement.indexJudgeResult
-          //       })
-          //     })
-          //     state.timeLineData.push({
-          //       indexName: element.indexName,
-          //       indexList: tempIndexList
-          //     })
-          //   })
-          // }
-        }
 
         // add id2sampleCode obj 获取指标
         MANAGEMENT_INSPECTION_PHYSICOCHEMICAL_TASK_INSPECT_QUERY_API( // /taskInspectIndex/queryTaskInspectIndex
@@ -1032,9 +986,44 @@ export default defineComponent({
           console.log('=== query dialog data ===')
           console.log(JSON.parse(JSON.stringify(res.data.data)))
 
+          const groupContainer:string[] = []
+          state.timeLineDataForGroup = []
+
           state.dataFormOfSampleItemUnit = JSON.parse(JSON.stringify(res.data.data))
           // 获取指标
           await state.dataFormOfSampleItemUnit.forEach(async (item) => {
+            // add 组合讯息
+            if (item.groupBatch !== '') {
+              if (!groupContainer.includes(item.groupBatch)) {
+                groupContainer.push(item.groupBatch)
+
+                MANAGEMENT_INSPECTION_PHYSICOCHEMICAL_TASK_FORM_QUERY_API({ // /taskInspect/formTaskInspect
+                  id: item.id,
+                  recheckBatch: item.recheckBatch,
+                  taskStatus: 'COMPLETED'
+                }).then((rep) => {
+                  console.log('组合讯息')
+                  console.log(rep.data.data)
+
+                  rep.data.data.forEach((element:any) => {
+                    const tempIndexList:any[] = []
+                    element.taskInspectIndexList.forEach((subElement:any) => {
+                      tempIndexList.push({
+                        indexName: subElement.indexName,
+                        sampleCode: element.sampleCode,
+                        inspectResult: subElement.inspectResult,
+                        indexJudgeResult: subElement.indexJudgeResult
+                      })
+                    })
+                    state.timeLineDataForGroup.push({
+                      indexName: element.indexName,
+                      indexList: tempIndexList
+                    })
+                  })
+                })
+              }
+            }
+
             // 区分1临时、2其他
             const tempIndex = await INSPECT_INDEX_PROCESS_PARAMETER_QUERY_FOR_TASK_API({
               inspectMaterialCode: state.dataFormOfSampleInfo.taskInspectClassify !== 'TEMP' ? state.dataFormOfSampleInfo.inspectMaterialCode : '',
@@ -1077,7 +1066,6 @@ export default defineComponent({
                   }
 
                   //  查看并设定【结果】栏位， 是否可编辑
-                  // TODO 需检查 manualFlag 空的情况是否符合预期
                   if (item.manualFlag === 'N' || item.manualFlag === '') {
                     item.canEditInspectResult = chechCanEditInspectResultOfData(subItem) || chechCanEditInspectResultOfFormula(item.filnalFormula, subItem.inspectParameterListResult[0].formula) // [结果]是否可编辑
                   }
