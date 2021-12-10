@@ -76,7 +76,7 @@
         <mds-card v-if="type === 'CALCULATE'" class="inspect__form__main" title="计数" :pack-up="false">
           <el-form-item label="计数时间：">
             <el-date-picker
-              v-model="form.takeOutDate"
+              v-model="form.countDate"
               type="date"
               :disabled="preview"
               format="YYYY-MM-DD"
@@ -86,7 +86,7 @@
             />
           </el-form-item>
           <el-form-item label="计数人：">
-            <el-select v-model="form.inspectMan" multiple filterable placeholder="请选择" :disabled="preview" clearable style="width: 140px">
+            <el-select v-model="form.countMan" multiple filterable placeholder="请选择" :disabled="preview" clearable style="width: 140px">
               <el-option v-for="item in users" :key="item.id" :label="item.realName" :value="item.id" />
             </el-select>
           </el-form-item>
@@ -116,17 +116,17 @@
             </el-table-column>
             <el-table-column label="结果" min-width="110" >
               <template #default="scope">
-                <el-input v-model="scope.row.result" placeholder="请输入" :disabled="preview" clearable style="width: 110px" @change="resultChange(scope.row)"/>
+                <el-input v-model="scope.row.inspectResult" placeholder="请输入" :disabled="preview" clearable style="width: 110px" @change="resultChange(scope.row)"/>
               </template>
             </el-table-column>
             <el-table-column label="单位" min-width="110" >
               <template #default="scope">
-                <el-input v-model="scope.row.sampleCode" placeholder="请输入" :disabled="preview" clearable style="width: 110px" />
+                <el-input v-model="scope.row.cultureUnit" placeholder="请输入" :disabled="preview" clearable style="width: 110px" />
               </template>
             </el-table-column>
             <el-table-column label="备注" min-width="110" >
               <template #default="scope">
-                <el-input v-model="scope.row.sampleCode" placeholder="请输入" :disabled="preview" clearable style="width: 110px" />
+                <el-input v-model="scope.row.cultureRemark" placeholder="请输入" :disabled="preview" clearable style="width: 110px" />
               </template>
             </el-table-column>
           </el-table>
@@ -214,7 +214,7 @@
         </mds-card>
       </template>
       <template v-if="type === 'FIVETUBES' || type === 'CALCULATE'">
-        <div>
+        <el-row style="padding: 0 16px">
           <el-form-item label="综合判定：" label-width="120" prop="judgeResult">
             <el-radio v-model="form.judgeResult" label="Y" :disabled="preview">合格</el-radio>
             <el-radio v-model="form.judgeResult" label="N" :disabled="preview">不合格</el-radio>
@@ -222,6 +222,8 @@
           <el-form-item label="检验说明：" label-width="120" style="margin-left: 100px">
             <el-input v-model="form.inspectExplain" placeholder="请输入" :disabled="preview" clearable style="width: 300px"/>
           </el-form-item>
+        </el-row>
+        <el-row style="padding: 0 16px">
           <el-form-item label="复检方式：" label-width="120">
             <el-radio v-model="form.recheckMod" label="ORIGINAL_RECHECK" :disabled="preview">原样复检</el-radio>
             <el-radio v-model="form.recheckMod" label="RESAMOLING" :disabled="preview">取样复检</el-radio>
@@ -229,7 +231,7 @@
           <el-form-item label="取样说明：" label-width="120" style="margin-left: 60px">
             <el-input v-model="form.inspectSiteName" placeholder="请输入" :disabled="preview" clearable style="width: 300px"/>
           </el-form-item>
-        </div>
+        </el-row>
       </template>
     </el-form>
   </div>
@@ -270,7 +272,7 @@
       <el-table-column label="计数1" show-overflow-tooltip prop="countOne" min-width="110" />
       <el-table-column label="计数2" show-overflow-tooltip prop="countTwo" min-width="110" />
       <el-table-column label="平均值" show-overflow-tooltip prop="average" min-width="110" />
-      <el-table-column label="结果" show-overflow-tooltip prop="result" min-width="110" />
+      <el-table-column label="结果" show-overflow-tooltip prop="inspectResult" min-width="110" />
     </el-table>
   </div>
 </template>
@@ -290,7 +292,9 @@ import {
   MICROBE_INSPECT_COUNT_DIALOG_STANDARD,
   MICROBE_INSPECT_CULTIVATE_DIALOG_SAVED,
   MICROBE_INSPECT_FIVE_DIALOG_SAVED,
-  MICROBE_INSPECT_COUNT_DIALOG_SAVED
+  MICROBE_INSPECT_COUNT_DIALOG_SAVED,
+  MICROBE_INSPECT_FIVE_DIALOG_PREVIEW_SAVED,
+  MICROBE_INSPECT_COUNT_DIALOG_PREVIEW_SAVED
 } from '@/api/api'
 import { dateFormat, merge } from '@/utils'
 
@@ -331,6 +335,7 @@ export default defineComponent({
       standard: {},
       inspectMethod: {},
       previewTableData: [],
+      previewData: [],
       users: [],
       ftube: [],
       consoleNo: [],
@@ -366,9 +371,31 @@ export default defineComponent({
         }
         if (props.type === 'CALCULATE') {
           componentData.form.inspectMan = componentData.form.inspectMan.split(',')
+          componentData.form.countMan = componentData.form.countMan?.split(',')
           componentData.form.taskInspectId = row.id
           componentData.form.taskInspectIndexId = row.taskInspectIndexId
           componentData.form.taskManageId = row.taskManageId
+          if (!componentData.form.taskCultureDataList.length) {
+            const tmpList = componentData.inspectMethod.parameterDetails.split(',')
+            const list = tmpList.map(it => {
+              return {
+                id: '',
+                taskInspectId: row.id,
+                dilution: it,
+                countOne: '',
+                countTwo: '',
+                average: '',
+                inspectResult: '',
+                cultureUnit: '',
+                cultureRemark: ''
+              }
+            })
+            componentData.form.taskCultureDataList = list
+          } else {
+            componentData.form.taskCultureDataList[0].inspectResult = componentData.form.inspectResult
+            componentData.form.taskCultureDataList[0].cultureUnit = componentData.form.cultureUnit
+            componentData.form.taskCultureDataList[0].cultureRemark = componentData.form.cultureRemark
+          }
         }
         if (props.type === 'FIVETUBES') {
           componentData.form.taskInspectId = row.id
@@ -383,16 +410,23 @@ export default defineComponent({
         const list = tmpList.map(it => {
           return {
             id: '',
+            taskInspectId: row.id,
             dilution: it,
             countOne: '',
             countTwo: '',
-            average: ''
+            average: '',
+            inspectResult: '',
+            cultureUnit: '',
+            cultureRemark: ''
           }
         })
         componentData.form = {
+          id: '',
           inspectContent: row.inspectContent,
           inspectDate: dateFormat(new Date(), 'yyyy-MM-dd'),
           inspectMan: [],
+          countMan: [],
+          countDate: '',
           cultureBatch: '',
           sterilizerBatch: '',
           cultureBox: '',
@@ -402,9 +436,14 @@ export default defineComponent({
           takeOutDate: '',
           takeOutTemp: '',
           cultureTemp: '',
-          taskInspectIdList: row.id,
-          taskInspectIndexIdList: row.taskInspectIndexId,
-          taskManageIdList: row.taskManageId,
+          inspectSiteName: '',
+          recheckMod: '',
+          inspectExplain: '',
+          judgeResult: '',
+          taskInspectId: row.id,
+          sampleCode: row.sampleCode,
+          taskInspectIndexId: row.taskInspectIndexId,
+          taskManageId: row.taskManageId,
           taskCultureDataList: list
         }
       } else if (props.type === 'CULTIVATE') {
@@ -461,7 +500,6 @@ export default defineComponent({
     }
     // 初始化预览弹窗
     const previewInit = (data) => {
-      console.log(1)
       componentData.previewTableData = []
       data.forEach(it => {
         if (props.previewDialog === 'FIVETUBES') {
@@ -475,12 +513,11 @@ export default defineComponent({
         if (props.previewDialog === 'CALCULATE') {
           it.taskCultureDataList.map(item => { item.sampleCode = it.sampleCode })
           it.taskCultureDataList[0].inspectContent = it.inspectContent
-          it.taskCultureDataList[0].emb = it.emb
-          it.taskCultureDataList[0].confirm = it.confirm
-          it.taskCultureDataList[0].mpn = it.mpn
+          it.taskCultureDataList[0].inspectResult = it.inspectResult
           componentData.previewTableData = componentData.previewTableData.concat(it.taskCultureDataList)
         }
       })
+      componentData.previewData = data
       componentData.spanArr = merge(componentData.previewTableData, 'sampleCode')
     }
     // 获取数据字典
@@ -531,7 +568,7 @@ export default defineComponent({
     }
     // 预览合并单元格
     const countPreviewSpanMethod = (scope) => {
-      if (scope.columnIndex < 2 || scope.columnIndex > 5) {
+      if (scope.columnIndex < 2 || scope.columnIndex > 4) {
         return {
           rowspan: componentData.spanArr[scope.rowIndex],
           colspan: componentData.spanArr[scope.rowIndex] > 0 ? 1 : 0
@@ -554,7 +591,13 @@ export default defineComponent({
     const updateFormSubmitFn = async (str) => {
       if (props.type === 'CALCULATE') {
         componentData.form.taskStatus = str
-        await MICROBE_INSPECT_COUNT_DIALOG_SAVED(componentData.form)
+        const data = JSON.parse(JSON.stringify(componentData.form))
+        data.inspectMan = data.inspectMan.join(',')
+        data.countMan = data.countMan?.join(',')
+        data.inspectResult = data.taskCultureDataList[0].inspectResult
+        data.cultureUnit = data.taskCultureDataList[0].cultureUnit
+        data.cultureRemark = data.taskCultureDataList[0].cultureRemark
+        await MICROBE_INSPECT_COUNT_DIALOG_SAVED(data)
       } else if (props.type === 'CULTIVATE') {
         const data = JSON.parse(JSON.stringify(componentData.form))
         data.inspectMan = data.inspectMan.join(',')
@@ -575,11 +618,22 @@ export default defineComponent({
     }
     // 结果联动判定
     const resultChange = (row) => {
-      if (Number(row.result) > componentData.standard.indexDown && Number(row.result) < componentData.standard.indexUp) {
+      if (Number(row.inspectResult) > componentData.standard.indexDown && Number(row.inspectResult) < componentData.standard.indexUp) {
         componentData.form.judgeResult = 'Y'
       } else {
         componentData.form.judgeResult = 'N'
       }
+    }
+    // 预览完成
+    const previewFormSubmitFn = async () => {
+      if (props.previewDialog === 'FIVETUBES') {
+        await MICROBE_INSPECT_FIVE_DIALOG_PREVIEW_SAVED(componentData.previewData)
+      }
+      if (props.previewDialog === 'CALCULATE') {
+        await MICROBE_INSPECT_COUNT_DIALOG_PREVIEW_SAVED(componentData.previewData)
+      }
+      proxy.$successToast('操作成功')
+      proxy.$emit('success')
     }
 
     onMounted(async () => {
@@ -603,7 +657,8 @@ export default defineComponent({
       fivePreviewSpanMethod,
       updateFormSubmit,
       keyChange,
-      resultChange
+      resultChange,
+      previewFormSubmitFn
     }
   }
 })

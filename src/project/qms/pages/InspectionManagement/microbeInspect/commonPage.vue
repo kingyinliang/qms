@@ -191,7 +191,7 @@ export default defineComponent({
     // 保存和完成
     const updateFormSubmit = (str, pre) => {
       if (pre) {
-        componentData.previewDialogRef.updateFormSubmit(str)
+        componentData.previewDialogRef.previewFormSubmitFn(str)
       } else {
         componentData.dialogRef.updateFormSubmit(str)
       }
@@ -199,9 +199,9 @@ export default defineComponent({
     // 保存和完成回调
     const successFn = (str) => {
       componentData.visibleDialog = false
-      if (str === 'COMPLETED') {
+      if (str === 'COMPLETED' && props.type !== 'CULTIVATE') {
         componentData.tableData = componentData.tableData.filter(it => it.id !== componentData.tmpRow.id)
-      } else {
+      } else if (props.type !== 'CULTIVATE') {
         const tmpList = componentData.tableData.filter(it => it.status !== '已保存')
         const tmpIndex = tmpList.findIndex(it => it.id === componentData.tmpRow.id) + 1
         if (tmpList[tmpIndex]) {
@@ -213,7 +213,7 @@ export default defineComponent({
       }
     }
     const previewSuccessFn = () => {
-      console.log(1)
+      componentData.visiblePreviewDialog = false
     }
 
     onMounted(async () => {
