@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-11-11 16:30:07
  * @LastEditors: Telliex
- * @LastEditTime: 2021-12-09 17:36:23
+ * @LastEditTime: 2021-12-10 09:50:47
 -->
 <template>
   <el-dialog :title="title" v-model="isDialogShow" width="90%" @close="onClose">
@@ -1019,6 +1019,34 @@ export default defineComponent({
             //   ]
             // }]
           })
+        }
+        // add 聚合讯息
+        if (val[0].groupBatch !== '') {
+          console.log('val')
+          console.log(val)
+
+          // MANAGEMENT_INSPECTION_PHYSICOCHEMICAL_TASK_INSPECT_QUERY_API( // /taskInspectIndex/queryTaskInspectIndex
+          //   val.map((item:any) => item.id)
+          // )
+          // const temp = val.filter((element:any) => element.taskStatus === 'COMPLETED')
+          // if (temp.length) {
+          //   state.timeLineData = []
+          //   temp.forEach((element:any) => {
+          //     const tempIndexList:any[] = []
+          //     element.taskInspectIndexList.forEach((subElement:any) => {
+          //       tempIndexList.push({
+          //         indexName: subElement.indexName,
+          //         sampleCode: element.sampleCode,
+          //         inspectResult: subElement.inspectResult,
+          //         indexJudgeResult: subElement.indexJudgeResult
+          //       })
+          //     })
+          //     state.timeLineData.push({
+          //       indexName: element.indexName,
+          //       indexList: tempIndexList
+          //     })
+          //   })
+          // }
         }
 
         // add id2sampleCode obj 获取指标
