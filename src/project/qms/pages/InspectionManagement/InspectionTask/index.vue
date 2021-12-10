@@ -4,7 +4,7 @@
       <div style="float: right; color: #333333;font-size: 14px;font-weight: bold;cursor: pointer" @click="goHistory"><i class="qmsIconfont qms-lishirenwu1" style="color: #487BFF"/> 历史任务</div>
     </template>
     <el-row :gutter="16">
-      <el-col :span="4" style="min-width: 255px" v-for="(item, index) in taskList" :key="index">
+      <el-col :span="6" style="min-width: 255px" v-for="(item, index) in taskList" :key="index">
         <div class="task__item" :class="{active: task === item.inspectClassify}"  @click="changeTask(item.inspectClassify)">
           <p class="task__item--title">
             <svg class="qmsIconfont" aria-hidden="true">
@@ -51,7 +51,7 @@
         </el-form-item>
         <el-form-item>
           <el-button icon="el-icon-search" @click="() => {queryForm.current = 1; query()}">查询</el-button>
-          <el-button @click="goInspect()"><i class="qmsIconfont qms-jianyan"/> 检验</el-button>
+          <el-button type="primary" @click="goInspect()"><i class="qmsIconfont qms-jianyan"/> 检验</el-button>
           <el-button type="primary" @click="goPrint()"><i class="qmsIconfont qms-dayin" /> 打印</el-button>
         </el-form-item>
       </el-form>
@@ -206,7 +206,7 @@ export default defineComponent({
       query(status)
     }
     // 检验
-    const goInspect = (row?: TableData) => {
+    const goInspect = () => {
       if (!selectionData.value.length) {
         proxy.$warningToast('请选择数据')
         return
