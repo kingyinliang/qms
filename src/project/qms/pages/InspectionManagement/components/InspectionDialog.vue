@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-11-11 16:30:07
  * @LastEditors: Telliex
- * @LastEditTime: 2021-12-10 09:50:47
+ * @LastEditTime: 2021-12-10 12:43:32
 -->
 <template>
   <el-dialog :title="title" v-model="isDialogShow" width="90%" @close="onClose">
@@ -970,7 +970,8 @@ export default defineComponent({
         if (val[0].recheckBatch !== '') {
           MANAGEMENT_INSPECTION_PHYSICOCHEMICAL_TASK_FORM_QUERY_API({ // /taskInspect/formTaskInspect
             id: val[0].id,
-            recheckBatch: val[0].recheckBatch
+            recheckBatch: val[0].recheckBatch,
+            taskStatus: 'COMPLETED'
           }).then((res) => {
             console.log('复检讯息')
             console.log(res.data.data)
@@ -993,31 +994,6 @@ export default defineComponent({
 
             console.log('state.timeLineData')
             console.log(state.timeLineData)
-
-            //    timeLineData: [
-            // {
-            //   indexName: 'Custom icon',
-            //   indexList: [
-            //     {
-            //       indexName: 'Custom icon',
-            //       sampleCode: '2222',
-            //       inspectResult: '33333',
-            //       indexJudgeResult: 'N'
-            //     },
-            //     {
-            //       indexName: 'Custom icon',
-            //       sampleCode: '2222',
-            //       inspectResult: '33333',
-            //       indexJudgeResult: 'N'
-            //     },
-            //     {
-            //       indexName: 'Custom icon',
-            //       sampleCode: '2222',
-            //       inspectResult: '33333',
-            //       indexJudgeResult: 'Y'
-            //     }
-            //   ]
-            // }]
           })
         }
         // add 聚合讯息
