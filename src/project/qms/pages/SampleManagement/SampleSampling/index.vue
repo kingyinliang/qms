@@ -5,7 +5,7 @@
     </template>
     <el-row :gutter="16">
       <el-col :span="6" v-for="(item, index) in taskList" :key="index">
-        <div class="task__item" :class="{active: task === item.inspectClassify}"  @click="changeTask(item.inspectClassify)">
+        <div class="task__item" :class="{active: task === item.inspectClassify}"  @click="changeTask(item.inspectClassify, 'null')">
           <p class="task__item--title">
             <svg class="qmsIconfont" aria-hidden="true">
               <use xlink:href="#qms-lailiaofujian" v-if="item.inspectClassify === 'INCOMING'"></use>
@@ -98,7 +98,7 @@
           <el-button v-if="scope.row.taskStatus === 'UNSAMPLED' || scope.row.taskStatus === 'SAMPLING'" type="text" icon="qmsIconfont qms-jianyan3" class="role__btn" @click="sampling(scope.row)">
             取样
           </el-button>
-          <el-button v-if="task !== 'TEMP' && scope.row.taskStatus === 'UNSAMPLED'" style="color: #EF4632" type="text" icon="el-icon-delete" class="role__btn" @click="delRow(scope.row)">
+          <el-button v-if="task !== 'TEMP' && scope.row.taskStatus === 'UNSAMPLED' && scope.row.triggerMode === 'MANUAL'" style="color: #EF4632" type="text" icon="el-icon-delete" class="role__btn" @click="delRow(scope.row)">
             删除
           </el-button>
         </template>
@@ -111,7 +111,7 @@
         :total="queryForm.total"
         :page-sizes="[10, 20, 50]"
         layout="total, sizes, prev, pager, next, jumper"
-        @size-change="val => {queryForm.size = val;query()}"
+        @size-change="val => {queryForm.current = 1;queryForm.size = val;query()}"
         @current-change="val => {queryForm.current = val; query()}"
       />
     </el-row>
@@ -125,41 +125,41 @@
         </el-radio-group>
       </el-form-item>
       <el-form-item label="检验类：" prop="inspectTypeId">
-        <el-select v-model="addOrUpdateForm.inspectTypeId" :disabled="addOrUpdateForm.id !== ''" filterable placeholder="请选择" @change="id => inspectChange(id)" style="width: 100%">
+        <el-select v-model="addOrUpdateForm.inspectTypeId" :disabled="addOrUpdateForm.id !== ''" filterable :placeholder="addOrUpdateForm.id === ''?'请选择':''" @change="id => inspectChange(id)" style="width: 100%">
           <el-option v-for="item in inspect" :key="item.id" :label="item.inspectTypeName" :value="item.id" />
         </el-select>
       </el-form-item>
       <el-form-item label="取样部门：" v-if="task === 'PROCESS'" prop="sampleDeptId">
-        <el-select v-model="addOrUpdateForm.sampleDeptId" :disabled="addOrUpdateForm.triggerBy === 'SYSTEM'" filterable placeholder="请选择" style="width: 100%" @change="id => deptChange(id)">
+        <el-select v-model="addOrUpdateForm.sampleDeptId" :disabled="addOrUpdateForm.triggerBy === 'SYSTEM'" filterable :placeholder="addOrUpdateForm.id === ''?'请选择':''" style="width: 100%" @change="id => deptChange(id)">
           <el-option v-for="item in dept" :key="item.deptId" :label="item.deptName" :value="item.deptId" />
         </el-select>
       </el-form-item>
       <el-form-item label="物料信息：" v-if="task === 'INCOMING' || task === 'PROCESS'">
-        <el-select v-model="addOrUpdateForm.inspectMaterialCode" :disabled="addOrUpdateForm.id !== ''" filterable placeholder="请选择" @change="val => materialChange(val)" style="width: 100%">
+        <el-select v-model="addOrUpdateForm.inspectMaterialCode" :disabled="addOrUpdateForm.id !== ''" filterable :placeholder="addOrUpdateForm.id === ''?'请选择':''" @change="val => materialChange(val)" style="width: 100%">
           <el-option v-for="item in material" :key="item.id" :label="item.inspectMaterialCode + ' ' + item.inspectMaterialName" :value="item.inspectMaterialCode" />
         </el-select>
       </el-form-item>
       <el-form-item label="批次：" v-if="task === 'INCOMING'">
-        <el-select v-model="addOrUpdateForm.inspectBatch" filterable placeholder="请选择" style="width: 100%">
+        <el-select v-model="addOrUpdateForm.inspectBatch" filterable :placeholder="addOrUpdateForm.id === ''?'请选择':''" style="width: 100%">
           <el-option v-for="item in batch" :key="item.id" :label="item.batch" :value="item.batch" />
         </el-select>
       </el-form-item>
       <el-form-item label="生产订单：" v-if="task === 'PROCESS'">
-        <el-input v-model="addOrUpdateForm.orderNo" :disabled="addOrUpdateForm.triggerBy === 'SYSTEM'" placeholder="请输入" />
+        <el-input v-model="addOrUpdateForm.orderNo" :disabled="addOrUpdateForm.triggerBy === 'SYSTEM'" :placeholder="addOrUpdateForm.id === ''?'请输入':''" />
       </el-form-item>
       <el-form-item label="品项：" v-if="task === 'INCOMING' || task === 'PROCESS'">
-        <el-input v-model="addOrUpdateForm.itemName" placeholder="请输入" disabled></el-input>
+        <el-input v-model="addOrUpdateForm.itemName" :placeholder="addOrUpdateForm.id === ''?'请输入':''" disabled></el-input>
       </el-form-item>
       <el-form-item label="供应商：" v-if="task === 'INCOMING'">
-        <el-input v-model="addOrUpdateForm.supplier" placeholder="请输入" disabled></el-input>
+        <el-input v-model="addOrUpdateForm.supplier" :placeholder="addOrUpdateForm.id === ''?'请输入':''" disabled></el-input>
       </el-form-item>
       <el-form-item label="取样信息：" v-if="task === 'PROCESS'">
-        <el-select v-model="addOrUpdateForm.inspectSiteId" :disabled="addOrUpdateForm.triggerBy === 'SYSTEM'" filterable placeholder="请选择" style="width: 100%" @change="id => sampleChange(id)">
+        <el-select v-model="addOrUpdateForm.inspectSiteId" :disabled="addOrUpdateForm.triggerBy === 'SYSTEM'" filterable :placeholder="addOrUpdateForm.id === ''?'请选择':''" style="width: 100%" @change="id => sampleChange(id)">
           <el-option v-for="item in samplingMessage" :key="item.id" :label="item.holderName" :value="item.id" />
         </el-select>
       </el-form-item>
       <el-form-item label="取样说明：" v-if="task === 'PROCESS' || task === 'ASSIST'">
-        <el-input v-model="addOrUpdateForm.sampleExplain" placeholder="请输入" ></el-input>
+        <el-input v-model="addOrUpdateForm.sampleExplain" :placeholder="addOrUpdateForm.id === ''?'请输入':''" ></el-input>
       </el-form-item>
     </el-form>
     <div style="margin-top: 10px;display: flex;justify-content: flex-end;">
@@ -354,7 +354,8 @@ export default defineComponent({
       queryForm.taskSampleClassify = task.value
       if (status) {
         queryForm.sampleQuantityStatus = status
-      } else {
+      }
+      if (status === 'null') {
         queryForm.sampleQuantityStatus = ''
       }
       const res = await SAMPLE_SAMPLING_TASK_LIST(queryForm)
@@ -560,7 +561,7 @@ export default defineComponent({
             getTask()
             if (task.value === 'TEMP') {
               printModuleRef.value.print([{
-                title: row.inspectContent,
+                title: setText(row, 'tmp'),
                 wrap: true,
                 code: row.sampleCode
               }])
@@ -573,11 +574,19 @@ export default defineComponent({
             }
           })
         } else {
-          printModuleRef.value.print([{
-            title: setText(row),
-            subtitle: (row.itemName || '') + (row.inspectSiteName || ''),
-            code: row.sampleCode
-          }])
+          if (task.value === 'TEMP') {
+            printModuleRef.value.print([{
+              title: setText(row, 'tmp'),
+              wrap: true,
+              code: row.sampleCode
+            }])
+          } else {
+            printModuleRef.value.print([{
+              title: setText(row),
+              subtitle: (row.itemName || '') + (row.inspectSiteName || ''),
+              code: row.sampleCode
+            }])
+          }
         }
       } else if (selectionData.value.length) {
         const httpData:TableData[] = []
@@ -589,7 +598,7 @@ export default defineComponent({
         const data = selectionData.value.map(it => {
           if (task.value === 'TEMP') {
             return {
-              title: it.inspectContent,
+              title: setText(it, 'tmp'),
               wrap: true,
               code: it.sampleCode
             }
@@ -618,13 +627,17 @@ export default defineComponent({
         proxy.$warningToast('请选择数据')
       }
     }
-    const setText = (row: TableData):string => {
+    const setText = (row: TableData, tmpStr?: string):string => {
       const inspectContent = (row.inspectContent as string).split('-')
       if (inspectContent.length && inspectContent[1] && inspectContent[2]) {
         let tmp = ''
         inspectContent[2].indexOf('理') >= 0 ? tmp = '理'
           : inspectContent[2].indexOf('微生物') >= 0 ? tmp = '菌' : tmp = ''
-        return `${inspectContent[1]}(${tmp})`
+        if (tmpStr) {
+          return `${tmp}检验`
+        } else {
+          return `${inspectContent[1]}(${tmp})`
+        }
       } else {
         return ''
       }

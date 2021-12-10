@@ -89,7 +89,7 @@
         <el-table-column label="触发方" prop="triggerBy" :show-overflow-tooltip="true" min-width="100" />
         <el-table-column fixed="right" label="操作" header-align="left" align="left" width="150">
             <template #default="scope">
-                <el-button  type="text" icon="el-icon-edit" @click="btnClickItemEditOfTopicMainData(scope.row)" class="role__btn">
+                <el-button  type="text" icon="el-icon-edit" @click="btnClickItemEditOfTopicMainData(scope.row)" :disabled="!(scope.row.taskStatusName==='待取样'&&scope.row.loopFlag==='Y')" class="role__btn">
                     <em>编辑</em>
                 </el-button>
                 <el-button  type="text" icon="el-icon-delete" @click="btnClickItemCancelOfTopicMainData(scope.row)" :disabled="scope.row.taskStatus!=='UNSAMPLED'" class="role__btn">

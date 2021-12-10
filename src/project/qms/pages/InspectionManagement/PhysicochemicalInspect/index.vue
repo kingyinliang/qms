@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-11-16 09:59:02
  * @LastEditors: Telliex
- * @LastEditTime: 2021-11-17 19:01:38
+ * @LastEditTime: 2021-12-04 19:50:03
 -->
 <template>
   <mds-area class="test_method" title="已选中样品" :pack-up="false" style="margin-bottom: 0; background: #fff; overflow:scroll">
@@ -12,37 +12,40 @@
           <el-checkbox v-model="searchFilter.merge" size="small" label="合并检" @change="btnCheckOfMergeOrNot"></el-checkbox>
         </div>
         <div style="padding-left: 12px;font-size:14px;"><span>取样码：</span>
-          <el-input size="small" style="margin-bottom:10px; width:200px;" clearable @keydown.enter="btnGetInspectList(searchFilter.sampleCode)"  v-model="searchFilter.sampleCode" placeholder="请输入" />
+          <el-input size="small" style="margin-bottom:10px; width:200px;" clearable @keydown.enter="btnGetInspectList(searchFilter.sampleCode)"  v-model="searchFilter.sampleCode" placeholder="请输入" autofocus />
         </div>
         <div style="padding-left: 12px;">
-          <el-button icon="el-icon-search" size="small" class="topic-button" @click="btnReset" :disabled="!dataTableOfTopicMain.length">重置</el-button>
-          <el-button icon="el-icon-search" size="small" class="topic-button" @click="btnGetInspectDetail()" :disabled="!dataTableOfTopicMain.length">检验</el-button>
+          <el-button icon="el-icon-search" size="small" class="topic-button" @click="btnReset" :disabled="!dataTableOfTopicMain.filter(element=>element.taskStatus !== 'COMPLETED').length">重置</el-button>
+          <el-button icon="el-icon-search" type="primary" size="small" class="topic-button" @click="actGetInspectDetail()" :disabled="!dataTableOfTopicMain.filter(element=>element.taskStatus !== 'COMPLETED').length">检验</el-button>
         </div>
     </template>
-    <el-table border ref="refTableOfTopicMain" :cell-style="{'text-align':'center'}" :data="dataTableOfTopicMain" tooltip-effect="dark" style="width: 100%" max-height="500" highlight-current-row @row-click="handleCurrentChange" @selection-change="actHandleSelectionChange">
+    <el-table border ref="refTableOfTopicMain" :cell-style="{'text-align':'center'}" :data="dataTableOfTopicMain" :row-class-name="markRowWithDelFlag" tooltip-effect="dark" style="width: 100%" max-height="500" highlight-current-row @row-click="handleCurrentChange" @selection-change="actHandleSelectionChange" @select="btnHandleOneSelectionChange" @select-all="btnHandleAllSelectionChange">
       <el-table-column type="selection" width="55" align="center"/>
       <el-table-column type="index" label="序号" width="50" align="center" />
       <el-table-column label="样品码" show-overflow-tooltip prop="sampleCode" />
-      <el-table-column label="状态" show-overflow-tooltip prop="taskStatus">
+      <el-table-column label="状态" show-overflow-tooltip prop="taskStatusName">
       <template #default="scope">
-        <span>{{applyStatusNameObj[scope.row.taskStatus]}}</span>
+        <span>{{scope.row.taskStatusName}}</span>
       </template>
       </el-table-column>
       <el-table-column label="检验内容" show-overflow-tooltip prop="inspectContent" />
     </el-table>
   </mds-area>
 
-  <instection-dialog v-if="isShowDialog" />
+  <instection-dialog v-model="dialogVisible" :targetObj="targetObjList" :mainType="mainType" :subType="subType"  @on-close="dialogVisible=false" @openHandle="returnFromDialogAndOpenAgainHandle" />
+
 </template>
 
 <script lang="ts">
 import {
   defineComponent, toRefs, reactive, onMounted, ComponentInternalInstance, getCurrentInstance, ref
 } from 'vue'
+import { useRouter } from 'vue-router'
 import MdsArea from '@/components/package/mds-area/src/mds-area.vue'
 import {
-  DICTIONARY_QUERY_API,
-  MANAGEMENT_INSPECTION_PHYSICOCHEMICAL_QUERY_BY_SAMPLE_CODE_API // 检验管理-[检验任务]- 根据样品码查询检验任务
+  MANAGEMENT_INSPECTION_PHYSICOCHEMICAL_QUERY_BY_SAMPLE_CODE_API, // 检验管理-[检验任务]- 根据样品码查询检验任务
+  MANAGEMENT_INSPECTION_TASK_INSPECT_QUERY_BY_ID_API, // 检验管理-[检验任务]- 分析是否有合并检 /taskInspect/queryTaskInspectByIds
+  MANAGEMENT_INSPECTION_PHYSICOCHEMICAL_TASK_INSPECT_QUERY_API
 } from '@/api/api'
 import layoutTs from '@/components/layout/layoutTs'
 import { useStore } from 'vuex'
@@ -111,18 +114,26 @@ interface DataTableOfTopicMain {
   taskStatus: string;
   tempApplyNo: string;
   temporaryFlag: string;
+  delFlag: number
+  mergeFlag: string
 }
 
 interface State {
-  currentOgj: any
-  isShowDialog: boolean
-  currentType: string
-  currentObj:any
+  indexOfCurrentRowOnFocus: number
+  targetObjList: any[] // 检验物件
+  currentGlobalActOgj: any
+  dialogVisible: boolean
+  mainType: string
+  subType: string
+  currentObj: any
   dataTableOfTopicMain: DataTableOfTopicMain[]
   searchFilter: SearchFilter
   applyStatusNameObj: any
-  applyStatusOptions: any
+  // applyStatusOptions: any
   selectedListOfTopicMainData: DataTableOfTopicMain[]
+  formForTaskAdd: any
+  cssForformLabelWidth: string
+  correntWayInto: boolean
 }
 
 export default defineComponent({
@@ -136,14 +147,30 @@ export default defineComponent({
     const ctx = getCurrentInstance() as ComponentInternalInstance
     const proxy = ctx.proxy as any
     const store = useStore()
-    const { gotoPage, tabsCloseCurrentHandle } = layoutTs()
+    const router = useRouter()
+    // const { gotoPage, tabsCloseCurrentHandle } = layoutTs()
     const refTableOfTopicMain = ref()
+
+    // router.afterEach((to, from) => {
+    //   console.log('33333333333')
+    //   console.log(to)
+    //   console.log('from.path')
+    //   console.log(from.path)
+    //   console.log('to.path')
+    //   console.log(to.path)
+    //   if (to.path === '/qms-pages-InspectionManagement-PhysicochemicalInspect-index' && from.path === '/qms-pages-InspectionManagement-InspectionTask-index') {
+    //     console.log('get')
+    //   }
+    // })
 
     /**  == 变量 ==  **/
     const state = reactive<State>({
-      isShowDialog: false,
-      currentOgj: {},
-      currentType: '',
+      correntWayInto: false,
+      indexOfCurrentRowOnFocus: 0,
+      dialogVisible: false,
+      currentGlobalActOgj: {},
+      mainType: '',
+      subType: '',
       currentObj: {},
       searchFilter: {
         sampleCode: '',
@@ -151,124 +178,422 @@ export default defineComponent({
       },
       dataTableOfTopicMain: [],
       applyStatusNameObj: {},
-      applyStatusOptions: {},
-      selectedListOfTopicMainData: []
+      // applyStatusOptions: {},
+      selectedListOfTopicMainData: [],
+      targetObjList: [],
+      formForTaskAdd: {},
+      cssForformLabelWidth: '110px'
     })
 
     /**  == 函数 ==  **/
-    // 临时检验列表数据
-
-    const btnGetInspectDetail = () => {
-      state.isShowDialog = true
+    //
+    const checkIfMergeByMaterialCode = (val:DataTableOfTopicMain[]) => {
+      const tempInspectMaterialCode = val[0].inspectMaterialCode
+      const tempInspectContent = val[0].inspectContent
+      const tempInspectProperty = val[0].inspectProperty
+      return val.every(item => item.taskInspectClassify === 'PROCESS' && item.inspectMaterialCode === tempInspectMaterialCode && item.inspectContent === tempInspectContent && item.inspectProperty === tempInspectProperty)
     }
 
+    const checkIfMergeByClassify = (val:DataTableOfTopicMain[]) => {
+      return val.some(item => item.taskInspectClassify !== 'PROCESS')
+    }
+
+    // 临时检验列表数据
+
+    // TODO
+    const actGetInspectDetail = () => {
+      state.targetObjList = []
+      if (state.searchFilter.merge && state.selectedListOfTopicMainData.length > 1) { // 勾选 2 个以上， 视为合并检
+        if (checkIfMergeByClassify(state.selectedListOfTopicMainData)) {
+          proxy.$warningToast('存在临时检验任务，无法合并检验')
+          return
+        }
+
+        if (!checkIfMergeByMaterialCode(state.selectedListOfTopicMainData)) {
+          proxy.$warningToast('存在不同物料、属性或检验内容，无法合并检验')
+          return
+        }
+        console.log('merge')
+        state.mainType = state.selectedListOfTopicMainData[0].taskInspectClassify
+        state.subType = 'merge'
+        state.targetObjList = JSON.parse(JSON.stringify(state.selectedListOfTopicMainData))
+      } else if (state.searchFilter.merge && state.selectedListOfTopicMainData.length === 1) { // 勾选 1 个， 视为一般检
+        console.log(state.selectedListOfTopicMainData[0].taskInspectClassify)
+        console.log('normal1')
+        state.mainType = state.selectedListOfTopicMainData[0].taskInspectClassify
+        state.subType = 'normal'
+
+        state.targetObjList = JSON.parse(JSON.stringify(state.selectedListOfTopicMainData))
+      } else {
+        console.log('normal2')
+        console.log(state.currentGlobalActOgj.taskInspectClassify)
+        state.mainType = state.currentGlobalActOgj.taskInspectClassify
+        state.subType = 'normal'
+
+        if (Object.keys(state.currentGlobalActOgj).length !== 0) {
+          state.targetObjList = [JSON.parse(JSON.stringify(state.currentGlobalActOgj))]
+        } else {
+          proxy.$warningToast('请选取任务')
+        }
+      }
+
+      // 有传送物件才开 Dialog
+      if (state.targetObjList.length) {
+        state.dialogVisible = true
+      }
+    }
+
+    const actReGetInspectDetail = () => {
+      state.dialogVisible = true
+    }
+
+    // 根据取样码添加任务
     const btnGetInspectList = (str:string) => {
-      str && MANAGEMENT_INSPECTION_PHYSICOCHEMICAL_QUERY_BY_SAMPLE_CODE_API({
-        sampleCode: str
-      }).then(res => {
+      str && MANAGEMENT_INSPECTION_PHYSICOCHEMICAL_QUERY_BY_SAMPLE_CODE_API(
+        [str]
+      ).then(res => {
         console.log('根据样品码查询检验任务')
         console.log(res.data.data)
         if (!res.data.data.length) {
           proxy.$infoToast('无任何数据')
         } else {
           // push 前去重
-          const temp = state.dataTableOfTopicMain.map(item => item.sampleCode)
+          let tempLength = 0
+          const temp = state.dataTableOfTopicMain.map(item => item.id)
           res.data.data.forEach((item:any) => {
-            !temp.includes(item.sampleCode) && state.dataTableOfTopicMain.push(item)
+            if (!temp.includes(item.id)) {
+              if (item.taskStatus === 'RECEIVED' || item.taskStatus === 'CHECKING' || item.taskStatus === 'COMPLETED') {
+                // if (item.taskStatus === 'COMPLETED') {
+                //   item.delFlag = 1
+                // } else {
+                //   item.delFlag = 0
+                // }
+                state.dataTableOfTopicMain.push(item)
+                tempLength += 1
+              }
+            } else {
+              proxy.$warningToast('列表中已存在欲添加的检验码')
+            }
           })
-
-          // remove checked item
-          state.selectedListOfTopicMainData = []
-          refTableOfTopicMain.value.clearSelection()
-          // remove highlight row
-          setCurrent({})
-          // highlight row
-          if (!state.searchFilter.merge) {
-            state.dataTableOfTopicMain.length >= 1 && setCurrent(state.dataTableOfTopicMain[0])
-            state.currentOgj = state.dataTableOfTopicMain[0]
+          // 提示所查找的样品码没有所要查找的状态 （RECEIVED、CHECKING、COMPLETED）
+          if (res.data.data.some((item:any) => item.taskStatus !== 'RECEIVED' && item.taskStatus !== 'CHECKING' && item.taskStatus !== 'COMPLETED')) {
+            proxy.$warningToast('样品码非[已收样][检验中][已完成]状态，不可操作')
           }
+
+          state.searchFilter.merge = false
+          state.searchFilter.sampleCode = ''
+
+          setCurrentRowOnFocus({})
+          // R:highlight row # 此功能不需要
+          // if (!state.searchFilter.merge) {
+          //   state.dataTableOfTopicMain.filter(element => element.taskStatus !== 'COMPLETED').length >= 1 && setCurrentRowOnFocus(state.dataTableOfTopicMain.filter(element => element.taskStatus !== 'COMPLETED')[0])
+          //   state.currentGlobalActOgj = state.dataTableOfTopicMain.filter(element => element.taskStatus !== 'COMPLETED')[0]
+          // } else {
+          // // R:合併檢掃碼新增時帶上勾選
+          //   for (let i = 1; i <= tempLength; i++) {
+          //     refTableOfTopicMain.value.toggleRowSelection(state.dataTableOfTopicMain.filter(element => element.taskStatus !== 'COMPLETED')[state.dataTableOfTopicMain.filter(element => element.taskStatus !== 'COMPLETED').length - i])
+          //   }
+          // }
         }
       }).catch(() => {
         proxy.$infoToast('您无权限执行此样品检验，请选择其它样品')
       })
     }
 
+    // reload 任务表单
+    const btnGetInspectListReload = (val: DataTableOfTopicMain[]) => {
+      // val.length && MANAGEMENT_INSPECTION_PHYSICOCHEMICAL_QUERY_BY_SAMPLE_CODE_API(
+      //   val.map(item => item.sampleCode)
+      val.length && MANAGEMENT_INSPECTION_TASK_INSPECT_QUERY_BY_ID_API( // /taskInspect/queryTaskInspectByIds
+        val
+      ).then(res => {
+        state.dataTableOfTopicMain = []
+        res.data.data.forEach((item:any) => {
+          if (item.taskStatus === 'RECEIVED' || item.taskStatus === 'CHECKING' || item.taskStatus === 'COMPLETED') {
+            if (item.taskStatus === 'COMPLETED') {
+              item.delFlag = 1
+            } else {
+              item.delFlag = 0
+            }
+            state.dataTableOfTopicMain.push(item)
+          }
+        })
+        // setCurrentRowOnFocus({})
+        state.searchFilter.sampleCode = ''
+        state.searchFilter.merge = false
+      })
+    }
+
     // 重置 table data
     const btnReset = () => {
       state.dataTableOfTopicMain = []
+      proxy.$successToast('表单已清空')
+      store.commit('common/updateSampleObjToInspect', { type: 'EMPTY', obj: [] })
     }
 
-    // focus
-    const setCurrent = (row:any) => {
+    // focus or remove focus
+    const setCurrentRowOnFocus = (row:any) => {
       Object.keys(row).length === 0 ? refTableOfTopicMain.value.setCurrentRow() : refTableOfTopicMain.value.setCurrentRow(row)
+      state.currentGlobalActOgj = row
     }
 
-    //
-    const handleCurrentChange = (row:any) => {
-      console.log(row)
-      state.currentOgj = row
+    // assign global index & focus row obj
+    const handleCurrentChange = (row:DataTableOfTopicMain) => {
+      state.currentGlobalActOgj = row
+      state.dataTableOfTopicMain.forEach((item, index) => {
+        if (item.id === row.id) {
+          state.indexOfCurrentRowOnFocus = index
+        }
+      })
     }
 
+    //  click 合并检 button 后行为：取消 row's focus
     const btnCheckOfMergeOrNot = (val:boolean) => {
-      if (state.dataTableOfTopicMain.length !== 0) {
-        val ? setCurrent({}) : setCurrent(state.dataTableOfTopicMain[0])
+      if (state.dataTableOfTopicMain.filter(element => element.taskStatus !== 'COMPLETED').length !== 0) {
+        val ? setCurrentRowOnFocus({}) : setCurrentRowOnFocus(state.dataTableOfTopicMain[state.indexOfCurrentRowOnFocus]) // TODO
       }
     }
 
-    // [table] 选框选择
+    // [ACT][Table] 选框选择後的处理
     const actHandleSelectionChange = (val: DataTableOfTopicMain[]) => {
-      console.log('9999999')
-      console.log(val)
       state.selectedListOfTopicMainData = val
+    }
+
+    // [SELECT][Table] 选框选择
+    const btnHandleOneSelectionChange = (val: DataTableOfTopicMain[]) => {
+      if (val.length && val[val.length - 1].taskInspectClassify !== 'PROCESS') {
+        proxy.$warningToast('临时检验任务，无法勾选合并')
+        refTableOfTopicMain.value.toggleRowSelection(val[val.length - 1], false)
+      }
+    }
+    // [SELECT][Table] 选框 ALL 选择
+    const btnHandleAllSelectionChange = (val: DataTableOfTopicMain[]) => {
+      if (val.length && state.selectedListOfTopicMainData.some(item => item.taskInspectClassify !== 'PROCESS')) {
+        proxy.$warningToast('临时检验任务，无法勾选合并')
+        refTableOfTopicMain.value.clearSelection()
+      }
+    }
+
+    // dialog close and return to act
+    const returnFromDialogAndOpenAgainHandle = (val:any) => {
+      console.log('.............')
+      console.log(val)
+      // val.act==='save && val.target === '' => 保存 没有复检
+      // val.act==='submit && val.target === '' => 提交 没有复检
+      // val.act==='submit && val.target === 'ORIGINAL_RECHECK' => 提交 原样复检
+      // val.act==='submit && val.target === 'RESAMOLING' => 提交 取样复检
+      setTimeout(async () => {
+        // 1. 是否刷新 list
+        if (val.act === 'save' && state.subType === 'merge') { // 不刷新
+          state.selectedListOfTopicMainData.forEach((item:any) => { item.taskStatus = 'CHECKING' })
+        } else { // 刷新
+          const tempContainer:any[] = []
+          let isOpenCopy = false
+          // 将原来的 list 提取
+          state.dataTableOfTopicMain.forEach(item => {
+            tempContainer.push({
+              id: item.id,
+              mergeFlag: item.mergeFlag
+            })
+          })
+
+          // 后来复检提交会返 string[] =>id
+          if (val.obj && val.obj.taskInspectIdList.length) {
+            console.log(val.obj.taskInspectIdList)
+            isOpenCopy = true
+            tempContainer.push({
+              id: val.obj.taskInspectIdList[0],
+              mergeFlag: ''
+            })
+          }
+
+          // 重新加载后 list
+          await btnGetInspectListReload(tempContainer)
+          console.log('state.dataTableOfTopicMain')
+          console.log(state.dataTableOfTopicMain)
+
+          const totalItemsNumber = state.dataTableOfTopicMain.length // 3 status
+          let nowItemIndex = -1
+          let nexItemIndex = null
+
+          if (isOpenCopy) { // run 复检
+            console.log('$$$$$$$$$$复检$$$$$$$$$$$')
+            state.dataTableOfTopicMain.forEach((item:any, index:number) => {
+            // 找出原先的 sample
+              if (item.id === state.currentGlobalActOgj.id) {
+                nowItemIndex = index
+              }
+              // 复检 copy 出来的 sample
+              if (item.id === val.obj.taskInspectIdList[0]) {
+                nexItemIndex = index
+              }
+
+              if (item.taskStatus === 'COMPLETED') {
+                item.delFlag = 1
+              }
+            })
+          } else { // run 非复检
+            console.log('$$$$$$$$$$非复检$$$$$$$$$$$')
+            state.dataTableOfTopicMain.forEach((item:any, index:number) => {
+              if (item.id === state.currentGlobalActOgj.id) {
+                nowItemIndex = index
+                let tempNexItemIndex = nowItemIndex + 1
+
+                console.log('nowItemIndex:' + nowItemIndex)
+
+                while (tempNexItemIndex < state.dataTableOfTopicMain.length) {
+                  console.log(tempNexItemIndex)
+                  console.log(state.dataTableOfTopicMain[tempNexItemIndex])
+
+                  if (state.dataTableOfTopicMain[tempNexItemIndex].taskStatus !== 'COMPLETED') {
+                    nexItemIndex = tempNexItemIndex
+                    break
+                  } else {
+                    tempNexItemIndex = tempNexItemIndex + 1
+                  }
+                }
+              }
+
+              if (item.taskStatus === 'COMPLETED') {
+                item.delFlag = 1
+              }
+            })
+          }
+
+          // 3.跑再开启
+          if (val.act === 'save') {
+            console.log('$$$$$$$$$$save$$$$$$$$$$$')
+            if (state.subType !== 'merge') { // 只有保存会重开
+              if (nexItemIndex !== null && nexItemIndex < totalItemsNumber) { // 剩多笔
+                console.log('还有可开')
+                state.indexOfCurrentRowOnFocus = nexItemIndex
+                setTimeout(() => {
+                  setCurrentRowOnFocus(state.dataTableOfTopicMain[state.indexOfCurrentRowOnFocus])
+                  actGetInspectDetail()
+                }, 500)
+              } else if (totalItemsNumber === 1) { // 只剩一笔
+                state.indexOfCurrentRowOnFocus = nowItemIndex
+                setTimeout(() => {
+                  setCurrentRowOnFocus(state.dataTableOfTopicMain[state.indexOfCurrentRowOnFocus])
+                }, 500)
+                console.log('没有可再开')
+              } else { // 到底
+                state.indexOfCurrentRowOnFocus = nowItemIndex
+                setTimeout(() => {
+                  setCurrentRowOnFocus(state.dataTableOfTopicMain[state.indexOfCurrentRowOnFocus])
+                }, 500)
+                console.log('到底，没有可开')
+              }
+            }
+          } else if (val.act === 'submit') {
+            console.log('$$$$$$$$$$submit$$$$$$$$$$$')
+            if (state.subType !== 'merge') { // 只有保存会重开
+              if (nexItemIndex !== null && nexItemIndex < totalItemsNumber) { // 剩多笔
+                console.log('还有可开')
+                state.indexOfCurrentRowOnFocus = nexItemIndex
+                setTimeout(() => {
+                  setCurrentRowOnFocus(state.dataTableOfTopicMain[state.indexOfCurrentRowOnFocus])
+                  actGetInspectDetail()
+                }, 500)
+              } else if (totalItemsNumber === 1) { // 只剩一笔
+                state.indexOfCurrentRowOnFocus = nowItemIndex
+                setTimeout(() => {
+                  setCurrentRowOnFocus(state.dataTableOfTopicMain[state.indexOfCurrentRowOnFocus])
+                }, 500)
+                console.log('没有可再开')
+              } else { // 到底
+                state.indexOfCurrentRowOnFocus = nowItemIndex
+                setTimeout(() => {
+                  setCurrentRowOnFocus(state.dataTableOfTopicMain[state.indexOfCurrentRowOnFocus])
+                }, 500)
+                console.log('到底，没有可开')
+              }
+            }
+          }
+        }
+      }, 1000)
+    }
+
+    // 隐掉 COMPLETED
+    const markRowWithDelFlag = (obj:any) => {
+      if (obj.row.delFlag === 1) {
+        return 'rowDel'
+      }
+      return ''
     }
 
     /**  == 生命周期 ==  **/
     onMounted(async () => {
-      state.currentType = store.state.common.sampleObj.type
-      state.currentObj = store.state.common.sampleObj.obj
-      console.log('=============')
-      console.log(store.state.common.sampleObj.type)
-      console.log(store.state.common.sampleObj.obj)
-      console.log('=============')
-      // 获取状态下拉
-      await DICTIONARY_QUERY_API({ dictType: 'TASK_STATUS' }).then((res) => {
-        state.applyStatusOptions = res.data.data // 除去已出库
-        state.applyStatusNameObj = {}
-        state.applyStatusOptions.forEach((item:any) => {
-          state.applyStatusNameObj[item.dictCode] = item.dictValue
-          console.log('state.applyStatusNameObj')
-          console.log(state.applyStatusNameObj)
-        })
-      })
+      // state.mainType = store.state.common.sampleObj.type //  TEMP | PROCESS
+      state.mainType = ''
+      // state.currentObj = store.state.common.sampleObj.obj
+      state.currentObj = null
 
-      if (!state.currentType) {
-        tabsCloseCurrentHandle()
-        proxy.$warningToast('操作过时，请重新选择！')
-        gotoPage({
-          path: 'qms-pages-InspectionManagement-InspectionTask-index'
-        })
-      } else {
-        console.log('state.currentObj')
-        console.log(state.currentObj)
-        state.dataTableOfTopicMain = state.currentObj.length ? [state.currentObj[0]] : []
-        console.log('state.dataTableOfTopicMain')
-        console.log(state.dataTableOfTopicMain)
-        if (!state.searchFilter.merge) {
-          state.dataTableOfTopicMain.length >= 1 && setCurrent(state.dataTableOfTopicMain[0])
+      if (router.currentRoute.value.params.wayInto) {
+        state.correntWayInto = true
+        const temp:any = JSON.parse(router.currentRoute.value.params.transferObj as string)
+        console.log('temp')
+        console.log(temp)
+        state.currentObj = temp.obj
+        state.mainType = temp.type
+      }
+      console.log('==TYPE===========')
+      console.log(state.mainType)
+      console.log(state.currentObj)
+      console.log('==OBJ============')
+
+      console.log('state.correntWayInto')
+      console.log(state.correntWayInto)
+      console.log('state.currentObj')
+      console.log(state.currentObj)
+
+      // if (!state.mainType) {
+      //   tabsCloseCurrentHandle()
+      //   proxy.$warningToast('操作过时，请重新选择！')
+      //   gotoPage({
+      //     path: 'qms-pages-InspectionManagement-InspectionTask-index'
+      //   })
+      // } else {
+      // 清空重整
+      state.dataTableOfTopicMain = []
+      if (state.correntWayInto) {
+        if (state.currentObj.length) {
+          await MANAGEMENT_INSPECTION_TASK_INSPECT_QUERY_BY_ID_API(state.currentObj).then((res) => { // /taskInspect/queryTaskInspectByIds
+            console.log('==转进来的数据加工后==')
+            console.log(res.data.data)
+            res.data.data.forEach((item:DataTableOfTopicMain) => {
+              // 只收 'RECEIVED' & 'CHECKING' 状态
+              if (item.taskStatus === 'RECEIVED' || item.taskStatus === 'CHECKING') {
+                state.dataTableOfTopicMain.push(item)
+              }
+            })
+          })
         }
       }
+
+      // 没勾选合并检下，focus 第一条 (其实一进来默认不会勾选 state.searchFilter.merge ===false)
+      if (!state.searchFilter.merge) {
+        state.indexOfCurrentRowOnFocus = 0
+        state.dataTableOfTopicMain.length >= 1 && setCurrentRowOnFocus(state.dataTableOfTopicMain[state.indexOfCurrentRowOnFocus])
+      }
+      // }
     })
 
     return {
       ...toRefs(state),
       // btn
-      btnGetInspectDetail,
+      actGetInspectDetail,
       btnGetInspectList,
       btnReset,
-      setCurrent,
       handleCurrentChange,
       btnCheckOfMergeOrNot,
       actHandleSelectionChange,
+      btnHandleOneSelectionChange,
+      btnHandleAllSelectionChange,
+      returnFromDialogAndOpenAgainHandle,
+      btnGetInspectListReload,
+      actReGetInspectDetail,
+      markRowWithDelFlag,
       // data
       // ref
       refTableOfTopicMain
