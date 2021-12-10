@@ -206,7 +206,7 @@ export default defineComponent({
       query(status)
     }
     // 检验
-    const goInspect = (row?: TableData) => {
+    const goInspect = () => {
       if (!selectionData.value.length) {
         proxy.$warningToast('请选择数据')
         return
