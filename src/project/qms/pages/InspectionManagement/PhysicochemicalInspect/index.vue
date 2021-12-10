@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-11-16 09:59:02
  * @LastEditors: Telliex
- * @LastEditTime: 2021-12-09 22:01:34
+ * @LastEditTime: 2021-12-10 09:48:22
 -->
 <template>
   <mds-area class="test_method" title="已选中样品" :pack-up="false" style="margin-bottom: 0; background: #fff; overflow:scroll">
@@ -212,24 +212,26 @@ export default defineComponent({
         console.log(state.selectedListOfTopicMainData[0].taskInspectClassify)
         console.log('normal1')
 
+        // 样品码是已完成即返回
         if (state.selectedListOfTopicMainData[0].taskStatus === 'COMPLETED') {
           proxy.$warningToast('已完成状态无法检验')
           return
         }
+
         state.mainType = state.selectedListOfTopicMainData[0].taskInspectClassify
         state.subType = 'normal'
 
-        if (state.selectedListOfTopicMainData[0].mergeBatch === '' && state.selectedListOfTopicMainData[0].groupBatch === '') {
+        if (state.selectedListOfTopicMainData[0].mergeBatch === '' && state.selectedListOfTopicMainData[0].groupBatch === '') { // x合并 x组合
           state.targetObjList = JSON.parse(JSON.stringify(state.selectedListOfTopicMainData))
         } else { // 该条是合并样品
           state.subType = 'merge'
 
-          if (state.currentGlobalActOgj.mergeBatch !== '') {
+          if (state.selectedListOfTopicMainData[0].mergeBatch !== '' && state.selectedListOfTopicMainData[0].groupBatch === '') { // v合并 x组合
             state.targetObjList = state.dataTableOfTopicMain.filter((element:any) => element.mergeBatch === state.selectedListOfTopicMainData[0].mergeBatch)
-          }
-
-          if (state.currentGlobalActOgj.groupBatch !== '') {
+          } else if (state.selectedListOfTopicMainData[0].mergeBatch === '' && state.selectedListOfTopicMainData[0].groupBatch !== '') { // x合并 v组合
             state.targetObjList = state.dataTableOfTopicMain.filter((element:any) => element.groupBatch === state.selectedListOfTopicMainData[0].groupBatch)
+          } else { // v合并 v组合
+            state.targetObjList = state.dataTableOfTopicMain.filter((element:any) => element.groupBatch === state.selectedListOfTopicMainData[0].groupBatch || element.mergeBatch === state.selectedListOfTopicMainData[0].mergeBatch)
           }
 
           refTableOfTopicMain.value.toggleRowSelection(state.targetObjList, true)
@@ -240,6 +242,7 @@ export default defineComponent({
         console.log('normal2')
         console.log(state.currentGlobalActOgj.taskInspectClassify)
 
+        // 样品码是已完成即返回
         if (state.currentGlobalActOgj.taskStatus === 'COMPLETED') {
           proxy.$warningToast('已完成状态无法检验')
           return
@@ -249,18 +252,17 @@ export default defineComponent({
         state.subType = 'normal'
 
         if (Object.keys(state.currentGlobalActOgj).length !== 0) {
-          if (state.currentGlobalActOgj.mergeBatch === '' && state.currentGlobalActOgj.groupBatch === '') {
+          if (state.currentGlobalActOgj.mergeBatch === '' && state.currentGlobalActOgj.groupBatch === '') { // x合并 x组合
             state.targetObjList = [JSON.parse(JSON.stringify(state.currentGlobalActOgj))]
           } else { // 该条是合并样品
             state.subType = 'merge'
 
-            // TODO  是不是 mergeBatch groupBatch  同时出现
-            if (state.currentGlobalActOgj.mergeBatch !== '') {
+            if (state.currentGlobalActOgj.mergeBatch !== '' && state.currentGlobalActOgj.groupBatch === '') { // v合并 x组合
               state.targetObjList = state.dataTableOfTopicMain.filter((element:any) => element.mergeBatch === state.currentGlobalActOgj.mergeBatch)
-            }
-
-            if (state.currentGlobalActOgj.groupBatch !== '') {
+            } else if (state.currentGlobalActOgj.mergeBatch === '' && state.currentGlobalActOgj.groupBatch !== '') { // x合并 v组合
               state.targetObjList = state.dataTableOfTopicMain.filter((element:any) => element.groupBatch === state.currentGlobalActOgj.groupBatch)
+            } else { // v合并 v组合
+              state.targetObjList = state.dataTableOfTopicMain.filter((element:any) => element.groupBatch === state.currentGlobalActOgj.groupBatch || element.mergeBatch === state.currentGlobalActOgj.mergeBatch)
             }
 
             refTableOfTopicMain.value.toggleRowSelection(state.targetObjList, true)
@@ -310,6 +312,7 @@ export default defineComponent({
                   if (item.taskInspectClassify === 'TEMP') {
                     proxy.$warningToast('临时检验任务，无法勾选合并')
                   } else {
+                    // 若非 TEMP 即打勾，过滤比对交给 select
                     refTableOfTopicMain.value.toggleRowSelection(item, true)
                   }
 
@@ -576,7 +579,13 @@ export default defineComponent({
                   actGetInspectDetail()
                 }, 500)
               } else if (totalItemsNumber === 1) { // 只剩一笔
+              // TODO
+                // if (isOpenCopy) {
+                //   state.indexOfCurrentRowOnFocus = nexItemIndex
+                // } else {
                 state.indexOfCurrentRowOnFocus = nowItemIndex
+                // }
+
                 setTimeout(() => {
                   setCurrentRowOnFocus(state.dataTableOfTopicMain[state.indexOfCurrentRowOnFocus])
                 }, 500)

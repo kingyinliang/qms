@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-11-11 16:30:07
  * @LastEditors: Telliex
- * @LastEditTime: 2021-12-09 19:17:09
+ * @LastEditTime: 2021-12-10 09:32:56
 -->
 <template>
   <mds-area class="info" :title="subTitle">
@@ -90,17 +90,17 @@
           <el-form :inline="true" :model="item"  :label-width="cssForformLabelWidth" v-if="currentType==='HISTORY'">
             <el-form-item label="检验开始："  prop="inspectStartDate">
               <el-tooltip class="item" effect="dark" :content="item.inspectStartDate" placement="top-start" :disabled="!item.inspectStartDate">
-                <el-input v-model="item.inspectStartDate" size="small" class="inputWidth" placeholder="" autocomplete="off" :readonly="onlyRead" :disabled="disable"></el-input>
+                <el-input v-model="item.inspectStartDate" size="small" class="inputWidth" placeholder="" autocomplete="off" :readonly="onlyRead" :disabled="disable" style="width:180px;"></el-input>
               </el-tooltip>
             </el-form-item>
             <el-form-item label="检验结束："  prop="inspectEndDate" >
               <el-tooltip class="item" effect="dark" :content="item.inspectEndDate" placement="top-start" :disabled="!item.inspectEndDate">
-              <el-input v-model="item.inspectEndDate" size="small" class="inputWidth" placeholder="" autocomplete="off" :readonly="onlyRead" :disabled="disable"></el-input>
+              <el-input v-model="item.inspectEndDate" size="small" class="inputWidth" placeholder="" autocomplete="off" :readonly="onlyRead" :disabled="disable" style="width:180px;"></el-input>
               </el-tooltip>
             </el-form-item>
             <el-form-item label="取样说明："  prop="sampleExplain" >
               <el-tooltip class="item" effect="dark" :content="item.sampleExplain" placement="top-start" :disabled="!item.sampleExplain">
-                <el-input v-model="item.sampleExplain" size="small" class="inputWidth" placeholder="" autocomplete="off" :readonly="onlyRead" :disabled="disable"></el-input>
+                <el-input v-model="item.sampleExplain" size="small" class="inputWidth" placeholder="" autocomplete="off" :readonly="onlyRead" :disabled="disable" style="width:192px;"></el-input>
               </el-tooltip>
             </el-form-item>
           </el-form>
@@ -272,7 +272,7 @@ export default defineComponent({
         if (state.currentType === 'HISTORY') {
           state.disable = false
           // TODO  ask BE this api can return first check or recheck ? sampleCode: "211200035(复1) "??     API 用法
-          MANAGEMENT_INSPECTION_PHYSICOCHEMICAL_HISTORY_TASK_FORM_QUERY_API([state.currentObj.sampleCode]).then(async (res) => {
+          MANAGEMENT_INSPECTION_PHYSICOCHEMICAL_HISTORY_TASK_FORM_QUERY_API(state.currentObj.sampleCodes).then(async (res) => { // /taskInspect/queryHistoryFormTaskInspect
             console.log('HISTORY VIEW')
             console.log(res.data.data)
             if (res.data.data.length) {
