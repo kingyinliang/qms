@@ -497,6 +497,13 @@ export default defineComponent({
           taskFiveTubeDataList: list
         }
       }
+      if (row instanceof Array) {
+        componentData.form.inspectMethodCode = row[0].inspectMethodCode
+        componentData.form.inspectMethodName = row[0].inspectMethodName
+      } else {
+        componentData.form.inspectMethodCode = row.inspectMethodCode
+        componentData.form.inspectMethodName = row.inspectMethodName
+      }
     }
     // 初始化预览弹窗
     const previewInit = (data) => {
