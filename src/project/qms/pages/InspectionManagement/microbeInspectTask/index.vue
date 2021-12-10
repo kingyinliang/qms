@@ -4,7 +4,7 @@
       <div style="float: right; color: #333333;font-size: 14px;font-weight: bold;cursor: pointer" @click="goHistory"><i class="qmsIconfont qms-lishirenwu1" style="color: #487BFF"/> 历史任务</div>
     </template>
     <el-row :gutter="16">
-      <el-col :span="4" style="min-width: 255px" v-for="(item, index) in taskList" :key="index">
+      <el-col :span="6" style="min-width: 255px" v-for="(item, index) in taskList" :key="index">
         <div class="task__item" :class="{active: task === item.inspectClassify}"  @click="changeTask(item.inspectClassify,item.inspectClassifyName)">
           <p class="task__item--title">
             <svg class="qmsIconfont" aria-hidden="true">
@@ -38,7 +38,7 @@
   </mds-card>
   <mds-card class="task-list" title="任务列表" :pack-up="false">
     <template #titleBtn>
-      <el-form :inline="true" size="small" style="float: right;display: flex" @keyup.enter="() => {queryForm.current = 1; query()}" @submit.prevent>
+      <el-form :inline="true" size="small" style="float: right;display: flex" @keyup.enter="() => {queryForm.current = 1; query(); getTask()}" @submit.prevent>
         <el-form-item label="样品码：">
           <el-input v-model="queryForm.sampleCode" placeholder="请输入" style="width: 120px" clearable></el-input>
         </el-form-item>
@@ -65,7 +65,7 @@
         />
       </el-form-item>
         <el-form-item>
-          <el-button icon="el-icon-search" @click="() => {queryForm.current = 1; query()}">查询</el-button>
+          <el-button icon="el-icon-search" @click="() => {queryForm.current = 1; query(); getTask()}">查询</el-button>
           <el-button @click="goCultivate()"><i class="qmsIconfont qms-jianyan"/> 培养</el-button>
           <el-button type="primary" @click="goCount()"><i class="qmsIconfont qms-dayin" /> 计数</el-button>
           <el-button v-if="task !== 'COLONYNUM'" type="primary" @click="goFive()"><i class="qmsIconfont qms-dayin" /> 检验</el-button>
@@ -152,6 +152,7 @@ interface TableData{
   itemName?: string
   inspectSiteName?: string
   sampleCode?: string
+  taskStatusName?: string
   inspectMethodGroupNameList: string[]
 }
 
@@ -187,8 +188,6 @@ export default defineComponent({
     // 获取代办任务类别
     const getTask = async () => {
       const { data } = await TASK_INSPECT_MICROBE_TODO_LIST_QUERY()
-      console.log('获取代办任务类别')
-      console.log(data.data)
       taskList.value = []
       for (const key in data.data) {
         if (data.data[key]) {
@@ -296,10 +295,10 @@ export default defineComponent({
       })
     }
     // 表格复选框能否被选中逻辑
-    const checkDate = () => {
-      // if (row.taskStatus !== 'RECEIVED' && row.taskStatus !== 'CHECKING') {
-      //   return false
-      // }
+    const checkDate = (row:TableData) => {
+      if (row.taskStatusName === '已完成') {
+        return false
+      }
       return true
     }
     // 表格复选框改变

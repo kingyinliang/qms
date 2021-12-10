@@ -4,7 +4,7 @@
       <img src="@/assets/img/printIcon.svg" alt="" class="inspect__form__header__img">
       <span>{{ form.inspectContent }}</span>
     </p>
-    <el-form :model="form" ref="formRef" :rules="rules" :inline="true" size="small" label-width="98px">
+    <el-form :model="form" ref="formRef" :rules="type === 'CULTIVATE'? {} : rules" :inline="true" size="small" label-width="110px">
       <template v-if="type === 'CULTIVATE' || type === 'CALCULATE'">
         <mds-card class="inspect__form__main" title="培养" :pack-up="false">
           <div>
@@ -20,7 +20,7 @@
               />
             </el-form-item>
             <el-form-item label="培养批次：" prop="cultureBatch">
-              <el-input v-model="form.cultureBatch" maxlength="10" placeholder="请输入" :disabled="preview" clearable style="width: 140px" />
+              <el-input v-model="form.cultureBatch" maxlength="6" placeholder="请输入" :disabled="preview" clearable style="width: 140px" />
             </el-form-item>
             <el-form-item label="培养箱：" prop="cultureBox">
               <el-select v-model="form.cultureBox" placeholder="请选择" :disabled="preview" clearable style="width: 140px">
@@ -66,7 +66,7 @@
               </el-select>
             </el-form-item>
             <el-form-item label="灭菌用品批次：" label-width="130px" prop="sterilizerBatch">
-              <el-input v-model="form.sterilizerBatch" maxlength="10" placeholder="请输入" :disabled="preview" clearable style="width: 140px" />
+              <el-input v-model="form.sterilizerBatch" maxlength="6" placeholder="请输入" :disabled="preview" clearable style="width: 140px" />
             </el-form-item>
             <el-form-item label="培养24小时温度：" label-width="140px" prop="cultureTemp">
               <el-input v-model="form.cultureTemp" placeholder="请输入" :disabled="preview" clearable style="width: 140px" />
@@ -74,7 +74,7 @@
           </div>
         </mds-card>
         <mds-card v-if="type === 'CALCULATE'" class="inspect__form__main" title="计数" :pack-up="false">
-          <el-form-item label="计数时间：">
+          <el-form-item label="计数时间：" prop="countDate">
             <el-date-picker
               v-model="form.countDate"
               type="date"
@@ -85,7 +85,7 @@
               style="width: 140px"
             />
           </el-form-item>
-          <el-form-item label="计数人：">
+          <el-form-item label="计数人：" prop="countMan">
             <el-select v-model="form.countMan" multiple filterable placeholder="请选择" :disabled="preview" clearable style="width: 140px">
               <el-option v-for="item in users" :key="item.id" :label="item.realName" :value="item.id" />
             </el-select>
@@ -100,21 +100,25 @@
               </template>
             </el-table-column>
             <el-table-column label="计数1" min-width="110" >
+              <template #header><span style="color: red">*</span>计数1</template>
               <template #default="scope">
                 <el-input v-model="scope.row.countOne" placeholder="请输入" :disabled="preview" size="small" clearable style="width: 140px" @change="keyChange(scope.row)"/>
               </template>
             </el-table-column>
             <el-table-column label="计数2" min-width="110" >
+              <template #header><span style="color: red">*</span>计数2</template>
               <template #default="scope">
                 <el-input v-model="scope.row.countTwo" placeholder="请输入" :disabled="preview" size="small" clearable style="width: 110px" @change="keyChange(scope.row)"/>
               </template>
             </el-table-column>
             <el-table-column label="平均值" min-width="110" >
+              <template #header><span style="color: red">*</span>平均值</template>
               <template #default="scope">
                 {{ scope.row.average }}
               </template>
             </el-table-column>
             <el-table-column label="结果" min-width="110" >
+              <template #header><span style="color: red">*</span>结果</template>
               <template #default="scope">
                 <el-input v-model="scope.row.inspectResult" placeholder="请输入" :disabled="preview" clearable style="width: 110px" @change="resultChange(scope.row)"/>
               </template>
@@ -138,12 +142,12 @@
             <el-form-item label="样品码：">
               <el-input v-model="form.sampleCode" placeholder="请输入" disabled clearable style="width: 140px" />
             </el-form-item>
-            <el-form-item label="出水口编号：">
+            <el-form-item label="出水口编号：" prop="outWaterNo">
               <el-select v-model="form.outWaterNo" placeholder="请选择" :disabled="preview" clearable style="width: 140px">
                 <el-option v-for="item in outWaterNo" :key="item.dictCode" :label="item.dictValue" :value="item.dictCode" />
               </el-select>
             </el-form-item>
-            <el-form-item label="检验日期：">
+            <el-form-item label="检验日期：" prop="inspectDate">
               <el-date-picker
                 v-model="form.inspectDate"
                 type="date"
@@ -159,12 +163,12 @@
                 <el-option v-for="item in sterilizerPot" :key="item.dictCode" :label="item.dictValue" :value="item.dictCode" />
               </el-select>
             </el-form-item>
-            <el-form-item label="操作台编号：">
+            <el-form-item label="操作台编号：" prop="consoleNo">
               <el-select v-model="form.consoleNo" placeholder="请选择" :disabled="preview" clearable style="width: 140px">
                 <el-option v-for="item in consoleNo" :key="item.dictCode" :label="item.dictValue" :value="item.dictCode" />
               </el-select>
             </el-form-item>
-            <el-form-item label="培养箱编号：">
+            <el-form-item label="培养箱编号：" prop="cultureBox">
               <el-select v-model="form.cultureBox" placeholder="请选择" :disabled="preview" clearable style="width: 140px">
                 <el-option v-for="item in cultureBox" :key="item.dictCode" :label="item.dictValue" :value="item.dictCode" />
               </el-select>
@@ -175,6 +179,7 @@
           <el-table border :cell-style="{'text-align':'center'}" :data="form.taskFiveTubeDataList" tooltip-effect="dark" :span-method="objectSpanMethod" style="width: 100%">
             <el-table-column type="index" label="样品制备" width="80" align="center" />
             <el-table-column label="10mL双料管" width="110" >
+              <template #header><span style="color: red">*</span>10mL双料管</template>
               <template #default="scope">
                 <el-select v-model="scope.row.ten" placeholder="请选择" :disabled="preview" clearable size="small" style="width: 100px">
                   <el-option v-for="item in ftube" :key="item.dictCode" :label="item.dictValue" :value="item.dictCode" />
@@ -182,6 +187,7 @@
               </template>
             </el-table-column>
             <el-table-column label="1mL单料管" width="110" >
+              <template #header><span style="color: red">*</span>1mL单料管</template>
               <template #default="scope">
                 <el-select v-model="scope.row.one" placeholder="请选择" :disabled="preview" clearable size="small" style="width: 100px">
                   <el-option v-for="item in ftube" :key="item.dictCode" :label="item.dictValue" :value="item.dictCode" />
@@ -189,6 +195,7 @@
               </template>
             </el-table-column>
             <el-table-column label="0.1mL单料管" width="110" >
+              <template #header><span style="color: red">*</span>0.1mL单料管</template>
               <template #default="scope">
                 <el-select v-model="scope.row.zeroPointOne" placeholder="请选择" :disabled="preview" clearable size="small" style="width: 100px">
                   <el-option v-for="item in ftube" :key="item.dictCode" :label="item.dictValue" :value="item.dictCode" />
@@ -326,6 +333,11 @@ export default defineComponent({
       takeOutTemp: [{ required: true, message: '请选择取出温度', trigger: 'blur' }],
       sterilizerBatch: [{ required: true, message: '请输入灭菌用品批次', trigger: 'blur' }],
       cultureTemp: [{ required: true, message: '请输入培养24小时温度', trigger: 'blur' }],
+      countDate: [{ required: true, message: '请选择计数时间', trigger: 'blur' }],
+      countMan: [{ required: true, message: '请选择计数人', trigger: 'blur' }],
+      outWaterNo: [{ required: true, message: '请选择出水口编号', trigger: 'blur' }],
+      inspectDate: [{ required: true, message: '请选择检验日期', trigger: 'blur' }],
+      consoleNo: [{ required: true, message: '请选择操作台编号', trigger: 'blur' }],
       judgeResult: [{ required: true, message: '请选择综合判定', trigger: 'blur' }]
     }
 
@@ -587,10 +599,30 @@ export default defineComponent({
       if (str === 'COMPLETED') {
         componentData.formRef.validate((valid) => {
           if (valid) {
+            if (props.type === 'CALCULATE') {
+              for (const item of componentData.form.taskCultureDataList) {
+                if (!item.countOne || !item.countTwo || !item.average) {
+                  proxy.$warningToast('请填写计数表格必填数据')
+                  return
+                }
+              }
+            }
+            if (props.type === 'FIVETUBES') {
+              for (const item of componentData.form.taskFiveTubeDataList) {
+                if (!item.ten || !item.one || !item.zeroPointOne) {
+                  proxy.$warningToast('请填写检验表格必填数据')
+                  return
+                }
+              }
+            }
             updateFormSubmitFn(str)
           }
         })
       } else {
+        if (props.type === 'CULTIVATE' && !componentData.form.inspectDate) {
+          proxy.$warningToast('请选择检验日期')
+          return
+        }
         updateFormSubmitFn(str)
       }
     }

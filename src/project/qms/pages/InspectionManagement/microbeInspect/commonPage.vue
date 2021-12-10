@@ -4,7 +4,7 @@
       <div style="float: right">
         <el-form :inline="true" size="small" style="float: right;display: flex" @keyup.enter="query()" @submit.prevent>
           <el-form-item>
-            <el-radio-group v-model="queryForm.indexName" @change="query">
+            <el-radio-group v-model="queryForm.indexName" @change="changeDate()">
               <el-radio label="菌落总数">菌落总数</el-radio>
               <el-radio label="大肠菌群">大肠菌群</el-radio>
               <el-radio label="酵母菌">酵母菌</el-radio>
@@ -26,6 +26,7 @@
           </el-form-item>
           <el-button v-if="type==='CULTIVATE'" icon="el-icon-search" type="primary" size="small" class="topic-button" @click="cultivate()" >培养</el-button>
           <el-button v-else icon="el-icon-search" type="primary" size="small" class="topic-button" @click="preview()" >预览</el-button>
+          <el-button icon="el-icon-refresh" type="primary" size="small" class="topic-button" @click="() => tableData = []" >重置</el-button>
         </el-form>
       </div>
     </template>
@@ -85,6 +86,7 @@ import {
   MICROBE_INSPECT_CULTIVATE_DIALOG_QUERY
 } from '@/api/api'
 import commonDialog from './commonDialog'
+import { dateFormat } from '@/utils'
 
 export default defineComponent({
   name: 'commonPage',
@@ -216,9 +218,29 @@ export default defineComponent({
     const previewSuccessFn = () => {
       componentData.visiblePreviewDialog = false
     }
+    const changeDate = () => {
+      if (props.type === 'CALCULATE') {
+        if (componentData.queryForm.indexName === '菌落总数') {
+          setDate(2)
+        } else if (componentData.queryForm.indexName === '大肠菌群') {
+          setDate(1)
+        } else if (componentData.queryForm.indexName === '酵母菌') {
+          setDate(4)
+        }
+      }
+      componentData.tableData = []
+      query()
+    }
+    const setDate = (n) => {
+      componentData.queryForm.inspectDateBegin = dateFormat(new Date(new Date() - n * 24 * 60 * 60 * 1000), 'yyyy-MM-dd')
+    }
 
     onMounted(async () => {
-      await query(true)
+      if (!props.taskInspectIdList.length) {
+        changeDate()
+      } else {
+        await query(true)
+      }
     })
 
     return {
@@ -227,6 +249,7 @@ export default defineComponent({
       cultivate,
       preview,
       query,
+      changeDate,
       rowBtn,
       updateFormSubmit,
       successFn,
