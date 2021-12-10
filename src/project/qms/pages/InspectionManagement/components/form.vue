@@ -3,117 +3,119 @@
  * @Anthor: Telliex
  * @Date: 2021-11-11 16:30:07
  * @LastEditors: Telliex
- * @LastEditTime: 2021-12-10 09:32:56
+ * @LastEditTime: 2021-12-10 12:38:33
 -->
 <template>
-  <mds-area class="info" :title="subTitle">
+  <mds-area class="info" >
+
+    <h2 class="title"><img  src="~@/assets/img/layout/logo-shinho.svg" alt="logo">{{subTitle}}</h2>
     <!-- 历史任务表单 -->
     <mds-area :title="infoSubTitle" :name="'org'" class="info">
-        <el-form :inline="true" ref="refFormOfSampleInfo" :model="dataFormOfSampleInfo" :label-width="cssForformLabelWidth">
+        <el-form :inline="true" ref="refFormOfSampleInfo" :model="dataFormOfSampleInfo" :label-width="cssForformLabelWidth" class="orgBox">
           <el-form-item label="任务单号："  prop="tempApplyNo" v-if="currentType==='TEMP'" >
             <el-tooltip class="item" effect="dark" :content="dataFormOfSampleInfo.tempApplyNo" placement="top-start" :disabled="!dataFormOfSampleInfo.tempApplyNo">
-              <el-input v-model="dataFormOfSampleInfo.tempApplyNo" size="small" class="inputWidth" placeholder="" autocomplete="off" :readonly="onlyRead" :disabled="disable"></el-input>
+              <el-input v-model="dataFormOfSampleInfo.tempApplyNo" size="mini" class="inputWidth" placeholder="" autocomplete="off" :readonly="onlyRead" :disabled="disable"></el-input>
             </el-tooltip>
           </el-form-item>
           <el-form-item label="样品码："  prop="sampleCode" v-if="currentType==='HISTORY'||currentType==='PROCESS'||currentType==='TEMP'" >
             <el-tooltip class="item" effect="dark" :content="dataFormOfSampleInfo.sampleCode" placement="top-start" :disabled="!dataFormOfSampleInfo.sampleCode">
-              <el-input v-model="dataFormOfSampleInfo.sampleCode" size="small"  class="inputWidth" placeholder="" autocomplete="off" :readonly="onlyRead" :disabled="disable"></el-input>
+              <el-input v-model="dataFormOfSampleInfo.sampleCode" size="mini"  class="inputWidth" placeholder="" autocomplete="off" :readonly="onlyRead" :disabled="disable"></el-input>
             </el-tooltip>
           </el-form-item>
 
           <el-form-item label="物料："  prop="inspectMaterial" v-if="currentType==='HISTORY'||currentType==='PROCESS'" >
             <el-tooltip class="item" effect="dark" :content="dataFormOfSampleInfo.inspectMaterial" placement="top-start" :disabled="!dataFormOfSampleInfo.inspectMaterial">
-              <el-input v-model="dataFormOfSampleInfo.inspectMaterial" size="small" class="inputWidth" placeholder="" autocomplete="off" :readonly="onlyRead" :disabled="disable"></el-input>
+              <el-input v-model="dataFormOfSampleInfo.inspectMaterial" size="mini" class="inputWidth" placeholder="" autocomplete="off" :readonly="onlyRead" :disabled="disable"></el-input>
             </el-tooltip>
           </el-form-item>
           <el-form-item label="生产订单："  prop="orderNo" v-if="currentType==='HISTORY'||currentType==='PROCESS'" >
             <el-tooltip class="item" effect="dark" :content="dataFormOfSampleInfo.orderNo" placement="top-start" :disabled="!dataFormOfSampleInfo.orderNo">
-              <el-input v-model="dataFormOfSampleInfo.orderNo" size="small" class="inputWidth" placeholder="" autocomplete="off" :readonly="onlyRead" :disabled="disable"></el-input>
+              <el-input v-model="dataFormOfSampleInfo.orderNo" size="mini" class="inputWidth" placeholder="" autocomplete="off" :readonly="onlyRead" :disabled="disable"></el-input>
             </el-tooltip>
           </el-form-item>
           <el-form-item label="品项："  prop="itemName" v-if="currentType==='HISTORY'||currentType==='PROCESS'">
             <el-tooltip class="item" effect="dark" :content="dataFormOfSampleInfo.itemName" placement="top-start" :disabled="!dataFormOfSampleInfo.itemName">
-              <el-input v-model="dataFormOfSampleInfo.itemName" size="small" class="inputWidth" placeholder="" autocomplete="off" :readonly="onlyRead" :disabled="disable"></el-input>
+              <el-input v-model="dataFormOfSampleInfo.itemName" size="mini" class="inputWidth" placeholder="" autocomplete="off" :readonly="onlyRead" :disabled="disable"></el-input>
             </el-tooltip>
           </el-form-item>
           <el-form-item label="需求部门："  prop="needDeptName" v-if="currentType==='TEMP'" >
             <el-tooltip class="item" effect="dark" :content="dataFormOfSampleInfo.needDeptName" placement="top-start" :disabled="!dataFormOfSampleInfo.needDeptName">
-              <el-input v-model="dataFormOfSampleInfo.needDeptName" size="small" class="inputWidth" placeholder="" autocomplete="off" :readonly="onlyRead" :disabled="disable"></el-input>
+              <el-input v-model="dataFormOfSampleInfo.needDeptName" size="mini" class="inputWidth" placeholder="" autocomplete="off" :readonly="onlyRead" :disabled="disable"></el-input>
             </el-tooltip>
           </el-form-item>
           <el-form-item label="取样单位："  prop="sampleDeptName" v-if="currentType==='HISTORY'||currentType==='PROCESS'||currentType==='TEMP'">
             <el-tooltip class="item" effect="dark" :content="dataFormOfSampleInfo.sampleDeptName" placement="top-start" :disabled="!dataFormOfSampleInfo.sampleDeptName">
-              <el-input v-model="dataFormOfSampleInfo.sampleDeptName" size="small" class="inputWidth" placeholder="" autocomplete="off" :readonly="onlyRead" :disabled="disable"></el-input>
+              <el-input v-model="dataFormOfSampleInfo.sampleDeptName" size="mini" class="inputWidth" placeholder="" autocomplete="off" :readonly="onlyRead" :disabled="disable"></el-input>
             </el-tooltip>
           </el-form-item>
           <el-form-item label="取样信息："  prop="inspectSiteName" v-if="currentType==='HISTORY'||currentType==='PROCESS'" >
             <el-tooltip class="item" effect="dark" :content="dataFormOfSampleInfo.inspectSiteName" placement="top-start" :disabled="!dataFormOfSampleInfo.inspectSiteName">
-              <el-input v-model="dataFormOfSampleInfo.inspectSiteName" size="small" class="inputWidth" placeholder="" autocomplete="off" :readonly="onlyRead" :disabled="disable"></el-input>
+              <el-input v-model="dataFormOfSampleInfo.inspectSiteName" size="mini" class="inputWidth" placeholder="" autocomplete="off" :readonly="onlyRead" :disabled="disable"></el-input>
             </el-tooltip>
           </el-form-item>
           <el-form-item label="取样日期："  prop="sampleEndDate" v-if="currentType==='TEMP'" >
             <el-tooltip class="item" effect="dark" :content="dataFormOfSampleInfo.sampleEndDate" placement="top-start" :disabled="!dataFormOfSampleInfo.sampleEndDate">
-              <el-input v-model="dataFormOfSampleInfo.sampleEndDate" size="small" class="inputWidth" placeholder="" autocomplete="off" :readonly="onlyRead"  :disabled="disable"></el-input>
+              <el-input v-model="dataFormOfSampleInfo.sampleEndDate" size="mini" class="inputWidth" placeholder="" autocomplete="off" :readonly="onlyRead"  :disabled="disable"></el-input>
             </el-tooltip>
           </el-form-item>
           <el-form-item label="检验开始："  prop="inspectStartDate" v-if="currentType==='PROCESS'||currentType==='TEMP'">
             <el-tooltip class="item" effect="dark" :content="dataFormOfSampleInfo.inspectStartDate" placement="top-start" :disabled="!dataFormOfSampleInfo.inspectStartDate">
-              <el-input v-model="dataFormOfSampleInfo.inspectStartDate" size="small" class="inputWidth" placeholder="" autocomplete="off" :readonly="onlyRead" :disabled="disable"></el-input>
+              <el-input v-model="dataFormOfSampleInfo.inspectStartDate" size="mini" class="inputWidth" placeholder="" autocomplete="off" :readonly="onlyRead" :disabled="disable"></el-input>
             </el-tooltip>
           </el-form-item>
           <el-form-item label="检验结束："  prop="inspectEndDate" v-if="currentType==='PROCESS'||currentType==='TEMP'" >
             <el-tooltip class="item" effect="dark" :content="dataFormOfSampleInfo.inspectEndDate" placement="top-start" :disabled="!dataFormOfSampleInfo.inspectEndDate">
-              <el-input v-model="dataFormOfSampleInfo.inspectEndDate" size="small" class="inputWidth" placeholder="" autocomplete="off" :readonly="onlyRead" :disabled="disable"></el-input>
+              <el-input v-model="dataFormOfSampleInfo.inspectEndDate" size="mini" class="inputWidth" placeholder="" autocomplete="off" :readonly="onlyRead" :disabled="disable"></el-input>
             </el-tooltip>
           </el-form-item>
           <el-form-item label="取样说明："  prop="sampleExplain" v-if="currentType==='PROCESS'" >
             <el-tooltip class="item" effect="dark" :content="dataFormOfSampleInfo.sampleExplain" placement="top-start" :disabled="!dataFormOfSampleInfo.sampleExplain">
-              <el-input v-model="dataFormOfSampleInfo.sampleExplain" size="small" class="inputWidth" placeholder="" autocomplete="off" :readonly="onlyRead" :disabled="disable" style="width:420px"></el-input>
+              <el-input v-model="dataFormOfSampleInfo.sampleExplain" size="mini" class="inputWidth" placeholder="" autocomplete="off" :readonly="onlyRead" :disabled="disable" style="width:420px"></el-input>
             </el-tooltip>
           </el-form-item>
           <el-form-item label="检验内容："  prop="inspectSampleContent" v-if="currentType==='TEMP'" >
             <el-tooltip class="item" effect="dark" :content="dataFormOfSampleInfo.inspectSampleContent" placement="top-start" :disabled="!dataFormOfSampleInfo.inspectSampleContent">
-              <el-input v-model="dataFormOfSampleInfo.inspectSampleContent" size="small" class="inputWidth" placeholder="" autocomplete="off" :readonly="onlyRead" :disabled="disable" style="width:420px;"></el-input>
+              <el-input v-model="dataFormOfSampleInfo.inspectSampleContent" size="mini" class="inputWidth" placeholder="" autocomplete="off" :readonly="onlyRead" :disabled="disable" style="width:420px;"></el-input>
             </el-tooltip>
           </el-form-item>
           <el-form-item label="内容说明："  prop="handleExplain" v-if="currentType==='TEMP'" >
             <el-tooltip effect="dark" :content="dataFormOfSampleInfo.handleExplain" :disabled="!dataFormOfSampleInfo.handleExplain" placement="top">
-              <el-input v-model="dataFormOfSampleInfo.handleExplain" size="small" class="inputWidth" placeholder="" autocomplete="off" :readonly="onlyRead" :disabled="disable" style="width:420px"></el-input>
+              <el-input v-model="dataFormOfSampleInfo.handleExplain" size="mini" class="inputWidth" placeholder="" autocomplete="off" :readonly="onlyRead" :disabled="disable" style="width:420px"></el-input>
             </el-tooltip>
           </el-form-item>
         </el-form>
     </mds-area>
 
       <template v-for="item in dataFormOfSampleItemUnit" :key="item">
-        <mds-area :name="'org'" :title="item.recheckFlag==='Y'?'复检':'初检'" >
-          <div style="padding-bottom:10px">
-          <el-form :inline="true" :model="item"  :label-width="cssForformLabelWidth" v-if="currentType==='HISTORY'">
-            <el-form-item label="检验开始："  prop="inspectStartDate">
-              <el-tooltip class="item" effect="dark" :content="item.inspectStartDate" placement="top-start" :disabled="!item.inspectStartDate">
-                <el-input v-model="item.inspectStartDate" size="small" class="inputWidth" placeholder="" autocomplete="off" :readonly="onlyRead" :disabled="disable" style="width:180px;"></el-input>
+        <mds-area :name="'org'" :title="item.recheckFlag==='Y'?'复检':'初检'">
+          <div style="padding-bottom:5px">
+          <el-form :inline="true" :model="item"  :label-width="cssForformLabelWidth" v-if="currentType==='HISTORY'" class="orgBox">
+            <el-form-item label="检验开始："  prop="tempInspectStartDate">
+              <el-tooltip class="item" effect="dark" :content="item.tempInspectStartDate" placement="top-start" :disabled="!item.tempInspectStartDate">
+                <el-input v-model="item.tempInspectStartDate" size="mini" class="inputWidth" placeholder="" autocomplete="off" :readonly="onlyRead" :disabled="disable" style="width:180px;"></el-input>
               </el-tooltip>
             </el-form-item>
-            <el-form-item label="检验结束："  prop="inspectEndDate" >
-              <el-tooltip class="item" effect="dark" :content="item.inspectEndDate" placement="top-start" :disabled="!item.inspectEndDate">
-              <el-input v-model="item.inspectEndDate" size="small" class="inputWidth" placeholder="" autocomplete="off" :readonly="onlyRead" :disabled="disable" style="width:180px;"></el-input>
+            <el-form-item label="检验结束："  prop="tempInspectEndDate" >
+              <el-tooltip class="item" effect="dark" :content="item.tempInspectEndDate" placement="top-start" :disabled="!item.tempInspectEndDate">
+              <el-input v-model="item.tempInspectEndDate" size="mini" class="inputWidth" placeholder="" autocomplete="off" :readonly="onlyRead" :disabled="disable" style="width:180px;"></el-input>
               </el-tooltip>
             </el-form-item>
             <el-form-item label="取样说明："  prop="sampleExplain" >
               <el-tooltip class="item" effect="dark" :content="item.sampleExplain" placement="top-start" :disabled="!item.sampleExplain">
-                <el-input v-model="item.sampleExplain" size="small" class="inputWidth" placeholder="" autocomplete="off" :readonly="onlyRead" :disabled="disable" style="width:192px;"></el-input>
+                <el-input v-model="item.sampleExplain" size="mini" class="inputWidth" placeholder="" autocomplete="off" :readonly="onlyRead" :disabled="disable" style="width:192px;"></el-input>
               </el-tooltip>
             </el-form-item>
           </el-form>
           </div>
           <template v-for="subItem in item.taskInspectIndexList" :key="subItem">
             <mds-area :title="subItem.indexName" :name="'org'" :outline="true">
-            <el-form :inline="true" :model="subItem" :label-width="cssForformLabelWidth">
+            <el-form :inline="true" :model="subItem" :label-width="cssForformLabelWidth" class="orgBox">
               <el-form-item label="结果："  prop="inspectResult" >
-                <el-input v-model="subItem.inspectResult" size="small"  class="inputWidth" placeholder="" autocomplete="off" :readonly="onlyRead" :disabled="disable"></el-input>
+                <el-input v-model="subItem.inspectResult" size="mini"  class="inputWidth" placeholder="" autocomplete="off" :readonly="onlyRead" :disabled="disable"></el-input>
               </el-form-item>
               <el-form-item label="依据方法："  prop="indexVersionMethod" >
                 <el-tooltip class="item" effect="dark" :content="subItem.indexVersionMethod" placement="top-start"  :disabled="!subItem.indexVersionMethod">
-                  <el-input v-model="subItem.indexVersionMethod" size="small"  class="inputWidth" placeholder="" autocomplete="off" :readonly="onlyRead" :disabled="disable"></el-input>
+                  <el-input v-model="subItem.indexVersionMethod" size="mini"  class="inputWidth" placeholder="" autocomplete="off" :readonly="onlyRead" :disabled="disable"></el-input>
                 </el-tooltip>
               </el-form-item>
               <el-form-item label="判定："  prop="indexJudgeResult" >
@@ -122,7 +124,7 @@
               </el-form-item>
               <el-form-item label="标准："  prop="indexStandardString" >
                   <el-tooltip class="item" effect="dark" :content="subItem.indexStandardString" placement="top-start" :disabled="!subItem.indexStandardString">
-                    <el-input v-model="subItem.indexStandardString" size="small"  class="inputWidth" placeholder="" autocomplete="off" :readonly="onlyRead" :disabled="disable"></el-input>
+                    <el-input v-model="subItem.indexStandardString" size="mini"  class="inputWidth" placeholder="" autocomplete="off" :readonly="onlyRead" :disabled="disable"></el-input>
                   </el-tooltip>
               </el-form-item>
               <el-form-item label="检验时间："  prop="inspectIndexDate" v-if="subItem.inspectIndexDate" >
@@ -140,7 +142,7 @@
                         }">
                         <span style="min-width:50px;overflow: hidden;text-align: right;padding-right:5px;white-space: nowrap;"> {{pars.paramCode?pars.paramCode.split('[')[0]:'?'}}<sub>{{pars.paramCode?pars.paramCode.split('[')[1].replace(']',''):''}}</sub> =</span>
                         <el-tooltip class="item" effect="dark" :content="pars.defaultValue" placement="top-start" :disabled="!pars.defaultValue">
-                          <el-input v-model="pars.defaultValue" type="text"  size="small" placeholder="" style="margin-right:10px;" :readonly="onlyRead" :disabled="disable">
+                          <el-input v-model="pars.defaultValue" type="text"  size="mini" placeholder="" style="margin-right:10px;" :readonly="onlyRead" :disabled="disable">
                             <template #suffix>
                               {{pars.paramUnit}}
                             </template>
@@ -162,7 +164,7 @@
 
           <el-form-item label="检验说明："  prop="inspectExplain"  >
             <el-tooltip effect="dark" :content="item.inspectExplain" :disabled="!item.inspectExplain" placement="top">
-              <el-input v-model="item.inspectExplain" size="small" placeholder="" autocomplete="off" :readonly="onlyRead"  :disabled="disable"  style="width:540px"></el-input>
+              <el-input v-model="item.inspectExplain" size="mini" placeholder="" autocomplete="off" :readonly="onlyRead"  :disabled="disable"  style="width:540px"></el-input>
             </el-tooltip>
           </el-form-item>
         </el-form>
@@ -176,12 +178,12 @@
           </el-form-item>
               <el-form-item label="取样说明："  prop="sampleExplain">
         <el-tooltip class="item" effect="dark" :content="dataFormOfSampleInfo.sampleExplain" placement="top-start" :disabled="!dataFormOfSampleInfo.sampleExplain">
-          <el-input v-model="dataFormOfSampleInfo.sampleExplain" size="small" class="inputWidth" placeholder="" autocomplete="off" style="width:500px" :readonly="onlyRead" :disabled="disable"></el-input>
+          <el-input v-model="dataFormOfSampleInfo.sampleExplain" size="mini" class="inputWidth" placeholder="" autocomplete="off" style="width:500px" :readonly="onlyRead" :disabled="disable"></el-input>
         </el-tooltip>
       </el-form-item>
         </el-form>
     <div style="display: flex; margin:20px 0px;justify-content: flex-end;">
-      <el-button  icon="el-icon-circle-close" type="primary" size="small" class="topic-button" @click="btnCancelOfInspect">离开</el-button>
+      <el-button  icon="el-icon-circle-close" type="primary" size="mini" class="topic-button" @click="btnCancelOfInspect">离开</el-button>
     </div>
   </mds-area>
 </template>
@@ -268,14 +270,20 @@ export default defineComponent({
         state.dataFormOfSampleInfo = { ...state.currentObj }
 
         Object.assign(state.dataFormOfSampleInfo, { inspectMaterial: `${state.dataFormOfSampleInfo.inspectMaterialName} ${state.dataFormOfSampleInfo.inspectMaterialCode}` })
+        // state.dataFormOfSampleInfo.tempInspectStartDate = state.dataFormOfSampleInfo.inspectStartDate ? state.dataFormOfSampleInfo.inspectStartDate.split(' ')[0] : ''
+        // state.dataFormOfSampleInfo.tempInspectEndDate = state.dataFormOfSampleInfo.inspectEndDate ? state.dataFormOfSampleInfo.inspectEndDate.split(' ')[0] : ''
 
         if (state.currentType === 'HISTORY') {
           state.disable = false
-          // TODO  ask BE this api can return first check or recheck ? sampleCode: "211200035(复1) "??     API 用法
           MANAGEMENT_INSPECTION_PHYSICOCHEMICAL_HISTORY_TASK_FORM_QUERY_API(state.currentObj.sampleCodes).then(async (res) => { // /taskInspect/queryHistoryFormTaskInspect
             console.log('HISTORY VIEW')
             console.log(res.data.data)
             if (res.data.data.length) {
+              res.data.data.forEach((item:any) => {
+                item.tempInspectStartDate = item.inspectStartDate ? item.inspectStartDate.substring(0, 10) : ''
+                item.tempInspectEndDate = item.inspectEndDate ? item.inspectEndDate.substring(0, 10) : ''
+              })
+
               for (const item of res.data.data[0].taskInspectIndexList) {
                 const tempIndex = await INSPECT_INDEX_PROCESS_PARAMETER_QUERY_FOR_TASK_API({
                   inspectMaterialCode: state.currentType !== 'TEMP' ? state.dataFormOfSampleInfo.inspectMaterialCode : '',
@@ -349,10 +357,16 @@ export default defineComponent({
         } else {
           MANAGEMENT_INSPECTION_PHYSICOCHEMICAL_TASK_FORM_QUERY_API({ // /taskInspect/formTaskInspect
             id: state.currentObj.id,
-            recheckBatch: state.currentObj.recheckBatch // TODO ask BE if need this data
+            recheckBatch: state.currentObj.recheckBatch,
+            taskStatus: ''
           }).then(async (res) => {
             console.log('PROCESS or TEMP VIEW')
             console.log(res.data.data)
+            // res.data.data.forEach((item:any) => {
+            //   item.tempInspectStartDate = item.inspectStartDate ? item.inspectStartDate.substring(0, 10) : ''
+            //   item.tempInspectEndDate = item.inspectEndDate ? item.inspectEndDate.substring(0, 10) : ''
+            // })
+
             for (const item of res.data.data[0].taskInspectIndexList) {
               const tempIndex = await INSPECT_INDEX_PROCESS_PARAMETER_QUERY_FOR_TASK_API({
                 inspectMaterialCode: state.currentType !== 'TEMP' ? state.dataFormOfSampleInfo.inspectMaterialCode : '',
@@ -440,6 +454,22 @@ export default defineComponent({
 </script>
 
 <style lang="scss" scoped>
+
+h2.title{
+    font-size: 24px;
+    text-align: center;
+    margin-top: 20px;
+    border-bottom: 1px dashed rgb(102, 102, 102);
+    clear: both;
+    height: 70px;
+    line-height: 70px;
+    font-weight: 600;
+    img{
+      width: 90px;
+      float:left;
+      margin-top:5px
+    }
+}
 .el-form-item {
     margin-bottom: 0px;
 }
@@ -457,6 +487,13 @@ export default defineComponent({
     align-items: center;
     flex:1;
   }
+}
+.t-box-area {
+  margin-bottom: 5px;
+}
+
+.orgBox{
+  margin-top:-20px
 }
 
 </style>

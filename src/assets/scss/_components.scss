@@ -55,8 +55,12 @@
 
 // component msd-area
 .t-box-area.outline{
-    box-shadow: 3px 3px 4px 0 rgba(0, 0, 0, 0.1);
+   
     border: 1px solid rgba(171, 171, 171, 0.5);
+  }
+.t-box-area.shadow{
+    box-shadow: 3px 3px 4px 0 rgba(0, 0, 0, 0.1);
+
   }
 .t-box-area {
     padding: 6px 16px 6px 16px !important;
