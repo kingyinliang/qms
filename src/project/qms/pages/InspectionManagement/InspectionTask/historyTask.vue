@@ -70,7 +70,7 @@
 
       <el-table-column v-if="task === 'SAFETY'" label="送达时间" prop="deliveryDate" min-width="150" :show-overflow-tooltip="true" />
       <el-table-column v-if="task === 'SAFETY'" label="收样时间" prop="receiveDate" min-width="150" :show-overflow-tooltip="true" />
-      <el-table-column v-if="task !== 'INCOMING'&&task !== 'SAFETY'" label="取样部门" prop="coSampleDeptName" min-width="165" :show-overflow-tooltip="true" />
+      <el-table-column v-if="task !== 'INCOMING'&&task !== 'SAFETY'" label="取样部门" prop="sendSampleDeptName" min-width="165" :show-overflow-tooltip="true" />
       <el-table-column v-if="task === 'INCOMING' || task === 'SAFETY'" label="检验单位" prop="coInspectDeptName" min-width="165" :show-overflow-tooltip="true" />
       <el-table-column v-if="task !== 'SAFETY'" label="取样时间" prop="sampleEndDate" min-width="165" :show-overflow-tooltip="true" />
       <el-table-column label="检验开始" prop="inspectStartDate" min-width="165" :show-overflow-tooltip="true" />

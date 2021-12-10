@@ -4,9 +4,9 @@
       <el-form-item label="取样码">
         <el-input v-model="queryForm.sampleCode" clearable placeholder="请输入" style="width: 140px"></el-input>
       </el-form-item>
-      <el-form-item label="批次">
-        <el-input v-model="queryForm.inspectBatch" clearable placeholder="请输入" style="width: 140px"></el-input>
-      </el-form-item>
+<!--      <el-form-item label="批次">-->
+<!--        <el-input v-model="queryForm.inspectBatch" clearable placeholder="请输入" style="width: 140px"></el-input>-->
+<!--      </el-form-item>-->
       <el-form-item label="日期">
         <el-date-picker
           v-model="queryForm.triggerDate"
