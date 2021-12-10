@@ -3,10 +3,10 @@
  * @Anthor: Telliex
  * @Date: 2021-11-12 10:44:24
  * @LastEditors: Telliex
- * @LastEditTime: 2021-11-16 10:21:08
+ * @LastEditTime: 2021-12-10 10:54:30
 -->
 <template>
-  <div class="t-box-area" :class="{outline:outline}">
+  <div class="t-box-area" :class="{outline:outline,shadow:shadow}">
     <div class="t-box-area-title" v-if="title!==''">
       <h3> <em class="title-icon" :style="{ background: iconBg }" />{{ title }} </h3>
       <div style="display: flex; justify-content: flex-end; align-items: baseline;">
@@ -25,6 +25,10 @@ export default defineComponent({
   name: 'MdsArea',
   props: {
     outline: {
+      type: Boolean,
+      default: false
+    },
+    shadow: {
       type: Boolean,
       default: false
     },
