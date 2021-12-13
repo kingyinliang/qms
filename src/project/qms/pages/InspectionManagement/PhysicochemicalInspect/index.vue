@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-11-16 09:59:02
  * @LastEditors: Telliex
- * @LastEditTime: 2021-12-10 09:48:22
+ * @LastEditTime: 2021-12-13 08:56:12
 -->
 <template>
   <mds-area class="test_method" title="已选中样品" :pack-up="false" style="margin-bottom: 0; background: #fff; overflow:scroll">
@@ -32,7 +32,7 @@
     </el-table>
   </mds-area>
 
-  <instection-dialog v-model="dialogVisible" :targetObj="targetObjList" :mainType="mainType" :subType="subType"  @on-close="dialogVisible=false" @openHandle="returnFromDialogAndOpenAgainHandle" />
+  <inspection-dialog v-model="dialogVisible" :targetObj="targetObjList" :mainType="mainType" :subType="subType"  @on-close="dialogVisible=false" @openHandle="returnFromDialogAndOpenAgainHandle" />
 
 </template>
 
@@ -44,17 +44,85 @@ import { useRouter } from 'vue-router'
 import MdsArea from '@/components/package/mds-area/src/mds-area.vue'
 import {
   MANAGEMENT_INSPECTION_PHYSICOCHEMICAL_QUERY_BY_SAMPLE_CODE_API, // 检验管理-[检验任务]- 根据样品码查询检验任务
-  MANAGEMENT_INSPECTION_TASK_INSPECT_QUERY_BY_ID_API, // 检验管理-[检验任务]- 分析是否有合并检 /taskInspect/queryTaskInspectByIds
-  // MANAGEMENT_INSPECTION_PHYSICOCHEMICAL_TASK_INSPECT_QUERY_API,
-  MANAGEMENT_INSPECTION_PHYSICOCHEMICAL_TASK_FORM_QUERY_API
+  MANAGEMENT_INSPECTION_TASK_INSPECT_QUERY_BY_ID_API // 检验管理-[检验任务]- 分析是否有合并检 /taskInspect/queryTaskInspectByIds
 } from '@/api/api'
-import layoutTs from '@/components/layout/layoutTs'
+
 import { useStore } from 'vuex'
-import InstectionDialog from '../components/InspectionDialog.vue'
+import InspectionDialog from '../components/InspectionDialog.vue'
 
 interface SearchFilter{
   sampleCode: string
   merge: boolean
+}
+interface CurrentGlobalActObj{
+  coInspectDeptId: string
+  coInspectDeptName: string
+  coSampleDeptId: string
+  coSampleDeptName:string
+  created: string
+  deliveryDate: string
+  finishDate: string
+  groupBatch: string
+  handleExplain: string
+  id: string
+  inspectBatch: string
+  inspectContent: string
+  inspectDate: string
+  inspectDeptId: string
+  inspectDeptName: string
+  inspectEndDate: null
+  inspectExplain: string
+  inspectFrequency: string
+  inspectIndexId: string
+  inspectMaterialCode: string
+  inspectMaterialName: string
+  inspectMaterialType: string
+  inspectMethodCode: string
+  inspectMethodName: string
+  inspectParameterGroupId: string
+  inspectProperty: string
+  inspectSampleContent: ''
+  inspectSiteId: string
+  inspectSiteName: string
+  inspectStartDate: string
+  inspectTypeId: string
+  itemId: string
+  itemName: string
+  judgeResult: string
+  mergeBatch: string
+  needDeptCode: string
+  needDeptId: string
+  needDeptName: string
+  orderNo: string
+  productDate: string
+  receiveDate: string
+  recheckBatch: string
+  recheckFlag: string
+  recheckMod: string
+  sampleAmount: string
+  sampleCode: string
+  sampleCodes: string
+  sampleDeadlineDate: string
+  sampleDeptId: string
+  sampleDeptName: string
+  sampleEndDate: string
+  sampleExplain: string
+  sampler: string
+  sendSampleDeptId: string
+  sendSampleDeptName: string
+  supplier: string
+  supplierCode: string
+  taskInspectClassify: string
+  taskInspectIndexId: string
+  taskManageId: string
+  taskManageStatus: string
+  taskSampleClassify: string
+  taskSampleId: string
+  taskSampleStatus: string
+  taskStatus: string
+  taskStatusName: string
+  tempApplyNo: string
+  temporaryFlag: string
 }
 
 interface DataTableOfTopicMain {
@@ -122,7 +190,7 @@ interface DataTableOfTopicMain {
 interface State {
   indexOfCurrentRowOnFocus: number
   targetObjList: any[] // 检验物件
-  currentGlobalActOgj: any
+  currentGlobalActObj: any
   dialogVisible: boolean
   mainType: string
   subType: string
@@ -142,7 +210,7 @@ export default defineComponent({
   name: 'PhysicochemicalInspect',
   components: {
     MdsArea,
-    InstectionDialog
+    InspectionDialog
   },
 
   setup () {
@@ -159,7 +227,7 @@ export default defineComponent({
       scanMergeType: false,
       indexOfCurrentRowOnFocus: 0,
       dialogVisible: false,
-      currentGlobalActOgj: {},
+      currentGlobalActObj: {},
       mainType: '',
       subType: '',
       currentObj: {},
@@ -190,9 +258,18 @@ export default defineComponent({
     }
 
     // 临时检验列表数据
-
-    // TODO
+    /**
+     * @description 将数据送至检验， 前提是 list 理所关联的数据已在其中
+     * @rule 合并检 or 组合检，需滤掉 临时检验任务 及 不同物料、属性或检验内容
+     */
     const actGetInspectDetail = () => {
+      /**
+       * @rule
+       * 1. 勾选 2 个以上且勾选合并检， 视为合并检 or 组合检
+       * 2. 勾选 1 个且勾选合并检， 视为一般检
+       * 3. 走 focus item 方式（不勾选且不勾选合并检），一般检
+       * 4. 没 focus item
+       */
       state.targetObjList = []
       if (state.searchFilter.merge && state.selectedListOfTopicMainData.length > 1) { // 勾选 2 个以上， 视为合并检
         if (checkIfMergeByClassify(state.selectedListOfTopicMainData)) {
@@ -204,13 +281,19 @@ export default defineComponent({
           proxy.$warningToast('存在不同物料、属性或检验内容，无法合并检验')
           return
         }
-        console.log('merge')
+
+        // 样品码是否全是已完成
+        if (state.selectedListOfTopicMainData.every((item:any) => item.taskStatus === 'COMPLETED')) {
+          proxy.$warningToast('所选择皆是已完成状态无法检验')
+          return
+        }
+
+        console.log('merge-checked')
         state.mainType = state.selectedListOfTopicMainData[0].taskInspectClassify
         state.subType = 'merge'
         state.targetObjList = JSON.parse(JSON.stringify(state.selectedListOfTopicMainData))
       } else if (state.searchFilter.merge && state.selectedListOfTopicMainData.length === 1) { // 勾选 1 个， 视为一般检
-        console.log(state.selectedListOfTopicMainData[0].taskInspectClassify)
-        console.log('normal1')
+        console.log('normal-checked')
 
         // 样品码是已完成即返回
         if (state.selectedListOfTopicMainData[0].taskStatus === 'COMPLETED') {
@@ -223,7 +306,7 @@ export default defineComponent({
 
         if (state.selectedListOfTopicMainData[0].mergeBatch === '' && state.selectedListOfTopicMainData[0].groupBatch === '') { // x合并 x组合
           state.targetObjList = JSON.parse(JSON.stringify(state.selectedListOfTopicMainData))
-        } else { // 该条是合并样品
+        } else { // 该条是合并或组合样品
           state.subType = 'merge'
 
           if (state.selectedListOfTopicMainData[0].mergeBatch !== '' && state.selectedListOfTopicMainData[0].groupBatch === '') { // v合并 x组合
@@ -239,30 +322,30 @@ export default defineComponent({
           console.log(state.selectedListOfTopicMainData)
         }
       } else {
-        console.log('normal2')
-        console.log(state.currentGlobalActOgj.taskInspectClassify)
+        console.log('normal-focused')
+        console.log(state.currentGlobalActObj.taskInspectClassify)
 
         // 样品码是已完成即返回
-        if (state.currentGlobalActOgj.taskStatus === 'COMPLETED') {
+        if (state.currentGlobalActObj.taskStatus === 'COMPLETED') {
           proxy.$warningToast('已完成状态无法检验')
           return
         }
 
-        state.mainType = state.currentGlobalActOgj.taskInspectClassify
+        state.mainType = state.currentGlobalActObj.taskInspectClassify
         state.subType = 'normal'
 
-        if (Object.keys(state.currentGlobalActOgj).length !== 0) {
-          if (state.currentGlobalActOgj.mergeBatch === '' && state.currentGlobalActOgj.groupBatch === '') { // x合并 x组合
-            state.targetObjList = [JSON.parse(JSON.stringify(state.currentGlobalActOgj))]
+        if (Object.keys(state.currentGlobalActObj).length !== 0) {
+          if (state.currentGlobalActObj.mergeBatch === '' && state.currentGlobalActObj.groupBatch === '') { // x合并 x组合
+            state.targetObjList = [JSON.parse(JSON.stringify(state.currentGlobalActObj))]
           } else { // 该条是合并样品
             state.subType = 'merge'
 
-            if (state.currentGlobalActOgj.mergeBatch !== '' && state.currentGlobalActOgj.groupBatch === '') { // v合并 x组合
-              state.targetObjList = state.dataTableOfTopicMain.filter((element:any) => element.mergeBatch === state.currentGlobalActOgj.mergeBatch)
-            } else if (state.currentGlobalActOgj.mergeBatch === '' && state.currentGlobalActOgj.groupBatch !== '') { // x合并 v组合
-              state.targetObjList = state.dataTableOfTopicMain.filter((element:any) => element.groupBatch === state.currentGlobalActOgj.groupBatch)
+            if (state.currentGlobalActObj.mergeBatch !== '' && state.currentGlobalActObj.groupBatch === '') { // v合并 x组合
+              state.targetObjList = state.dataTableOfTopicMain.filter((element:any) => element.mergeBatch === state.currentGlobalActObj.mergeBatch)
+            } else if (state.currentGlobalActObj.mergeBatch === '' && state.currentGlobalActObj.groupBatch !== '') { // x合并 v组合
+              state.targetObjList = state.dataTableOfTopicMain.filter((element:any) => element.groupBatch === state.currentGlobalActObj.groupBatch)
             } else { // v合并 v组合
-              state.targetObjList = state.dataTableOfTopicMain.filter((element:any) => element.groupBatch === state.currentGlobalActOgj.groupBatch || element.mergeBatch === state.currentGlobalActOgj.mergeBatch)
+              state.targetObjList = state.dataTableOfTopicMain.filter((element:any) => element.groupBatch === state.currentGlobalActObj.groupBatch || element.mergeBatch === state.currentGlobalActObj.mergeBatch)
             }
 
             refTableOfTopicMain.value.toggleRowSelection(state.targetObjList, true)
@@ -271,6 +354,7 @@ export default defineComponent({
           }
         } else {
           proxy.$infoToast('请选取任务')
+          return
         }
       }
 
@@ -285,6 +369,13 @@ export default defineComponent({
     }
 
     // 根据取样码添加任务
+    /**
+     * @description: 扫码后添加进清单的
+     * 0.一次一个码
+     * 1.勾选合并 checkbox，扫进 item 打勾
+     * 2.未勾选合并 checkbok，扫进 item 不打勾
+
+     */
     const btnGetInspectList = (str:string) => {
       str && MANAGEMENT_INSPECTION_PHYSICOCHEMICAL_QUERY_BY_SAMPLE_CODE_API(
         [str]
@@ -320,7 +411,9 @@ export default defineComponent({
                 }
               }
             } else {
-              proxy.$warningToast('列表中已存在相同检验码')
+              if (item.delFlag === 0) {
+                proxy.$warningToast('列表中已存在相同检验码')
+              }
             }
           })
           // 提示所查找的样品码没有所要查找的状态 （RECEIVED、CHECKING、COMPLETED）
@@ -340,10 +433,10 @@ export default defineComponent({
     }
 
     // reload 任务表单
-    const btnGetInspectListReload = (val: DataTableOfTopicMain[]) => {
+    const btnGetInspectListReload = async (val: DataTableOfTopicMain[]) => {
       // val.length && MANAGEMENT_INSPECTION_PHYSICOCHEMICAL_QUERY_BY_SAMPLE_CODE_API(
       //   val.map(item => item.sampleCode)
-      val.length && MANAGEMENT_INSPECTION_TASK_INSPECT_QUERY_BY_ID_API( // /taskInspect/queryTaskInspectByIds
+      await val.length && MANAGEMENT_INSPECTION_TASK_INSPECT_QUERY_BY_ID_API( // /taskInspect/queryTaskInspectByIds
         val
       ).then(res => {
         state.dataTableOfTopicMain = []
@@ -374,12 +467,12 @@ export default defineComponent({
     // focus or remove focus
     const setCurrentRowOnFocus = (row:any) => {
       Object.keys(row).length === 0 ? refTableOfTopicMain.value.setCurrentRow() : refTableOfTopicMain.value.setCurrentRow(row)
-      state.currentGlobalActOgj = row
+      state.currentGlobalActObj = row
     }
 
     // assign global index & focus row obj
     const handleCurrentChange = (row:DataTableOfTopicMain) => {
-      state.currentGlobalActOgj = row
+      state.currentGlobalActObj = row
       state.dataTableOfTopicMain.forEach((item, index) => {
         if (item.id === row.id) {
           state.indexOfCurrentRowOnFocus = index
@@ -452,13 +545,14 @@ export default defineComponent({
     const returnFromDialogAndOpenAgainHandle = (val:any) => {
       console.log('.............')
       console.log(val)
+      // 需处理
       // val.act==='save && val.target === '' => 保存 没有复检
       // val.act==='submit && val.target === '' => 提交 没有复检
       // val.act==='submit && val.target === 'ORIGINAL_RECHECK' => 提交 原样复检
       // val.act==='submit && val.target === 'RESAMOLING' => 提交 取样复检
       setTimeout(async () => {
         // 1. 是否刷新 list
-        if (val.act === 'save') { // 不刷新
+        if (val.act === 'save') { // 不刷新，仅改状态
           // if (state.subType === 'normal') { // 一般
 
           // } else if (state.subType === 'merge') { // 合并
@@ -503,7 +597,7 @@ export default defineComponent({
             console.log('$$$$$$$$$$复检$$$$$$$$$$$')
             state.dataTableOfTopicMain.forEach((item:any, index:number) => {
             // 找出原先的 sample
-              if (item.id === state.currentGlobalActOgj.id) {
+              if (item.id === state.currentGlobalActObj.id) {
                 nowItemIndex = index
               }
               // 复检 copy 出来的 sample
@@ -518,7 +612,7 @@ export default defineComponent({
           } else { // run 非复检
             console.log('$$$$$$$$$$非复检$$$$$$$$$$$')
             state.dataTableOfTopicMain.forEach((item:any, index:number) => {
-              if (item.id === state.currentGlobalActOgj.id) {
+              if (item.id === state.currentGlobalActObj.id) {
                 nowItemIndex = index
                 let tempNexItemIndex = nowItemIndex + 1
 
