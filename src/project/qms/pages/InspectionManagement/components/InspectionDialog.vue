@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-11-11 16:30:07
  * @LastEditors: Telliex
- * @LastEditTime: 2021-12-10 17:47:31
+ * @LastEditTime: 2021-12-13 12:01:24
 -->
 <template>
   <el-dialog :title="title" v-model="isDialogShow" width="90%" @close="onClose">
@@ -39,7 +39,7 @@
 
     <mds-area :title="'检验录入'" :name="'org'" >
       <template v-for="subItem in dataFormOfSampleItemUnit" :key="subItem">
-        <mds-area :title="subItem.taskInspectIdList.length > 1 ? subItem.indexName+' ('+subItem.sampleCode+')': subItem.indexName " :name="'org'" :outline="true">
+        <mds-area :title="subItem.moreThan1Index? subItem.indexName+' ('+subItem.sampleCode+')': subItem.indexName " :name="'org'" :outline="true">
           <!-- <template #titleBtn v-if="subItem.inspectMethodCodeWhichIndex!==null|| subItem.inspectMethodCodeWhichIndex!==100 || subItem.inspectMethodNameList.length==2"> -->
           <template #titleBtn v-if="subItem.inspectMethodNameList?.length==2">
             <div class="btn-group">
@@ -155,11 +155,11 @@
         </el-tooltip>
       </el-form-item>
     </el-form>
-    <mds-area :title="'检验记录'" :name="'org'" class="info" v-if="timeLineData.length">
+    <mds-area :title="'检验记录'" :name="'org'" class="info" v-if="timeLineDataForRecheck.length">
       <div class="block" style="padding-top:10px">
         <el-timeline>
           <el-timeline-item
-            v-for="(item, index) in timeLineData"
+            v-for="(item, index) in timeLineDataForRecheck"
             :key="index"
             :size="'large'"
             :color="'#467BFF'"
@@ -175,7 +175,7 @@
             </div>
             <template #dot>
               <div class="dot">
-                {{timeLineData.length-index}}
+                {{timeLineDataForRecheck.length-index}}
               </div>
             </template>
           </el-timeline-item>
@@ -245,7 +245,7 @@ interface State {
   cssForformLabelWidth: string
   dataFormOfSampleInfo: any
   dataFormOfSampleItemUnit: any[]
-  timeLineData: any[]
+  timeLineDataForRecheck: any[]
   timeLineDataForGroup: any[]
   idToSampleCode: any
   mainObj:any[]
@@ -321,14 +321,12 @@ export default defineComponent({
       formForTaskAdd: {},
       dataFormOfSampleItemUnit: [],
       tempRecheckMod: '',
-      timeLineData: [],
+      timeLineDataForRecheck: [],
       timeLineDataForGroup: []
     })
 
     // Run 判定总结果
-    const indexJudgeResult = computed(() => {
-      return state.dataFormOfSampleItemUnit.every(item => item.indexJudgeResult === 'Y') ? 'Y' : 'N'
-    })
+    const indexJudgeResult = computed(() => state.dataFormOfSampleItemUnit.every(item => item.indexJudgeResult === 'Y') ? 'Y' : 'N')
 
     // [BTN:取消]
     const onClose = () => {
@@ -551,14 +549,13 @@ export default defineComponent({
       return tempReturn
     }
 
-    // TODO
     const finalRunCheck = (obj:any) => {
       obj.forEach((item:any) => {
         if (item.canEditInspectResult) {
-          chechIndexStandardString(item)
+          checkIndexStandardString(item)
         } else {
           actHandleInspectResult(item)
-          chechIndexStandardString(item)
+          checkIndexStandardString(item)
         }
       })
     }
@@ -585,28 +582,29 @@ export default defineComponent({
       onClose()
     }
 
+    // 改变 指标-结果 时触发
     const actHandleIndexJudgeResult = (val:any) => {
       if (val.inspectResult === '') {
         val.indexJudgeResult = 'N'
       } else {
         if (val.indexStandardString !== '') {
-          chechIndexStandardString(val)
+          checkIndexStandardString(val)
         }
       }
     }
 
-    const actHandleIndexStandardString = (val:any) => {
-      if (val.indexStandardString === '') {
-        val.indexJudgeResult = 'N'
-      } else {
-        if (val.inspectResult !== '') {
-          chechIndexStandardString(val)
-        }
-      }
-    }
+    // const actHandleIndexStandardString = (val:any) => {
+    //   if (val.indexStandardString === '') {
+    //     val.indexJudgeResult = 'N'
+    //   } else {
+    //     if (val.inspectResult !== '') {
+    //       checkIndexStandardString(val)
+    //     }
+    //   }
+    // }
 
     // 标准值栏位处理
-    const chechIndexStandardString = (val:any) => {
+    const checkIndexStandardString = (val:any) => {
       if (val.manualStandard === '' && val.inspectResult !== '' && val.indexStandardString !== '') {
         let center = ''
         let leftResult = ''
@@ -617,7 +615,7 @@ export default defineComponent({
         } else {
           const result = /(.*)S(.*)/.exec(val.indexStandardString)
           if (result === null) {
-            proxy.$warningToast('标准栏位式子错误')
+            proxy.$warningToast('标准公式解析错误')
             val.indexStandardString = ''
             return
           }
@@ -652,7 +650,8 @@ export default defineComponent({
                 val.indexJudgeResult = 'N'
               }
             } else {
-              if (evil(`${center}==${val.inspectResult}`)) {
+              // 对等比对直接比即可
+              if (center.toString() === val.inspectResult.toString()) {
                 val.indexJudgeResult = 'Y'
               } else {
                 val.indexJudgeResult = 'N'
@@ -665,6 +664,7 @@ export default defineComponent({
       }
     }
 
+    // 处理不等式正确与否
     const evil = (str:string) => {
       var Fn = Function
       return new Fn('return ' + str)()
@@ -835,7 +835,7 @@ export default defineComponent({
             subItem.canEditInspectResult = true
           } else {
             subItem.inspectResult = result.toString()
-            chechIndexStandardString(subItem)
+            checkIndexStandardString(subItem)
           }
         } else {
           subItem.inspectResult = ''
@@ -931,16 +931,85 @@ export default defineComponent({
       console.log('=== import object to dialog ===')
       console.log(val)
 
-      state.currentMainType = mainType.value !== 'ASSIST' ? mainType.value : 'PROCESS'
+      state.currentMainType = mainType.value !== 'ASSIST' ? mainType.value : 'PROCESS' // ASSIST 也归于 PROCESS
       console.log('=== state.currentMainType ===')
       console.log(state.currentMainType)
       state.mainObj = []
-      val.forEach((item:any) => {
-        state.idToSampleCode[item.id] = item.sampleCode
-        state.mainObj.push(item)
-      })
+
       if (val.length) {
-        state.currentSubType = val.length === 1 ? 'normal' : 'merge' // 一般检 or 合并检
+        const groupContainer:string[] = []
+        const recheckContainer:string[] = []
+        state.timeLineDataForRecheck = [] // 复检
+        state.timeLineDataForGroup = [] // 组合
+
+        // 走一遍要检验 item
+        val.forEach((item:any) => {
+          state.idToSampleCode[item.id] = item.sampleCode
+          state.mainObj.push(item)
+
+          // add 复检讯息于最下方
+          if (item.recheckBatch !== '' && item.taskStatus === 'COMPLETED') {
+            if (!recheckContainer.includes(item.recheckBatch)) {
+              recheckContainer.push(item.recheckBatch)
+              MANAGEMENT_INSPECTION_PHYSICOCHEMICAL_TASK_FORM_QUERY_API({ // /taskInspect/formTaskInspect
+                id: item.id,
+                recheckBatch: item.recheckBatch,
+                taskStatus: 'COMPLETED'
+              }).then((rep) => {
+                console.log('== 复检讯息 ==')
+                console.log(rep.data.data)
+                rep.data.data.forEach((element:any) => {
+                  const tempIndexList:any[] = []
+                  element.taskInspectIndexList.forEach((subElement:any) => {
+                    tempIndexList.push({
+                      indexName: subElement.indexName,
+                      sampleCode: element.sampleCode,
+                      inspectResult: subElement.inspectResult,
+                      indexJudgeResult: subElement.indexJudgeResult
+                    })
+                  })
+                  state.timeLineDataForRecheck.push({
+                    indexName: element.indexName,
+                    indexList: tempIndexList
+                  })
+                })
+              })
+            }
+          }
+
+          // add 组合讯息于最下方
+          if (item.groupBatch !== '' && item.taskStatus === 'COMPLETED') {
+            if (!groupContainer.includes(item.groupBatch)) {
+              groupContainer.push(item.groupBatch)
+
+              MANAGEMENT_INSPECTION_PHYSICOCHEMICAL_TASK_FORM_QUERY_API({ // /taskInspect/formTaskInspect
+                id: item.id,
+                recheckBatch: item.recheckBatch,
+                taskStatus: 'COMPLETED'
+              }).then((rep) => {
+                console.log('== 组合讯息 ==')
+                console.log(rep.data.data)
+                rep.data.data.forEach((element:any) => {
+                  const tempIndexList:any[] = []
+                  element.taskInspectIndexList.forEach((subElement:any) => {
+                    tempIndexList.push({
+                      indexName: subElement.indexName,
+                      sampleCode: element.sampleCode,
+                      inspectResult: subElement.inspectResult,
+                      indexJudgeResult: subElement.indexJudgeResult
+                    })
+                  })
+                  state.timeLineDataForGroup.push({
+                    indexName: element.indexName,
+                    indexList: tempIndexList
+                  })
+                })
+              })
+            }
+          }
+        })
+
+        state.currentSubType = val.length === 1 ? 'normal' : 'merge' // 一般检 or 合并检组合检
         // 加入标题
         state.subTitle = val[0].inspectContent
         state.dataFormOfSampleInfo = val[0]
@@ -948,82 +1017,18 @@ export default defineComponent({
         state.dataFormOfSampleInfo.inspectSiteNameString = val.map((item:any) => item.inspectSiteName).join(',')
         state.currentOrderStyle = val[0].recheckFlag === 'N' ? 'first' : 'repeat'
 
-        // add 复检讯息
-        if (val[0].recheckBatch !== '') {
-          MANAGEMENT_INSPECTION_PHYSICOCHEMICAL_TASK_FORM_QUERY_API({ // /taskInspect/formTaskInspect
-            id: val[0].id,
-            recheckBatch: val[0].recheckBatch,
-            taskStatus: 'COMPLETED'
-          }).then((res) => {
-            console.log('复检讯息')
-            console.log(res.data.data)
-            state.timeLineData = []
-            res.data.data.forEach((element:any) => {
-              const tempIndexList:any[] = []
-              element.taskInspectIndexList.forEach((subElement:any) => {
-                tempIndexList.push({
-                  indexName: subElement.indexName,
-                  sampleCode: element.sampleCode,
-                  inspectResult: subElement.inspectResult,
-                  indexJudgeResult: subElement.indexJudgeResult
-                })
-              })
-              state.timeLineData.push({
-                indexName: element.indexName,
-                indexList: tempIndexList
-              })
-            })
-
-            console.log('state.timeLineData')
-            console.log(state.timeLineData)
-          })
-        }
-
-        // add id2sampleCode obj 获取指标
+        // add id2sampleCode obj 获取进来的 items 综合指标
         MANAGEMENT_INSPECTION_PHYSICOCHEMICAL_TASK_INSPECT_QUERY_API( // /taskInspectIndex/queryTaskInspectIndex
-          val.map((item:any) => item.id)
+          val.filter((item:any) => item.taskStatus !== 'COMPLETED').map((item:any) => item.id)
         ).then(async (res) => {
           console.log('=== query dialog data ===')
           console.log(JSON.parse(JSON.stringify(res.data.data)))
 
-          const groupContainer:string[] = []
           state.timeLineDataForGroup = []
 
           state.dataFormOfSampleItemUnit = JSON.parse(JSON.stringify(res.data.data))
           // 获取指标
           await state.dataFormOfSampleItemUnit.forEach(async (item) => {
-            // add 组合讯息
-            if (item.groupBatch !== '') {
-              if (!groupContainer.includes(item.groupBatch)) {
-                groupContainer.push(item.groupBatch)
-
-                MANAGEMENT_INSPECTION_PHYSICOCHEMICAL_TASK_FORM_QUERY_API({ // /taskInspect/formTaskInspect
-                  id: item.id,
-                  recheckBatch: item.recheckBatch,
-                  taskStatus: 'COMPLETED'
-                }).then((rep) => {
-                  console.log('组合讯息')
-                  console.log(rep.data.data)
-
-                  rep.data.data.forEach((element:any) => {
-                    const tempIndexList:any[] = []
-                    element.taskInspectIndexList.forEach((subElement:any) => {
-                      tempIndexList.push({
-                        indexName: subElement.indexName,
-                        sampleCode: element.sampleCode,
-                        inspectResult: subElement.inspectResult,
-                        indexJudgeResult: subElement.indexJudgeResult
-                      })
-                    })
-                    state.timeLineDataForGroup.push({
-                      indexName: element.indexName,
-                      indexList: tempIndexList
-                    })
-                  })
-                })
-              }
-            }
-
             // 区分1临时、2其他
             const tempIndex = await INSPECT_INDEX_PROCESS_PARAMETER_QUERY_FOR_TASK_API({
               inspectMaterialCode: state.dataFormOfSampleInfo.taskInspectClassify !== 'TEMP' ? state.dataFormOfSampleInfo.inspectMaterialCode : '',
@@ -1040,7 +1045,8 @@ export default defineComponent({
               canEditInspectResult: false, // 结果是否可编辑
               canChangeAgainWithProcessParameter: true, // 可再改值过程参数触发结果
               filnalFormula: '', // 公式值
-              inspectMethodCodeWhichIndex: 100 // 预设的方法 index
+              inspectMethodCodeWhichIndex: 100, // 预设的方法 index
+              moreThan1Index: state.dataFormOfSampleItemUnit.filter(element => element.indexId === item.indexId).length >= 2
             })
 
             if (item.manualFlag === 'Y') {
@@ -1189,7 +1195,7 @@ export default defineComponent({
       btnSaveOrSubmitDataOfInspect,
       btnChangeMethodOfIndex,
       actHandleIndexJudgeResult,
-      actHandleIndexStandardString,
+      // actHandleIndexStandardString,
       actHandleInspectResult,
       // act
       actChangeByRecheckMod,
