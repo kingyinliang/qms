@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-11-11 16:30:07
  * @LastEditors: Telliex
- * @LastEditTime: 2021-12-10 13:51:53
+ * @LastEditTime: 2021-12-10 17:47:31
 -->
 <template>
   <el-dialog :title="title" v-model="isDialogShow" width="90%" @close="onClose">
@@ -39,7 +39,7 @@
 
     <mds-area :title="'检验录入'" :name="'org'" >
       <template v-for="subItem in dataFormOfSampleItemUnit" :key="subItem">
-        <mds-area :title="subItem.taskInspectIdList.length===1 ? subItem.indexName:subItem.indexName+' ('+subItem.sampleCode+')'" :name="'org'" :outline="true">
+        <mds-area :title="subItem.taskInspectIdList.length > 1 ? subItem.indexName+' ('+subItem.sampleCode+')': subItem.indexName " :name="'org'" :outline="true">
           <!-- <template #titleBtn v-if="subItem.inspectMethodCodeWhichIndex!==null|| subItem.inspectMethodCodeWhichIndex!==100 || subItem.inspectMethodNameList.length==2"> -->
           <template #titleBtn v-if="subItem.inspectMethodNameList?.length==2">
             <div class="btn-group">
@@ -165,7 +165,7 @@
             :color="'#467BFF'"
             :hide-timestamp="true"
           >
-          <h4 style="margin-bottom:5px;">检验说明 : ( 指标 | 样品码 | 结果 )</h4>
+          <h4 style="margin-bottom:10px;">检验说明 : </h4>
             <div class="time-log">
               <ul class="fixlocation">
                 <!-- <li v-for="(element, index) in item.indexList" :key="index"><div>> <span>指标：</span><em>{{element.indexName}}</em></div><div><span>样品码：</span><em>{{element.sampleCode}}</em></div><div><span>结果：</span><em :style="{color:element.indexJudgeResult==='N'?'#ff0000':'inherit'}">{{element.inspectResult}}</em></div></li> -->
@@ -192,7 +192,7 @@
             :color="'#467BFF'"
             :hide-timestamp="true"
           >
-          <h4 style="margin-bottom:5px;">检验说明 : ( 指标 | 样品码 | 结果 )</h4>
+          <h4 style="margin-bottom:10px;">检验说明 : </h4>
             <div class="time-log">
               <ul class="fixlocation">
                 <!-- <li v-for="(element, index) in item.indexList" :key="index"><div>> <span>指标：</span><em>{{element.indexName}}</em></div><div><span>样品码：</span><em>{{element.sampleCode}}</em></div><div><span>结果：</span><em :style="{color:element.indexJudgeResult==='N'?'#ff0000':'inherit'}">{{element.inspectResult}}</em></div></li> -->
@@ -1273,9 +1273,7 @@ export default defineComponent({
     flex:1;
        margin-bottom: 10px;
       margin-right:10px;
-    >div::before{
-      content: "> ";
-    }
+
   }
 }
 
