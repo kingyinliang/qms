@@ -3,11 +3,10 @@
  * @Anthor: Telliex
  * @Date: 2021-11-11 16:30:07
  * @LastEditors: Telliex
- * @LastEditTime: 2021-12-10 12:38:33
+ * @LastEditTime: 2021-12-10 16:51:50
 -->
 <template>
   <mds-area class="info" >
-
     <h2 class="title"><img  src="~@/assets/img/layout/logo-shinho.svg" alt="logo">{{subTitle}}</h2>
     <!-- 历史任务表单 -->
     <mds-area :title="infoSubTitle" :name="'org'" class="info">
@@ -87,7 +86,7 @@
     </mds-area>
 
       <template v-for="item in dataFormOfSampleItemUnit" :key="item">
-        <mds-area :name="'org'" :title="item.recheckFlag==='Y'?'复检':'初检'">
+        <mds-area :name="'org'" :title="item.recheckNum">
           <div style="padding-bottom:5px">
           <el-form :inline="true" :model="item"  :label-width="cssForformLabelWidth" v-if="currentType==='HISTORY'" class="orgBox">
             <el-form-item label="检验开始："  prop="tempInspectStartDate">
@@ -279,12 +278,99 @@ export default defineComponent({
             console.log('HISTORY VIEW')
             console.log(res.data.data)
             if (res.data.data.length) {
-              res.data.data.forEach((item:any) => {
-                item.tempInspectStartDate = item.inspectStartDate ? item.inspectStartDate.substring(0, 10) : ''
-                item.tempInspectEndDate = item.inspectEndDate ? item.inspectEndDate.substring(0, 10) : ''
-              })
+              for (const element of res.data.data) {
+                element.tempInspectStartDate = element.inspectStartDate ? element.inspectStartDate.substring(0, 10) : ''
+                element.tempInspectEndDate = element.inspectEndDate ? element.inspectEndDate.substring(0, 10) : ''
+                for (const item of element.taskInspectIndexList) {
+                  const tempIndex = await INSPECT_INDEX_PROCESS_PARAMETER_QUERY_FOR_TASK_API({
+                    inspectMaterialCode: state.currentType !== 'TEMP' ? state.dataFormOfSampleInfo.inspectMaterialCode : '',
+                    inspectTypeId: state.currentType !== 'TEMP' ? state.dataFormOfSampleInfo.inspectTypeId : '',
+                    inspectIndexId: state.currentType !== 'TEMP' ? item.indexId : '',
+                    inspectParameterGroupId: state.currentType === 'TEMP' ? item.inspectParameterGroupId : ''
+                  })
+                  console.log('指标下标准 & 过程参数')
+                  console.log(tempIndex.data.data)
+                  item.inspectIndexStandard = tempIndex.data.data.inspectIndexStandard
 
-              for (const item of res.data.data[0].taskInspectIndexList) {
+                  if (item.manualStandard !== '') {
+                    item.indexStandardString = item.manualStandard
+                  } else {
+                    if (item.indexInnerStandard) {
+                      item.indexStandardString = `S=${item.indexInnerStandard}`
+                    } else if ((item.indexInnerDown && item.innerDownSymbol) && (item.innerUpSymbol && item.indexInnerUp)) {
+                      item.indexStandardString = `${item.indexInnerDown}${item.innerDownSymbol.replace('>', '<')}S${item.innerUpSymbol}${item.indexInnerUp}`
+                      console.log(item.indexStandardString)
+                    } else if (item.indexInnerDown && item.innerDownSymbol) {
+                      item.indexStandardString = `${item.indexInnerDown}${item.innerDownSymbol.replace('>', '<')}S`
+                    } else if (item.innerUpSymbol && item.indexInnerUp) {
+                      item.indexStandardString = `S${item.innerUpSymbol}${item.indexInnerUp}`
+                    } else if (item.indexStandard) {
+                      item.indexStandardString = `S=${item.indexStandard}`
+                    } else if ((item.indexDown && item.downSymbol) && (item.upSymbol && item.indexUp)) {
+                      item.indexStandardString = `${item.indexDown}${item.downSymbol.replace('>', '<')}S${item.upSymbol}${item.indexUp}`
+                    } else if (item.indexDown && item.downSymbol) {
+                      item.indexStandardString = `${item.indexDown}${item.downSymbol.replace('>', '<')}S`
+                    } else if (item.upSymbol && item.indexUp) {
+                      item.indexStandardString = `S${item.upSymbol}${item.indexUp}`
+                    } else {
+                      if (item.inspectIndexStandard) {
+                        if (item.inspectIndexStandard.indexInnerStandard) {
+                          item.indexStandardString = `S=${item.inspectIndexStandard.indexInnerStandard}`
+                        } else if ((item.inspectIndexStandard.indexInnerDown && item.inspectIndexStandard.innerDownSymbol) && (item.inspectIndexStandard.innerUpSymbol && item.inspectIndexStandard.indexInnerUp)) {
+                          item.indexStandardString = `${item.inspectIndexStandard.indexInnerDown}${item.inspectIndexStandard.innerDownSymbol.replace('>', '<')}S${item.inspectIndexStandard.innerUpSymbol}${item.inspectIndexStandard.indexInnerUp}`
+                        } else if (item.inspectIndexStandard.indexInnerDown && item.inspectIndexStandard.innerDownSymbol) {
+                          item.indexStandardString = `${item.inspectIndexStandard.indexInnerDown}${item.inspectIndexStandard.innerDownSymbol.replace('>', '<')}S`
+                        } else if (item.inspectIndexStandard.innerUpSymbol && item.inspectIndexStandard.indexInnerUp) {
+                          item.indexStandardString = `S${item.inspectIndexStandard.innerUpSymbol}${item.inspectIndexStandard.indexInnerUp}`
+                        } else if (item.inspectIndexStandard.indexStandard) {
+                          item.indexStandardString = `S=${item.inspectIndexStandard.indexStandard}`
+                        } else if ((item.inspectIndexStandard.indexDown && item.inspectIndexStandard.downSymbol) && (item.inspectIndexStandard.upSymbol && item.inspectIndexStandard.indexUp)) {
+                          item.indexStandardString = `${item.inspectIndexStandard.indexDown}${item.inspectIndexStandard.downSymbol.replace('>', '<')}S${item.inspectIndexStandard.upSymbol}${item.inspectIndexStandard.indexUp}`
+                        } else if (item.inspectIndexStandard.indexDown && item.inspectIndexStandard.downSymbol) {
+                          item.indexStandardString = `${item.inspectIndexStandard.indexDown}${item.inspectIndexStandard.downSymbol.replace('>', '<')}S`
+                        } else if (item.inspectIndexStandard.upSymbol && item.inspectIndexStandard.indexUp) {
+                          item.indexStandardString = `S${item.inspectIndexStandard.upSymbol}${item.inspectIndexStandard.indexUp}`
+                        } else {
+                          item.indexStandardString = ''
+                        }
+                      } else {
+                        item.indexStandardString = ''
+                      }
+                    }
+                  }
+
+                  item.inspectParameterList = []
+                  if (tempIndex.data.data.inspectMethodNameList.length) {
+                    tempIndex.data.data.inspectMethodNameList.forEach((element:any) => {
+                      if (element.inspectMethodCode === item.inspectMethodCode) {
+                        item.inspectParameterList = element.inspectParameterList.filter((subElement:any) => subElement.id !== '' && subElement.paramType === 'SHOW')
+                      }
+                    })
+                  }
+                }
+              }
+              state.dataFormOfSampleItemUnit = res.data.data
+            }
+
+            setTimeout(() => {
+              state.dataFormOfSampleItemUnit = res.data.data
+            }, 5000)
+          })
+        } else {
+          MANAGEMENT_INSPECTION_PHYSICOCHEMICAL_TASK_FORM_QUERY_API({ // /taskInspect/formTaskInspect
+            id: state.currentObj.id,
+            recheckBatch: state.currentObj.recheckBatch,
+            taskStatus: ''
+          }).then(async (res) => {
+            console.log('PROCESS or TEMP VIEW')
+            console.log(res.data.data)
+            // res.data.data.forEach((item:any) => {
+            //   item.tempInspectStartDate = item.inspectStartDate ? item.inspectStartDate.substring(0, 10) : ''
+            //   item.tempInspectEndDate = item.inspectEndDate ? item.inspectEndDate.substring(0, 10) : ''
+            // })
+
+            for (const element of res.data.data) {
+              for (const item of element.taskInspectIndexList) {
                 const tempIndex = await INSPECT_INDEX_PROCESS_PARAMETER_QUERY_FOR_TASK_API({
                   inspectMaterialCode: state.currentType !== 'TEMP' ? state.dataFormOfSampleInfo.inspectMaterialCode : '',
                   inspectTypeId: state.currentType !== 'TEMP' ? state.dataFormOfSampleInfo.inspectTypeId : '',
@@ -296,7 +382,7 @@ export default defineComponent({
                 item.inspectIndexStandard = tempIndex.data.data.inspectIndexStandard
 
                 if (item.manualStandard !== '') {
-                  item.manualStandard = item.indexStandardString
+                  item.indexStandardString = item.manualStandard
                 } else {
                   if (item.indexInnerStandard) {
                     item.indexStandardString = `S=${item.indexInnerStandard}`
@@ -352,87 +438,6 @@ export default defineComponent({
               }
             }
 
-            state.dataFormOfSampleItemUnit = res.data.data
-          })
-        } else {
-          MANAGEMENT_INSPECTION_PHYSICOCHEMICAL_TASK_FORM_QUERY_API({ // /taskInspect/formTaskInspect
-            id: state.currentObj.id,
-            recheckBatch: state.currentObj.recheckBatch,
-            taskStatus: ''
-          }).then(async (res) => {
-            console.log('PROCESS or TEMP VIEW')
-            console.log(res.data.data)
-            // res.data.data.forEach((item:any) => {
-            //   item.tempInspectStartDate = item.inspectStartDate ? item.inspectStartDate.substring(0, 10) : ''
-            //   item.tempInspectEndDate = item.inspectEndDate ? item.inspectEndDate.substring(0, 10) : ''
-            // })
-
-            for (const item of res.data.data[0].taskInspectIndexList) {
-              const tempIndex = await INSPECT_INDEX_PROCESS_PARAMETER_QUERY_FOR_TASK_API({
-                inspectMaterialCode: state.currentType !== 'TEMP' ? state.dataFormOfSampleInfo.inspectMaterialCode : '',
-                inspectTypeId: state.currentType !== 'TEMP' ? state.dataFormOfSampleInfo.inspectTypeId : '',
-                inspectIndexId: state.currentType !== 'TEMP' ? item.indexId : '',
-                inspectParameterGroupId: state.currentType === 'TEMP' ? item.inspectParameterGroupId : ''
-              })
-              console.log('指标下标准 & 过程参数')
-              console.log(tempIndex.data.data)
-              item.inspectIndexStandard = tempIndex.data.data.inspectIndexStandard
-
-              if (item.manualStandard !== '') {
-                item.manualStandard = item.indexStandardString
-              } else {
-                if (item.indexInnerStandard) {
-                  item.indexStandardString = `S=${item.indexInnerStandard}`
-                } else if ((item.indexInnerDown && item.innerDownSymbol) && (item.innerUpSymbol && item.indexInnerUp)) {
-                  item.indexStandardString = `${item.indexInnerDown}${item.innerDownSymbol.replace('>', '<')}S${item.innerUpSymbol}${item.indexInnerUp}`
-                } else if (item.indexInnerDown && item.innerDownSymbol) {
-                  item.indexStandardString = `${item.indexInnerDown}${item.innerDownSymbol.replace('>', '<')}S`
-                } else if (item.innerUpSymbol && item.indexInnerUp) {
-                  item.indexStandardString = `S${item.innerUpSymbol}${item.indexInnerUp}`
-                } else if (item.indexStandard) {
-                  item.indexStandardString = `S=${item.indexStandard}`
-                } else if ((item.indexDown && item.downSymbol) && (item.upSymbol && item.indexUp)) {
-                  item.indexStandardString = `${item.indexDown}${item.downSymbol.replace('>', '<')}S${item.upSymbol}${item.indexUp}`
-                } else if (item.indexDown && item.downSymbol) {
-                  item.indexStandardString = `${item.indexDown}${item.downSymbol.replace('>', '<')}S`
-                } else if (item.upSymbol && item.indexUp) {
-                  item.indexStandardString = `S${item.upSymbol}${item.indexUp}`
-                } else {
-                  if (item.inspectIndexStandard) {
-                    if (item.inspectIndexStandard.indexInnerStandard) {
-                      item.indexStandardString = `S=${item.inspectIndexStandard.indexInnerStandard}`
-                    } else if ((item.inspectIndexStandard.indexInnerDown && item.inspectIndexStandard.innerDownSymbol) && (item.inspectIndexStandard.innerUpSymbol && item.inspectIndexStandard.indexInnerUp)) {
-                      item.indexStandardString = `${item.inspectIndexStandard.indexInnerDown}${item.inspectIndexStandard.innerDownSymbol.replace('>', '<')}S${item.inspectIndexStandard.innerUpSymbol}${item.inspectIndexStandard.indexInnerUp}`
-                    } else if (item.inspectIndexStandard.indexInnerDown && item.inspectIndexStandard.innerDownSymbol) {
-                      item.indexStandardString = `${item.inspectIndexStandard.indexInnerDown}${item.inspectIndexStandard.innerDownSymbol.replace('>', '<')}S`
-                    } else if (item.inspectIndexStandard.innerUpSymbol && item.inspectIndexStandard.indexInnerUp) {
-                      item.indexStandardString = `S${item.inspectIndexStandard.innerUpSymbol}${item.inspectIndexStandard.indexInnerUp}`
-                    } else if (item.inspectIndexStandard.indexStandard) {
-                      item.indexStandardString = `S=${item.inspectIndexStandard.indexStandard}`
-                    } else if ((item.inspectIndexStandard.indexDown && item.inspectIndexStandard.downSymbol) && (item.inspectIndexStandard.upSymbol && item.inspectIndexStandard.indexUp)) {
-                      item.indexStandardString = `${item.inspectIndexStandard.indexDown}${item.inspectIndexStandard.downSymbol.replace('>', '<')}S${item.inspectIndexStandard.upSymbol}${item.inspectIndexStandard.indexUp}`
-                    } else if (item.inspectIndexStandard.indexDown && item.inspectIndexStandard.downSymbol) {
-                      item.indexStandardString = `${item.inspectIndexStandard.indexDown}${item.inspectIndexStandard.downSymbol.replace('>', '<')}S`
-                    } else if (item.inspectIndexStandard.upSymbol && item.inspectIndexStandard.indexUp) {
-                      item.indexStandardString = `S${item.inspectIndexStandard.upSymbol}${item.inspectIndexStandard.indexUp}`
-                    } else {
-                      item.indexStandardString = ''
-                    }
-                  } else {
-                    item.indexStandardString = ''
-                  }
-                }
-              }
-
-              item.inspectParameterList = []
-              if (tempIndex.data.data.inspectMethodNameList.length) {
-                tempIndex.data.data.inspectMethodNameList.forEach((element:any) => {
-                  if (element.inspectMethodCode === item.inspectMethodCode) {
-                    item.inspectParameterList = element.inspectParameterList.filter((subElement:any) => subElement.id !== '' && subElement.paramType === 'SHOW')
-                  }
-                })
-              }
-            }
             state.dataFormOfSampleItemUnit = res.data.data
           })
         }
