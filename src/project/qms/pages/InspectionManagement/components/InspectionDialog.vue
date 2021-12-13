@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-11-11 16:30:07
  * @LastEditors: Telliex
- * @LastEditTime: 2021-12-13 12:01:24
+ * @LastEditTime: 2021-12-13 16:03:30
 -->
 <template>
   <el-dialog :title="title" v-model="isDialogShow" width="90%" @close="onClose">
@@ -452,7 +452,7 @@ export default defineComponent({
           console.log(state.dataFormOfSampleInfo.indexJudgeResult)
           console.log('state.dataFormOfSampleInfo.recheckMod')
           console.log(state.dataFormOfSampleInfo.recheckMod)
-          proxy.$confirm('此样品检验不合格，请确认是否复检？', '提示', {
+          proxy.$confirm('此样品检验不合格，未执行复检，请确认是否继续校验？', '提示', {
             confirmButtonText: '是',
             cancelButtonText: '否',
             type: 'warning'
@@ -605,59 +605,65 @@ export default defineComponent({
 
     // 标准值栏位处理
     const checkIndexStandardString = (val:any) => {
-      if (val.manualStandard === '' && val.inspectResult !== '' && val.indexStandardString !== '') {
-        let center = ''
-        let leftResult = ''
-        let rightResult = ''
+      if (val.inspectResult !== '' && val.indexStandardString !== '') {
+        if (val.manualStandard === '') {
+          let center = ''
+          let leftResult = ''
+          let rightResult = ''
 
-        if (val.indexStandardString.substring(0, 2) === 'S=') {
-          center = val.indexStandardString.split('S=')[1]
-        } else {
-          const result = /(.*)S(.*)/.exec(val.indexStandardString)
-          if (result === null) {
-            proxy.$warningToast('标准公式解析错误')
-            val.indexStandardString = ''
-            return
-          }
-
-          if (result[1]) {
-            leftResult = result[1]
-          }
-
-          if (result[2]) {
-            rightResult = result[2]
-          }
-        }
-
-        if (val.indexStandardString) {
-          try {
-            if (leftResult !== '' && rightResult !== '') {
-              if (evil(`${leftResult}${val.inspectResult}`) && evil(`${val.inspectResult}${rightResult}`)) {
-                val.indexJudgeResult = 'Y'
-              } else {
-                val.indexJudgeResult = 'N'
-              }
-            } else if (leftResult === '' && rightResult !== '') {
-              if (evil(`${val.inspectResult}${rightResult}`)) {
-                val.indexJudgeResult = 'Y'
-              } else {
-                val.indexJudgeResult = 'N'
-              }
-            } else if (leftResult !== '' && rightResult === '') {
-              if (evil(`${leftResult}${val.inspectResult}`)) {
-                val.indexJudgeResult = 'Y'
-              } else {
-                val.indexJudgeResult = 'N'
-              }
-            } else {
-              // 对等比对直接比即可
-              if (center.toString() === val.inspectResult.toString()) {
-                val.indexJudgeResult = 'Y'
-              } else {
-                val.indexJudgeResult = 'N'
-              }
+          if (val.indexStandardString.substring(0, 2) === 'S=') {
+            center = val.indexStandardString.split('S=')[1]
+          } else {
+            const result = /(.*)S(.*)/.exec(val.indexStandardString)
+            if (result === null) {
+              center = val.indexStandardString
             }
-          } catch (err) {
+
+            if (result && result[1]) {
+              leftResult = result[1]
+            }
+
+            if (result && result[2]) {
+              rightResult = result[2]
+            }
+          }
+
+          if (val.indexStandardString) {
+            try {
+              if (leftResult !== '' && rightResult !== '') {
+                if (evil(`${leftResult}${val.inspectResult}`) && evil(`${val.inspectResult}${rightResult}`)) {
+                  val.indexJudgeResult = 'Y'
+                } else {
+                  val.indexJudgeResult = 'N'
+                }
+              } else if (leftResult === '' && rightResult !== '') {
+                if (evil(`${val.inspectResult}${rightResult}`)) {
+                  val.indexJudgeResult = 'Y'
+                } else {
+                  val.indexJudgeResult = 'N'
+                }
+              } else if (leftResult !== '' && rightResult === '') {
+                if (evil(`${leftResult}${val.inspectResult}`)) {
+                  val.indexJudgeResult = 'Y'
+                } else {
+                  val.indexJudgeResult = 'N'
+                }
+              } else {
+              // 对等比对直接比即可
+                if (center.toString() === val.inspectResult.toString()) {
+                  val.indexJudgeResult = 'Y'
+                } else {
+                  val.indexJudgeResult = 'N'
+                }
+              }
+            } catch (err) {
+              val.indexJudgeResult = 'N'
+            }
+          }
+        } else {
+          if (val.indexStandardString.toString() === val.inspectResult.toString()) {
+            val.indexJudgeResult = 'Y'
+          } else {
             val.indexJudgeResult = 'N'
           }
         }
@@ -831,6 +837,7 @@ export default defineComponent({
             subItem.inspectMethodNameList[subItem.inspectMethodCodeWhichIndex].inspectParameterListHidden)
 
           if (!result) {
+            proxy.$warningToast(`指标 [${subItem.indexName}] 公式或参数值有错误，无法计算。请手动输入结果进行判定。`)
             subItem.inspectResult = ''
             subItem.canEditInspectResult = true
           } else {
@@ -898,7 +905,6 @@ export default defineComponent({
         })
       } else {
         if (showValue.some(item => item.paramDataType === '')) { // 多个过程参数没类型
-          proxy.$warningToast('公式或参数值有错误，无法计算。请改手动输入结果，以进行判定')
           result = null
         } else {
           try {
@@ -907,7 +913,6 @@ export default defineComponent({
             result = expr.evaluate(importValue)
           } catch (err) {
             console.log(err)
-            proxy.$warningToast('公式或参数值有错误，无法计算。请改手动输入结果，以进行判定')
             result = null
           }
         }

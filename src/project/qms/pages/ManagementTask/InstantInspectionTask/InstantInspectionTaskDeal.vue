@@ -3,15 +3,15 @@
  * @Anthor: Telliex
  * @Date: 2021-10-15 20:07:53
  * @LastEditors: Telliex
- * @LastEditTime: 2021-12-08 11:29:51
+ * @LastEditTime: 2021-12-13 16:41:43
 -->
 <template>
 <div class="k-box-card" style="padding:20px 0;">
   <mds-card title="检验需求" :name="'org'" :pack-up="false" style="margin-bottom: 20px; background: #fff;">
     <el-form ref="refFormOfInspectRequest" :model="dataFormOfInspectRequest" :rules="ruleFormOfInspectRequest" :label-width="cssForformLabelWidth">
         <div style="display:flex; justify-content:flex-start;">
-          <el-form-item label="任务单号："  prop="tempApplyNo" v-if="pageType!=='add'">
-            <el-input v-model="dataFormOfInspectRequest.tempApplyNo"  class="inputWidth" placeholder="请输入" :disabled="true" autocomplete="off" ></el-input>
+          <el-form-item label="任务单号："  prop="tempApplyNo" >
+            <el-input v-model="dataFormOfInspectRequest.tempApplyNo"  class="inputWidth" placeholder="" :disabled="true" autocomplete="off" style="width:180px" ></el-input>
           </el-form-item>
           <el-form-item label="需求部门："  prop="needDeptList" class="required">
              <tree-dialog
@@ -24,10 +24,11 @@
                   :placeholder="'请选择'"
                   :tree-props="{ label: 'deptName', children: 'children' }"
                   :disabled="dataFormDisabled"
+                  style="width:180px"
                 />
           </el-form-item>
           <el-form-item label="发布人员："  prop="deployMan">
-            <el-input v-model="dataFormOfInspectRequest.deployMan"  class="inputWidth" placeholder="请输入" :disabled="true" autocomplete="off" ></el-input>
+            <el-input v-model="dataFormOfInspectRequest.deployMan"  class="inputWidth" placeholder="请输入" :disabled="true" autocomplete="off" style="width:180px"></el-input>
           </el-form-item>
           <el-form-item label="取样部门："  prop="sampleDeptIdList" class="required" style="flex:1">
             <tree-dialog
@@ -235,6 +236,8 @@
       <el-table-column label="指标编码" show-overflow-tooltip prop="indexCode" width="100" />
       <el-table-column label="指标名称" show-overflow-tooltip prop="indexName" width="100" />
       <el-table-column label="单位" show-overflow-tooltip prop="indexUnit" width="80" />
+      <el-table-column label="检验方法" show-overflow-tooltip prop="inspectMethodGroupName" min-width="150" />
+      <el-table-column label="检验部门" show-overflow-tooltip prop="inspectDeptName" width="220" />
       <el-table-column label="检验说明" show-overflow-tooltip prop="inspectExplain" min-width="220" />
       <el-table-column label="检验结果" show-overflow-tooltip prop="inspectResult" min-width="220" />
     </el-table>
@@ -916,7 +919,7 @@ export default defineComponent({
       MANAGEMENT_PROCESS_INSPECTION_TASK_ASSIGN_QUERY_API({
         taskTempApplyId: state.pageId
       }).then(async (res) => {
-        console.log('11111编辑-检验指标 table 加载')
+        console.log('编辑-检验指标 table 加载')
         console.log(res.data.data)
         state.dataTableOfInspectIndexBuild = res.data.data
 
@@ -944,12 +947,9 @@ export default defineComponent({
               }
             })
           })
-          console.log('222222')
           item.isRedact = false
         // })
         }
-
-        console.log('333333')
         state.inspectIndexItemSize = res.data.data.length
         state.dataOrgTableOfInspectIndexBuild = JSON.parse(JSON.stringify(state.dataTableOfInspectIndexBuild))
       })
@@ -960,7 +960,7 @@ export default defineComponent({
       MANAGEMENT_PROCESS_INSPECTION_TASK_ASSIGN_QUERY_API({
         taskTempApplyId: state.pageId
       }).then(async (res) => {
-        console.log('11111分配-检验指标 table 加载')
+        console.log('分配-检验指标 table 加载')
         console.log(res.data.data)
         state.dataTableOfInspectIndexAssign = res.data.data
         // state.dataTableOfInspectIndexAssign.forEach((item) => {
@@ -992,7 +992,7 @@ export default defineComponent({
           })
         }
         // })
-        console.log('333333分配-检验指标 table 加载')
+        console.log('分配-检验指标 table 加载')
         console.log(state.dataTableOfInspectIndexAssign)
 
         state.inspectIndexItemSize = res.data.data.length
@@ -1005,7 +1005,7 @@ export default defineComponent({
     const getInspectIndexDataForShow = () => {
       MANAGEMENT_PROCESS_INSPECTION_TASK_ASSIGN_QUERY_API({
         taskTempApplyId: state.pageId
-      }).then((res) => {
+      }).then(async (res) => {
         console.log('展示-检验指标 table 加载')
         console.log(res.data.data)
         const tempSampleDeptNameList = state.dataFormOfInspectRequest.sampleDeptName?.split(',') || []
@@ -1020,6 +1020,18 @@ export default defineComponent({
               state.dataTableOfInspectIndexShow.push(item)
             })
           }
+        }
+
+        for (const item of state.dataTableOfInspectIndexShow) {
+          await MANAGEMENT_PROCESS_INSPECTION_TASK_METHOD_DROPDOWN_API({
+            inspectIndexId: item.indexId
+          }).then((cur) => {
+            cur.data.data.forEach((element:any) => {
+              if (element.inspectMethodCode === item.inspectMethodCode && element.inspectParameterGroupId === item.inspectParameterGroupId && element.inspectMethodName === item.inspectMethodName) {
+                item.inspectMethodGroupName = element.inspectMethodGroupName
+              }
+            })
+          })
         }
       })
     }
