@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-11-16 09:59:02
  * @LastEditors: Telliex
- * @LastEditTime: 2021-12-13 08:56:12
+ * @LastEditTime: 2021-12-14 09:01:40
 -->
 <template>
   <mds-area class="test_method" title="已选中样品" :pack-up="false" style="margin-bottom: 0; background: #fff; overflow:scroll">
@@ -556,12 +556,20 @@ export default defineComponent({
           // if (state.subType === 'normal') { // 一般
 
           // } else if (state.subType === 'merge') { // 合并
-          state.targetObjList.forEach((item:any) => {
-            if (item.taskStatus === 'RECEIVED') {
-              item.taskStatus = 'CHECKING'
-              item.taskStatusName = '检验中'
-            }
+
+          state.dataTableOfTopicMain.forEach((element:any) => {
+            state.targetObjList.forEach((subElement:any) => {
+              if (element.id === subElement.id) {
+                if (element.taskStatus === 'RECEIVED') {
+                  element.taskStatus = 'CHECKING'
+                  element.taskStatusName = '检验中'
+                  subElement.taskStatus = 'CHECKING'
+                  subElement.taskStatusName = '检验中'
+                }
+              }
+            })
           })
+
           // }
         } else { // 刷新
           const tempContainer:any[] = []

@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-11-11 16:30:07
  * @LastEditors: Telliex
- * @LastEditTime: 2021-12-10 16:51:50
+ * @LastEditTime: 2021-12-13 18:23:46
 -->
 <template>
   <mds-area class="info" >
@@ -364,10 +364,13 @@ export default defineComponent({
           }).then(async (res) => {
             console.log('PROCESS or TEMP VIEW')
             console.log(res.data.data)
-            // res.data.data.forEach((item:any) => {
-            //   item.tempInspectStartDate = item.inspectStartDate ? item.inspectStartDate.substring(0, 10) : ''
-            //   item.tempInspectEndDate = item.inspectEndDate ? item.inspectEndDate.substring(0, 10) : ''
-            // })
+            res.data.data.forEach((item:any, index:number) => {
+              if (index === res.data.data.length - 1) {
+                item.recheckNum = '初检'
+              } else {
+                item.recheckNum = `复检${res.data.data.length - index - 1}`
+              }
+            })
 
             for (const element of res.data.data) {
               for (const item of element.taskInspectIndexList) {
@@ -498,7 +501,7 @@ h2.title{
 }
 
 .orgBox{
-  margin-top:-20px
+  margin-top:-10px
 }
 
 </style>
