@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-11-11 16:30:07
  * @LastEditors: Telliex
- * @LastEditTime: 2021-12-14 09:01:48
+ * @LastEditTime: 2021-12-14 12:05:56
 -->
 <template>
   <el-dialog :title="title" v-model="isDialogShow" width="90%" @close="onClose">
@@ -392,6 +392,10 @@ export default defineComponent({
           }
         }
 
+        if (item.longCycle === 'Y') {
+          item.inspectIndexDate = new Date()
+        }
+
         // 处理过程参数
         if (item.inspectMethodNameList.length) {
           item.inspectMethodNameList[item.inspectMethodCodeWhichIndex].inspectParameterList.forEach((subItem:any) => {
@@ -445,11 +449,6 @@ export default defineComponent({
 
       if (type !== 'save') { // 完成提交行为
         if (state.dataFormOfSampleInfo.indexJudgeResult === 'N' && state.dataFormOfSampleInfo.recheckMod === '') {
-          console.log('22222222')
-          console.log('state.dataFormOfSampleInfo.indexJudgeResult')
-          console.log(state.dataFormOfSampleInfo.indexJudgeResult)
-          console.log('state.dataFormOfSampleInfo.recheckMod')
-          console.log(state.dataFormOfSampleInfo.recheckMod)
           proxy.$confirm('此样品检验不合格，未执行复检，请确认是否继续校验？', '提示', {
             confirmButtonText: '是',
             cancelButtonText: '否',

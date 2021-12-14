@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-11-16 09:59:02
  * @LastEditors: Telliex
- * @LastEditTime: 2021-12-14 09:01:40
+ * @LastEditTime: 2021-12-14 11:30:34
 -->
 <template>
   <mds-area class="test_method" title="已选中样品" :pack-up="false" style="margin-bottom: 0; background: #fff; overflow:scroll">
@@ -553,10 +553,6 @@ export default defineComponent({
       setTimeout(async () => {
         // 1. 是否刷新 list
         if (val.act === 'save') { // 不刷新，仅改状态
-          // if (state.subType === 'normal') { // 一般
-
-          // } else if (state.subType === 'merge') { // 合并
-
           state.dataTableOfTopicMain.forEach((element:any) => {
             state.targetObjList.forEach((subElement:any) => {
               if (element.id === subElement.id) {
@@ -569,8 +565,6 @@ export default defineComponent({
               }
             })
           })
-
-          // }
         } else { // 刷新
           const tempContainer:any[] = []
           let isOpenCopy = false
@@ -584,6 +578,7 @@ export default defineComponent({
 
           // 后来复检提交会返 string[] =>id
           if (val.obj && val.obj.taskInspectIdList.length) {
+            console.log('复检提交')
             console.log(val.obj.taskInspectIdList)
             isOpenCopy = true
             tempContainer.push({
