@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-10-15 20:07:53
  * @LastEditors: Telliex
- * @LastEditTime: 2021-12-13 16:41:43
+ * @LastEditTime: 2021-12-14 10:24:25
 -->
 <template>
 <div class="k-box-card" style="padding:20px 0;">
@@ -1010,13 +1010,14 @@ export default defineComponent({
         console.log(res.data.data)
         const tempSampleDeptNameList = state.dataFormOfInspectRequest.sampleDeptName?.split(',') || []
         state.inspectIndexItemSize = res.data.data.length
-        if (tempSampleDeptNameList.length !== 0 && res.data.data.length !== 0) {
+        if (tempSampleDeptNameList.length && res.data.data.length) {
           state.dataTableOfInspectIndexShow = []
           for (let i = 0; i < tempSampleDeptNameList.length; i++) {
             const temp = JSON.parse(JSON.stringify(res.data.data))
             temp.forEach((item:any, index:number) => {
               item.taskTempDept = tempSampleDeptNameList[i]
               item.order = index + 1
+              item.dependOrder = `${item.taskTempDept}${item.order}`
               state.dataTableOfInspectIndexShow.push(item)
             })
           }
@@ -1033,6 +1034,11 @@ export default defineComponent({
             })
           })
         }
+
+        // 按取样部门+指标编码排序 # DFQMS-666
+        state.dataTableOfInspectIndexShow.sort(function (a, b) {
+          return a.dependOrder.localeCompare(b.dependOrder)
+        })
       })
     }
 
