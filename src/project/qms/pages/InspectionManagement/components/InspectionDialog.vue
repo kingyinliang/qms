@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-11-11 16:30:07
  * @LastEditors: Telliex
- * @LastEditTime: 2021-12-13 16:03:30
+ * @LastEditTime: 2021-12-14 09:01:48
 -->
 <template>
   <el-dialog :title="title" v-model="isDialogShow" width="90%" @close="onClose">
@@ -344,8 +344,6 @@ export default defineComponent({
       const tempTaskInspectIndexList = JSON.parse(JSON.stringify(state.dataFormOfSampleItemUnit))
 
       tempTaskInspectIndexList.forEach((item:any) => {
-        console.log('every item')
-        console.log(item)
         const tempTaskInspectPhysicalList: any[] = []
         const tempUpdateInspectParameter: any[] = []
 
@@ -457,17 +455,18 @@ export default defineComponent({
             cancelButtonText: '否',
             type: 'warning'
           }).then(async (val:string) => {
-            if (val === 'confirm') {
-              // 需校验
-              if (checkRequiredData(state.dataFormOfSampleItemUnit)) { // check the required
-                finalRunCheck(state.dataFormOfSampleItemUnit) // run count one time
-                console.log('pass')
-                handleSaveData('submit', obj)
-              }
+            // if (val === 'confirm') {
+            console.log(val)
+            // 需校验
+            if (checkRequiredData(state.dataFormOfSampleItemUnit)) { // check the required
+              finalRunCheck(state.dataFormOfSampleItemUnit) // run count one time
+              console.log('pass')
+              handleSaveData('submit', obj)
             }
+            // }
           // onClose()
           }).catch(() => {
-          //
+            console.log('99999999')
           })
         } else {
           proxy.$confirm('确认是否继续校验？', '提示', {
@@ -481,12 +480,10 @@ export default defineComponent({
                 finalRunCheck(state.dataFormOfSampleItemUnit) // run count one time
                 handleSaveData('submit', obj)
               }
-            } else {
-              handleSaveData('save', obj)
             }
           // onClose()
           }).catch(() => {
-          //
+            handleSaveData('save', obj)
           })
         }
       } else { // 保存行为
