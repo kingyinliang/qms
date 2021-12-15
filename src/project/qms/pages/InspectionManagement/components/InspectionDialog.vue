@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-11-11 16:30:07
  * @LastEditors: Telliex
- * @LastEditTime: 2021-12-14 12:05:56
+ * @LastEditTime: 2021-12-14 16:19:28
 -->
 <template>
   <el-dialog :title="title" v-model="isDialogShow" width="90%" @close="onClose">
@@ -71,7 +71,7 @@
               </el-tooltip>
             </el-form-item>
             <el-form-item label="检验时间："  prop="inspectIndexDate" v-if="subItem.inspectIndexDate">
-              <div ><span>检验时间:</span>{{!subItem.inspectIndexDate?'':subItem.inspectIndexDate}}</div>
+              <div>{{!subItem.inspectIndexDate?'':subItem.inspectIndexDate.split(' ')[0]}}</div>
             </el-form-item>
           </el-form>
           <el-form  :model="subItem" :label-width="cssForformLabelWidth">
@@ -392,6 +392,7 @@ export default defineComponent({
           }
         }
 
+        // 有循环表示的进行时间写入
         if (item.longCycle === 'Y') {
           item.inspectIndexDate = new Date()
         }
