@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-11-11 16:30:07
  * @LastEditors: Telliex
- * @LastEditTime: 2021-12-14 16:19:28
+ * @LastEditTime: 2021-12-15 10:48:10
 -->
 <template>
   <el-dialog :title="title" v-model="isDialogShow" width="90%" @close="onClose">
@@ -449,42 +449,30 @@ export default defineComponent({
       console.log(obj)
 
       if (type !== 'save') { // 完成提交行为
-        if (state.dataFormOfSampleInfo.indexJudgeResult === 'N' && state.dataFormOfSampleInfo.recheckMod === '') {
-          proxy.$confirm('此样品检验不合格，未执行复检，请确认是否继续校验？', '提示', {
-            confirmButtonText: '是',
-            cancelButtonText: '否',
-            type: 'warning'
-          }).then(async (val:string) => {
-            // if (val === 'confirm') {
-            console.log(val)
-            // 需校验
-            if (checkRequiredData(state.dataFormOfSampleItemUnit)) { // check the required
-              finalRunCheck(state.dataFormOfSampleItemUnit) // run count one time
-              console.log('pass')
+        // 需校验
+        if (checkRequiredData(state.dataFormOfSampleItemUnit)) { // check the required
+          finalRunCheck(state.dataFormOfSampleItemUnit) // run count one time
+          if (state.dataFormOfSampleInfo.indexJudgeResult === 'N' && state.dataFormOfSampleInfo.recheckMod === '') {
+            proxy.$confirm('此样品检验不合格，未执行复检，请确认是否继续校验？', '提示', {
+              confirmButtonText: '是',
+              cancelButtonText: '否',
+              type: 'warning'
+            }).then(() => {
               handleSaveData('submit', obj)
-            }
-            // }
-          // onClose()
-          }).catch(() => {
-            console.log('99999999')
-          })
-        } else {
-          proxy.$confirm('确认是否继续校验？', '提示', {
-            confirmButtonText: '确定',
-            cancelButtonText: '取消',
-            type: 'warning'
-          }).then(async (val:string) => {
-            if (val === 'confirm') {
-              // 需校验
-              if (checkRequiredData(state.dataFormOfSampleItemUnit)) { // check the required
-                finalRunCheck(state.dataFormOfSampleItemUnit) // run count one time
-                handleSaveData('submit', obj)
-              }
-            }
-          // onClose()
-          }).catch(() => {
-            handleSaveData('save', obj)
-          })
+            }).catch(() => {
+              //
+            })
+          } else {
+            proxy.$confirm('确认是否继续校验？', '提示', {
+              confirmButtonText: '确定',
+              cancelButtonText: '取消',
+              type: 'warning'
+            }).then(() => {
+              handleSaveData('submit', obj)
+            }).catch(() => {
+              handleSaveData('save', obj)
+            })
+          }
         }
       } else { // 保存行为
         // 不校验
@@ -581,12 +569,8 @@ export default defineComponent({
 
     // 改变 指标-结果 时触发
     const actHandleIndexJudgeResult = (val:any) => {
-      if (val.inspectResult === '') {
-        val.indexJudgeResult = 'N'
-      } else {
-        if (val.indexStandardString !== '') {
-          checkIndexStandardString(val)
-        }
+      if (val.inspectResult !== '' && val.indexStandardString !== '') {
+        checkIndexStandardString(val)
       }
     }
 
