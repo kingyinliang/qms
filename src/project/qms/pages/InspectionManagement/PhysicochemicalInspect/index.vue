@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-11-16 09:59:02
  * @LastEditors: Telliex
- * @LastEditTime: 2021-12-15 16:08:26
+ * @LastEditTime: 2021-12-15 18:38:43
 -->
 <template>
   <mds-area class="test_method" title="已选中样品" :pack-up="false" style="margin-bottom: 0; background: #fff; overflow:scroll">
@@ -499,8 +499,16 @@ export default defineComponent({
     const btnHandleOneSelectionChange = (val: DataTableOfTopicMain[]) => {
       console.log('选框选择')
       console.log(val)
+      if (val.length && val[val.length - 1].orderNo === '') {
+        proxy.$warningToast('不具单号，无法勾选合并或组合')
+        setTimeout(() => {
+          refTableOfTopicMain.value.toggleRowSelection(val[val.length - 1], false)
+        }, 500)
+        return
+      }
+
       if (val.length && val[val.length - 1].taskInspectClassify !== 'PROCESS') {
-        proxy.$warningToast('临时检验任务，无法勾选合并')
+        proxy.$warningToast('非制程检验任务，无法勾选合并或组合')
         setTimeout(() => {
           refTableOfTopicMain.value.toggleRowSelection(val[val.length - 1], false)
         }, 500)
@@ -511,27 +519,27 @@ export default defineComponent({
         let tempTaskStatus = val[0].taskStatus
         val.forEach((item:any, index:number) => {
           if (index >= 1) {
-            if (val[0].inspectMaterialCode === item.inspectMaterialCode && val[0].inspectContent === item.inspectContent && val[0].inspectProperty === item.inspectProperty) {
+            if (val[0].orderNo === item.orderNo && val[0].inspectContent === item.inspectContent) {
               console.log('4444444')
               if (tempTaskStatus === 'COMPLETED') {
                 tempTaskStatus = val[index].taskStatus
               } else if (tempTaskStatus === 'RECEIVED') {
                 if (val[index].taskStatus === 'CHECKING') {
-                  proxy.$warningToast('不符合的状态，无法勾选合并')
+                  proxy.$warningToast('不符合的状态，无法勾选合并或组合')
                   setTimeout(() => {
                     refTableOfTopicMain.value.toggleRowSelection(val[index], false)
                   }, 500)
                 }
               } else if (tempTaskStatus === 'CHECKING') {
                 if (val[index].taskStatus === 'RECEIVED') {
-                  proxy.$warningToast('不符合的状态，无法勾选合并')
+                  proxy.$warningToast('不符合的状态，无法勾选合并或组合')
                   setTimeout(() => {
                     refTableOfTopicMain.value.toggleRowSelection(val[index], false)
                   }, 500)
                 }
               }
             } else {
-              proxy.$warningToast('不同物料内容属性，无法勾选合并')
+              proxy.$warningToast('不同单号与内容，无法勾选合并或组合')
               setTimeout(() => {
                 refTableOfTopicMain.value.toggleRowSelection(val[index], false)
               }, 500)
