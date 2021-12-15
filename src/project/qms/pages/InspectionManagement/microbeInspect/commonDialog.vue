@@ -1,10 +1,10 @@
 <template>
   <div v-if="!previewDialog" class="inspect__form">
-    <p class="inspect__form__header">
+    <p class="inspect__form__header" :class="{'inspect__form__header--center': !preview}">
       <img src="@/assets/img/printIcon.svg" alt="" class="inspect__form__header__img">
       <span>{{ form.inspectContent }}</span>
     </p>
-    <el-form :model="form" ref="formRef" :rules="type === 'CULTIVATE'? {} : rules" :inline="true" size="small" label-width="110px">
+    <el-form :model="form" ref="formRef" :rules="preview? {} : type === 'CULTIVATE'? {} : rules" :inline="true" size="small" label-width="110px">
       <template v-if="type === 'CULTIVATE' || type === 'CALCULATE'">
         <mds-card class="inspect__form__main" title="培养" :pack-up="false">
           <div>
@@ -15,20 +15,20 @@
                 :disabled="preview || type === 'CALCULATE'"
                 format="YYYY-MM-DD"
                 value-format="YYYY-MM-DD"
-                placeholder="请选选择日期"
+                :placeholder="preview? '':'请选选择日期'"
                 style="width: 140px"
               />
             </el-form-item>
             <el-form-item label="培养批次：" prop="cultureBatch">
-              <el-input v-model="form.cultureBatch" maxlength="6" placeholder="请输入" :disabled="preview" clearable style="width: 140px" />
+              <el-input v-model="form.cultureBatch" maxlength="6" :placeholder="preview? '':'请输入'" :disabled="preview" clearable style="width: 140px" />
             </el-form-item>
             <el-form-item label="培养箱：" prop="cultureBox">
-              <el-select v-model="form.cultureBox" placeholder="请选择" :disabled="preview" clearable style="width: 140px">
+              <el-select v-model="form.cultureBox" :placeholder="preview? '':'请选择'" :disabled="preview" clearable style="width: 140px">
                 <el-option v-for="item in cultureBox" :key="item.dictCode" :label="item.dictValue" :value="item.dictCode" />
               </el-select>
             </el-form-item>
             <el-form-item label="灭菌锅编号：">
-              <el-select v-model="form.sterilizerPot" placeholder="请选择" :disabled="preview" clearable style="width: 140px">
+              <el-select v-model="form.sterilizerPot" :placeholder="preview? '':'请选择'" :disabled="preview" clearable style="width: 140px">
                 <el-option v-for="item in sterilizerPot" :key="item.dictCode" :label="item.dictValue" :value="item.dictCode" />
               </el-select>
             </el-form-item>
@@ -39,12 +39,12 @@
                 :disabled="preview"
                 format="YYYY-MM-DD"
                 value-format="YYYY-MM-DD"
-                placeholder="请选选择日期"
+                :placeholder="preview? '':'请选选择日期'"
                 style="width: 140px"
               />
             </el-form-item>
             <el-form-item label="放入温度：" prop="putInTemp">
-              <el-input v-model="form.putInTemp" placeholder="请输入" :disabled="preview" clearable style="width: 140px" />
+              <el-input v-model="form.putInTemp" :placeholder="preview? '':'请输入'" :disabled="preview" clearable style="width: 140px" />
             </el-form-item>
             <el-form-item label="取出时间：" prop="takeOutDate">
               <el-date-picker
@@ -53,23 +53,23 @@
                 :disabled="preview"
                 format="YYYY-MM-DD"
                 value-format="YYYY-MM-DD"
-                placeholder="请选选择日期"
+                :placeholder="preview? '':'请选选择日期'"
                 style="width: 140px"
               />
             </el-form-item>
             <el-form-item label="取出温度：" prop="takeOutTemp">
-              <el-input v-model="form.takeOutTemp" placeholder="请输入" :disabled="preview" clearable style="width: 140px" />
+              <el-input v-model="form.takeOutTemp" :placeholder="preview? '':'请输入'" :disabled="preview" clearable style="width: 140px" />
             </el-form-item>
             <el-form-item label="检验人：" prop="inspectMan">
-              <el-select v-model="form.inspectMan" multiple filterable placeholder="请选择" :disabled="preview" clearable style="width: 140px">
+              <el-select v-model="form.inspectMan" multiple filterable :placeholder="preview? '':'请选择'" :disabled="preview" clearable style="width: 140px">
                 <el-option v-for="item in users" :key="item.id" :label="item.realName" :value="item.id" />
               </el-select>
             </el-form-item>
             <el-form-item label="灭菌用品批次：" label-width="130px" prop="sterilizerBatch">
-              <el-input v-model="form.sterilizerBatch" maxlength="6" placeholder="请输入" :disabled="preview" clearable style="width: 140px" />
+              <el-input v-model="form.sterilizerBatch" maxlength="6" :placeholder="preview? '':'请输入'" :disabled="preview" clearable style="width: 140px" />
             </el-form-item>
             <el-form-item label="培养24小时温度：" label-width="140px" prop="cultureTemp">
-              <el-input v-model="form.cultureTemp" placeholder="请输入" :disabled="preview" clearable style="width: 140px" />
+              <el-input v-model="form.cultureTemp" :placeholder="preview? '':'请输入'" :disabled="preview" clearable style="width: 140px" />
             </el-form-item>
           </div>
         </mds-card>
@@ -81,12 +81,12 @@
               :disabled="preview"
               format="YYYY-MM-DD"
               value-format="YYYY-MM-DD"
-              placeholder="请选选择日期"
+              :placeholder="preview? '':'请选选择日期'"
               style="width: 140px"
             />
           </el-form-item>
           <el-form-item label="计数人：" prop="countMan">
-            <el-select v-model="form.countMan" multiple filterable placeholder="请选择" :disabled="preview" clearable style="width: 140px">
+            <el-select v-model="form.countMan" multiple filterable :placeholder="preview? '':'请选择'" :disabled="preview" clearable style="width: 140px">
               <el-option v-for="item in users" :key="item.id" :label="item.realName" :value="item.id" />
             </el-select>
           </el-form-item>
@@ -100,37 +100,37 @@
               </template>
             </el-table-column>
             <el-table-column label="计数1" min-width="110" >
-              <template #header><span style="color: red">*</span>计数1</template>
+              <template #header v-if="!preview"><span style="color: red">*</span>计数1</template>
               <template #default="scope">
-                <el-input v-model="scope.row.countOne" placeholder="请输入" :disabled="preview" size="small" clearable style="width: 140px" @change="keyChange(scope.row)"/>
+                <el-input v-model="scope.row.countOne" :placeholder="preview? '':'请输入'" :disabled="preview" size="small" clearable style="width: 140px" @change="keyChange(scope.row)"/>
               </template>
             </el-table-column>
             <el-table-column label="计数2" min-width="110" >
-              <template #header><span style="color: red">*</span>计数2</template>
+              <template #header v-if="!preview"><span style="color: red">*</span>计数2</template>
               <template #default="scope">
-                <el-input v-model="scope.row.countTwo" placeholder="请输入" :disabled="preview" size="small" clearable style="width: 110px" @change="keyChange(scope.row)"/>
+                <el-input v-model="scope.row.countTwo" :placeholder="preview? '':'请输入'" :disabled="preview" size="small" clearable style="width: 110px" @change="keyChange(scope.row)"/>
               </template>
             </el-table-column>
             <el-table-column label="平均值" min-width="110" >
-              <template #header><span style="color: red">*</span>平均值</template>
+              <template #header v-if="!preview"><span style="color: red">*</span>平均值</template>
               <template #default="scope">
                 {{ scope.row.average }}
               </template>
             </el-table-column>
             <el-table-column label="结果" min-width="110" >
-              <template #header><span style="color: red">*</span>结果</template>
+              <template #header v-if="!preview"><span style="color: red">*</span>结果</template>
               <template #default="scope">
-                <el-input v-model="scope.row.inspectResult" placeholder="请输入" :disabled="preview" clearable style="width: 110px" @change="resultChange(scope.row)"/>
+                <el-input v-model="scope.row.inspectResult" :placeholder="preview? '':'请输入'" :disabled="preview" clearable style="width: 110px" @change="resultChange(scope.row)"/>
               </template>
             </el-table-column>
             <el-table-column label="单位" min-width="110" >
               <template #default="scope">
-                <el-input v-model="scope.row.cultureUnit" placeholder="请输入" :disabled="preview" clearable style="width: 110px" />
+                <el-input v-model="scope.row.cultureUnit" :placeholder="preview? '':'请输入'" :disabled="preview" clearable style="width: 110px" />
               </template>
             </el-table-column>
             <el-table-column label="备注" min-width="110" >
               <template #default="scope">
-                <el-input v-model="scope.row.cultureRemark" placeholder="请输入" :disabled="preview" clearable style="width: 110px" />
+                <el-input v-model="scope.row.cultureRemark" :placeholder="preview? '':'请输入'" :disabled="preview" clearable style="width: 110px" />
               </template>
             </el-table-column>
           </el-table>
@@ -140,10 +140,10 @@
         <mds-card class="inspect__form__main" title="检验台信息" :pack-up="false">
           <div>
             <el-form-item label="样品码：">
-              <el-input v-model="form.sampleCode" placeholder="请输入" disabled clearable style="width: 140px" />
+              <el-input v-model="form.sampleCode" :placeholder="preview? '':'请输入'" disabled clearable style="width: 140px" />
             </el-form-item>
             <el-form-item label="出水口编号：" prop="outWaterNo">
-              <el-select v-model="form.outWaterNo" placeholder="请选择" :disabled="preview" clearable style="width: 140px">
+              <el-select v-model="form.outWaterNo" :placeholder="preview? '':'请选择'" :disabled="preview" clearable style="width: 140px">
                 <el-option v-for="item in outWaterNo" :key="item.dictCode" :label="item.dictValue" :value="item.dictCode" />
               </el-select>
             </el-form-item>
@@ -154,22 +154,22 @@
                 :disabled="preview"
                 format="YYYY-MM-DD"
                 value-format="YYYY-MM-DD"
-                placeholder="请选选择日期"
+                :placeholder="preview? '':'请选选择日期'"
                 style="width: 140px"
               />
             </el-form-item>
             <el-form-item label="杀菌锅编号：">
-              <el-select v-model="form.sterilizerPot" placeholder="请选择" :disabled="preview" clearable style="width: 140px">
+              <el-select v-model="form.sterilizerPot" :placeholder="preview? '':'请选择'" :disabled="preview" clearable style="width: 140px">
                 <el-option v-for="item in sterilizerPot" :key="item.dictCode" :label="item.dictValue" :value="item.dictCode" />
               </el-select>
             </el-form-item>
             <el-form-item label="操作台编号：" prop="consoleNo">
-              <el-select v-model="form.consoleNo" placeholder="请选择" :disabled="preview" clearable style="width: 140px">
+              <el-select v-model="form.consoleNo" :placeholder="preview? '':'请选择'" :disabled="preview" clearable style="width: 140px">
                 <el-option v-for="item in consoleNo" :key="item.dictCode" :label="item.dictValue" :value="item.dictCode" />
               </el-select>
             </el-form-item>
             <el-form-item label="培养箱编号：" prop="cultureBox">
-              <el-select v-model="form.cultureBox" placeholder="请选择" :disabled="preview" clearable style="width: 140px">
+              <el-select v-model="form.cultureBox" :placeholder="preview? '':'请选择'" :disabled="preview" clearable style="width: 140px">
                 <el-option v-for="item in cultureBox" :key="item.dictCode" :label="item.dictValue" :value="item.dictCode" />
               </el-select>
             </el-form-item>
@@ -179,42 +179,42 @@
           <el-table border :cell-style="{'text-align':'center'}" :data="form.taskFiveTubeDataList" tooltip-effect="dark" :span-method="objectSpanMethod" style="width: 100%">
             <el-table-column type="index" label="样品制备" width="80" align="center" />
             <el-table-column label="10mL双料管" width="110" >
-              <template #header><span style="color: red">*</span>10mL双料管</template>
+              <template #header v-if="!preview"><span style="color: red">*</span>10mL双料管</template>
               <template #default="scope">
-                <el-select v-model="scope.row.ten" placeholder="请选择" :disabled="preview" clearable size="small" style="width: 100px">
+                <el-select v-model="scope.row.ten" :placeholder="preview? '':'请选择'" :disabled="preview" clearable size="small" style="width: 100px">
                   <el-option v-for="item in ftube" :key="item.dictCode" :label="item.dictValue" :value="item.dictCode" />
                 </el-select>
               </template>
             </el-table-column>
             <el-table-column label="1mL单料管" width="110" >
-              <template #header><span style="color: red">*</span>1mL单料管</template>
+              <template #header v-if="!preview"><span style="color: red">*</span>1mL单料管</template>
               <template #default="scope">
-                <el-select v-model="scope.row.one" placeholder="请选择" :disabled="preview" clearable size="small" style="width: 100px">
+                <el-select v-model="scope.row.one" :placeholder="preview? '':'请选择'" :disabled="preview" clearable size="small" style="width: 100px">
                   <el-option v-for="item in ftube" :key="item.dictCode" :label="item.dictValue" :value="item.dictCode" />
                 </el-select>
               </template>
             </el-table-column>
             <el-table-column label="0.1mL单料管" width="110" >
-              <template #header><span style="color: red">*</span>0.1mL单料管</template>
+              <template #header v-if="!preview"><span style="color: red">*</span>0.1mL单料管</template>
               <template #default="scope">
-                <el-select v-model="scope.row.zeroPointOne" placeholder="请选择" :disabled="preview" clearable size="small" style="width: 100px">
+                <el-select v-model="scope.row.zeroPointOne" :placeholder="preview? '':'请选择'" :disabled="preview" clearable size="small" style="width: 100px">
                   <el-option v-for="item in ftube" :key="item.dictCode" :label="item.dictValue" :value="item.dictCode" />
                 </el-select>
               </template>
             </el-table-column>
             <el-table-column label="EMB平板及G染色、镜检" min-width="130" >
               <template #default="scope">
-                <el-input v-model="scope.row.emb" placeholder="请输入" :disabled="preview" clearable style="width: 140px" />
+                <el-input v-model="scope.row.emb" :placeholder="preview? '':'请输入'" :disabled="preview" clearable style="width: 140px" />
               </template>
             </el-table-column>
             <el-table-column label="证实试验" min-width="110" >
               <template #default="scope">
-                <el-input v-model="scope.row.confirm" placeholder="请输入" :disabled="preview" clearable style="width: 140px" />
+                <el-input v-model="scope.row.confirm" :placeholder="preview? '':'请输入'" :disabled="preview" clearable style="width: 140px" />
               </template>
             </el-table-column>
             <el-table-column label="查MPN检索表（MPN/100mL）" min-width="130" >
               <template #default="scope">
-                <el-input v-model="scope.row.mpn" placeholder="请输入" :disabled="preview" clearable style="width: 140px" />
+                <el-input v-model="scope.row.mpn" :placeholder="preview? '':'请输入'" :disabled="preview" clearable style="width: 140px" />
               </template>
             </el-table-column>
           </el-table>
@@ -227,7 +227,7 @@
             <el-radio v-model="form.judgeResult" label="N" :disabled="preview">不合格</el-radio>
           </el-form-item>
           <el-form-item label="检验说明：" label-width="120" style="margin-left: 100px">
-            <el-input v-model="form.inspectExplain" placeholder="请输入" :disabled="preview" clearable style="width: 300px"/>
+            <el-input v-model="form.inspectExplain" :placeholder="preview? '':'请输入'" :disabled="preview" clearable style="width: 300px"/>
           </el-form-item>
         </el-row>
         <el-row style="padding: 0 16px">
@@ -236,7 +236,7 @@
             <el-radio v-model="form.recheckMod" label="RESAMOLING" :disabled="preview">取样复检</el-radio>
           </el-form-item>
           <el-form-item label="取样说明：" label-width="120" style="margin-left: 60px">
-            <el-input v-model="form.inspectSiteName" placeholder="请输入" :disabled="preview" clearable style="width: 300px"/>
+            <el-input v-model="form.inspectSiteName" :placeholder="preview? '':'请输入'" :disabled="preview" clearable style="width: 300px"/>
           </el-form-item>
         </el-row>
       </template>
@@ -653,7 +653,7 @@ export default defineComponent({
     }
     // 计数 计算平均值
     const keyChange = (row) => {
-      row.average = (Number(row.countOne) + Number(row.countTwo)) / 2
+      row.average = ((Number(row.countOne) + Number(row.countTwo)) / 2).toFixed(2)
     }
     // 结果联动判定
     const resultChange = (row) => {
@@ -705,15 +705,20 @@ export default defineComponent({
 
 <style lang="scss" scoped>
 .inspect__form{
+  background: white;
+  padding-top: 10px;
   &__header{
-    display: flex;
-    justify-content: center;
     line-height: 32px;
     font-size: 20px;
     &__img{
+      margin-left: 20px;
       height: 32px;
       margin-right: 10px;
     }
+  }
+  &__header--center{
+    display: flex;
+    justify-content: center;
   }
   &__main{
     border: none;

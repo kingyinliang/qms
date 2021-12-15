@@ -24,9 +24,9 @@
           <el-form-item label="样品码：">
             <el-input v-model="queryForm.sampleCode" placeholder="请输入" style="width: 120px" clearable></el-input>
           </el-form-item>
+          <el-button icon="el-icon-refresh" size="small" class="topic-button" @click="() => tableData = []" >重置</el-button>
           <el-button v-if="type==='CULTIVATE'" icon="el-icon-search" type="primary" size="small" class="topic-button" @click="cultivate()" >培养</el-button>
           <el-button v-else icon="el-icon-search" type="primary" size="small" class="topic-button" @click="preview()" >预览</el-button>
-          <el-button icon="el-icon-refresh" type="primary" size="small" class="topic-button" @click="() => tableData = []" >重置</el-button>
         </el-form>
       </div>
     </template>
@@ -120,6 +120,7 @@ export default defineComponent({
         indexName: props.indexName,
         sampleCode: '',
         inspectDateBegin: '',
+        inspectMethodName: props.type === 'FIVETUBES' ? '五管法' : '培养法',
         taskInspectIdList: props.taskInspectIdList
       },
       tmpRow: {},
@@ -217,8 +218,9 @@ export default defineComponent({
     }
     const previewSuccessFn = () => {
       componentData.visiblePreviewDialog = false
+      componentData.tableData = componentData.tableData.filter(it => it.status !== '已保存')
     }
-    const changeDate = () => {
+    const changeDate = (bl) => {
       if (props.type === 'CALCULATE') {
         if (componentData.queryForm.indexName === '菌落总数') {
           setDate(2)
@@ -228,8 +230,15 @@ export default defineComponent({
           setDate(4)
         }
       }
-      componentData.tableData = []
-      query()
+      if (!bl && componentData.tableData.length) {
+        proxy.$confirm('切换指标后，扫描样品码将被清空，请确认', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(async () => {
+          componentData.tableData = []
+        })
+      }
     }
     const setDate = (n) => {
       componentData.queryForm.inspectDateBegin = dateFormat(new Date(new Date() - n * 24 * 60 * 60 * 1000), 'yyyy-MM-dd')
@@ -237,7 +246,7 @@ export default defineComponent({
 
     onMounted(async () => {
       if (!props.taskInspectIdList.length) {
-        changeDate()
+        changeDate(true)
       } else {
         await query(true)
       }

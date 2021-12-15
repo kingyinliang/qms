@@ -2,9 +2,10 @@
   <aside
     class="SystemLayout__sidebar sidebar--"
     :style="{width: sidebarFold? '64px' : '170px'}"
-    @mouseenter="showMenu"
-    @mouseleave="() => { showOrHide = false; closeMenu() }"
   >
+<!--    @mouseenter="showMenu"-->
+<!--    @mouseleave="() => { showOrHide = false; closeMenu() }"-->
+<!--  >-->
 <!--    <el-popover-->
 <!--      popper-class="tenant"-->
 <!--      placement="bottom"-->
