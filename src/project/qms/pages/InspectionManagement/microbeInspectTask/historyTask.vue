@@ -2,10 +2,10 @@
   <el-card class="box-card">
     <el-form inline :model="queryForm" size="small" label-suffix="：" @keyup.enter="() => {queryForm.current = 1; query()}" @submit.prevent>
       <el-form-item label="取样码">
-        <el-input v-model="queryForm.sampleCode" placeholder="请输入" style="width: 140px"></el-input>
+        <el-input v-model="queryForm.sampleCode" clearable placeholder="请输入" style="width: 140px"></el-input>
       </el-form-item>
       <el-form-item label="检验内容">
-        <el-input v-model="queryForm.inspectContent" placeholder="请输入" style="width: 140px"></el-input>
+        <el-input v-model="queryForm.inspectContent" clearable placeholder="请输入" style="width: 140px"></el-input>
       </el-form-item>
       <!-- <el-form-item label="取样信息">
         <el-input v-model="queryForm.inspectSiteName" placeholder="请输入" style="width: 140px"></el-input>
@@ -17,6 +17,7 @@
           format="YYYY-MM-DD"
           value-format="YYYY-MM-DD"
           placeholder="请选选择日期"
+          clearable
           style="width: 140px"
         />
         -
@@ -25,6 +26,7 @@
           type="date"
           format="YYYY-MM-DD"
           value-format="YYYY-MM-DD"
+          clearable
           placeholder="请选选择日期"
           style="width: 140px"
         />

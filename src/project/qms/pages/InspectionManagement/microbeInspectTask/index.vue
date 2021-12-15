@@ -5,7 +5,7 @@
     </template>
     <el-row :gutter="16">
       <el-col :span="6" style="min-width: 255px" v-for="(item, index) in taskList" :key="index">
-        <div class="task__item" :class="{active: task === item.inspectClassify}"  @click="changeTask(item.inspectClassify,item.inspectClassifyName)">
+        <div class="task__item" :class="{active: task === item.inspectClassify}"  @click="changeTask(item.inspectClassify, 'null')">
           <p class="task__item--title">
             <svg class="qmsIconfont" aria-hidden="true">
               <use xlink:href="#qms-colonynum" v-if="item.inspectClassify === 'COLONYNUM'"></use>
@@ -17,17 +17,17 @@
             </span>
           </p>
           <div class="task__item__flex">
-            <div class="task__item__flex__item">
+            <div class="task__item__flex__item" @click.stop="changeTask(item.inspectClassify, 'execute')">
               <p class="task__item__flex__item--big"><span>{{ item.execute }}</span><span style="font-size: 18px;margin-left: 3px">/{{ item.executeInvisible }}</span></p>
               <p class="task__item__flex__item--small"><i class="qmsIconfont qms-daiwancheng"/>待完成</p>
             </div>
             <div class="task__item__flex__item--border"/>
-            <div class="task__item__flex__item">
+            <div class="task__item__flex__item" @click.stop="changeTask(item.inspectClassify, 'progressing')">
               <p class="task__item__flex__item--big">{{ item.progressing }}</p>
               <p class="task__item__flex__item--small"><i class="qmsIconfont qms-jinrushiyan"/>进行中</p>
             </div>
             <div class="task__item__flex__item--border"/>
-            <div class="task__item__flex__item">
+            <div class="task__item__flex__item" @click.stop="changeTask(item.inspectClassify, 'completed')">
               <p class="task__item__flex__item--big">{{ item.completed }}</p>
               <p class="task__item__flex__item--small"><i class="qmsIconfont qms-shenhetongguo"/>已完成</p>
             </div>
@@ -45,7 +45,7 @@
         <el-form-item label="检验内容：">
           <el-input v-model="queryForm.inspectContent" placeholder="请输入" style="width: 120px" clearable></el-input>
         </el-form-item>
-        <el-form-item label="培养日期">
+        <el-form-item :label="task !== 'COLONYNUM'?'检验开始日期':'培养日期'">
         <el-date-picker
           v-model="queryForm.inspectDateBegin"
           type="date"
@@ -106,6 +106,7 @@
       <el-table-column label="检验频次" prop="inspectFrequency" v-if="task !== 'COLONYNUM'"  min-width="150" :show-overflow-tooltip="true" />
       <el-table-column label="培养日期" prop="inspectDate" v-if="task === 'COLONYNUM'"  min-width="150" :show-overflow-tooltip="true" />
       <el-table-column label="取样单位" prop="sampleDeptName" v-if="task !== 'COLONYNUM'" min-width="150" :show-overflow-tooltip="true" />
+      <el-table-column v-if="task !== 'COLONYNUM'" label="检验开始时间" prop="inspectStartDate" min-width="150" :show-overflow-tooltip="true" />
       <el-table-column label="送样时间" prop="deliveryDate" min-width="150" :show-overflow-tooltip="true" />
       <el-table-column label="收样时间" prop="receiveDate" min-width="150" :show-overflow-tooltip="true" />
       <el-table-column label="操作" width="140" fixed="right">
@@ -126,7 +127,7 @@
         :total="queryForm.total"
         :page-sizes="[10, 20, 50]"
         layout="total, sizes, prev, pager, next, jumper"
-        @size-change="val => {queryForm.size = val;query()}"
+        @size-change="val => {queryForm.current = 1; queryForm.size = val;query()}"
         @current-change="val => {queryForm.current = val; query()}"
       />
     </el-row>
@@ -164,11 +165,12 @@ export default defineComponent({
     const ctx = getCurrentInstance() as ComponentInternalInstance
     const proxy = ctx.proxy as any
     const store = useStore()
-    const { gotoPage } = layoutTs()
+    const { gotoPage, removeTabHandle } = layoutTs()
 
     const task = ref('COLONYNUM') // 选择任务
     const taskList = ref<any[]>([]) // 任务汇总
     const queryForm = reactive({
+      sampleQuantityStatus: '',
       sampleCode: '',
       inspectContent: '',
       indexName: '',
@@ -207,9 +209,15 @@ export default defineComponent({
       })
     }
     // 查询
-    const query = async () => {
+    const query = async (status?: string) => {
       let tempTableData:any[] = []
       queryForm.indexName = inspectClassifyObj.inspectClassifyName
+      if (status) {
+        queryForm.sampleQuantityStatus = status
+      }
+      if (status === 'null') {
+        queryForm.sampleQuantityStatus = ''
+      }
       const { data } = await TASK_INSPECT_MICROBE_INSPECT_TASK_LIST_QUERY(queryForm)
       tempTableData = data.data.records
 
@@ -224,12 +232,12 @@ export default defineComponent({
       tableData.value = tempTableData
     }
     // 切换任务分类
-    const changeTask = (inspectClassify: string, inspectClassifyName: string) => {
+    const changeTask = (inspectClassify: string, status: string) => {
       task.value = inspectClassify
-      inspectClassifyObj.inspectClassifyName = inspectClassifyName
+      inspectClassifyObj.inspectClassifyName = taskList.value.find(it => it.inspectClassify === inspectClassify).inspectClassifyName
       inspectClassifyObj.inspectClassify = inspectClassify
       queryForm.current = 1
-      query()
+      query(status)
     }
 
     // 培养
@@ -239,19 +247,23 @@ export default defineComponent({
         return
       }
 
-      if (!row && selectionData.value.length !== selectionData.value.filter(it => it.inspectMethodGroupNameList.includes('培养法')).length) {
+      if (!row && !selectionData.value.filter(it => it.inspectMethodGroupNameList.includes('培养法')).length) {
         proxy.$warningToast('请选择培养法数据')
         return
       }
 
-      store.commit('inspection/updateMicrobeInspectCultivate', {
-        indexName: inspectClassifyObj.inspectClassifyName,
-        taskInspectIdList: row ? [row.id] : selectionData.value.map(it => it.id)
-      })
+      removeTabHandle('qms-pages-InspectionManagement-microbeInspect-cultivate')
 
-      gotoPage({
-        name: 'qms-pages-InspectionManagement-microbeInspect-cultivate'
-      })
+      setTimeout(() => {
+        store.commit('inspection/updateMicrobeInspectCultivate', {
+          indexName: inspectClassifyObj.inspectClassifyName,
+          taskInspectIdList: row ? [row.id] : selectionData.value.filter(it => it.inspectMethodGroupNameList.includes('培养法')).map(it => it.id)
+        })
+
+        gotoPage({
+          name: 'qms-pages-InspectionManagement-microbeInspect-cultivate'
+        })
+      }, 100)
     }
     // 计数
     const goCount = () => {
@@ -260,19 +272,23 @@ export default defineComponent({
         return
       }
 
-      if (selectionData.value.length !== selectionData.value.filter(it => it.inspectMethodGroupNameList.includes('培养法')).length) {
+      if (!selectionData.value.filter(it => it.inspectMethodGroupNameList.includes('培养法')).length) {
         proxy.$warningToast('请选择培养法数据')
         return
       }
 
-      store.commit('inspection/updateMicrobeInspectCount', {
-        indexName: inspectClassifyObj.inspectClassifyName,
-        taskInspectIdList: selectionData.value.map(it => it.id)
-      })
+      removeTabHandle('qms-pages-InspectionManagement-microbeInspect-count')
 
-      gotoPage({
-        name: 'qms-pages-InspectionManagement-microbeInspect-count'
-      })
+      setTimeout(() => {
+        store.commit('inspection/updateMicrobeInspectCount', {
+          indexName: inspectClassifyObj.inspectClassifyName,
+          taskInspectIdList: selectionData.value.filter(it => it.inspectMethodGroupNameList.includes('培养法')).map(it => it.id)
+        })
+
+        gotoPage({
+          name: 'qms-pages-InspectionManagement-microbeInspect-count'
+        })
+      }, 100)
     }
     const goFive = (row?:TableData) => {
       if (!row && !selectionData.value.length) {
@@ -280,19 +296,23 @@ export default defineComponent({
         return
       }
 
-      if (!row && selectionData.value.length !== selectionData.value.filter(it => it.inspectMethodGroupNameList.includes('五管法')).length) {
+      if (!row && !selectionData.value.filter(it => it.inspectMethodGroupNameList.includes('五管法')).length) {
         proxy.$warningToast('请选择五管法数据')
         return
       }
 
-      store.commit('inspection/updateMicrobeInspectFive', {
-        indexName: inspectClassifyObj.inspectClassifyName,
-        taskInspectIdList: row ? [row.id] : selectionData.value.map(it => it.id)
-      })
+      removeTabHandle('qms-pages-InspectionManagement-microbeInspect-five')
 
-      gotoPage({
-        name: 'qms-pages-InspectionManagement-microbeInspect-five'
-      })
+      setTimeout(() => {
+        store.commit('inspection/updateMicrobeInspectFive', {
+          indexName: inspectClassifyObj.inspectClassifyName,
+          taskInspectIdList: row ? [row.id] : selectionData.value.filter(it => it.inspectMethodGroupNameList.includes('五管法')).map(it => it.id)
+        })
+
+        gotoPage({
+          name: 'qms-pages-InspectionManagement-microbeInspect-five'
+        })
+      }, 100)
     }
     // 表格复选框能否被选中逻辑
     const checkDate = (row:TableData) => {
