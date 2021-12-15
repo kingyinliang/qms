@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-11-11 16:30:07
  * @LastEditors: Telliex
- * @LastEditTime: 2021-12-15 10:48:10
+ * @LastEditTime: 2021-12-15 19:27:51
 -->
 <template>
   <el-dialog :title="title" v-model="isDialogShow" width="90%" @close="onClose">
@@ -21,12 +21,12 @@
               <el-input v-model="dataFormOfSampleInfo.sampleDeptName" size="small" class="inputWidth" placeholder="自动带入" autocomplete="off" :readonly="onlyRead"></el-input>
             </el-tooltip>
           </el-form-item>
-          <el-form-item label="检验物料："  prop="inspectMaterialNameString" v-if="currentMainType==='PROCESS'" >
+          <el-form-item label="检验物料："  prop="inspectMaterialNameString" v-if="currentMainType==='PROCESS'||currentMainType==='ASSIST'" >
             <el-tooltip class="item" effect="dark" :content="dataFormOfSampleInfo.inspectMaterialNameString" placement="top-start" :disabled="!dataFormOfSampleInfo.inspectMaterialNameString">
               <el-input v-model="dataFormOfSampleInfo.inspectMaterialNameString" size="small"  class="inputWidth" placeholder="自动带入" autocomplete="off" :readonly="onlyRead"></el-input>
             </el-tooltip>
           </el-form-item>
-          <el-form-item label="取样信息："  prop="inspectSiteNameString" v-if="currentMainType==='PROCESS'" >
+          <el-form-item label="取样信息："  prop="inspectSiteNameString" v-if="currentMainType==='PROCESS'||currentMainType==='ASSIST'" >
             <el-tooltip class="item" effect="dark" :content="dataFormOfSampleInfo.inspectSiteNameString" placement="top-start" :disabled="!dataFormOfSampleInfo.inspectSiteNameString">
               <el-input v-model="dataFormOfSampleInfo.inspectSiteNameString" size="small" class="inputWidth" placeholder="自动带入" autocomplete="off" :readonly="onlyRead"></el-input>
             </el-tooltip>
@@ -86,7 +86,7 @@
                       }">
                       <span style="min-width:50px;overflow: hidden;text-align: right;padding-right:5px;white-space: nowrap;">{{para.paramCode?para.paramCode.split('[')[0]:'?'}}<sub>{{para.paramCode?para.paramCode.split('[')[1].replace(']',''):''}}</sub> </span>=
                       <el-tooltip  class="item" effect="dark" :content="para.defaultValue" placement="top-start" :disabled="!para.defaultValue">
-                        <el-input  v-model="para.defaultValue" type="text" :maxlength="para.paramStandard" size="small"  placeholder="" oninput="value=value.replace(/[^\d]/g,'')"  style="margin-right:10px;margin-left:5px;" @blur="actHandleInspectResult(subItem)">
+                        <el-input :class="{'required':para.required}"  v-model="para.defaultValue" type="text" :maxlength="para.paramStandard" size="small"  placeholder="" oninput="value=value.replace(/[^\d]/g,'')"  style="margin-right:10px;margin-left:5px;" @blur="actHandleInspectResult(subItem,para)">
                           <template #suffix>
                             {{para.paramUnit}}
                           </template>
@@ -100,7 +100,7 @@
                       }">
                       <span style="min-width:50px;overflow: hidden;text-align: right;padding-right:5px;white-space: nowrap;"> {{para.paramCode?para.paramCode.split('[')[0]:'?'}}<sub>{{para.paramCode?para.paramCode.split('[')[1].replace(']',''):''}}</sub> </span>=
                       <el-tooltip  class="item" effect="dark" :content="para.defaultValue" placement="top-start" :disabled="!para.defaultValue">
-                        <el-input v-model="para.defaultValue" type="text" size="small" placeholder="" oninput ="value=value.replace(/[^\-\d.]/g, '').replace(/^(\d+)\.(\d+).*$/, '$1.$2')"  style="margin-right:10px;margin-left:5px;" @blur="actHandleInspectResult(subItem)">
+                        <el-input :class="{'required':para.required}"  v-model="para.defaultValue" type="text" size="small" placeholder="" oninput ="value=value.replace(/[^\-\d.]/g, '').replace(/^(\d+)\.(\d+).*$/, '$1.$2')"  style="margin-right:10px;margin-left:5px;" @blur="actHandleInspectResult(subItem,para)">
                           <template #suffix>
                             {{para.paramUnit}}
                           </template>
@@ -114,7 +114,7 @@
                       }">
                       <span style="min-width:50px;overflow: hidden;text-align: right;padding-right:5px;white-space: nowrap;">{{para.paramCode?para.paramCode.split('[')[0]:'?'}}<sub>{{para.paramCode?para.paramCode.split('[')[1].replace(']',''):''}}</sub> </span>=
                       <el-tooltip  class="item" effect="dark" :content="para.defaultValue" placement="top-start" :disabled="!para.defaultValue">
-                        <el-input  v-model="para.defaultValue" size="small" placeholder=""  type="text" style="margin-right:10px;margin-left:5px;" @blur="actHandleInspectResult(subItem)">
+                        <el-input  :class="{'required':para.required}"  v-model="para.defaultValue" size="small" placeholder=""  type="text" style="margin-right:10px;margin-left:5px;" @blur="actHandleInspectResult(subItem,para)">
                           <template #suffix>
                             {{para.paramUnit}}
                           </template>
@@ -168,9 +168,7 @@
           <h4 style="margin-bottom:10px;">检验说明 : </h4>
             <div class="time-log">
               <ul class="fixlocation">
-                <!-- <li v-for="(element, index) in item.indexList" :key="index"><div>> <span>指标：</span><em>{{element.indexName}}</em></div><div><span>样品码：</span><em>{{element.sampleCode}}</em></div><div><span>结果：</span><em :style="{color:element.indexJudgeResult==='N'?'#ff0000':'inherit'}">{{element.inspectResult}}</em></div></li> -->
                 <li v-for="(element, index) in item.indexList" :key="index" class="subelement" ><div>{{`${element.indexName} (${element.sampleCode})`}}<em :style="{marginLeft:'10px',color:element.indexJudgeResult==='N'?'#ff0000':'inherit'}">{{element.inspectResult}}</em></div></li>
-
               </ul>
             </div>
             <template #dot>
@@ -195,7 +193,6 @@
           <h4 style="margin-bottom:10px;">检验说明 : </h4>
             <div class="time-log">
               <ul class="fixlocation">
-                <!-- <li v-for="(element, index) in item.indexList" :key="index"><div>> <span>指标：</span><em>{{element.indexName}}</em></div><div><span>样品码：</span><em>{{element.sampleCode}}</em></div><div><span>结果：</span><em :style="{color:element.indexJudgeResult==='N'?'#ff0000':'inherit'}">{{element.inspectResult}}</em></div></li> -->
                 <li v-for="(element, index) in item.indexList" :key="index" class="subelement" ><div>{{`${element.indexName} (${element.sampleCode})`}}<em :style="{marginLeft:'10px',color:element.indexJudgeResult==='N'?'#ff0000':'inherit'}">{{element.inspectResult}}</em></div></li>
 
               </ul>
@@ -340,7 +337,7 @@ export default defineComponent({
       state.dataFormOfSampleInfo.indexJudgeResult = indexJudgeResult.value
       state.dataFormOfSampleInfo.judgeResult = indexJudgeResult.value
 
-      const tempTaskInspectList = JSON.parse(JSON.stringify(state.mainObj))
+      const tempTaskInspectList = JSON.parse(JSON.stringify(state.mainObj.filter((item:any) => item.taskStatus !== 'COMPLETED')))
       const tempTaskInspectIndexList = JSON.parse(JSON.stringify(state.dataFormOfSampleItemUnit))
 
       tempTaskInspectIndexList.forEach((item:any) => {
@@ -443,7 +440,8 @@ export default defineComponent({
         inspectExplain: state.dataFormOfSampleInfo.inspectExplain,
         recheckMod: state.dataFormOfSampleInfo.recheckMod, // ORIGINAL_RECHECK 原样复检 | RESAMOLING 重新取样 | OTHER_SAMPLING 其他取样
         mergeFlag: state.currentSubType === 'normal' ? 'N' : 'Y',
-        taskInspectList: tempTaskInspectList // 需注意一般检或是复合检
+        taskInspectList: tempTaskInspectList, // 需注意一般检或是复合检
+        taskInspectCompletList: state.mainObj.filter((item:any) => item.taskStatus === 'COMPLETED')
       }
       console.log('=====Save or Submit======')
       console.log(obj)
@@ -809,7 +807,19 @@ export default defineComponent({
     }
 
     // key in trigger 过程参数栏位出来的结果
-    const actHandleInspectResult = (subItem:any) => {
+    const actHandleInspectResult = (subItem:any, para?:any) => {
+      console.log('subItem')
+      console.log(subItem)
+      console.log('para')
+      console.log(para)
+      if (para?.paramDataType && para.paramDataType !== '') {
+        if (para.paramDown) {
+          para.required = para.paramDown > para.defaultValue
+        }
+        if (para.paramUp) {
+          para.required = para.paramUp < para.defaultValue
+        }
+      }
       if (!subItem.canEditInspectResult && subItem.canChangeAgainWithProcessParameter) { // 判定是否依靠过程参数计算
         if (subItem.inspectMethodNameList[subItem.inspectMethodCodeWhichIndex]?.inspectParameterListShow.every((item:any) => item.defaultValue !== '')) { // 过程参数都不为空才触发
           const result = runFormula(subItem.filnalFormula,
@@ -913,11 +923,11 @@ export default defineComponent({
     }
 
     // TODO watch
-    watch(targetObj, (val) => {
+    watch(targetObj, async (val) => {
       console.log('=== import object to dialog ===')
       console.log(val)
 
-      state.currentMainType = mainType.value !== 'ASSIST' ? mainType.value : 'PROCESS' // ASSIST 也归于 PROCESS
+      state.currentMainType = mainType.value
       console.log('=== state.currentMainType ===')
       console.log(state.currentMainType)
       state.mainObj = []
@@ -934,7 +944,7 @@ export default defineComponent({
           state.mainObj.push(item)
 
           // add 复检讯息于最下方
-          if (item.recheckBatch !== '' && item.taskStatus === 'COMPLETED') {
+          if (item.recheckBatch !== '') {
             if (!recheckContainer.includes(item.recheckBatch)) {
               recheckContainer.push(item.recheckBatch)
               MANAGEMENT_INSPECTION_PHYSICOCHEMICAL_TASK_FORM_QUERY_API({ // /taskInspect/formTaskInspect
@@ -964,35 +974,35 @@ export default defineComponent({
           }
 
           // add 组合讯息于最下方
-          if (item.groupBatch !== '' && item.taskStatus === 'COMPLETED') {
-            if (!groupContainer.includes(item.groupBatch)) {
-              groupContainer.push(item.groupBatch)
+          // if (item.groupBatch !== '' && item.taskStatus === 'COMPLETED') {
+          //   if (!groupContainer.includes(item.groupBatch)) {
+          //     groupContainer.push(item.groupBatch)
 
-              MANAGEMENT_INSPECTION_PHYSICOCHEMICAL_TASK_FORM_QUERY_API({ // /taskInspect/formTaskInspect
-                id: item.id,
-                recheckBatch: item.recheckBatch,
-                taskStatus: 'COMPLETED'
-              }).then((rep) => {
-                console.log('== 组合讯息 ==')
-                console.log(rep.data.data)
-                rep.data.data.forEach((element:any) => {
-                  const tempIndexList:any[] = []
-                  element.taskInspectIndexList.forEach((subElement:any) => {
-                    tempIndexList.push({
-                      indexName: subElement.indexName,
-                      sampleCode: element.sampleCode,
-                      inspectResult: subElement.inspectResult,
-                      indexJudgeResult: subElement.indexJudgeResult
-                    })
-                  })
-                  state.timeLineDataForGroup.push({
-                    indexName: element.indexName,
-                    indexList: tempIndexList
-                  })
-                })
-              })
-            }
-          }
+          // MANAGEMENT_INSPECTION_PHYSICOCHEMICAL_TASK_FORM_QUERY_API({ // /taskInspect/formTaskInspect
+          //   id: item.id,
+          //   recheckBatch: item.recheckBatch,
+          //   taskStatus: 'COMPLETED'
+          // }).then((rep) => {
+          //   console.log('== 组合讯息 ==')
+          //   console.log(rep.data.data)
+          //   rep.data.data.forEach((element:any) => {
+          //     const tempIndexList:any[] = []
+          //     element.taskInspectIndexList.forEach((subElement:any) => {
+          //       tempIndexList.push({
+          //         indexName: subElement.indexName,
+          //         sampleCode: element.sampleCode,
+          //         inspectResult: subElement.inspectResult,
+          //         indexJudgeResult: subElement.indexJudgeResult
+          //       })
+          //     })
+          //     state.timeLineDataForGroup.push({
+          //       indexName: element.indexName,
+          //       indexList: tempIndexList
+          //     })
+          //   })
+          // })
+          //   }
+          // }
         })
 
         state.currentSubType = val.length === 1 ? 'normal' : 'merge' // 一般检 or 合并检组合检
@@ -1010,9 +1020,8 @@ export default defineComponent({
           console.log('=== query dialog data ===')
           console.log(JSON.parse(JSON.stringify(res.data.data)))
 
-          state.timeLineDataForGroup = []
-
           state.dataFormOfSampleItemUnit = JSON.parse(JSON.stringify(res.data.data))
+
           // 获取指标
           await state.dataFormOfSampleItemUnit.forEach(async (item) => {
             // 区分1临时、2其他
@@ -1159,6 +1168,33 @@ export default defineComponent({
           console.log('state.dataFormOfSampleItemUnit')
           console.log(state.dataFormOfSampleItemUnit)
         })
+
+        // 处理已完成
+        // val.filter((item:any) => item.taskStatus === 'COMPLETED').forEach(async (item:any) => {
+        for (const item of val.filter((item:any) => item.taskStatus === 'COMPLETED')) {
+          const temp = await MANAGEMENT_INSPECTION_PHYSICOCHEMICAL_TASK_INSPECT_QUERY_API( // /taskInspectIndex/queryTaskInspectIndex
+            [item.id]
+          )
+          const tempIndexList:any[] = []
+          temp.data.data.forEach((element:any) => {
+            tempIndexList.push({
+              indexName: element.indexName,
+              sampleCode: item.sampleCode,
+              inspectResult: element.inspectResult,
+              indexJudgeResult: element.indexJudgeResult
+            })
+          })
+          state.timeLineDataForGroup.push({
+            indexName: item.indexName,
+            indexList: tempIndexList
+          })
+          console.log('state.timeLineDataForGroup111111')
+          console.log(state.timeLineDataForGroup)
+          state.timeLineDataForGroup.sort(function (a, b) {
+            return new Date(b.finishDate).getTime() - new Date(a.finishDate).getTime()
+          })
+        }
+        // })
       } else {
         onClose()
       }
@@ -1268,5 +1304,7 @@ export default defineComponent({
 
   }
 }
-
+.required{
+  border: 1px #f00 solid;
+}
 </style>

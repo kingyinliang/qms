@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-11-16 09:59:02
  * @LastEditors: Telliex
- * @LastEditTime: 2021-12-14 16:42:05
+ * @LastEditTime: 2021-12-15 18:38:43
 -->
 <template>
   <mds-area class="test_method" title="已选中样品" :pack-up="false" style="margin-bottom: 0; background: #fff; overflow:scroll">
@@ -400,7 +400,7 @@ export default defineComponent({
                   // setTimeout(() => {
                   console.log('有勾选哦')
 
-                  if (item.taskInspectClassify === 'TEMP') {
+                  if (item.taskInspectClassify === 'TEMP' || item.taskInspectClassify === 'ASSIST') {
                     proxy.$warningToast('临时检验任务，无法勾选合并')
                   } else {
                     // 若非 TEMP 即打勾，过滤比对交给 select
@@ -499,8 +499,16 @@ export default defineComponent({
     const btnHandleOneSelectionChange = (val: DataTableOfTopicMain[]) => {
       console.log('选框选择')
       console.log(val)
+      if (val.length && val[val.length - 1].orderNo === '') {
+        proxy.$warningToast('不具单号，无法勾选合并或组合')
+        setTimeout(() => {
+          refTableOfTopicMain.value.toggleRowSelection(val[val.length - 1], false)
+        }, 500)
+        return
+      }
+
       if (val.length && val[val.length - 1].taskInspectClassify !== 'PROCESS') {
-        proxy.$warningToast('临时检验任务，无法勾选合并')
+        proxy.$warningToast('非制程检验任务，无法勾选合并或组合')
         setTimeout(() => {
           refTableOfTopicMain.value.toggleRowSelection(val[val.length - 1], false)
         }, 500)
@@ -511,27 +519,27 @@ export default defineComponent({
         let tempTaskStatus = val[0].taskStatus
         val.forEach((item:any, index:number) => {
           if (index >= 1) {
-            if (val[0].inspectMaterialCode === item.inspectMaterialCode && val[0].inspectContent === item.inspectContent && val[0].inspectProperty === item.inspectProperty) {
+            if (val[0].orderNo === item.orderNo && val[0].inspectContent === item.inspectContent) {
               console.log('4444444')
               if (tempTaskStatus === 'COMPLETED') {
                 tempTaskStatus = val[index].taskStatus
               } else if (tempTaskStatus === 'RECEIVED') {
                 if (val[index].taskStatus === 'CHECKING') {
-                  proxy.$warningToast('不符合的状态，无法勾选合并')
+                  proxy.$warningToast('不符合的状态，无法勾选合并或组合')
                   setTimeout(() => {
                     refTableOfTopicMain.value.toggleRowSelection(val[index], false)
                   }, 500)
                 }
               } else if (tempTaskStatus === 'CHECKING') {
                 if (val[index].taskStatus === 'RECEIVED') {
-                  proxy.$warningToast('不符合的状态，无法勾选合并')
+                  proxy.$warningToast('不符合的状态，无法勾选合并或组合')
                   setTimeout(() => {
                     refTableOfTopicMain.value.toggleRowSelection(val[index], false)
                   }, 500)
                 }
               }
             } else {
-              proxy.$warningToast('不同物料内容属性，无法勾选合并')
+              proxy.$warningToast('不同单号与内容，无法勾选合并或组合')
               setTimeout(() => {
                 refTableOfTopicMain.value.toggleRowSelection(val[index], false)
               }, 500)
@@ -553,7 +561,12 @@ export default defineComponent({
       setTimeout(async () => {
         // 1. 是否刷新 list
         if (val.act === 'save') { // 不刷新，仅改状态
-          state.dataTableOfTopicMain.forEach((element:any) => {
+          const totalItemsNumber = state.dataTableOfTopicMain.length // 3 status
+          console.log('totalItemsNumber')
+          console.log(totalItemsNumber)
+          let nowItemIndex = -1
+          let nexItemIndex = null
+          state.dataTableOfTopicMain.forEach((element:any, index:number) => {
             state.targetObjList.forEach((subElement:any) => {
               if (element.id === subElement.id) {
                 if (element.taskStatus === 'RECEIVED') {
@@ -562,9 +575,35 @@ export default defineComponent({
                   subElement.taskStatus = 'CHECKING'
                   subElement.taskStatusName = '检验中'
                 }
+                nowItemIndex = index
+                nexItemIndex = index + 1
               }
             })
           })
+
+          console.log('$$$$$$$$$$11111save$$$$$$$$$$$')
+          if (state.subType !== 'merge') { // 只有保存会重开
+            if (nexItemIndex !== null && nexItemIndex < totalItemsNumber) { // 剩多笔
+              console.log('还有可开')
+              state.indexOfCurrentRowOnFocus = nexItemIndex
+              setTimeout(() => {
+                setCurrentRowOnFocus(state.dataTableOfTopicMain[state.indexOfCurrentRowOnFocus])
+                actGetInspectDetail()
+              }, 500)
+            } else if (totalItemsNumber === 1) { // 只剩一笔
+              state.indexOfCurrentRowOnFocus = nowItemIndex
+              setTimeout(() => {
+                setCurrentRowOnFocus(state.dataTableOfTopicMain[state.indexOfCurrentRowOnFocus])
+              }, 500)
+              console.log('没有可再开')
+            } else { // 到底
+              state.indexOfCurrentRowOnFocus = nowItemIndex
+              setTimeout(() => {
+                setCurrentRowOnFocus(state.dataTableOfTopicMain[state.indexOfCurrentRowOnFocus])
+              }, 500)
+              console.log('到底，没有可开')
+            }
+          }
         } else { // 刷新
           const tempContainer:any[] = []
           let isOpenCopy = false

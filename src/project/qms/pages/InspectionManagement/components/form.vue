@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-11-11 16:30:07
  * @LastEditors: Telliex
- * @LastEditTime: 2021-12-15 10:30:04
+ * @LastEditTime: 2021-12-15 11:06:20
 -->
 <template>
   <mds-area class="info" >
@@ -194,8 +194,7 @@ import layoutTs from '@/components/layout/layoutTs'
 import { useStore } from 'vuex'
 import {
   MANAGEMENT_INSPECTION_PHYSICOCHEMICAL_TASK_FORM_QUERY_API,
-  MANAGEMENT_INSPECTION_PHYSICOCHEMICAL_HISTORY_TASK_FORM_QUERY_API, // /taskInspect/queryHistoryFormTaskInspect
-  INSPECT_INDEX_PROCESS_PARAMETER_QUERY_FOR_TASK_API
+  MANAGEMENT_INSPECTION_PHYSICOCHEMICAL_HISTORY_TASK_FORM_QUERY_API // /taskInspect/queryHistoryFormTaskInspect
 } from '@/api/api'
 
 interface State {
@@ -253,11 +252,6 @@ export default defineComponent({
     onMounted(async () => {
       state.currentType = store.state.common.sampleObjForView.type
       state.currentObj = store.state.common.sampleObjForView.obj[0]
-      console.log('state.currentType')
-      console.log(state.currentType)
-      console.log('state.currentObj')
-      console.log(state.currentObj)
-
       if (!state.currentType) {
         tabsCloseCurrentHandle()
         proxy.$warningToast('操作过时，请重新选择！')
