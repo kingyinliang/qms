@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-11-16 09:59:02
  * @LastEditors: Telliex
- * @LastEditTime: 2021-12-14 11:30:34
+ * @LastEditTime: 2021-12-14 16:42:05
 -->
 <template>
   <mds-area class="test_method" title="已选中样品" :pack-up="false" style="margin-bottom: 0; background: #fff; overflow:scroll">
@@ -436,7 +436,7 @@ export default defineComponent({
     const btnGetInspectListReload = async (val: DataTableOfTopicMain[]) => {
       // val.length && MANAGEMENT_INSPECTION_PHYSICOCHEMICAL_QUERY_BY_SAMPLE_CODE_API(
       //   val.map(item => item.sampleCode)
-      await val.length && MANAGEMENT_INSPECTION_TASK_INSPECT_QUERY_BY_ID_API( // /taskInspect/queryTaskInspectByIds
+      return val.length && MANAGEMENT_INSPECTION_TASK_INSPECT_QUERY_BY_ID_API( // /taskInspect/queryTaskInspectByIds
         val
       ).then(res => {
         state.dataTableOfTopicMain = []
@@ -588,6 +588,7 @@ export default defineComponent({
           }
 
           // 重新加载后 list
+          console.log('start!!!!')
           await btnGetInspectListReload(tempContainer)
           console.log('state.dataTableOfTopicMain')
           console.log(state.dataTableOfTopicMain)
@@ -598,13 +599,21 @@ export default defineComponent({
 
           if (isOpenCopy) { // run 复检
             console.log('$$$$$$$$$$复检$$$$$$$$$$$')
+            console.log(state.dataTableOfTopicMain)
             state.dataTableOfTopicMain.forEach((item:any, index:number) => {
             // 找出原先的 sample
+              console.log('state.currentGlobalActObj.id')
+              console.log(state.currentGlobalActObj.id)
               if (item.id === state.currentGlobalActObj.id) {
+                console.log('找出原先的')
                 nowItemIndex = index
               }
+
+              console.log('val.obj.taskInspectIdList[0]')
+              console.log(val.obj.taskInspectIdList[0])
               // 复检 copy 出来的 sample
               if (item.id === val.obj.taskInspectIdList[0]) {
+                console.log('找出复检的')
                 nexItemIndex = index
               }
 
