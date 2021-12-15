@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-11-11 16:30:07
  * @LastEditors: Telliex
- * @LastEditTime: 2021-12-15 10:48:10
+ * @LastEditTime: 2021-12-15 16:35:49
 -->
 <template>
   <el-dialog :title="title" v-model="isDialogShow" width="90%" @close="onClose">
@@ -21,12 +21,12 @@
               <el-input v-model="dataFormOfSampleInfo.sampleDeptName" size="small" class="inputWidth" placeholder="自动带入" autocomplete="off" :readonly="onlyRead"></el-input>
             </el-tooltip>
           </el-form-item>
-          <el-form-item label="检验物料："  prop="inspectMaterialNameString" v-if="currentMainType==='PROCESS'" >
+          <el-form-item label="检验物料："  prop="inspectMaterialNameString" v-if="currentMainType==='PROCESS'||currentMainType==='ASSIST'" >
             <el-tooltip class="item" effect="dark" :content="dataFormOfSampleInfo.inspectMaterialNameString" placement="top-start" :disabled="!dataFormOfSampleInfo.inspectMaterialNameString">
               <el-input v-model="dataFormOfSampleInfo.inspectMaterialNameString" size="small"  class="inputWidth" placeholder="自动带入" autocomplete="off" :readonly="onlyRead"></el-input>
             </el-tooltip>
           </el-form-item>
-          <el-form-item label="取样信息："  prop="inspectSiteNameString" v-if="currentMainType==='PROCESS'" >
+          <el-form-item label="取样信息："  prop="inspectSiteNameString" v-if="currentMainType==='PROCESS'||currentMainType==='ASSIST'" >
             <el-tooltip class="item" effect="dark" :content="dataFormOfSampleInfo.inspectSiteNameString" placement="top-start" :disabled="!dataFormOfSampleInfo.inspectSiteNameString">
               <el-input v-model="dataFormOfSampleInfo.inspectSiteNameString" size="small" class="inputWidth" placeholder="自动带入" autocomplete="off" :readonly="onlyRead"></el-input>
             </el-tooltip>
@@ -168,9 +168,7 @@
           <h4 style="margin-bottom:10px;">检验说明 : </h4>
             <div class="time-log">
               <ul class="fixlocation">
-                <!-- <li v-for="(element, index) in item.indexList" :key="index"><div>> <span>指标：</span><em>{{element.indexName}}</em></div><div><span>样品码：</span><em>{{element.sampleCode}}</em></div><div><span>结果：</span><em :style="{color:element.indexJudgeResult==='N'?'#ff0000':'inherit'}">{{element.inspectResult}}</em></div></li> -->
                 <li v-for="(element, index) in item.indexList" :key="index" class="subelement" ><div>{{`${element.indexName} (${element.sampleCode})`}}<em :style="{marginLeft:'10px',color:element.indexJudgeResult==='N'?'#ff0000':'inherit'}">{{element.inspectResult}}</em></div></li>
-
               </ul>
             </div>
             <template #dot>
@@ -195,7 +193,6 @@
           <h4 style="margin-bottom:10px;">检验说明 : </h4>
             <div class="time-log">
               <ul class="fixlocation">
-                <!-- <li v-for="(element, index) in item.indexList" :key="index"><div>> <span>指标：</span><em>{{element.indexName}}</em></div><div><span>样品码：</span><em>{{element.sampleCode}}</em></div><div><span>结果：</span><em :style="{color:element.indexJudgeResult==='N'?'#ff0000':'inherit'}">{{element.inspectResult}}</em></div></li> -->
                 <li v-for="(element, index) in item.indexList" :key="index" class="subelement" ><div>{{`${element.indexName} (${element.sampleCode})`}}<em :style="{marginLeft:'10px',color:element.indexJudgeResult==='N'?'#ff0000':'inherit'}">{{element.inspectResult}}</em></div></li>
 
               </ul>
@@ -917,7 +914,7 @@ export default defineComponent({
       console.log('=== import object to dialog ===')
       console.log(val)
 
-      state.currentMainType = mainType.value !== 'ASSIST' ? mainType.value : 'PROCESS' // ASSIST 也归于 PROCESS
+      state.currentMainType = mainType.value
       console.log('=== state.currentMainType ===')
       console.log(state.currentMainType)
       state.mainObj = []
@@ -934,7 +931,7 @@ export default defineComponent({
           state.mainObj.push(item)
 
           // add 复检讯息于最下方
-          if (item.recheckBatch !== '' && item.taskStatus === 'COMPLETED') {
+          if (item.recheckBatch !== '') {
             if (!recheckContainer.includes(item.recheckBatch)) {
               recheckContainer.push(item.recheckBatch)
               MANAGEMENT_INSPECTION_PHYSICOCHEMICAL_TASK_FORM_QUERY_API({ // /taskInspect/formTaskInspect
@@ -968,29 +965,29 @@ export default defineComponent({
             if (!groupContainer.includes(item.groupBatch)) {
               groupContainer.push(item.groupBatch)
 
-              MANAGEMENT_INSPECTION_PHYSICOCHEMICAL_TASK_FORM_QUERY_API({ // /taskInspect/formTaskInspect
-                id: item.id,
-                recheckBatch: item.recheckBatch,
-                taskStatus: 'COMPLETED'
-              }).then((rep) => {
-                console.log('== 组合讯息 ==')
-                console.log(rep.data.data)
-                rep.data.data.forEach((element:any) => {
-                  const tempIndexList:any[] = []
-                  element.taskInspectIndexList.forEach((subElement:any) => {
-                    tempIndexList.push({
-                      indexName: subElement.indexName,
-                      sampleCode: element.sampleCode,
-                      inspectResult: subElement.inspectResult,
-                      indexJudgeResult: subElement.indexJudgeResult
-                    })
-                  })
-                  state.timeLineDataForGroup.push({
-                    indexName: element.indexName,
-                    indexList: tempIndexList
-                  })
-                })
-              })
+              // MANAGEMENT_INSPECTION_PHYSICOCHEMICAL_TASK_FORM_QUERY_API({ // /taskInspect/formTaskInspect
+              //   id: item.id,
+              //   recheckBatch: item.recheckBatch,
+              //   taskStatus: 'COMPLETED'
+              // }).then((rep) => {
+              //   console.log('== 组合讯息 ==')
+              //   console.log(rep.data.data)
+              //   rep.data.data.forEach((element:any) => {
+              //     const tempIndexList:any[] = []
+              //     element.taskInspectIndexList.forEach((subElement:any) => {
+              //       tempIndexList.push({
+              //         indexName: subElement.indexName,
+              //         sampleCode: element.sampleCode,
+              //         inspectResult: subElement.inspectResult,
+              //         indexJudgeResult: subElement.indexJudgeResult
+              //       })
+              //     })
+              //     state.timeLineDataForGroup.push({
+              //       indexName: element.indexName,
+              //       indexList: tempIndexList
+              //     })
+              //   })
+              // })
             }
           }
         })
