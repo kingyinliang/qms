@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-11-16 09:59:02
  * @LastEditors: Telliex
- * @LastEditTime: 2021-12-08 09:08:08
+ * @LastEditTime: 2021-12-15 18:38:43
 -->
 <template>
   <mds-area class="test_method" title="已选中样品" :pack-up="false" style="margin-bottom: 0; background: #fff; overflow:scroll">
@@ -19,7 +19,7 @@
           <el-button icon="el-icon-search" type="primary" size="small" class="topic-button" @click="actGetInspectDetail()" :disabled="!dataTableOfTopicMain.filter(element=>element.taskStatus !== 'COMPLETED').length">检验</el-button>
         </div>
     </template>
-    <el-table border ref="refTableOfTopicMain" :cell-style="{'text-align':'center'}" :data="dataTableOfTopicMain" :row-class-name="markRowWithDelFlag" tooltip-effect="dark" style="width: 100%" max-height="500" highlight-current-row @row-click="handleCurrentChange" @selection-change="actHandleSelectionChange" @select="btnHandleOneSelectionChange" @select-all="btnHandleAllSelectionChange">
+    <el-table border ref="refTableOfTopicMain" :cell-style="{'text-align':'center'}" :data="dataTableOfTopicMain" :row-class-name="markRowWithDelFlag" tooltip-effect="dark" style="width: 100%" max-height="500" highlight-current-row @row-click="handleCurrentChange" @selection-change="actHandleSelectionChange" @select="btnHandleOneSelectionChange">
       <el-table-column type="selection" width="55" align="center"/>
       <el-table-column type="index" label="序号" width="50" align="center" />
       <el-table-column label="样品码" show-overflow-tooltip prop="sampleCode" />
@@ -32,7 +32,7 @@
     </el-table>
   </mds-area>
 
-  <instection-dialog v-model="dialogVisible" :targetObj="targetObjList" :mainType="mainType" :subType="subType"  @on-close="dialogVisible=false" @openHandle="returnFromDialogAndOpenAgainHandle" />
+  <inspection-dialog v-model="dialogVisible" :targetObj="targetObjList" :mainType="mainType" :subType="subType"  @on-close="dialogVisible=false" @openHandle="returnFromDialogAndOpenAgainHandle" />
 
 </template>
 
@@ -44,17 +44,85 @@ import { useRouter } from 'vue-router'
 import MdsArea from '@/components/package/mds-area/src/mds-area.vue'
 import {
   MANAGEMENT_INSPECTION_PHYSICOCHEMICAL_QUERY_BY_SAMPLE_CODE_API, // 检验管理-[检验任务]- 根据样品码查询检验任务
-  MANAGEMENT_INSPECTION_TASK_INSPECT_QUERY_BY_ID_API, // 检验管理-[检验任务]- 分析是否有合并检 /taskInspect/queryTaskInspectByIds
-  // MANAGEMENT_INSPECTION_PHYSICOCHEMICAL_TASK_INSPECT_QUERY_API,
-  MANAGEMENT_INSPECTION_PHYSICOCHEMICAL_TASK_FORM_QUERY_API
+  MANAGEMENT_INSPECTION_TASK_INSPECT_QUERY_BY_ID_API // 检验管理-[检验任务]- 分析是否有合并检 /taskInspect/queryTaskInspectByIds
 } from '@/api/api'
-import layoutTs from '@/components/layout/layoutTs'
+
 import { useStore } from 'vuex'
-import InstectionDialog from '../components/InspectionDialog.vue'
+import InspectionDialog from '../components/InspectionDialog.vue'
 
 interface SearchFilter{
   sampleCode: string
   merge: boolean
+}
+interface CurrentGlobalActObj{
+  coInspectDeptId: string
+  coInspectDeptName: string
+  coSampleDeptId: string
+  coSampleDeptName:string
+  created: string
+  deliveryDate: string
+  finishDate: string
+  groupBatch: string
+  handleExplain: string
+  id: string
+  inspectBatch: string
+  inspectContent: string
+  inspectDate: string
+  inspectDeptId: string
+  inspectDeptName: string
+  inspectEndDate: null
+  inspectExplain: string
+  inspectFrequency: string
+  inspectIndexId: string
+  inspectMaterialCode: string
+  inspectMaterialName: string
+  inspectMaterialType: string
+  inspectMethodCode: string
+  inspectMethodName: string
+  inspectParameterGroupId: string
+  inspectProperty: string
+  inspectSampleContent: ''
+  inspectSiteId: string
+  inspectSiteName: string
+  inspectStartDate: string
+  inspectTypeId: string
+  itemId: string
+  itemName: string
+  judgeResult: string
+  mergeBatch: string
+  needDeptCode: string
+  needDeptId: string
+  needDeptName: string
+  orderNo: string
+  productDate: string
+  receiveDate: string
+  recheckBatch: string
+  recheckFlag: string
+  recheckMod: string
+  sampleAmount: string
+  sampleCode: string
+  sampleCodes: string
+  sampleDeadlineDate: string
+  sampleDeptId: string
+  sampleDeptName: string
+  sampleEndDate: string
+  sampleExplain: string
+  sampler: string
+  sendSampleDeptId: string
+  sendSampleDeptName: string
+  supplier: string
+  supplierCode: string
+  taskInspectClassify: string
+  taskInspectIndexId: string
+  taskManageId: string
+  taskManageStatus: string
+  taskSampleClassify: string
+  taskSampleId: string
+  taskSampleStatus: string
+  taskStatus: string
+  taskStatusName: string
+  tempApplyNo: string
+  temporaryFlag: string
 }
 
 interface DataTableOfTopicMain {
@@ -122,7 +190,7 @@ interface DataTableOfTopicMain {
 interface State {
   indexOfCurrentRowOnFocus: number
   targetObjList: any[] // 检验物件
-  currentGlobalActOgj: any
+  currentGlobalActObj: any
   dialogVisible: boolean
   mainType: string
   subType: string
@@ -142,7 +210,7 @@ export default defineComponent({
   name: 'PhysicochemicalInspect',
   components: {
     MdsArea,
-    InstectionDialog
+    InspectionDialog
   },
 
   setup () {
@@ -150,20 +218,8 @@ export default defineComponent({
     const proxy = ctx.proxy as any
     const store = useStore()
     const router = useRouter()
-    // const { gotoPage, tabsCloseCurrentHandle } = layoutTs()
-    const refTableOfTopicMain = ref()
 
-    // router.afterEach((to, from) => {
-    //   console.log('33333333333')
-    //   console.log(to)
-    //   console.log('from.path')
-    //   console.log(from.path)
-    //   console.log('to.path')
-    //   console.log(to.path)
-    //   if (to.path === '/qms-pages-InspectionManagement-PhysicochemicalInspect-index' && from.path === '/qms-pages-InspectionManagement-InspectionTask-index') {
-    //     console.log('get')
-    //   }
-    // })
+    const refTableOfTopicMain = ref()
 
     /**  == 变量 ==  **/
     const state = reactive<State>({
@@ -171,7 +227,7 @@ export default defineComponent({
       scanMergeType: false,
       indexOfCurrentRowOnFocus: 0,
       dialogVisible: false,
-      currentGlobalActOgj: {},
+      currentGlobalActObj: {},
       mainType: '',
       subType: '',
       currentObj: {},
@@ -202,9 +258,18 @@ export default defineComponent({
     }
 
     // 临时检验列表数据
-
-    // TODO
+    /**
+     * @description 将数据送至检验， 前提是 list 理所关联的数据已在其中
+     * @rule 合并检 or 组合检，需滤掉 临时检验任务 及 不同物料、属性或检验内容
+     */
     const actGetInspectDetail = () => {
+      /**
+       * @rule
+       * 1. 勾选 2 个以上且勾选合并检， 视为合并检 or 组合检
+       * 2. 勾选 1 个且勾选合并检， 视为一般检
+       * 3. 走 focus item 方式（不勾选且不勾选合并检），一般检
+       * 4. 没 focus item
+       */
       state.targetObjList = []
       if (state.searchFilter.merge && state.selectedListOfTopicMainData.length > 1) { // 勾选 2 个以上， 视为合并检
         if (checkIfMergeByClassify(state.selectedListOfTopicMainData)) {
@@ -216,52 +281,80 @@ export default defineComponent({
           proxy.$warningToast('存在不同物料、属性或检验内容，无法合并检验')
           return
         }
-        console.log('merge')
+
+        // 样品码是否全是已完成
+        if (state.selectedListOfTopicMainData.every((item:any) => item.taskStatus === 'COMPLETED')) {
+          proxy.$warningToast('所选择皆是已完成状态无法检验')
+          return
+        }
+
+        console.log('merge-checked')
         state.mainType = state.selectedListOfTopicMainData[0].taskInspectClassify
         state.subType = 'merge'
         state.targetObjList = JSON.parse(JSON.stringify(state.selectedListOfTopicMainData))
       } else if (state.searchFilter.merge && state.selectedListOfTopicMainData.length === 1) { // 勾选 1 个， 视为一般检
-        console.log(state.selectedListOfTopicMainData[0].taskInspectClassify)
-        console.log('normal1')
+        console.log('normal-checked')
+
+        // 样品码是已完成即返回
+        if (state.selectedListOfTopicMainData[0].taskStatus === 'COMPLETED') {
+          proxy.$warningToast('已完成状态无法检验')
+          return
+        }
+
         state.mainType = state.selectedListOfTopicMainData[0].taskInspectClassify
         state.subType = 'normal'
 
-        // if (state.selectedListOfTopicMainData[0].mergeBatch === '') {
-        state.targetObjList = JSON.parse(JSON.stringify(state.selectedListOfTopicMainData))
-        // } else { // 该条是合并样品
-        //   // TODO
+        if (state.selectedListOfTopicMainData[0].mergeBatch === '' && state.selectedListOfTopicMainData[0].groupBatch === '') { // x合并 x组合
+          state.targetObjList = JSON.parse(JSON.stringify(state.selectedListOfTopicMainData))
+        } else { // 该条是合并或组合样品
+          state.subType = 'merge'
 
-        //   MANAGEMENT_INSPECTION_PHYSICOCHEMICAL_TASK_FORM_QUERY_API({
-        //     id: state.selectedListOfTopicMainData[0].id,
-        //     recheckBatch: ''
-        //   }).then((res:any) => {
-        //     state.targetObjList = res.data.data
-        //     console.log('ininin')
-        //     console.log(res.data.data)
-        //   })
-        // }
+          if (state.selectedListOfTopicMainData[0].mergeBatch !== '' && state.selectedListOfTopicMainData[0].groupBatch === '') { // v合并 x组合
+            state.targetObjList = state.dataTableOfTopicMain.filter((element:any) => element.mergeBatch === state.selectedListOfTopicMainData[0].mergeBatch)
+          } else if (state.selectedListOfTopicMainData[0].mergeBatch === '' && state.selectedListOfTopicMainData[0].groupBatch !== '') { // x合并 v组合
+            state.targetObjList = state.dataTableOfTopicMain.filter((element:any) => element.groupBatch === state.selectedListOfTopicMainData[0].groupBatch)
+          } else { // v合并 v组合
+            state.targetObjList = state.dataTableOfTopicMain.filter((element:any) => element.groupBatch === state.selectedListOfTopicMainData[0].groupBatch || element.mergeBatch === state.selectedListOfTopicMainData[0].mergeBatch)
+          }
+
+          refTableOfTopicMain.value.toggleRowSelection(state.targetObjList, true)
+          console.log('state.selectedListOfTopicMainData')
+          console.log(state.selectedListOfTopicMainData)
+        }
       } else {
-        console.log('normal2')
-        console.log(state.currentGlobalActOgj.taskInspectClassify)
-        state.mainType = state.currentGlobalActOgj.taskInspectClassify
+        console.log('normal-focused')
+        console.log(state.currentGlobalActObj.taskInspectClassify)
+
+        // 样品码是已完成即返回
+        if (state.currentGlobalActObj.taskStatus === 'COMPLETED') {
+          proxy.$warningToast('已完成状态无法检验')
+          return
+        }
+
+        state.mainType = state.currentGlobalActObj.taskInspectClassify
         state.subType = 'normal'
 
-        if (Object.keys(state.currentGlobalActOgj).length !== 0) {
-          // if (state.currentGlobalActOgj.mergeBatch === '') {
-          state.targetObjList = [JSON.parse(JSON.stringify(state.currentGlobalActOgj))]
-          // } else { // 该条是合并样品
-          //   // TODO
-          //   MANAGEMENT_INSPECTION_PHYSICOCHEMICAL_TASK_FORM_QUERY_API({
-          //     id: state.currentGlobalActOgj.id,
-          //     recheckBatch: ''
-          //   }).then((res:any) => {
-          //     state.targetObjList = res.data.data
-          //     console.log('ininin')
-          //     console.log(res.data.data)
-          //   })
-          // }
+        if (Object.keys(state.currentGlobalActObj).length !== 0) {
+          if (state.currentGlobalActObj.mergeBatch === '' && state.currentGlobalActObj.groupBatch === '') { // x合并 x组合
+            state.targetObjList = [JSON.parse(JSON.stringify(state.currentGlobalActObj))]
+          } else { // 该条是合并样品
+            state.subType = 'merge'
+
+            if (state.currentGlobalActObj.mergeBatch !== '' && state.currentGlobalActObj.groupBatch === '') { // v合并 x组合
+              state.targetObjList = state.dataTableOfTopicMain.filter((element:any) => element.mergeBatch === state.currentGlobalActObj.mergeBatch)
+            } else if (state.currentGlobalActObj.mergeBatch === '' && state.currentGlobalActObj.groupBatch !== '') { // x合并 v组合
+              state.targetObjList = state.dataTableOfTopicMain.filter((element:any) => element.groupBatch === state.currentGlobalActObj.groupBatch)
+            } else { // v合并 v组合
+              state.targetObjList = state.dataTableOfTopicMain.filter((element:any) => element.groupBatch === state.currentGlobalActObj.groupBatch || element.mergeBatch === state.currentGlobalActObj.mergeBatch)
+            }
+
+            refTableOfTopicMain.value.toggleRowSelection(state.targetObjList, true)
+            console.log('state.selectedListOfTopicMainData')
+            console.log(state.selectedListOfTopicMainData)
+          }
         } else {
-          proxy.$warningToast('请选取任务')
+          proxy.$infoToast('请选取任务')
+          return
         }
       }
 
@@ -276,100 +369,74 @@ export default defineComponent({
     }
 
     // 根据取样码添加任务
-    const btnGetInspectList = (str:string) => {
-      if (state.scanMergeType === true) { // 扫码合并模式
-        // if (state.searchFilter.merge === false) {
-        //   proxy.$warningToast('请先勾选合并检，再扫码')
-        //   return false
-        // }
+    /**
+     * @description: 扫码后添加进清单的
+     * 0.一次一个码
+     * 1.勾选合并 checkbox，扫进 item 打勾
+     * 2.未勾选合并 checkbok，扫进 item 不打勾
 
-        str && MANAGEMENT_INSPECTION_PHYSICOCHEMICAL_QUERY_BY_SAMPLE_CODE_API(
-          [str]
-        ).then(res => {
-          console.log('根据样品码查询检验任务')
-          console.log(res.data.data)
-          if (!res.data.data.length) {
-            proxy.$infoToast('无任何数据')
-          } else {
-            const temp = state.dataTableOfTopicMain.map(item => item.id)
-            res.data.data.forEach((item:any) => {
-              if (!temp.includes(item.id)) {
-                if (item.taskStatus === 'RECEIVED' || item.taskStatus === 'CHECKING' || item.taskStatus === 'COMPLETED') {
-                  if (state.dataTableOfTopicMain.length === 0) { // 第一笔
-                    state.dataTableOfTopicMain.push(item)
-                  } else { // 第一笔之后
-                    if (item.inspectMaterialCode === state.dataTableOfTopicMain[0].inspectMaterialCode && item.inspectContent === state.dataTableOfTopicMain[0].inspectContent && item.inspectProperty === state.dataTableOfTopicMain[0].inspectProperty) {
-                      state.dataTableOfTopicMain.push(item)
-                    } else {
-                      proxy.$warningToast('非同一类样品不可和并检')
-                    }
-                  }
-                }
-              } else {
-                proxy.$warningToast('列表中已存在相同检验码')
-              }
-            })
-          }
-        })
-      } else { // 一般合并模式
-        console.log('77777')
-        str && MANAGEMENT_INSPECTION_PHYSICOCHEMICAL_QUERY_BY_SAMPLE_CODE_API(
-          [str]
-        ).then(res => {
-          console.log('根据样品码查询检验任务')
-          console.log(res.data.data)
-          if (!res.data.data.length) {
-            proxy.$infoToast('无任何数据')
-          } else {
+     */
+    const btnGetInspectList = (str:string) => {
+      str && MANAGEMENT_INSPECTION_PHYSICOCHEMICAL_QUERY_BY_SAMPLE_CODE_API(
+        [str]
+      ).then(res => {
+        console.log('根据样品码查询检验任务')
+        console.log(res.data.data)
+        if (!res.data.data.length) {
+          proxy.$infoToast('无任何数据')
+        } else {
           // push 前去重
-            let tempLength = 0
-            const temp = state.dataTableOfTopicMain.map(item => item.id)
-            res.data.data.forEach((item:any) => {
-              if (!temp.includes(item.id)) {
-                if (item.taskStatus === 'RECEIVED' || item.taskStatus === 'CHECKING' || item.taskStatus === 'COMPLETED') {
+          const temp = state.dataTableOfTopicMain.map(item => item.id)
+          res.data.data.forEach((item:any) => {
+            if (!temp.includes(item.id)) {
+              if (item.taskStatus === 'RECEIVED' || item.taskStatus === 'CHECKING' || item.taskStatus === 'COMPLETED') {
                 // if (item.taskStatus === 'COMPLETED') {
                 //   item.delFlag = 1
                 // } else {
                 //   item.delFlag = 0
                 // }
-                  state.dataTableOfTopicMain.push(item)
-                  tempLength += 1
+                state.dataTableOfTopicMain.push(item)
+                if (state.searchFilter.merge) {
+                  // setTimeout(() => {
+                  console.log('有勾选哦')
+
+                  if (item.taskInspectClassify === 'TEMP' || item.taskInspectClassify === 'ASSIST') {
+                    proxy.$warningToast('临时检验任务，无法勾选合并')
+                  } else {
+                    // 若非 TEMP 即打勾，过滤比对交给 select
+                    refTableOfTopicMain.value.toggleRowSelection(item, true)
+                  }
+
+                  // }, 500)
                 }
-              } else {
+              }
+            } else {
+              if (item.delFlag === 0) {
                 proxy.$warningToast('列表中已存在相同检验码')
               }
-            })
-            // 提示所查找的样品码没有所要查找的状态 （RECEIVED、CHECKING、COMPLETED）
-            if (res.data.data.some((item:any) => item.taskStatus !== 'RECEIVED' && item.taskStatus !== 'CHECKING' && item.taskStatus !== 'COMPLETED')) {
-              proxy.$warningToast('样品码非[已收样][检验中][已完成]状态，不可操作')
             }
-
-            state.searchFilter.merge = false
-            state.searchFilter.sampleCode = ''
-
-            setCurrentRowOnFocus({})
-          // R:highlight row # 此功能不需要
-          // if (!state.searchFilter.merge) {
-          //   state.dataTableOfTopicMain.filter(element => element.taskStatus !== 'COMPLETED').length >= 1 && setCurrentRowOnFocus(state.dataTableOfTopicMain.filter(element => element.taskStatus !== 'COMPLETED')[0])
-          //   state.currentGlobalActOgj = state.dataTableOfTopicMain.filter(element => element.taskStatus !== 'COMPLETED')[0]
-          // } else {
-          // // R:合併檢掃碼新增時帶上勾選
-          //   for (let i = 1; i <= tempLength; i++) {
-          //     refTableOfTopicMain.value.toggleRowSelection(state.dataTableOfTopicMain.filter(element => element.taskStatus !== 'COMPLETED')[state.dataTableOfTopicMain.filter(element => element.taskStatus !== 'COMPLETED').length - i])
-          //   }
-          // }
+          })
+          // 提示所查找的样品码没有所要查找的状态 （RECEIVED、CHECKING、COMPLETED）
+          if (res.data.data.some((item:any) => item.taskStatus !== 'RECEIVED' && item.taskStatus !== 'CHECKING' && item.taskStatus !== 'COMPLETED')) {
+            proxy.$warningToast('查询结果含有非[已收样][检验中][已完成]状态数据')
           }
-        }).catch(() => {
-          proxy.$infoToast('您无权限执行此样品检验，请选择其它样品')
-        })
-      }
+
+          state.searchFilter.sampleCode = ''
+
+          if (state.selectedListOfTopicMainData.length) {
+            setCurrentRowOnFocus({})
+          }
+        }
+      }).catch(() => {
+        proxy.$infoToast('您无权限执行此样品检验，请选择其它样品')
+      })
     }
 
     // reload 任务表单
-    const btnGetInspectListReload = (val: DataTableOfTopicMain[]) => {
+    const btnGetInspectListReload = async (val: DataTableOfTopicMain[]) => {
       // val.length && MANAGEMENT_INSPECTION_PHYSICOCHEMICAL_QUERY_BY_SAMPLE_CODE_API(
       //   val.map(item => item.sampleCode)
-      val.length && MANAGEMENT_INSPECTION_TASK_INSPECT_QUERY_BY_ID_API( // /taskInspect/queryTaskInspectByIds
+      return val.length && MANAGEMENT_INSPECTION_TASK_INSPECT_QUERY_BY_ID_API( // /taskInspect/queryTaskInspectByIds
         val
       ).then(res => {
         state.dataTableOfTopicMain = []
@@ -394,18 +461,18 @@ export default defineComponent({
       state.dataTableOfTopicMain = []
       state.scanMergeType = true
       proxy.$successToast('表单已清空')
-      store.commit('common/updateSampleObjToInspect', { type: 'EMPTY', obj: [] })
+      // store.commit('common/updateSampleObjToInspect', { type: 'EMPTY', obj: [] })
     }
 
     // focus or remove focus
     const setCurrentRowOnFocus = (row:any) => {
       Object.keys(row).length === 0 ? refTableOfTopicMain.value.setCurrentRow() : refTableOfTopicMain.value.setCurrentRow(row)
-      state.currentGlobalActOgj = row
+      state.currentGlobalActObj = row
     }
 
     // assign global index & focus row obj
     const handleCurrentChange = (row:DataTableOfTopicMain) => {
-      state.currentGlobalActOgj = row
+      state.currentGlobalActObj = row
       state.dataTableOfTopicMain.forEach((item, index) => {
         if (item.id === row.id) {
           state.indexOfCurrentRowOnFocus = index
@@ -416,27 +483,69 @@ export default defineComponent({
     //  click 合并检 button 后行为：取消 row's focus
     const btnCheckOfMergeOrNot = (val:boolean) => {
       if (state.dataTableOfTopicMain.filter(element => element.taskStatus !== 'COMPLETED').length !== 0) {
-        val ? setCurrentRowOnFocus({}) : setCurrentRowOnFocus(state.dataTableOfTopicMain[state.indexOfCurrentRowOnFocus]) // TODO
+        val ? setCurrentRowOnFocus({}) : setCurrentRowOnFocus(state.dataTableOfTopicMain[state.indexOfCurrentRowOnFocus])
       }
     }
 
     // [ACT][Table] 选框选择後的处理
     const actHandleSelectionChange = (val: DataTableOfTopicMain[]) => {
+      console.log('选框选择後的处理')
+      console.log(val)
+      setCurrentRowOnFocus({})
       state.selectedListOfTopicMainData = val
     }
 
-    // [SELECT][Table] 选框选择
+    // [SELECT][Table] 选框选择 // 全选/全不选操作不触发此
     const btnHandleOneSelectionChange = (val: DataTableOfTopicMain[]) => {
-      if (val.length && val[val.length - 1].taskInspectClassify !== 'PROCESS') {
-        proxy.$warningToast('临时检验任务，无法勾选合并')
-        refTableOfTopicMain.value.toggleRowSelection(val[val.length - 1], false)
+      console.log('选框选择')
+      console.log(val)
+      if (val.length && val[val.length - 1].orderNo === '') {
+        proxy.$warningToast('不具单号，无法勾选合并或组合')
+        setTimeout(() => {
+          refTableOfTopicMain.value.toggleRowSelection(val[val.length - 1], false)
+        }, 500)
+        return
       }
-    }
-    // [SELECT][Table] 选框 ALL 选择
-    const btnHandleAllSelectionChange = (val: DataTableOfTopicMain[]) => {
-      if (val.length && state.selectedListOfTopicMainData.some(item => item.taskInspectClassify !== 'PROCESS')) {
-        proxy.$warningToast('临时检验任务，无法勾选合并')
-        refTableOfTopicMain.value.clearSelection()
+
+      if (val.length && val[val.length - 1].taskInspectClassify !== 'PROCESS') {
+        proxy.$warningToast('非制程检验任务，无法勾选合并或组合')
+        setTimeout(() => {
+          refTableOfTopicMain.value.toggleRowSelection(val[val.length - 1], false)
+        }, 500)
+        return
+      }
+
+      if (val.length >= 2) {
+        let tempTaskStatus = val[0].taskStatus
+        val.forEach((item:any, index:number) => {
+          if (index >= 1) {
+            if (val[0].orderNo === item.orderNo && val[0].inspectContent === item.inspectContent) {
+              console.log('4444444')
+              if (tempTaskStatus === 'COMPLETED') {
+                tempTaskStatus = val[index].taskStatus
+              } else if (tempTaskStatus === 'RECEIVED') {
+                if (val[index].taskStatus === 'CHECKING') {
+                  proxy.$warningToast('不符合的状态，无法勾选合并或组合')
+                  setTimeout(() => {
+                    refTableOfTopicMain.value.toggleRowSelection(val[index], false)
+                  }, 500)
+                }
+              } else if (tempTaskStatus === 'CHECKING') {
+                if (val[index].taskStatus === 'RECEIVED') {
+                  proxy.$warningToast('不符合的状态，无法勾选合并或组合')
+                  setTimeout(() => {
+                    refTableOfTopicMain.value.toggleRowSelection(val[index], false)
+                  }, 500)
+                }
+              }
+            } else {
+              proxy.$warningToast('不同单号与内容，无法勾选合并或组合')
+              setTimeout(() => {
+                refTableOfTopicMain.value.toggleRowSelection(val[index], false)
+              }, 500)
+            }
+          }
+        })
       }
     }
 
@@ -444,14 +553,57 @@ export default defineComponent({
     const returnFromDialogAndOpenAgainHandle = (val:any) => {
       console.log('.............')
       console.log(val)
+      // 需处理
       // val.act==='save && val.target === '' => 保存 没有复检
       // val.act==='submit && val.target === '' => 提交 没有复检
       // val.act==='submit && val.target === 'ORIGINAL_RECHECK' => 提交 原样复检
       // val.act==='submit && val.target === 'RESAMOLING' => 提交 取样复检
       setTimeout(async () => {
         // 1. 是否刷新 list
-        if (val.act === 'save' && state.subType === 'merge') { // 不刷新
-          state.selectedListOfTopicMainData.forEach((item:any) => { item.taskStatus = 'CHECKING' })
+        if (val.act === 'save') { // 不刷新，仅改状态
+          const totalItemsNumber = state.dataTableOfTopicMain.length // 3 status
+          console.log('totalItemsNumber')
+          console.log(totalItemsNumber)
+          let nowItemIndex = -1
+          let nexItemIndex = null
+          state.dataTableOfTopicMain.forEach((element:any, index:number) => {
+            state.targetObjList.forEach((subElement:any) => {
+              if (element.id === subElement.id) {
+                if (element.taskStatus === 'RECEIVED') {
+                  element.taskStatus = 'CHECKING'
+                  element.taskStatusName = '检验中'
+                  subElement.taskStatus = 'CHECKING'
+                  subElement.taskStatusName = '检验中'
+                }
+                nowItemIndex = index
+                nexItemIndex = index + 1
+              }
+            })
+          })
+
+          console.log('$$$$$$$$$$11111save$$$$$$$$$$$')
+          if (state.subType !== 'merge') { // 只有保存会重开
+            if (nexItemIndex !== null && nexItemIndex < totalItemsNumber) { // 剩多笔
+              console.log('还有可开')
+              state.indexOfCurrentRowOnFocus = nexItemIndex
+              setTimeout(() => {
+                setCurrentRowOnFocus(state.dataTableOfTopicMain[state.indexOfCurrentRowOnFocus])
+                actGetInspectDetail()
+              }, 500)
+            } else if (totalItemsNumber === 1) { // 只剩一笔
+              state.indexOfCurrentRowOnFocus = nowItemIndex
+              setTimeout(() => {
+                setCurrentRowOnFocus(state.dataTableOfTopicMain[state.indexOfCurrentRowOnFocus])
+              }, 500)
+              console.log('没有可再开')
+            } else { // 到底
+              state.indexOfCurrentRowOnFocus = nowItemIndex
+              setTimeout(() => {
+                setCurrentRowOnFocus(state.dataTableOfTopicMain[state.indexOfCurrentRowOnFocus])
+              }, 500)
+              console.log('到底，没有可开')
+            }
+          }
         } else { // 刷新
           const tempContainer:any[] = []
           let isOpenCopy = false
@@ -465,6 +617,7 @@ export default defineComponent({
 
           // 后来复检提交会返 string[] =>id
           if (val.obj && val.obj.taskInspectIdList.length) {
+            console.log('复检提交')
             console.log(val.obj.taskInspectIdList)
             isOpenCopy = true
             tempContainer.push({
@@ -474,6 +627,7 @@ export default defineComponent({
           }
 
           // 重新加载后 list
+          console.log('start!!!!')
           await btnGetInspectListReload(tempContainer)
           console.log('state.dataTableOfTopicMain')
           console.log(state.dataTableOfTopicMain)
@@ -484,13 +638,21 @@ export default defineComponent({
 
           if (isOpenCopy) { // run 复检
             console.log('$$$$$$$$$$复检$$$$$$$$$$$')
+            console.log(state.dataTableOfTopicMain)
             state.dataTableOfTopicMain.forEach((item:any, index:number) => {
             // 找出原先的 sample
-              if (item.id === state.currentGlobalActOgj.id) {
+              console.log('state.currentGlobalActObj.id')
+              console.log(state.currentGlobalActObj.id)
+              if (item.id === state.currentGlobalActObj.id) {
+                console.log('找出原先的')
                 nowItemIndex = index
               }
+
+              console.log('val.obj.taskInspectIdList[0]')
+              console.log(val.obj.taskInspectIdList[0])
               // 复检 copy 出来的 sample
               if (item.id === val.obj.taskInspectIdList[0]) {
+                console.log('找出复检的')
                 nexItemIndex = index
               }
 
@@ -501,7 +663,7 @@ export default defineComponent({
           } else { // run 非复检
             console.log('$$$$$$$$$$非复检$$$$$$$$$$$')
             state.dataTableOfTopicMain.forEach((item:any, index:number) => {
-              if (item.id === state.currentGlobalActOgj.id) {
+              if (item.id === state.currentGlobalActObj.id) {
                 nowItemIndex = index
                 let tempNexItemIndex = nowItemIndex + 1
 
@@ -562,7 +724,13 @@ export default defineComponent({
                   actGetInspectDetail()
                 }, 500)
               } else if (totalItemsNumber === 1) { // 只剩一笔
+              // TODO
+                // if (isOpenCopy) {
+                //   state.indexOfCurrentRowOnFocus = nexItemIndex
+                // } else {
                 state.indexOfCurrentRowOnFocus = nowItemIndex
+                // }
+
                 setTimeout(() => {
                   setCurrentRowOnFocus(state.dataTableOfTopicMain[state.indexOfCurrentRowOnFocus])
                 }, 500)
@@ -628,8 +796,8 @@ export default defineComponent({
           console.log('==转进来的数据加工后==')
           console.log(res.data.data)
           res.data.data.forEach((item:DataTableOfTopicMain) => {
-            // 只收 'RECEIVED' & 'CHECKING' 状态
-            if (item.taskStatus === 'RECEIVED' || item.taskStatus === 'CHECKING') {
+            // 只收 'RECEIVED' & 'CHECKING' & 'COMPLETED' 状态
+            if (item.taskStatus === 'RECEIVED' || item.taskStatus === 'CHECKING' || item.taskStatus === 'COMPLETED') {
               state.dataTableOfTopicMain.push(item)
             }
           })
@@ -656,7 +824,7 @@ export default defineComponent({
       btnCheckOfMergeOrNot,
       actHandleSelectionChange,
       btnHandleOneSelectionChange,
-      btnHandleAllSelectionChange,
+      // btnHandleAllSelectionChange,
       returnFromDialogAndOpenAgainHandle,
       btnGetInspectListReload,
       actReGetInspectDetail,
@@ -673,5 +841,8 @@ export default defineComponent({
 .test_method{
   min-height: 550px;
   height: calc(100vh - 117px);
+}
+::v-deep(.el-table__header-wrapper .el-checkbox){
+  display: none
 }
 </style>

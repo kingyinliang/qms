@@ -558,7 +558,7 @@ export function MANAGEMENT_INSPECTION_PHYSICOCHEMICAL_TASK_FORM_QUERY_API (param
   return Http.post('/taskInspect/formTaskInspect', params, { baseURL: (process.env.VUE_APP_QMS_TASK_API as string) + (process.env.VUE_APP_API_V as string) })
 }
 
-// 检验管理-[检验任务]- 检验表单查询
+// 检验管理-[检验任务]- 检验任务历史表单查询
 export function MANAGEMENT_INSPECTION_PHYSICOCHEMICAL_HISTORY_TASK_FORM_QUERY_API (params = {}):Promise<AxiosResponse> {
   return Http.post('/taskInspect/queryHistoryFormTaskInspect', params, { baseURL: (process.env.VUE_APP_QMS_TASK_API as string) + (process.env.VUE_APP_API_V as string) })
 }

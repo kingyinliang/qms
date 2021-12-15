@@ -29,9 +29,9 @@
       <el-table-column type="index" label="序号" width="50" align="center" />
       <el-table-column label="检验单" show-overflow-tooltip prop="tempApplyNo" >
         <template #default="scope">
-         <el-button type="text" class="role__btn" @click="btnConfigulationReadOnly(scope.row)">
+          <div type="text" class="text_btn" @click="btnConfigulationReadOnly(scope.row)">
             <em>{{scope.row.tempApplyNo}}</em>
-          </el-button>
+          </div>
         </template>
       </el-table-column>
       <el-table-column label="状态" show-overflow-tooltip prop="applyStatus">
