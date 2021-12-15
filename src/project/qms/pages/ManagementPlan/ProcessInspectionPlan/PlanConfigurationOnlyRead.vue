@@ -33,12 +33,26 @@
         style="width: 100%;"
         >
         <el-table-column type="selection" width="55" align="center" />
-        <el-table-column type="index" :index="index => index + 1 + (Number(currentPage) - 1) * (Number(pageSize))" label="序号"  width="55" fixed align="center" size="small" />
-        <el-table-column label="物料/类别" prop="inspectMaterialTypeName" :show-overflow-tooltip="true" min-width="180" />
-        <el-table-column label="指标编码" prop="indexCode" :show-overflow-tooltip="true" min-width="100" />
-        <el-table-column label="指标名称" prop="indexName" :show-overflow-tooltip="true" min-width="180" />
-        <el-table-column label="单位" prop="indexUnit" :show-overflow-tooltip="true" min-width="100" />
+        <el-table-column type="index" :index="index => index + 1 + (Number(currentPage) - 1) * (Number(pageSize))" label="序号"  width="55"  align="center" size="small" fixed />
+        <el-table-column label="物料" prop="inspectMaterialTypeName" :show-overflow-tooltip="true" min-width="180" />
+        <el-table-column label="指标" prop="indexCode" :show-overflow-tooltip="false" min-width="240" >
+          <template #default="scope">
+            <el-tooltip
+              effect="dark"
+              :content="scope.row.indexMethod"
+              placement="top-end"
+            ><div style="white-space: nowrap;">{{scope.row.indexCode}} {{scope.row.indexName}} {{scope.row.indexUnit}}</div></el-tooltip>
+          </template>
+        </el-table-column>
         <el-table-column label="方法" prop="indexMethod" :show-overflow-tooltip="true" min-width="220" />
+        <el-table-column label="频次" prop="frequencyName" :show-overflow-tooltip="true" min-width="100" />
+        <el-table-column label="轮循否" prop="loopFlag" :show-overflow-tooltip="true" min-width="100" >
+          <template #default="scope">
+            {{scope.row.loopFlag==='Y'?'是':'否'}}
+          </template>
+        </el-table-column>
+        <el-table-column label="检验部门" prop="inspect.deptName" :show-overflow-tooltip="true" min-width="100" />
+        <el-table-column label="配合检验" prop="coInspect.deptName" :show-overflow-tooltip="true" min-width="100" />
         <el-table-column label="取样部门" prop="sample" :show-overflow-tooltip="true" min-width="100" >
           <template #default="scope">
             {{scope.row.sample}}
@@ -49,28 +63,21 @@
             {{scope.row.cooperate}}
           </template>
         </el-table-column>
-        <el-table-column label="检验部门" prop="inspect.deptName" :show-overflow-tooltip="true" min-width="100" />
-        <el-table-column label="配合检验" prop="coInspect.deptName" :show-overflow-tooltip="true" min-width="100" />
-        <el-table-column label="留样数量" prop="sampleAmount" :show-overflow-tooltip="true" min-width="100" />
+        <el-table-column label="定时触发" prop="timingFlag" :show-overflow-tooltip="true" min-width="100" >
+          <template #default="scope">
+            {{scope.row.timingFlag==='Y'?'是':'否'}}
+          </template>
+        </el-table-column>
+
+        <el-table-column label="留样" prop="sampleAmount" :show-overflow-tooltip="true" min-width="100" />
         <el-table-column label="关键指标" prop="keyIndexFlag" :show-overflow-tooltip="true" min-width="100" >
           <template #default="scope">
             {{scope.row.keyIndexFlag==='Y'?'是':'否'}}
           </template>
         </el-table-column>
-        <el-table-column label="合并属性" prop="mergeFlag" :show-overflow-tooltip="true" min-width="100" >
+        <el-table-column label="合并指标" prop="mergeFlag" :show-overflow-tooltip="true" min-width="100" >
           <template #default="scope">
             {{scope.row.mergeFlag==='Y'?'是':'否'}}
-          </template>
-        </el-table-column>
-        <el-table-column label="检验频次" prop="frequencyName" :show-overflow-tooltip="true" min-width="100" />
-        <el-table-column label="轮循否" prop="loopFlag" :show-overflow-tooltip="true" min-width="100" >
-          <template #default="scope">
-            {{scope.row.loopFlag==='Y'?'是':'否'}}
-          </template>
-        </el-table-column>
-        <el-table-column label="定时触发" prop="timingFlag" :show-overflow-tooltip="true" min-width="100" >
-          <template #default="scope">
-            {{scope.row.timingFlag==='Y'?'是':'否'}}
           </template>
         </el-table-column>
       </el-table>
