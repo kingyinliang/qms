@@ -13,10 +13,10 @@
     <el-table border ref="multipleTable" :cell-style="{'text-align':'center'}" :data="dataTopicMainData" tooltip-effect="dark" style="width: 100%" @selection-change="handleSelectionChange" max-height="400">
       <el-table-column type="selection" width="55" align="center" />
       <el-table-column type="index" label="序号" :index="(index) => index + 1 + (currentPage - 1) * pageSize" width="50" />
-      <el-table-column label="检测频率名称" show-overflow-tooltip prop="frequencyName" min-width="200" />
+      <el-table-column label="检验频率" show-overflow-tooltip prop="frequencyName" min-width="200" />
       <el-table-column label="执行次数" show-overflow-tooltip prop="frequency" width="100" />
       <el-table-column label="执行周期" show-overflow-tooltip prop="dateUnit" width="100" />
-      <el-table-column label="频次附加项" show-overflow-tooltip prop="additionalName" width="100" />
+      <el-table-column label="频率附加项" show-overflow-tooltip prop="additionalName" width="100" />
       <el-table-column label="操作人员" show-overflow-tooltip prop="changer" min-width="200" />
       <el-table-column label="操作时间" show-overflow-tooltip prop="changed" min-width="200" />
       <el-table-column label="操作" show-overflow-tooltip width="80" fixed="right">
@@ -42,7 +42,7 @@
 
   <el-dialog v-model="isAddItemDialogShow" :title="dialogTitle" width="30%">
       <el-form ref="refAddAndEditItemDialog" :model="addAndEditItemForm" :rules="dataRule">
-        <el-form-item label="检验频次名称：" prop="frequencyName" :label-width="cssForformLabelWidth">
+        <el-form-item label="检验频率：" prop="frequencyName" :label-width="cssForformLabelWidth">
           <div class="fake-input-disabled">
             <!-- <span>{{addAndEditItemForm.frequency}}/{{addAndEditItemForm.inspectIndexId}}</span> -->
             {{addAndEditItemForm.frequency}}<em v-if="addAndEditItemForm.frequency!==null"> 次 </em> <em v-if="addAndEditItemForm.dateUnit!==''"> / </em>{{addAndEditItemForm.dateUnit}} <em v-if="addAndEditItemForm.inspectAdditionalNames.length!==0">/</em> {{addAndEditItemForm.inspectAdditionalNames.join(',')}}
@@ -56,7 +56,7 @@
             <el-option v-for="(opt, optIndex) in dateUnitOptions" :key="optIndex" :label="opt.dateUnit" :value="opt.id" />
           </el-select>
         </el-form-item>
-        <el-form-item label="频次附加项：" prop="inspectAdditionalIds"  :label-width="cssForformLabelWidth">
+        <el-form-item label="频率附加项：" prop="inspectAdditionalIds"  :label-width="cssForformLabelWidth">
           <el-select  v-model="addAndEditItemForm.inspectAdditionalIds" multiple placeholder="请选择" style="width:100%"  filterable clearable @change="changeInspectAdditionalIds">
             <el-option v-for="(opt, optIndex) in inspectAdditionalIdsOptions" :key="optIndex" :label="opt.additionalName" :value="opt.id" />
           </el-select>

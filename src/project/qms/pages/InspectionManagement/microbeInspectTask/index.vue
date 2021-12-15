@@ -106,6 +106,7 @@
       <el-table-column label="检验频次" prop="inspectFrequency" v-if="task !== 'COLONYNUM'"  min-width="150" :show-overflow-tooltip="true" />
       <el-table-column label="培养日期" prop="inspectDate" v-if="task === 'COLONYNUM'"  min-width="150" :show-overflow-tooltip="true" />
       <el-table-column label="取样单位" prop="sampleDeptName" v-if="task !== 'COLONYNUM'" min-width="150" :show-overflow-tooltip="true" />
+      <el-table-column label="开始时间" prop="inspectStartDate" v-if="task !== 'COLONYNUM'" min-width="150" :show-overflow-tooltip="true" />
       <el-table-column label="送样时间" prop="deliveryDate" min-width="150" :show-overflow-tooltip="true" />
       <el-table-column label="收样时间" prop="receiveDate" min-width="150" :show-overflow-tooltip="true" />
       <el-table-column label="操作" width="140" fixed="right">
