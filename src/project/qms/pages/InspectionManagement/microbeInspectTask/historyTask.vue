@@ -1,7 +1,7 @@
 <template>
   <el-card class="box-card">
     <el-form inline :model="queryForm" size="small" label-suffix="：" @keyup.enter="() => {queryForm.current = 1; query()}" @submit.prevent>
-      <el-form-item label="取样码">
+      <el-form-item label="样品码">
         <el-input v-model="queryForm.sampleCode" clearable placeholder="请输入" style="width: 140px"></el-input>
       </el-form-item>
       <el-form-item label="检验内容">
@@ -10,7 +10,7 @@
       <!-- <el-form-item label="取样信息">
         <el-input v-model="queryForm.inspectSiteName" placeholder="请输入" style="width: 140px"></el-input>
       </el-form-item> -->
-      <el-form-item label="培养日期">
+      <el-form-item label="日期">
         <el-date-picker
           v-model="queryForm.inspectDateBegin"
           type="date"
@@ -51,16 +51,20 @@
         </template>
       </el-table-column>
       <el-table-column label="检验内容" prop="inspectContent" min-width="150" :show-overflow-tooltip="true" />
+
+      <el-table-column v-if="task === 'COLIFORMGROUP'" label="订单" prop="inspectContent" min-width="150" :show-overflow-tooltip="true" />
+
       <el-table-column label="物料信息" min-width="165" :show-overflow-tooltip="true">
         <template #default="scope">{{ `${scope.row.inspectMaterialCode} ${scope.row.inspectMaterialName}` }}</template>
       </el-table-column>
-      <el-table-column label="批次"  min-width="150" :show-overflow-tooltip="true" />
-      <el-table-column label="取样信息" prop="inspectSiteName" min-width="150" :show-overflow-tooltip="true" />
+      <el-table-column v-if="task !== 'COLIFORMGROUP'" label="批次" prop="inspectBatch" min-width="150" :show-overflow-tooltip="true" />
+      <el-table-column v-if="task === 'COLIFORMGROUP'" label="品相" prop="itemName" min-width="150" :show-overflow-tooltip="true" />
+      <el-table-column v-if="task !== 'YEAST'" label="取样信息" prop="inspectSiteName" min-width="150" :show-overflow-tooltip="true" />
       <el-table-column label="取样部门" prop="coSampleDeptName" min-width="165" :show-overflow-tooltip="true" />
       <el-table-column label="收样时间" prop="receiveDate" min-width="150" :show-overflow-tooltip="true" />
 
       <el-table-column label="检验人" prop="" min-width="165" :show-overflow-tooltip="true" />
-      <el-table-column label="培养日期" prop="inspectStartDate" min-width="165" :show-overflow-tooltip="true" />
+      <el-table-column v-if="task !== 'YEAST'" label="培养日期" prop="inspectStartDate" min-width="165" :show-overflow-tooltip="true" />
       <el-table-column label="检验完成" prop="inspectEndDate" min-width="165" :show-overflow-tooltip="true" />
     </el-table>
     <el-row style="float: right">
@@ -70,7 +74,7 @@
         :total="queryForm.total"
         :page-sizes="[10, 20, 50]"
         layout="total, sizes, prev, pager, next, jumper"
-        @size-change="val => {queryForm.size = val;query()}"
+        @size-change="val => {queryForm.current = 1; queryForm.size = val;query()}"
         @current-change="val => {queryForm.current = val; query()}"
       />
     </el-row>
@@ -79,12 +83,13 @@
 
 <script lang="ts">
 import { defineComponent, reactive, ref, onMounted } from 'vue'
-import { TASK_INSPECT_MICROBE_INSPECT_TASK_LIST_QUERY } from '@/api/api'
+import { TASK_INSPECT_MICROBE_INSPECT_TASK_LIST_QUERY, TASK_INSPECT_MICROBE_INSPECT_MICROBE_PARAMETER_QUERY } from '@/api/api'
 import layoutTs from '@/components/layout/layoutTs'
 import { useStore } from 'vuex'
 
 interface TableData{
   id?: string
+  inspectMethodGroupNameList: string[]
 }
 export default defineComponent({
   name: 'inspectHistoryTask',
@@ -116,6 +121,10 @@ export default defineComponent({
       queryForm.size = data.data.size
       queryForm.current = data.data.current
       queryForm.total = data.data.total
+      const temp = await TASK_INSPECT_MICROBE_INSPECT_MICROBE_PARAMETER_QUERY(data.data.records)
+      tableData.value.forEach((item:any, index:number) => {
+        item.inspectMethodGroupNameList = temp.data.data[index].inspectMethodGroupNameList.map((element:any) => element.inspectMethodName)
+      })
     }
     const tabClick = (tab: any) => {
       task.value = tab.props.name
@@ -126,10 +135,18 @@ export default defineComponent({
 
     // [BTN:只读]
     const btnConfigulationReadOnly = async (row:TableData) => {
-      store.commit('common/updateSampleObjForView', { type: 'HISTORY', obj: [row] })
-      gotoPage({
-        path: 'qms-pages-InspectionManagement-components-form'
-      })
+      if (row.inspectMethodGroupNameList.includes('培养法')) {
+        store.commit('inspection/updateMicrobeInspectCultivateForm', row)
+        gotoPage({
+          path: 'qms-pages-InspectionManagement-microbeInspect-countForm'
+        })
+      }
+      if (row.inspectMethodGroupNameList.includes('五管法')) {
+        store.commit('inspection/updateMicrobeInspectFiveForm', row)
+        gotoPage({
+          path: 'qms-pages-InspectionManagement-microbeInspect-fiveForm'
+        })
+      }
     }
 
     onMounted(() => {
