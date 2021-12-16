@@ -45,7 +45,7 @@
         <el-form-item label="检验内容：">
           <el-input v-model="queryForm.inspectContent" placeholder="请输入" style="width: 120px" clearable></el-input>
         </el-form-item>
-        <el-form-item :label="task !== 'COLONYNUM'?'检验开始日期':'培养日期'">
+        <el-form-item :label="task == 'COLIFORMGROUP'?'检验开始日期':'培养日期'">
         <el-date-picker
           v-model="queryForm.inspectDateBegin"
           type="date"
@@ -361,6 +361,7 @@ export default defineComponent({
       taskList,
       queryForm,
       tableData,
+      getTask,
       goHistory,
       changeTask,
       query,
