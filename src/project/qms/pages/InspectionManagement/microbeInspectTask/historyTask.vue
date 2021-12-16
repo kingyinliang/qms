@@ -10,9 +10,9 @@
       <!-- <el-form-item label="取样信息">
         <el-input v-model="queryForm.inspectSiteName" placeholder="请输入" style="width: 140px"></el-input>
       </el-form-item> -->
-      <el-form-item label="日期">
+      <el-form-item label="培养日期">
         <el-date-picker
-          v-model="queryForm.inspectStartDateBegin"
+          v-model="queryForm.inspectDateBegin"
           type="date"
           format="YYYY-MM-DD"
           value-format="YYYY-MM-DD"
@@ -21,7 +21,7 @@
         />
         -
         <el-date-picker
-          v-model="queryForm.inspectStartDateEnd"
+          v-model="queryForm.inspectDateEnd"
           type="date"
           format="YYYY-MM-DD"
           value-format="YYYY-MM-DD"
@@ -43,7 +43,7 @@
       <el-table-column type="index" fixed="left" :index="(index) => index + 1 + (queryForm.current - 1) * queryForm.size" label="序号" width="50" />
       <el-table-column label="样品码" prop="sampleCode" min-width="120" :show-overflow-tooltip="true">
         <template #default="scope">
-         <div type="text" class="role__btn" @click="btnConfigulationReadOnly(scope.row)">
+         <div type="text" class="text_btn" @click="btnConfigulationReadOnly(scope.row)">
             <em>{{scope.row.sampleCode}}</em>
           </div>
         </template>
@@ -77,7 +77,7 @@
 
 <script lang="ts">
 import { defineComponent, reactive, ref, onMounted } from 'vue'
-import { INSPECT_TASK_HISTORY_LIST } from '@/api/api'
+import { TASK_INSPECT_MICROBE_INSPECT_TASK_LIST_QUERY } from '@/api/api'
 import layoutTs from '@/components/layout/layoutTs'
 import { useStore } from 'vuex'
 
@@ -88,14 +88,15 @@ export default defineComponent({
   name: 'inspectHistoryTask',
   setup () {
     const store = useStore()
-    const task = ref('INCOMING')
+    const task = ref('COLONYNUM')
     const queryForm = reactive({
-      taskInspectClassify: '',
       sampleCode: '',
       inspectContent: '',
-      // inspectSiteName: '',
-      inspectStartDateBegin: '',
-      inspectStartDateEnd: '',
+      indexName: '',
+      sampleQuantityStatus: '',
+      statusHistory: 'statusHistory',
+      inspectDateBegin: '',
+      inspectDateEnd: '',
       current: 1,
       size: 10,
       total: 0
@@ -107,8 +108,8 @@ export default defineComponent({
     const tableData = ref<TableData[]>([]) // 表格数据
     const { gotoPage } = layoutTs()
     const query = async () => {
-      queryForm.taskInspectClassify = task.value
-      const { data } = await INSPECT_TASK_HISTORY_LIST(queryForm)
+      queryForm.indexName = inspectClassifyObj.inspectClassifyName
+      const { data } = await TASK_INSPECT_MICROBE_INSPECT_TASK_LIST_QUERY(queryForm)
       tableData.value = data.data.records
       queryForm.size = data.data.size
       queryForm.current = data.data.current
@@ -116,8 +117,8 @@ export default defineComponent({
     }
     const tabClick = (tab: any) => {
       task.value = tab.props.name
-      // inspectClassifyObj.inspectClassifyName = inspectClassifyName
-      // inspectClassifyObj.inspectClassify = inspectClassify
+      inspectClassifyObj.inspectClassifyName = tab.props.label
+      inspectClassifyObj.inspectClassify = tab.props.name
       query()
     }
 
