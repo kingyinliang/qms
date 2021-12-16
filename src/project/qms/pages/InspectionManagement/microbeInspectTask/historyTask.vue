@@ -58,7 +58,7 @@
       <el-table-column label="收样时间" prop="receiveDate" min-width="150" :show-overflow-tooltip="true" />
 
       <el-table-column label="检验人" prop="" min-width="165" :show-overflow-tooltip="true" />
-      <el-table-column label="培养日期" prop="inspectDate" min-width="165" :show-overflow-tooltip="true" />
+      <el-table-column label="培养日期" prop="inspectStartDate" min-width="165" :show-overflow-tooltip="true" />
       <el-table-column label="检验完成" prop="inspectEndDate" min-width="165" :show-overflow-tooltip="true" />
     </el-table>
     <el-row style="float: right">
