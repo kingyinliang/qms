@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-11-16 09:59:02
  * @LastEditors: Telliex
- * @LastEditTime: 2021-12-15 18:38:43
+ * @LastEditTime: 2021-12-16 11:42:31
 -->
 <template>
   <mds-area class="test_method" title="已选中样品" :pack-up="false" style="margin-bottom: 0; background: #fff; overflow:scroll">
@@ -47,6 +47,7 @@ import {
   MANAGEMENT_INSPECTION_TASK_INSPECT_QUERY_BY_ID_API // 检验管理-[检验任务]- 分析是否有合并检 /taskInspect/queryTaskInspectByIds
 } from '@/api/api'
 
+import { ElLoading } from 'element-plus'
 import { useStore } from 'vuex'
 import InspectionDialog from '../components/InspectionDialog.vue'
 
@@ -553,6 +554,13 @@ export default defineComponent({
     const returnFromDialogAndOpenAgainHandle = (val:any) => {
       console.log('.............')
       console.log(val)
+      const _loading = ElLoading.service({
+        lock: true,
+        spinner: 'loadingGif',
+        text: '加载中……',
+        background: 'rgba(255, 255, 255, 0.7)'
+      })
+
       // 需处理
       // val.act==='save && val.target === '' => 保存 没有复检
       // val.act==='submit && val.target === '' => 提交 没有复检
@@ -589,17 +597,20 @@ export default defineComponent({
               setTimeout(() => {
                 setCurrentRowOnFocus(state.dataTableOfTopicMain[state.indexOfCurrentRowOnFocus])
                 actGetInspectDetail()
+                _loading.close()
               }, 500)
             } else if (totalItemsNumber === 1) { // 只剩一笔
               state.indexOfCurrentRowOnFocus = nowItemIndex
               setTimeout(() => {
                 setCurrentRowOnFocus(state.dataTableOfTopicMain[state.indexOfCurrentRowOnFocus])
+                _loading.close()
               }, 500)
               console.log('没有可再开')
             } else { // 到底
               state.indexOfCurrentRowOnFocus = nowItemIndex
               setTimeout(() => {
                 setCurrentRowOnFocus(state.dataTableOfTopicMain[state.indexOfCurrentRowOnFocus])
+                _loading.close()
               }, 500)
               console.log('到底，没有可开')
             }
@@ -698,17 +709,20 @@ export default defineComponent({
                 setTimeout(() => {
                   setCurrentRowOnFocus(state.dataTableOfTopicMain[state.indexOfCurrentRowOnFocus])
                   actGetInspectDetail()
+                  _loading.close()
                 }, 500)
               } else if (totalItemsNumber === 1) { // 只剩一笔
                 state.indexOfCurrentRowOnFocus = nowItemIndex
                 setTimeout(() => {
                   setCurrentRowOnFocus(state.dataTableOfTopicMain[state.indexOfCurrentRowOnFocus])
+                  _loading.close()
                 }, 500)
                 console.log('没有可再开')
               } else { // 到底
                 state.indexOfCurrentRowOnFocus = nowItemIndex
                 setTimeout(() => {
                   setCurrentRowOnFocus(state.dataTableOfTopicMain[state.indexOfCurrentRowOnFocus])
+                  _loading.close()
                 }, 500)
                 console.log('到底，没有可开')
               }
@@ -722,6 +736,7 @@ export default defineComponent({
                 setTimeout(() => {
                   setCurrentRowOnFocus(state.dataTableOfTopicMain[state.indexOfCurrentRowOnFocus])
                   actGetInspectDetail()
+                  _loading.close()
                 }, 500)
               } else if (totalItemsNumber === 1) { // 只剩一笔
               // TODO
@@ -733,12 +748,14 @@ export default defineComponent({
 
                 setTimeout(() => {
                   setCurrentRowOnFocus(state.dataTableOfTopicMain[state.indexOfCurrentRowOnFocus])
+                  _loading.close()
                 }, 500)
                 console.log('没有可再开')
               } else { // 到底
                 state.indexOfCurrentRowOnFocus = nowItemIndex
                 setTimeout(() => {
                   setCurrentRowOnFocus(state.dataTableOfTopicMain[state.indexOfCurrentRowOnFocus])
+                  _loading.close()
                 }, 500)
                 console.log('到底，没有可开')
               }

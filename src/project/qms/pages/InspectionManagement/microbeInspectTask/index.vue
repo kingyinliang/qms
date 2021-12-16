@@ -174,6 +174,8 @@ export default defineComponent({
       sampleCode: '',
       inspectContent: '',
       indexName: '',
+      sampleQuantityStatus: '',
+      statusHistory: '',
       inspectDateBegin: '',
       inspectDateEnd: '',
       current: 1,

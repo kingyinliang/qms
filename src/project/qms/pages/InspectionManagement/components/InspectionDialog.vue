@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-11-11 16:30:07
  * @LastEditors: Telliex
- * @LastEditTime: 2021-12-15 19:27:51
+ * @LastEditTime: 2021-12-16 11:27:52
 -->
 <template>
   <el-dialog :title="title" v-model="isDialogShow" width="90%" @close="onClose">
@@ -438,10 +438,11 @@ export default defineComponent({
       const obj = {
         isFinish: type === 'save' ? 'CHECKING' : 'COMPLETED', // 点完成的时候传COMPLETED   点击保存的时候CHECKING
         inspectExplain: state.dataFormOfSampleInfo.inspectExplain,
-        recheckMod: state.dataFormOfSampleInfo.recheckMod, // ORIGINAL_RECHECK 原样复检 | RESAMOLING 重新取样 | OTHER_SAMPLING 其他取样
+        recheckMod: state.dataFormOfSampleInfo.recheckMod, // ORIGINAL_RECHECK 原样复检 | RESAMOLING 重新取样
         mergeFlag: state.currentSubType === 'normal' ? 'N' : 'Y',
         taskInspectList: tempTaskInspectList, // 需注意一般检或是复合检
-        taskInspectCompletList: state.mainObj.filter((item:any) => item.taskStatus === 'COMPLETED')
+        taskInspectCompletList: state.mainObj.filter((item:any) => item.taskStatus === 'COMPLETED'),
+        sampleExplain: state.dataFormOfSampleInfo.sampleExplain
       }
       console.log('=====Save or Submit======')
       console.log(obj)
@@ -568,7 +569,9 @@ export default defineComponent({
     // 改变 指标-结果 时触发
     const actHandleIndexJudgeResult = (val:any) => {
       if (val.inspectResult !== '' && val.indexStandardString !== '') {
-        checkIndexStandardString(val)
+        if (!(val.canEditInspectResult && val.canEditIndexStandardString)) {
+          checkIndexStandardString(val)
+        }
       }
     }
 
