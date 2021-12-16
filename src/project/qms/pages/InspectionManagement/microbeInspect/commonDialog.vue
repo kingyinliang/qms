@@ -1,6 +1,6 @@
 <template>
   <div v-if="!previewDialog" class="inspect__form">
-    <p class="inspect__form__header" :class="{'inspect__form__header--center': !preview}">
+    <p class="inspect__form__header" :class="{'inspect__form__header--center': !preview, 'inspect__form__header--left': preview}">
       <img src="@/assets/img/printIcon.svg" alt="" class="inspect__form__header__img">
       <span>{{ form.inspectContent }}</span>
     </p>
@@ -23,12 +23,12 @@
               <el-input v-model="form.cultureBatch" maxlength="6" :placeholder="preview? '':'请输入'" :disabled="preview" clearable style="width: 140px" />
             </el-form-item>
             <el-form-item label="培养箱：" prop="cultureBox">
-              <el-select v-model="form.cultureBox" :placeholder="preview? '':'请选择'" :disabled="preview" clearable style="width: 140px">
+              <el-select v-model="form.cultureBox" :placeholder="preview? ' ':'请选择'" :disabled="preview" clearable style="width: 140px">
                 <el-option v-for="item in cultureBox" :key="item.dictCode" :label="item.dictValue" :value="item.dictCode" />
               </el-select>
             </el-form-item>
             <el-form-item label="灭菌锅编号：">
-              <el-select v-model="form.sterilizerPot" :placeholder="preview? '':'请选择'" :disabled="preview" clearable style="width: 140px">
+              <el-select v-model="form.sterilizerPot" :placeholder="preview? ' ':'请选择'" :disabled="preview" clearable style="width: 140px">
                 <el-option v-for="item in sterilizerPot" :key="item.dictCode" :label="item.dictValue" :value="item.dictCode" />
               </el-select>
             </el-form-item>
@@ -61,7 +61,7 @@
               <el-input v-model="form.takeOutTemp" :placeholder="preview? '':'请输入'" :disabled="preview" clearable style="width: 140px" />
             </el-form-item>
             <el-form-item label="检验人：" prop="inspectMan">
-              <el-select v-model="form.inspectMan" multiple filterable :placeholder="preview? '':'请选择'" :disabled="preview" clearable style="width: 140px">
+              <el-select v-model="form.inspectMan" multiple filterable :placeholder="preview? ' ':'请选择'" :disabled="preview" clearable style="width: 140px">
                 <el-option v-for="item in users" :key="item.id" :label="item.realName" :value="item.id" />
               </el-select>
             </el-form-item>
@@ -86,7 +86,7 @@
             />
           </el-form-item>
           <el-form-item label="计数人：" prop="countMan">
-            <el-select v-model="form.countMan" multiple filterable :placeholder="preview? '':'请选择'" :disabled="preview" clearable style="width: 140px">
+            <el-select v-model="form.countMan" multiple filterable :placeholder="preview? ' ':'请选择'" :disabled="preview" clearable style="width: 140px">
               <el-option v-for="item in users" :key="item.id" :label="item.realName" :value="item.id" />
             </el-select>
           </el-form-item>
@@ -102,13 +102,13 @@
             <el-table-column label="计数1" min-width="110" >
               <template #header v-if="!preview"><span style="color: red">*</span>计数1</template>
               <template #default="scope">
-                <el-input v-model="scope.row.countOne" :placeholder="preview? '':'请输入'" :disabled="preview" size="small" clearable style="width: 140px" @change="keyChange(scope.row)"/>
+                <el-input v-model="scope.row.countOne" :placeholder="preview? '':'请输入'" :disabled="preview" size="small" clearable style="width: 140px" @input="e => scope.row.countOne = e.replace(/[^0-9]/gi, '')" @change="keyChange(scope.row)"/>
               </template>
             </el-table-column>
             <el-table-column label="计数2" min-width="110" >
               <template #header v-if="!preview"><span style="color: red">*</span>计数2</template>
               <template #default="scope">
-                <el-input v-model="scope.row.countTwo" :placeholder="preview? '':'请输入'" :disabled="preview" size="small" clearable style="width: 110px" @change="keyChange(scope.row)"/>
+                <el-input v-model="scope.row.countTwo" :placeholder="preview? '':'请输入'" :disabled="preview" size="small" clearable style="width: 110px" @input="e => scope.row.countTwo = e.replace(/[^0-9]/gi, '')" @change="keyChange(scope.row)"/>
               </template>
             </el-table-column>
             <el-table-column label="平均值" min-width="110" >
@@ -143,7 +143,7 @@
               <el-input v-model="form.sampleCode" :placeholder="preview? '':'请输入'" disabled clearable style="width: 140px" />
             </el-form-item>
             <el-form-item label="出水口编号：" prop="outWaterNo">
-              <el-select v-model="form.outWaterNo" :placeholder="preview? '':'请选择'" :disabled="preview" clearable style="width: 140px">
+              <el-select v-model="form.outWaterNo" :placeholder="preview? ' ':'请选择'" :disabled="preview" clearable style="width: 140px">
                 <el-option v-for="item in outWaterNo" :key="item.dictCode" :label="item.dictValue" :value="item.dictCode" />
               </el-select>
             </el-form-item>
@@ -159,17 +159,17 @@
               />
             </el-form-item>
             <el-form-item label="杀菌锅编号：">
-              <el-select v-model="form.sterilizerPot" :placeholder="preview? '':'请选择'" :disabled="preview" clearable style="width: 140px">
+              <el-select v-model="form.sterilizerPot" :placeholder="preview? ' ':'请选择'" :disabled="preview" clearable style="width: 140px">
                 <el-option v-for="item in sterilizerPot" :key="item.dictCode" :label="item.dictValue" :value="item.dictCode" />
               </el-select>
             </el-form-item>
             <el-form-item label="操作台编号：" prop="consoleNo">
-              <el-select v-model="form.consoleNo" :placeholder="preview? '':'请选择'" :disabled="preview" clearable style="width: 140px">
+              <el-select v-model="form.consoleNo" :placeholder="preview? ' ':'请选择'" :disabled="preview" clearable style="width: 140px">
                 <el-option v-for="item in consoleNo" :key="item.dictCode" :label="item.dictValue" :value="item.dictCode" />
               </el-select>
             </el-form-item>
             <el-form-item label="培养箱编号：" prop="cultureBox">
-              <el-select v-model="form.cultureBox" :placeholder="preview? '':'请选择'" :disabled="preview" clearable style="width: 140px">
+              <el-select v-model="form.cultureBox" :placeholder="preview? ' ':'请选择'" :disabled="preview" clearable style="width: 140px">
                 <el-option v-for="item in cultureBox" :key="item.dictCode" :label="item.dictValue" :value="item.dictCode" />
               </el-select>
             </el-form-item>
@@ -181,7 +181,7 @@
             <el-table-column label="10mL双料管" width="110" >
               <template #header v-if="!preview"><span style="color: red">*</span>10mL双料管</template>
               <template #default="scope">
-                <el-select v-model="scope.row.ten" :placeholder="preview? '':'请选择'" :disabled="preview" clearable size="small" style="width: 100px">
+                <el-select v-model="scope.row.ten" :placeholder="preview? ' ':'请选择'" :disabled="preview" clearable size="small" style="width: 100px">
                   <el-option v-for="item in ftube" :key="item.dictCode" :label="item.dictValue" :value="item.dictCode" />
                 </el-select>
               </template>
@@ -189,7 +189,7 @@
             <el-table-column label="1mL单料管" width="110" >
               <template #header v-if="!preview"><span style="color: red">*</span>1mL单料管</template>
               <template #default="scope">
-                <el-select v-model="scope.row.one" :placeholder="preview? '':'请选择'" :disabled="preview" clearable size="small" style="width: 100px">
+                <el-select v-model="scope.row.one" :placeholder="preview? ' ':'请选择'" :disabled="preview" clearable size="small" style="width: 100px">
                   <el-option v-for="item in ftube" :key="item.dictCode" :label="item.dictValue" :value="item.dictCode" />
                 </el-select>
               </template>
@@ -197,7 +197,7 @@
             <el-table-column label="0.1mL单料管" width="110" >
               <template #header v-if="!preview"><span style="color: red">*</span>0.1mL单料管</template>
               <template #default="scope">
-                <el-select v-model="scope.row.zeroPointOne" :placeholder="preview? '':'请选择'" :disabled="preview" clearable size="small" style="width: 100px">
+                <el-select v-model="scope.row.zeroPointOne" :placeholder="preview? ' ':'请选择'" :disabled="preview" clearable size="small" style="width: 100px">
                   <el-option v-for="item in ftube" :key="item.dictCode" :label="item.dictValue" :value="item.dictCode" />
                 </el-select>
               </template>
@@ -375,15 +375,15 @@ export default defineComponent({
         componentData.form = data
         componentData.form.inspectContent = props.type !== 'CULTIVATE' ? row.inspectContent : row[0].inspectContent.split('-')[row[0].inspectContent.split('-').length - 1]
         if (props.type === 'CULTIVATE') {
-          componentData.form.inspectMan = componentData.form.inspectMan.split(',')
+          componentData.form.inspectMan = componentData.form.inspectMan ? componentData.form.inspectMan.split(',') : []
           componentData.form.taskInspectIdList = row.map(it => it.id)
           componentData.form.sampleCodeList = row.map(it => it.sampleCode)
           componentData.form.taskInspectIndexIdList = row.map(it => it.taskInspectIndexId)
           componentData.form.taskManageIdList = row.map(it => it.taskManageId)
         }
         if (props.type === 'CALCULATE') {
-          componentData.form.inspectMan = componentData.form.inspectMan.split(',')
-          componentData.form.countMan = componentData.form.countMan?.split(',')
+          componentData.form.inspectMan = componentData.form.inspectMan ? componentData.form.inspectMan.split(',') : []
+          componentData.form.countMan = componentData.form.countMan ? componentData.form.countMan.split(',') : []
           componentData.form.taskInspectId = row.id
           componentData.form.taskInspectIndexId = row.taskInspectIndexId
           componentData.form.taskManageId = row.taskManageId
@@ -714,6 +714,16 @@ export default defineComponent({
       margin-left: 20px;
       height: 32px;
       margin-right: 10px;
+    }
+  }
+  &__header--left{
+    img{
+      float: left;
+    }
+    span{
+      display: block;
+      line-height: 32px;
+      text-align: center;
     }
   }
   &__header--center{

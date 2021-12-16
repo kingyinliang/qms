@@ -77,7 +77,8 @@ import {
   toRefs,
   onMounted,
   nextTick,
-  getCurrentInstance
+  getCurrentInstance,
+  watch
 } from 'vue'
 import {
   MICROBE_INSPECT_LIST,
@@ -115,6 +116,7 @@ export default defineComponent({
       previewDialogRef: ref(),
       visibleDialog: false,
       visiblePreviewDialog: false,
+      oldStr: '',
       queryForm: {
         type: props.type,
         indexName: props.indexName,
@@ -127,6 +129,9 @@ export default defineComponent({
       selectionData: [],
       tableData: [],
       fivePreviewTableData: []
+    })
+    watch(() => componentData.queryForm.indexName, (newStr, oldStr) => {
+      componentData.oldStr = oldStr
     })
 
     // 查询
@@ -143,6 +148,7 @@ export default defineComponent({
         proxy.$warningToast('此数据已在表格内')
       } else {
         componentData.tableData.push(data.data[0])
+        componentData.queryForm.sampleCode = ''
       }
     }
     const selectionChange = (val) => {
@@ -237,6 +243,9 @@ export default defineComponent({
           type: 'warning'
         }).then(async () => {
           componentData.tableData = []
+        }).catch(() => {
+          componentData.queryForm.indexName = componentData.oldStr
+          changeDate(true)
         })
       }
     }
