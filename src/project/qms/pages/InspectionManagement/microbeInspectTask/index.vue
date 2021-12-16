@@ -104,7 +104,7 @@
       <el-table-column  label="取样信息" prop="inspectSiteName"  min-width="150" :show-overflow-tooltip="true" />
       <el-table-column label="取样说明" prop="sampleExplain" v-if="task !== 'COLONYNUM'"  min-width="150" :show-overflow-tooltip="true" />
       <el-table-column label="检验频次" prop="inspectFrequency" v-if="task !== 'COLONYNUM'"  min-width="150" :show-overflow-tooltip="true" />
-      <el-table-column label="培养日期" prop="inspectDate" v-if="task === 'COLONYNUM'"  min-width="150" :show-overflow-tooltip="true" />
+      <el-table-column label="培养日期" prop="inspectStartDate" v-if="task === 'COLONYNUM'"  min-width="150" :show-overflow-tooltip="true" />
       <el-table-column label="取样单位" prop="sampleDeptName" v-if="task !== 'COLONYNUM'" min-width="150" :show-overflow-tooltip="true" />
       <el-table-column v-if="task !== 'COLONYNUM'" label="检验开始时间" prop="inspectStartDate" min-width="150" :show-overflow-tooltip="true" />
       <el-table-column label="送样时间" prop="deliveryDate" min-width="150" :show-overflow-tooltip="true" />
