@@ -47,8 +47,7 @@
             ><div style="white-space: nowrap;">{{scope.row.indexCode}} {{scope.row.indexName}} {{scope.row.indexUnit}}</div></el-tooltip>
           </template>
         </el-table-column>
-        <el-table-column label="方法" prop="indexMethod" :show-overflow-tooltip="true" min-width="220" />
-        <el-table-column label="频次" prop="frequencyName" :show-overflow-tooltip="true" min-width="100" />
+        <el-table-column label="检验频次" prop="frequencyName" :show-overflow-tooltip="true" min-width="100" />
         <el-table-column label="轮循否" prop="loopFlag" :show-overflow-tooltip="true" min-width="100" >
           <template #default="scope">
             {{scope.row.loopFlag==='Y'?'是':'否'}}

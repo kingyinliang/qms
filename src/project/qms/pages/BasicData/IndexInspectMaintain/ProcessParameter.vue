@@ -3,7 +3,7 @@
  * @Anthor: Telliex
  * @Date: 2021-07-30 11:24:46
  * @LastEditors: Telliex
- * @LastEditTime: 2021-11-29 08:47:03
+ * @LastEditTime: 2021-12-16 11:55:07
 -->
 <template>
   <mds-card class="test_method" :title="title" :pack-up="false" style="margin-bottom: 0; background: #fff;">
@@ -90,7 +90,7 @@
           show-overflow-tooltip
         >
           <template #default="scope">
-            <el-input v-model.number="scope.row.defaultValue" size="small" :placeholder="!isRedact?'':'请输入'" :disabled="!isRedact||scope.row.defaultType===''||scope.row.defaultType==='CURRENT'" />
+            <el-input v-model="scope.row.defaultValue" size="small" :placeholder="!isRedact?'':'请输入'" :disabled="!isRedact||scope.row.defaultType===''||scope.row.defaultType==='CURRENT'" oninput ="value=value.replace(/[^\d.]/g, '').replace(/^(\d+)\.(\d+).*$/, '$1.$2')"  />
           </template>
          </el-table-column>
       </el-table-column>
