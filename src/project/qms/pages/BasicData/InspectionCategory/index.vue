@@ -40,7 +40,7 @@
                 </el-radio-group>
               </el-form-item>
             </el-col>
-            <el-col :span="12">
+            <!-- <el-col :span="12">
               <el-form-item label="关联组织：">
                 <tree-dialog
                   ref="detailRelationRef"
@@ -53,7 +53,7 @@
                   :tree-props="{ label: 'deptName', children: 'children' }"
                 />
               </el-form-item>
-            </el-col>
+            </el-col> -->
             <el-col :span="12">
               <el-form-item label="取样部门：">
                 <tree-dialog
@@ -133,7 +133,7 @@
             <el-radio label="N">否</el-radio>
           </el-radio-group>
         </el-form-item>
-        <el-form-item label="关联组织：" :label-width="formLabelWidth">
+        <!-- <el-form-item label="关联组织：" :label-width="formLabelWidth">
           <tree-dialog
             ref="relationRef"
             v-model="addLevelInfo.relation"
@@ -142,7 +142,7 @@
             :checkStrictly="true"
             :tree-props="{ label: 'deptName', children: 'children' }"
           />
-        </el-form-item>
+        </el-form-item> -->
         <el-form-item label="取样部门：" :label-width="formLabelWidth">
           <tree-dialog
             ref="sampleRef"
