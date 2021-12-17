@@ -606,6 +606,10 @@ export default defineComponent({
                   return
                 }
               }
+              if (componentData.form.taskCultureDataList.length && !componentData.form.taskCultureDataList[0].inspectResult) {
+                proxy.$warningToast('请填写计数表格必填数据')
+                return
+              }
             }
             if (props.type === 'FIVETUBES') {
               for (const item of componentData.form.taskFiveTubeDataList) {
